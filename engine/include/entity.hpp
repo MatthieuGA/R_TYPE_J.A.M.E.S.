@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstddef>
+
 namespace Engine {
 class registry;  // forward declaration
 
