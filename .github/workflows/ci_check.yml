@@ -1,0 +1,126 @@
+
+name: CI Check
+
+on:
+  push:
+    branches-ignore:
+      - 'ga-ignore-**'
+  pull_request:
+    branches-ignore:
+      - 'ga-ignore-**'
+
+env:
+  MIRROR_URL: 'git@github.com:EpitechPGE3-2025/G-CPP-500-NAN-5-2-rtype-6'
+  EXECUTABLES: 'r-type_client,r-type_server'
+
+jobs:
+  check_coding_style:
+    if: github.repository != 'EpitechPGE3-2025/G-CPP-500-NAN-5-2-rtype-6'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: 3.x
+    - run: pip install cpplint
+    - run: |
+        find . -type f \( -name '*.cpp' -o -name '*.hpp' \) ! -path './tests/*' ! -path './build/*' | xargs cpplint --repository=. --quiet --output=vs7 --filter=-legal/copyright,-build/c++17,+build/c++23,-runtime/references
+  check_epitech_coding_style:
+    if: github.repository != 'EpitechPGE3-2025/G-CPP-500-NAN-5-2-rtype-6'
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/epitech/coding-style-checker:latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: "Check the coding style"
+        run: |
+          check.sh "$(pwd)/zappy_server_src" "$(pwd)"
+          tmpfile=$(mktemp)
+
+          echo "0" > "$tmpfile"
+          error_count=0
+          while read -r line; do
+            file=$(echo "$line" | cut -d':' -f1 | cut -d'/' -f 2-)
+            nbline=$(echo "$line" | cut -d':' -f2)
+            title=$(echo "$line" | cut -d':' -f3)" coding style error"
+            code=$(echo "$line" | cut -d':' -f4)
+            echo "::error title=$title,file=$file,line=$nbline,col=0::$code"
+            error_count=$((error_count + 1))
+          done < coding-style-reports.log
+
+          if [ "$error_count" -gt 1 ]; then
+            echo "More than one coding style error detected. Failing CI."
+            rm "$tmpfile"
+            exit 1
+          fi
+  check_cmake_compilation_linux:
+    needs: [check_epitech_coding_style, check_coding_style]
+    runs-on: ubuntu-latest
+    container:
+      image: epitechcontent/epitest-docker:latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+      - name: "Install Xvfb for potential SFML dependencies"
+        run: |
+          apt-get update
+          apt-get install -y xvfb
+      - name: "Configure with CMake"
+        run: cmake -S . -B build
+      - name: "Build with CMake"
+        run: cmake --build build
+      - name: "Check existing Linux executables"
+        run: |
+          LIST=$(echo $EXECUTABLES | tr ',' ' ')
+          for exe in $LIST; do
+            if [ -f "build/client/Release/$exe" ] || [ -f "build/server/Release/$exe" ] || [ -f "build/$exe" ]; then
+              echo "$exe exists."
+            else
+              echo "$exe is missing!"
+              exit 1
+            fi
+          done
+          
+  check_cmake_compilation_windows:
+    needs: [check_epitech_coding_style, check_coding_style]
+    runs-on: windows-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+      - name: "Configure with CMake"
+        run: cmake -S . -B build
+      - name: "Build with CMake"
+        run: cmake --build build
+      - name: "Check existing Windows executables"
+        run: |
+          $LIST = $env:EXECUTABLES -split ','
+          foreach ($exe in $LIST) {
+            $path1 = "build\client\Release\$exe"
+            $path2 = "build\server\Release\$exe"
+            $path3 = "build\$exe"
+            if (Test-Path $path1 -PathType Leaf -or Test-Path $path2 -PathType Leaf -or Test-Path $path3 -PathType Leaf) {
+              Write-Host "$exe exists."
+            } else {
+              Write-Host "$exe is missing!"
+              exit 1
+            }
+          }
+  push_to_mirror:
+    needs: [check_cmake_compilation_windows, check_cmake_compilation_linux]
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' }}
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: "Mirroring"
+        uses: pixta-dev/repository-mirroring-action@v1
+        with:
+          target_repo_url:
+            ${{ env.MIRROR_URL }}
+          ssh_private_key:
+            ${{ secrets.GIT_SSH_PRIVATE_KEY }}
