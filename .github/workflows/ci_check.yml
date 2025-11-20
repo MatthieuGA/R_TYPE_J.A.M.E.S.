@@ -69,8 +69,11 @@ jobs:
           apt-get update
           apt-get install -y xvfb
       - name: "Configure with CMake"
-        run: cmake -S . -B build
+        # Ensure CMake uses the repository workspace path explicitly
+        working-directory: ${{ github.workspace }}
+        run: cmake -S "${{ github.workspace }}" -B build
       - name: "Build with CMake"
+        working-directory: ${{ github.workspace }}
         run: cmake --build build
       - name: "Check existing Linux executables"
         run: |
@@ -83,7 +86,6 @@ jobs:
               exit 1
             fi
           done
-          
   check_cmake_compilation_windows:
     needs: [check_epitech_coding_style, check_coding_style]
     runs-on: windows-latest
@@ -91,8 +93,11 @@ jobs:
       - name: "Checkout"
         uses: actions/checkout@v4
       - name: "Configure with CMake"
-        run: cmake -S . -B build
+        # Ensure CMake uses the repository workspace path explicitly on Windows
+        working-directory: ${{ github.workspace }}
+        run: cmake -S "${{ github.workspace }}" -B build
       - name: "Build with CMake"
+        working-directory: ${{ github.workspace }}
         run: cmake --build build
       - name: "Check existing Windows executables"
         run: |
