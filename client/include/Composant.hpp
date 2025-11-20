@@ -17,4 +17,4 @@ struct drawable {
 struct controllable {
     bool isControllable;
 };
-} // namespace Component
+}  // namespace Rtype::Client::Component

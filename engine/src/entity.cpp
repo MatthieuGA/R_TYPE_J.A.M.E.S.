@@ -1,4 +1,4 @@
-#include "entity.hpp"
+#include "include/entity.hpp"
 
 namespace Engine {
 entity &entity::operator=(size_t new_id) {

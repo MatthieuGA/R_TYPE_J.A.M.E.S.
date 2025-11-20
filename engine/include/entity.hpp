@@ -1,7 +1,7 @@
 #pragma once
 
 namespace Engine {
-class registry; // forward declaration
+class registry;  // forward declaration
 
 class entity {
  public:
@@ -12,8 +12,8 @@ class entity {
 
  private:
     explicit entity(size_t id) : id_(id) {}
-    friend class registry; // only registry can construct entities
-    
+    friend class registry;  // only registry can construct entities
+
     size_t id_;
 };
 }  // namespace Engine
