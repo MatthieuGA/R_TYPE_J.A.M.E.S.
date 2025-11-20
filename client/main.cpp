@@ -4,6 +4,11 @@
 #include "include/registry.hpp"
 #include "include/Composant.hpp"
 
+using Rtype::Client::Component::controllable;
+using Rtype::Client::Component::drawable;
+using Rtype::Client::Component::position;
+using Rtype::Client::Component::velocity;
+
 namespace Rtype::Client {
 void positionSystem(Engine::registry &reg,
 Engine::sparse_array<Component::position> const &positions,
@@ -36,43 +41,45 @@ Engine::sparse_array<Component::drawable> const &drawables) {
     }
 }
 
+}  // namespace Rtype::Client
+
 int main() {
     Engine::registry reg;
     printf("Registry created successfully.\n");
     printf("Registering Components...\n");
-    reg.register_component<Component::position>();
-    reg.register_component<Component::velocity>();
-    reg.register_component<Component::drawable>();
-    reg.register_component<Component::controllable>();
+    reg.register_component<position>();
+    reg.register_component<velocity>();
+    reg.register_component<drawable>();
+    reg.register_component<controllable>();
     printf("Components registered successfully.\n");
 
     Engine::registry::entity_t player = reg.spawn_entity();
-    reg.add_component<Component::position>
-        (player, Component::position{100.0f, 100.0f});
-    reg.add_component<Component::velocity>
-        (player, Component::velocity{0.f, 1.f});
-    reg.add_component<Component::drawable>
-        (player, Component::drawable{"hero.png", 1.0f});
-    reg.add_component<Component::controllable>
-        (player, Component::controllable{true});
+    reg.add_component<position>
+        (player, position{100.0f, 100.0f});
+    reg.add_component<velocity>
+        (player, velocity{0.f, 1.f});
+    reg.add_component<drawable>
+        (player, drawable{"hero.png", 1.0f});
+    reg.add_component<controllable>
+        (player, controllable{true});
 
     Engine::registry::entity_t enemy1 = reg.spawn_entity();
-    reg.add_component<Component::position>
-        (enemy1, Component::position{400.0f, 100.0f});
-    reg.add_component<Component::drawable>
-        (enemy1, Component::drawable{"enemy.png", 0.5f});
+    reg.add_component<position>
+        (enemy1, position{400.0f, 100.0f});
+    reg.add_component<drawable>
+        (enemy1, drawable{"enemy.png", 0.5f});
     Engine::registry::entity_t enemy2 = reg.spawn_entity();
-    reg.add_component<Component::position>
-        (enemy2, Component::position{400.0f, 200.0f});
-    reg.add_component<Component::drawable>
-        (enemy2, Component::drawable{"enemy.png", 0.5f});
+    reg.add_component<position>
+        (enemy2, position{400.0f, 200.0f});
+    reg.add_component<drawable>
+        (enemy2, drawable{"enemy.png", 0.5f});
 
-    reg.add_system<Engine::sparse_array<Component::controllable>>
-        (controllableSystem);
-    reg.add_system<Engine::sparse_array<Component::position>,
-        Engine::sparse_array<Component::velocity>>(positionSystem);
-    reg.add_system<Engine::sparse_array<Component::position>,
-        Engine::sparse_array<Component::drawable>>(drawableSystem);
+    reg.add_system<Engine::sparse_array<controllable>>
+        (Rtype::Client::controllableSystem);
+    reg.add_system<Engine::sparse_array<position>,
+        Engine::sparse_array<velocity>>(Rtype::Client::positionSystem);
+    reg.add_system<Engine::sparse_array<position>,
+        Engine::sparse_array<drawable>>(Rtype::Client::drawableSystem);
 
     while (true) {
         reg.run_systems();
@@ -80,4 +87,3 @@ int main() {
     }
     return 0;
 }
-}  // namespace Rtype::Client
