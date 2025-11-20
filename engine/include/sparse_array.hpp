@@ -153,7 +153,8 @@ size() const {
 
 template <typename Component>
 bool sparse_array<Component>::has(size_type idx) const {
-    return idx < _data.size() && static_cast<bool>(_present[idx]);
+    return idx < _data.size() && idx < _present.size() &&
+        static_cast<bool>(_present[idx]);
 }
 
 #pragma endregion

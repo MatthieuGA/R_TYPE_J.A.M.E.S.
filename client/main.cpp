@@ -2,7 +2,7 @@
 #include <cstdio>
 
 #include "include/registry.hpp"
-#include "include/Composant.hpp"
+#include "include/Component.hpp"
 
 using Rtype::Client::Component::controllable;
 using Rtype::Client::Component::drawable;
@@ -45,13 +45,10 @@ Engine::sparse_array<Component::drawable> const &drawables) {
 
 int main() {
     Engine::registry reg;
-    printf("Registry created successfully.\n");
-    printf("Registering Components...\n");
     reg.register_component<position>();
     reg.register_component<velocity>();
     reg.register_component<drawable>();
     reg.register_component<controllable>();
-    printf("Components registered successfully.\n");
 
     Engine::registry::entity_t player = reg.spawn_entity();
     reg.add_component<position>
@@ -81,9 +78,7 @@ int main() {
     reg.add_system<Engine::sparse_array<position>,
         Engine::sparse_array<drawable>>(Rtype::Client::drawableSystem);
 
-    while (true) {
-        reg.run_systems();
-        break;  // For demonstration, exit after one loop
-    }
+    // run one time the systems to test
+    reg.run_systems();
     return 0;
 }
