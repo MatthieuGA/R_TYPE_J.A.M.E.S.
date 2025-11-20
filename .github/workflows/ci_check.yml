@@ -91,7 +91,7 @@ jobs:
             fi
           done
   push_to_mirror:
-    needs: [check_cmake_compilation_windows, check_cmake_compilation_linux]
+    needs: check_cmake_compilation_linux
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'push' }}
     steps:
