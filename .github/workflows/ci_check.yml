@@ -69,9 +69,10 @@ jobs:
           apt-get update
           apt-get install -y xvfb
       - name: "Configure with CMake"
-        # Ensure CMake uses the repository workspace path explicitly
+        # Run CMake from the repository root; use '.' so the command resolves
+        # correctly inside containers and on runners where host paths differ.
         working-directory: ${{ github.workspace }}
-        run: cmake -S "${{ github.workspace }}" -B build
+        run: cmake -S . -B build
       - name: "Build with CMake"
         working-directory: ${{ github.workspace }}
         run: cmake --build build
@@ -93,9 +94,10 @@ jobs:
       - name: "Checkout"
         uses: actions/checkout@v4
       - name: "Configure with CMake"
-        # Ensure CMake uses the repository workspace path explicitly on Windows
+        # Run CMake from the repository root on Windows; use '.' to avoid
+        # referencing host paths that may not exist in the runner environment.
         working-directory: ${{ github.workspace }}
-        run: cmake -S "${{ github.workspace }}" -B build
+        run: cmake -S . -B build
       - name: "Build with CMake"
         working-directory: ${{ github.workspace }}
         run: cmake --build build
