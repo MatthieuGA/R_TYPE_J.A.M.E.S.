@@ -2,6 +2,7 @@
 #include <cstdio>
 
 #include "include/registry.hpp"
+#include "include/indexed_zipper.hpp"
 #include "include/Component.hpp"
 
 using Rtype::Client::Component::controllable;
@@ -13,7 +14,7 @@ namespace Rtype::Client {
 void positionSystem(Engine::registry &reg,
 Engine::sparse_array<Component::position> const &positions,
 Engine::sparse_array<Component::velocity> const &velocities) {
-    for (auto &&[i, pos, vel] : make_indexed_zipper(positions, velocities)) {
+    for (auto &&[i, pos, vel] : Engine::make_indexed_zipper(positions, velocities)) {
         std::cerr << "Entity " << i << " Position: ("
             << pos.x << ", " << pos.y << ") "
             << "Velocity: (" << vel.vx << ", " << vel.vy << ")\n";
@@ -22,7 +23,7 @@ Engine::sparse_array<Component::velocity> const &velocities) {
 
 void controllableSystem(Engine::registry &reg,
 Engine::sparse_array<Component::controllable> const &controls) {
-    for (auto &&[i, control] : make_indexed_zipper(controls)) {
+    for (auto &&[i, control] : Engine::make_indexed_zipper(controls)) {
         if (control.isControllable) {
             std::cerr << "Entity " << i << " is controllable.\n";
         }
@@ -33,7 +34,7 @@ void drawableSystem(Engine::registry &reg,
 Engine::sparse_array<Component::position> const &positions,
 Engine::sparse_array<Component::drawable> const &drawables) {
     for (auto &&[i, pos, drawable] :
-    make_indexed_zipper(positions, drawables)) {
+    Engine::make_indexed_zipper(positions, drawables)) {
         std::cerr << "Drawing entity " << i
             << " at position (" << pos.x << ", " << pos.y << ") "
             << "with sprite: " << drawable.sprite << " scaled by "
