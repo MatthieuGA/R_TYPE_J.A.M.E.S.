@@ -11,12 +11,11 @@ template<class... Containers> class indexed_zipper;
 // indexed_zipper_iterator: same as zipper_iterator but also returns the index
 template<class... Containers>
 class indexed_zipper_iterator {
-public:
+ public:
     using base_iterator = zipper_iterator<Containers...>;
     using value_type = decltype(std::tuple_cat(
         std::tuple<std::size_t>{},
-        std::declval<typename base_iterator::value_type>()
-    ));
+        std::declval<typename base_iterator::value_type>()));
 
     using reference = value_type;
     using pointer = void;
@@ -27,30 +26,32 @@ public:
 
     friend class indexed_zipper<Containers...>;
 
-private:
-    indexed_zipper_iterator(base_iterator it);
+ private:
+    explicit indexed_zipper_iterator(base_iterator it);
 
-public:
+ public:
     indexed_zipper_iterator& operator++();
     indexed_zipper_iterator operator++(int);
     value_type operator*() const;
 
-    friend bool operator==(indexed_zipper_iterator const& a, indexed_zipper_iterator const& b) {
+    friend bool operator==(indexed_zipper_iterator const& a,
+                           indexed_zipper_iterator const& b) {
         return a._it == b._it;
     }
 
-    friend bool operator!=(indexed_zipper_iterator const& a, indexed_zipper_iterator const& b) {
+    friend bool operator!=(indexed_zipper_iterator const& a,
+                           indexed_zipper_iterator const& b) {
         return !(a == b);
     }
 
-private:
+ private:
     base_iterator _it;
     std::size_t _idx = 0;
 };
 
 template <class... Containers>
 class indexed_zipper {
-public:
+ public:
     using iterator = indexed_zipper_iterator<Containers...>;
 
     explicit indexed_zipper(Containers&... cs);
@@ -58,7 +59,7 @@ public:
     iterator begin() const;
     iterator end() const;
 
-private:
+ private:
     zipper<Containers...> _zip;
 };
 
