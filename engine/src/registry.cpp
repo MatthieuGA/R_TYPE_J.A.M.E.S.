@@ -1,4 +1,4 @@
-#include "include/registry.hpp"
+#include "../include/registry.hpp"
 
 namespace Engine {
 // Entity management
