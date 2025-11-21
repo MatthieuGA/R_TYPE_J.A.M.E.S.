@@ -2,21 +2,22 @@
 #include "sparse_array.hpp"
 #include <algorithm>
 #include <cstddef>
+#include <stdexcept>
 
 namespace Engine {
 
 #pragma region Constructors / Destructors
 
 template <typename Component>
-sparse_array<Component>::sparse_array() : _data(), _present() {}
+sparse_array<Component>::sparse_array() : _data() {}
 
 template <typename Component>
 sparse_array<Component>::sparse_array(sparse_array const &other) :
-_data(other._data), _present(other._present) {}
+_data(other._data) {}
 
 template <typename Component>
 sparse_array<Component>::sparse_array(sparse_array &&other) noexcept :
-_data(std::move(other._data)), _present(std::move(other._present)) {}
+_data(std::move(other._data)) {}
 
 template <typename Component>
 sparse_array<Component>::~sparse_array() = default;
@@ -28,7 +29,7 @@ template <typename Component>
 sparse_array<Component> &sparse_array<Component>::
 operator=(sparse_array const &other) {
     if (this != &other)
-        _data = other._data, _present = other._present;
+        _data = other._data;
     return *this;
 }
 
@@ -36,7 +37,7 @@ template <typename Component>
 sparse_array<Component> &sparse_array<Component>::
 operator=(sparse_array &&other) noexcept {
     if (this != &other)
-        _data = std::move(other._data), _present = std::move(other._present);
+        _data = std::move(other._data);
     return *this;
 }
 
@@ -63,6 +64,7 @@ typename sparse_array<Component>::iterator sparse_array<Component>::
 begin() {
     return _data.begin();
 }
+
 template <typename Component>
 typename sparse_array<Component>::const_iterator sparse_array<Component>::
 begin() const {
@@ -104,8 +106,7 @@ size() const {
 
 template <typename Component>
 bool sparse_array<Component>::has(size_type idx) const {
-    return idx < _data.size() && idx < _present.size() &&
-        static_cast<bool>(_present[idx]);
+    return idx < _data.size() && _data[idx].has_value();
 }
 
 #pragma endregion
@@ -129,10 +130,8 @@ typename sparse_array<Component>::reference_type sparse_array<Component>::
 emplace_at(size_type pos, Params &&... params) {
     if (pos >= _data.size()) {
         _data.resize(pos + 1);
-        _present.resize(_data.size());
     }
-    _data[pos] = Component(std::forward<Params>(params)...);
-    _present[pos] = 1;
+    _data[pos].emplace(std::forward<Params>(params)...);
     return _data[pos];
 }
 
@@ -140,19 +139,20 @@ template <typename Component>
 void sparse_array<Component>::erase(size_type pos) {
     if (pos >= _data.size())
         return;
-    _data[pos] = Component();
-    _present[pos] = 0;
+    _data[pos].reset();
 }
 
 template <typename Component>
 typename sparse_array<Component>::size_type sparse_array<Component>::
-get_index(value_type const &val) const {
-    for (size_type i = 0; i < _data.size(); ++i) {
-        if (std::addressof(_data[i]) == std::addressof(val)) {
-            return i;
-        }
+get_index(value_type const &value) const {
+    const auto *ptr = &value;
+    const auto *base = _data.data();
+    
+    if (ptr < base || ptr >= base + _data.size()) {
+        return static_cast<size_type>(-1);
     }
-    return static_cast<size_type>(-1);
+    
+    return static_cast<size_type>(ptr - base);
 }
 
 #pragma endregion

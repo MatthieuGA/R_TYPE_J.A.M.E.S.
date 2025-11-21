@@ -2,13 +2,13 @@
 #include <vector>
 #include <memory>
 #include <cstddef>
-
+#include <optional>
 namespace Engine {
 
 template <typename Component>
 class sparse_array {
  public:
-    using value_type = Component;
+    using value_type = std::optional<Component>;
     using reference_type = value_type &;
     using const_reference_type = value_type const &;
     using container_t = std::vector<value_type>;
@@ -46,7 +46,6 @@ class sparse_array {
 
  private:
     container_t _data;
-    std::vector<char> _present;
 };
 
 }  // namespace Engine

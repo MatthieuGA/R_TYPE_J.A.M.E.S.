@@ -12,4 +12,11 @@ target_sources(r-type_engine
       include/entity.hpp
       include/registry.hpp
       include/sparse_array.hpp
+      include/sparse_array.tpp
+      include/zipper.hpp
+      include/zipper.tpp
+      include/registry.tpp
 )
+
+# Make sure the include directory is accessible
+target_include_directories(r-type_engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
