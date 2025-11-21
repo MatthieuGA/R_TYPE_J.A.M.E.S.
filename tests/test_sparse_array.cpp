@@ -5,7 +5,7 @@
 // Test fixture for sparse_array tests
 template <typename T>
 class SparseArrayTest : public ::testing::Test {
-protected:
+ protected:
     Engine::sparse_array<T> array;
 };
 
