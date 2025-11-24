@@ -10,11 +10,12 @@ template<class... Containers> class zipper;
 
 template<class... Containers>
 class zipper_iterator {
-public:
+ public:
     using iterator_tuple = std::tuple<Containers*...>;
 
     template<class Container>
-    using elem_t = decltype(std::declval<Container>()[std::declval<std::size_t>()]);
+    using elem_t = decltype(std::declval<Container>()
+        [std::declval<std::size_t>()]);
 
     template<class T>
     using value_ref_t = decltype(std::declval<T>().value());
@@ -35,20 +36,29 @@ public:
 
     template<class...> friend class indexed_zipper_iterator;
 
-private:
-    zipper_iterator(iterator_tuple containers, std::size_t max, std::size_t idx = 0);
+ private:
+    zipper_iterator(iterator_tuple containers, std::size_t max,
+        std::size_t idx = 0);
 
-public:
+ public:
     zipper_iterator& operator++();
     zipper_iterator operator++(int);
     value_type operator*() const;
 
-    friend bool operator==(zipper_iterator const& a, zipper_iterator const& b) {
-        return a._idx == b._idx && a._max == b._max && a._containers == b._containers;
+    friend bool operator==(
+        zipper_iterator const& a,
+        zipper_iterator const& b) {
+        return
+        a._idx == b._idx &&
+        a._max == b._max &&
+        a._containers == b._containers;
     }
-    friend bool operator!=(zipper_iterator const& a, zipper_iterator const& b) { return !(a==b); }
+    friend bool operator!=(zipper_iterator const& a,
+        zipper_iterator const& b) {
+        return !(a == b);
+    }
 
-private:
+ private:
     template<std::size_t... Is>
     bool all_set(std::index_sequence<Is...>) const;
 
@@ -66,7 +76,7 @@ private:
 
 template <class... Containers>
 class zipper {
-public:
+ public:
     using iterator = zipper_iterator<Containers...>;
 
     explicit zipper(Containers&... cs);
@@ -74,7 +84,7 @@ public:
     iterator begin() const;
     iterator end() const;
 
-private:
+ private:
     typename iterator::iterator_tuple _containers;
     std::size_t _size;
 };

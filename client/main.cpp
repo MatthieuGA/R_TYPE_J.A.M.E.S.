@@ -14,7 +14,8 @@ namespace Rtype::Client {
 void positionSystem(Engine::registry &reg,
 Engine::sparse_array<Component::position> const &positions,
 Engine::sparse_array<Component::velocity> const &velocities) {
-    for (auto &&[i, pos, vel] : Engine::make_indexed_zipper(positions, velocities)) {
+    for (auto &&[i, pos, vel] :
+        Engine::make_indexed_zipper(positions, velocities)) {
         std::cerr << "Entity " << i << " Position: ("
             << pos.x << ", " << pos.y << ") "
             << "Velocity: (" << vel.vx << ", " << vel.vy << ")\n";
