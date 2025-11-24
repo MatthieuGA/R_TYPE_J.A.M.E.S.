@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cstdio>
+#include <SFML/Graphics.hpp>
 
 #include "include/registry.hpp"
 #include "include/indexed_zipper.hpp"
@@ -16,9 +17,9 @@ Engine::sparse_array<Component::position> const &positions,
 Engine::sparse_array<Component::velocity> const &velocities) {
     for (auto &&[i, pos, vel] :
         Engine::make_indexed_zipper(positions, velocities)) {
-        std::cerr << "Entity " << i << " Position: ("
-            << pos.x << ", " << pos.y << ") "
-            << "Velocity: (" << vel.vx << ", " << vel.vy << ")\n";
+        // std::cerr << "Entity " << i << " Position: ("
+        //     << pos.x << ", " << pos.y << ") "
+        //     << "Velocity: (" << vel.vx << ", " << vel.vy << ")\n";
     }
 }
 
@@ -26,12 +27,12 @@ void controllableSystem(Engine::registry &reg,
 Engine::sparse_array<Component::controllable> const &controls) {
     for (auto &&[i, control] : Engine::make_indexed_zipper(controls)) {
         if (control.isControllable) {
-            std::cerr << "Entity " << i << " is controllable.\n";
+            //std::cerr << "Entity " << i << " is controllable.\n";
         }
     }
 }
 
-void drawableSystem(Engine::registry &reg,
+void drawableSystem(Engine::registry &reg, sf::RenderWindow &window,
 Engine::sparse_array<Component::position> const &positions,
 Engine::sparse_array<Component::drawable> const &drawables) {
     for (auto &&[i, pos, drawable] :
@@ -40,13 +41,16 @@ Engine::sparse_array<Component::drawable> const &drawables) {
             << " at position (" << pos.x << ", " << pos.y << ") "
             << "with sprite: " << drawable.sprite << " scaled by "
             << drawable.scale << "\n";
+        sf::RectangleShape shape(sf::Vector2f(50.0f * drawable.scale, 50.0f * drawable.scale));
+        shape.setPosition(pos.x, pos.y);
+        shape.setFillColor(sf::Color::Green);
+        window.draw(shape);
     }
 }
 
 }  // namespace Rtype::Client
 
-int main() {
-    Engine::registry reg;
+void init_registry(Engine::registry &reg, sf::RenderWindow &window) {
     reg.register_component<position>();
     reg.register_component<velocity>();
     reg.register_component<drawable>();
@@ -78,9 +82,30 @@ int main() {
     reg.add_system<Engine::sparse_array<position>,
         Engine::sparse_array<velocity>>(Rtype::Client::positionSystem);
     reg.add_system<Engine::sparse_array<position>,
-        Engine::sparse_array<drawable>>(Rtype::Client::drawableSystem);
+        Engine::sparse_array<drawable>>(
+        [&window](Engine::registry &r,
+                   Engine::sparse_array<position> const &positions,
+                   Engine::sparse_array<drawable> const &drawables) {
+            Rtype::Client::drawableSystem(r, window, positions, drawables);
+        });
+}
 
-    // run one time the systems to test
-    reg.run_systems();
+int main() {
+    Engine::registry reg;
+    sf::RenderWindow window(sf::VideoMode(800, 600), "SFML");
+    init_registry(reg, window);
+
+    while (window.isOpen()) {
+        sf::Event event{};
+        while (window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed)
+                window.close();
+        }
+
+        window.clear(sf::Color::Black);
+        reg.run_systems();
+        window.display();
+    }
+
     return 0;
 }
