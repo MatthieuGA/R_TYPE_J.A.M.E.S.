@@ -2,22 +2,20 @@
 
 #include <boost/asio.hpp>
 #include <server/Config.hpp>
+#include <server/Network.hpp>
 
 int main(int argc, char *argv[]) {
     try {
-        server::Config &config = server::Config::fromCommandLine(argc, argv);
+        boost::asio::io_context io;
+        server::Config &cfg = server::Config::fromCommandLine(argc, argv);
+        server::Network network = server::Network(cfg, io);
+        // TODO(someone): Add Game class to manage game state and logic, give
+        // it a reference to Network so it can access the SPSC queue. Also
+        // give it the io_context so it can set timers for game ticks and
+        // use async_wait.
 
-        // SPSC ring buffer queue initialization
-        // ASIO: TCP acceptor setup for client connections
-
-        // ASIO: UDP socket setup with handle packet function in a separate
-        // thread. It pushes events to the main thread via the SPSC queue and
-        // drops new events if it's full.
-
-        // R-Type: Event loop processing events from the queue and handling
-        // game logic, also handles sending UDP snapshots to clients. Singleton
-        // class
-        std::cout << "Server is running..." << std::endl;
+        std::cout << "Server started, running io_context..." << std::endl;
+        io.run();
     } catch (const std::exception &e) {
         std::cerr << e.what() << std::endl;
         return EXIT_FAILURE;
