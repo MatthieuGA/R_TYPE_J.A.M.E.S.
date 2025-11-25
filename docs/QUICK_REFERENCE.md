@@ -186,7 +186,6 @@ Just push to `main` branch. The workflow at `.github/workflows/deploy-docs.yml` 
 ```
 docs/
 ├── docs/               # Documentation pages (.md files)
-├── blog/              # Blog posts (optional)
 ├── src/
 │   ├── components/    # Custom React components
 │   ├── css/          # Custom styles

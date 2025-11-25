@@ -90,9 +90,8 @@ R_TYPE_J.A.M.E.S./
 │   │   │   └── index.tsx           # Home page
 │   │   ├── components/             # React components
 │   │   └── css/                    # Custom styles
-│   ├── static/                     # Static assets
-│   │   └── img/                    # Images
-│   └── blog/                       # Blog posts (optional)
+│   └── static/                     # Static assets
+│       └── img/                    # Images
 ├── .github/
 │   └── workflows/
 │       └── deploy-docs.yml         # GitHub Pages deployment
