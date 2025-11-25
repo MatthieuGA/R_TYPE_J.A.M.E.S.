@@ -5,6 +5,8 @@ out/
 cmake-build-*/
 
 # vcpkg
+vcpkg
+/vcpkg
 vcpkg_installed/
 .vcpkg-root
 
