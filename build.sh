@@ -39,7 +39,7 @@ fi
 if [ ! -f "vcpkg/vcpkg" ]; then
     echo "Bootstrapping vcpkg..."
     cd vcpkg
-    ./bootstrap-vcpkg.sh --disable-metrics
+    ./bootstrap-vcpkg.sh
     testExitStatus $? "vcpkg bootstrap"
     cd ..
     echo ""
