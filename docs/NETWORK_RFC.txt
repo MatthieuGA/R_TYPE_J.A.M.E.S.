@@ -1,0 +1,289 @@
+Network Working Group                                           J.A.M.E.S
+Request for Comments: 1                                    Epitech Nantes
+Category: Standards Track                                   November 2025
+Version: 1.0.0
+Based on: docs/PROTOCOL.md (v1.0.0)
+
+                     R-Type Game Protocol Specification
+
+Status of this Memo
+
+   This document specifies the binary protocol for the R-Type multiplayer
+   game project (B-CPP-500). It defines the packet structures, transport
+   mechanisms, and command codes utilized for client-server communication.
+
+Table of Contents
+
+   1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . . .  2
+   2.  Conventions . . . . . . . . . . . . . . . . . . . . . . . . . .  2
+   3.  Data Definitions  . . . . . . . . . . . . . . . . . . . . . . .  3
+   4.  Packet Structure  . . . . . . . . . . . . . . . . . . . . . . .  3
+   5.  TCP Protocol (Session Management) . . . . . . . . . . . . . . .  4
+   6.  UDP Protocol (Real-time Gameplay) . . . . . . . . . . . . . . .  6
+   7.  Error Handling  . . . . . . . . . . . . . . . . . . . . . . . .  7
+   8.  Security Considerations . . . . . . . . . . . . . . . . . . . .  8
+
+1.  Introduction
+
+   The R-Type Protocol is a custom application-layer protocol designed
+   for a Server-Authoritative multiplayer shoot 'em up game. It utilizes
+   a hybrid transport architecture:
+
+   o  TCP: Used for reliable session management (Login, Lobby, Game State).
+   o  UDP: Used for high-frequency, real-time gameplay data (Position, Inputs).
+
+   Default Port: 50000 (UDP & TCP)
+
+   The architecture implements Snapshot Interpolation: the server broadcasts
+   the full state of visible entities, and clients interpolate between
+   snapshots to render smooth movement.
+
+   1.1.  Strategies
+
+   o  Snapshot State: The server sends the full state of visible entities.
+      The client infers Spawn and Death based on ID presence.
+   o  Client Prediction: Visual effects start immediately on input; logic
+      is validated upon server state reception.
+
+2.  Conventions
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
+   document are to be interpreted as described in BCP 14, RFC 2119.
+
+3.  Data Definitions
+
+   3.1.  Primitive Types
+
+   All multi-byte fields MUST be transmitted in Little Endian format.
+
+   | Type | Size | Range         | Description                         |
+   |------|------|---------------|-------------------------------------|
+   | u8   | 1    | 0..255        | Command ID, Status, Bitmask         |
+   | u16  | 2    | 0..65535      | Payload Size, PlayerID, Coordinate  |
+   | u32  | 4    | 0..4294967295 | TickID, EntityID, Score             |
+   | char | 1    | ASCII         | String characters                   |
+
+   3.2.  OpCode Categorization
+
+   | Range       | Protocol | Category            |
+   |-------------|----------|---------------------|
+   | 0x00 - 0x0F | TCP      | Session Management  |
+   | 0x10 - 0x1F | UDP      | Client Gameplay     |
+   | 0x20 - 0x2F | UDP      | Server Gameplay     |
+
+4.  Packet Structure
+
+   4.1.  Common Header
+
+   Every packet sent over TCP or UDP MUST begin with this 12-byte header.
+   This layout ensures 32-bit alignment.
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |     OpCode    |          PayloadSize          |  PacketIndex  |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                             TickId                            |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |  PacketCount  |                   Reserved                    |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   OpCode:       8-bit unique command identifier.
+   PayloadSize:  16-bit size of the data following the header.
+   PacketIndex:  8-bit index for fragmented packets (0 to PacketCount-1).
+   TickId:       32-bit Frame number. Used for UDP reassembly.
+                 MUST be 0 for TCP packets.
+   PacketCount:  8-bit total fragments for this Tick.
+   Reserved:     24-bit padding. MUST be set to 0.
+
+   Fragmentation Logic:
+   A "Game Frame" is considered complete only when the client has received
+   [PacketCount] unique packets for the same [TickId].
+
+5.  TCP Commands (Session Management)
+
+   5.1.  CONNECT_REQ (0x01)
+
+   Direction: Client -> Server
+   Description: Request to join a lobby.
+   Payload Size: 32 bytes
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                           Username                            |
+   |                       (Fixed 32 bytes)                        |
+   |                    (Null-Terminated String)                   |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   5.2.  CONNECT_ACK (0x02)
+
+   Direction: Server -> Client
+   Description: Response to login attempt.
+   Payload Size: 4 bytes
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |           PlayerId            |     Status    |    Reserved   |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   Status Codes:
+      0: OK - Connection accepted.
+      1: Server Full - Lobby is full.
+      2: Bad Username - Invalid or taken username.
+      3: In Game - Cannot join while a game is in progress.
+
+   5.3.  DISCONNECT_REQ (0x03)
+
+   Direction: Client -> Server
+   Description: Request to leave the lobby or game.
+   Payload Size: 0 bytes (Header only).
+
+   5.4.  NOTIFY_DISCONNECT (0x04)
+
+   Direction: Server -> Client
+   Description: Notify clients of a player's disconnection.
+   Payload Size: 4 bytes
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |           PlayerId            |            Reserved           |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   5.5.  GAME_START (0x05)
+
+   Direction: Server -> Client
+   Description: Triggers the start of the match.
+   Payload Size: 4 bytes
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                       ControlledEntityId                      |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   5.6.  GAME_END (0x06)
+
+   Direction: Server -> Client
+   Description: Announces the end of the match.
+   Payload Size: 4 bytes
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |        WinningPlayerId        |            Reserved           |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+6.  UDP Protocol (Real-time Gameplay)
+
+   6.1.  PLAYER_INPUT (0x10)
+
+   Direction: Client -> Server
+   Frequency: Every Tick.
+   Description: Sends the bitmask of currently HELD keys.
+   Payload Size: 4 bytes
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |     Inputs    |                    Reserved                   |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   Bitmask:
+      0x01: UP
+      0x02: DOWN
+      0x04: LEFT
+      0x08: RIGHT
+      0x10: SHOOT
+
+   Charge Logic: Server compares current tick vs previous tick.
+   Held 1 -> 1: Charge. 1 -> 0: Fire.
+
+   6.2.  WORLD_SNAPSHOT (0x20)
+
+   Direction: Server -> Client
+   Frequency: 20Hz - 60Hz.
+   Description: The authoritative state of the world.
+   Payload Size: 4 bytes + (EntityCount * 12 bytes)
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |          EntityCount          |            Reserved           |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                                                               |
+   |                      List of EntityState                      |
+   |                  (Variable Size, see below)                   |
+   |                                                               |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   Structure: EntityState (12 bytes, Aligned)
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                           EntityId                            |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |      Type     |    Padding    |             PosX              |
+   |               |               |         (Normalized)          |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |             PosY              |             Angle             |
+   |         (Normalized)          |           (Degrees)           |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   Client Logic:
+   1. Reassemble: Collect all parts for TickId.
+      - If complete: Process Snapshot, delete old parts.
+      - If incomplete: Wait for missing parts.
+   2. Compare:
+      - New ID: Spawn Entity.
+      - Missing ID: Destroy Entity.
+      - Existing ID: Interpolate position.
+
+   6.3.  PLAYER_STATS (0x21)
+
+   Direction: Server -> Client
+   Description: HUD Updates.
+   Payload Size: 8 bytes
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |           PlayerId            |     Lives     |    Reserved   |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                             Score                             |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+7.  Error Handling
+
+   o  Malformed Packets: The receiver MUST silently discard any packet
+      with an invalid header or unknown OpCode.
+
+   o  Logical Errors (TCP): Handled via 'Status' in CONNECT_ACK.
+
+   o  Desynchronization (UDP): The Server is the single source of truth.
+      Clients MUST override local entity states with WORLD_SNAPSHOT data.
+
+8.  Security Considerations
+
+   8.1.  Plaintext Communication
+
+   This protocol does not implement encryption. All data, including
+   usernames, is transmitted in cleartext. It is susceptible to Packet
+   Sniffing and Man-in-the-Middle (MITM) attacks.
+
+   8.2.  Input Validation
+
+   The Server MUST validate all incoming CLIENT_INPUT packets. It MUST NOT
+   trust the client for game logic (e.g., fire rate, cooldowns).
+   Sanitization of the 'Username' field in CONNECT_REQ is REQUIRED to
+   prevent buffer overflows or display exploits.
+
+   8.3.  Denial of Service (DoS)
+
+   The "Silent Discard" policy for malformed packets is intended to reduce
+   the impact of flooding attacks. However, no advanced DDoS mitigation
+   is specified in this protocol layer.
