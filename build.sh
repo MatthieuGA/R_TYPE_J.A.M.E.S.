@@ -29,11 +29,17 @@ CMAKE_VERSION=$(cmake --version | head -n1 | cut -d' ' -f3)
 echo "✓ CMake version: $CMAKE_VERSION"
 echo ""
 
+# Install vcpkg if not present
+if [ ! -d "vcpkg" ]; then
+    echo "Cloning vcpkg..."
+    git clone https://github.com/microsoft/vcpkg.git
+fi
+
 # Bootstrap vcpkg if needed
 if [ ! -f "vcpkg/vcpkg" ]; then
     echo "Bootstrapping vcpkg..."
     cd vcpkg
-    ./bootstrap-vcpkg.sh
+    ./bootstrap-vcpkg.sh --disable-metrics
     testExitStatus $? "vcpkg bootstrap"
     cd ..
     echo ""
@@ -78,3 +84,7 @@ echo ""
 echo "To run the client:"
 echo "  ./r-type_client"
 echo ""
+echo "To run the server:"
+echo "  ./r-type_server"
+echo ""
+exit 0
