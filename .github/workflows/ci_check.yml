@@ -14,6 +14,14 @@ env:
   EXECUTABLES: 'r-type_client,r-type_server'
 
 jobs:
+  block_merge_to_main:
+    if: ${{ github.event_name == 'pull_request' && github.base_ref == 'main' && !startsWith(github.head_ref, 'Epic-') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Block merge to main unless branch starts with Sprint-"
+        run: |
+          echo "Merges to main are only allowed from branches starting with 'Sprint-'."
+          exit 1
   check_coding_style:
     if: github.repository != 'EpitechPGE3-2025/G-CPP-500-NAN-5-2-rtype-6'
     runs-on: ubuntu-latest
