@@ -64,13 +64,18 @@ jobs:
     steps:
       - name: "Checkout"
         uses: actions/checkout@v4
-      - name: "Install Xvfb for potential SFML dependencies"
+      - name: "Install dependencies"
         run: |
           apt-get update
-          apt-get install -y xvfb
+          apt-get install -y xvfb curl zip unzip tar git pkg-config
+      - name: "Setup vcpkg"
+        run: |
+          git clone https://github.com/microsoft/vcpkg.git /opt/vcpkg
+          /opt/vcpkg/bootstrap-vcpkg.sh
+          echo "VCPKG_ROOT=/opt/vcpkg" >> $GITHUB_ENV
       - name: "Configure with CMake"
         working-directory: ${{ github.workspace }}
-        run: cmake -S . -B build
+        run: cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=/opt/vcpkg/scripts/buildsystems/vcpkg.cmake
       - name: "Build with CMake"
         working-directory: ${{ github.workspace }}
         run: cmake --build build

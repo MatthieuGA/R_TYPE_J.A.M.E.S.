@@ -1,6 +1,6 @@
 # 📘 R-Type — Networked Multiplayer Game (J.A.M.E.S.)
 
-*A modern C++23 multiplayer shoot’em up with an original custom engine, an authoritative server, and a Qt-based client.*
+*A modern C++23 multiplayer shoot’em up with an original custom engine, an authoritative server, and a SFML-based client.*
 
 ---
 
@@ -11,7 +11,7 @@ The project features:
 
 * A fully custom **Entity–Component–System (ECS)** engine
 * A **multithreaded authoritative server**
-* A **Qt graphical client**
+* A **SFML graphical client**
 * A fully documented **binary UDP protocol**
 * Smooth rendering, interpolation, and multiplayer support
 * Professional-grade workflow (CI, tests, docs, RFCs, milestones)
@@ -29,7 +29,7 @@ This repository contains both the engine and the game powered by it.
 * Multithreaded server loop
 * UDP networking (inputs → server, snapshots → clients)
 * 4-player support
-* Qt rendering (players, enemies, missiles, starfield)
+* SFML rendering (players, enemies, missiles, starfield)
 * Client interpolation
 * Collisions (AABB)
 * Basic enemy behaviour
@@ -51,68 +51,40 @@ This repository contains both the engine and the game powered by it.
 
 ---
 
-## 🧩 Architecture Overview
+## 📋 Prerequisites
 
+- **C++ Compiler** (GCC 7+ / MSVC 2019+ / Clang 11+)
+- **CMake** 3.23 or higher
+- **vcpkg** (configured with `VCPKG_ROOT` environment variable)
+
+## 🚀 Build & Run
+
+```bash
+rm -rf build && mkdir build && cd build && cmake .. -DCMAKE_TOOLCHAIN_FILE="../vcpkg/scripts/buildsystems/vcpkg.cmake" -DCMAKE_BUILD_TYPE=Release && cmake --build . --config Release && cd ..
 ```
-┌───────────────────────────────────────────────────────────┐
-│                           ENGINE                          │
-│  ECS (entities, components, systems)                      │
-│  Rendering abstraction                                    │
-│  Networking abstraction                                   │
-│  Input abstraction                                        │
-│  Resources & events                                       │
-└───────────────────────────────────────────────────────────┘
 
-                ▲                               ▲
-
-┌───────────────┴──────────────┐   ┌────────────┴─────────────────┐
-│             SERVER           │   │            CLIENT            │
-│ - Authoritative logic        │   │ - Qt rendering               │
-│ - Game loop (fixed step)     │   │ - Input management           │
-│ - Snapshot broadcasting      │   │ - Snapshot interpolation     │
-│ - UDP packet processing      │   │ - Audio & UI                 │
-└──────────────────────────────┘   └──────────────────────────────┘
+Then run:
+```bash
+./r-type_client
 ```
+
+## 📦 Dependencies
+
+Dependencies (SFML, Asio) are automatically installed via vcpkg during CMake configuration
 
 ---
 
-## 🔌 Networking
+## 🔧 Alternative: Using Build Scripts
 
-### **Protocol**
+**Linux:**
+```bash
+./build.sh
+```
 
-* Binary-only protocol
-* Built on UDP
-* Sequence numbers + timestamps
-* Input packets (client → server)
-* Snapshot packets (server → client)
-* Entity create / update / destroy events
-
-### **Client-side networking**
-
-* Snapshot reception
-* Reorder buffer
-* Timeline interpolation
-* Rendering at 60 FPS
-
-### **Server-side networking**
-
-* Network thread (receiver)
-* Game thread (authoritative logic)
-* Broadcaster thread (snapshots)
-* Clean disconnect handling
-
----
-
-## ⚙️ Build Instructions
-
-### **Requirements**
-
-* Linux (mandatory)
-* Windows optional
-* CMake ≥ 3.20
-* g++ / clang++ supporting C++23
-* vcpkg or Conan for dependencies
-* Qt 6
+**Windows:**
+```cmd
+build.bat
+```
 
 ---
 
@@ -153,10 +125,10 @@ cmake --build build -j
 
 ## 📁 Repository Structure
 
-```
+```txt
 /engine/             → Custom ECS & engine core
 /server/             → Authoritative server
-/client/             → Qt client (graphics, audio, input)
+/client/             → SFML client (graphics, audio, input)
 /docs/               → Documentation, architecture, RFCs
 /tests/              → Unit and functional tests
 /assets/             → Sprites, sounds, UI
@@ -253,3 +225,9 @@ All docs are available under `/docs`.
 * CI must pass
 
 See `CONTRIBUTING.md` for details.
+
+## ℹ️ Additional Information
+
+- **vcpkg setup**: If you don't have vcpkg, see [vcpkg.io](https://vcpkg.io/)
+- **Cross-platform**: Works on Linux and Windows
+- **Authors**: J.A.M.E.S. Development Team
