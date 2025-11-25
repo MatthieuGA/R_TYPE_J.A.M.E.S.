@@ -169,13 +169,13 @@ cmake --build build -j
 
 Documentation includes:
 
+* [Technology Choices and Comparative Study](docs/TECHNOLOGY_CHOICES.md) — Why SFML, Asio, and vcpkg
 * Architecture documentation
-* ECS specification
+* [ECS specification](docs/rfcs/RFC-0001-engine-architecture.md) — Entity-Component-System design
 * Protocol RFC
 * Engine overview
 * Advanced feature documentation (Part 2)
 * Implementation details
-* Comparative study
 * Accessibility documentation
 
 All docs are available under `/docs`.
