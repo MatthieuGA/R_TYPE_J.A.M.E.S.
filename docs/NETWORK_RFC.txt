@@ -1,8 +1,8 @@
 Network Working Group                                           J.A.M.E.S
 Request for Comments: 1                                    Epitech Nantes
 Category: Standards Track                                   November 2025
-Version: 1.0.0
-Based on: docs/PROTOCOL.md (v1.0.0)
+Version: 1.0.1
+Based on: docs/PROTOCOL.md (v1.0.1)
 
                      R-Type Game Protocol Specification
 
@@ -277,7 +277,7 @@ Table of Contents
 
    8.2.  Input Validation
 
-   The Server MUST validate all incoming CLIENT_INPUT packets. It MUST NOT
+   The Server MUST validate all incoming PLAYER_INPUT packets. It MUST NOT
    trust the client for game logic (e.g., fire rate, cooldowns).
    Sanitization of the 'Username' field in CONNECT_REQ is REQUIRED to
    prevent buffer overflows or display exploits.
