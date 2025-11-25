@@ -1,10 +1,188 @@
-# R_TYPE_J.A.M.E.S.
+# 📘 R-Type — Networked Multiplayer Game (J.A.M.E.S.)
 
-A modern C++ implementation of the classic R-TYPE game featuring networked multiplayer gameplay.
+*A modern C++23 multiplayer shoot’em up with an original custom engine, an authoritative server, and a Qt-based client.*
+
+---
+
+## 📌 Overview
+
+**R-Type J.A.M.E.S.** is a complete recreation of the classic 1987 arcade R-Type using modern C++ engineering principles.
+The project features:
+
+* A fully custom **Entity–Component–System (ECS)** engine
+* A **multithreaded authoritative server**
+* A **Qt graphical client**
+* A fully documented **binary UDP protocol**
+* Smooth rendering, interpolation, and multiplayer support
+* Professional-grade workflow (CI, tests, docs, RFCs, milestones)
+
+This repository contains both the engine and the game powered by it.
+
+---
+
+## 🎮 Features
+
+### ✅ Part 1 — Prototype (First Delivery)
+
+* Custom ECS core
+* Server-side authoritative gameplay
+* Multithreaded server loop
+* UDP networking (inputs → server, snapshots → clients)
+* 4-player support
+* Qt rendering (players, enemies, missiles, starfield)
+* Client interpolation
+* Collisions (AABB)
+* Basic enemy behaviour
+* Preliminary binary UDP protocol
+* Crash-proof networking
+
+---
+
+### 🚀 Part 2 — Advanced Features (Second Delivery)
+
+#### **Advanced Gameplay**
+
+* Boss logic
+* Advanced enemy behaviours
+* Power-ups, charge shots
+* Level design tools
+* Custom asset pipelines
+* Accessibility features
+
+---
+
+## 📋 Prerequisites
+
+- **C++ Compiler** (GCC 7+ / MSVC 2019+ / Clang 11+)
+- **CMake** 3.21 or higher
+- **vcpkg** (configured with `VCPKG_ROOT` environment variable)
+
+## 🚀 Build & Run
+
+```bash
+rm -rf build && mkdir build && cd build && cmake .. -DCMAKE_TOOLCHAIN_FILE="../vcpkg/scripts/buildsystems/vcpkg.cmake" -DCMAKE_BUILD_TYPE=Release && cmake --build . --config Release && cd ..
+```
+
+Then run:
+```bash
+./r-type_client
+```
+
+## 📦 Dependencies
+
+Dependencies (SFML, Asio) are automatically installed via vcpkg during CMake configuration
+
+---
+
+## 🔧 Alternative: Using Build Scripts
+
+**Linux:**
+```bash
+./build.sh
+```
+
+**Windows:**
+```cmd
+build.bat
+```
+
+---
+
+### **Clone the repository**
+
+```bash
+git clone https://github.com/MatthieuGA/R_TYPE_J.A.M.E.S.
+cd R_TYPE_J.A.M.E.S.
+```
+
+### **Configure**
+
+```bash
+cmake -S . -B build
+```
+
+### **Build**
+
+```bash
+cmake --build build -j
+```
+
+### **Run**
+
+**Server:**
+
+```bash
+./build/bin/r-type_server <port>
+```
+
+**Client:**
+
+```bash
+./build/bin/r-type_client <server-ip> <port>
+```
+
+---
+
+## 📁 Repository Structure
+
+```txt
+/engine/             → Custom ECS & engine core
+/server/             → Authoritative server
+/client/             → Qt client (graphics, audio, input)
+/docs/               → Documentation, architecture, RFCs
+/tests/              → Unit and functional tests
+/assets/             → Sprites, sounds, UI
+```
+
+---
+
+## 🧪 Testing
+
+### **Unit Tests**
+
+* Engine tests
+* Server logic tests
+* Component & system tests
+
+### **Functional Tests**
+
+* Client ↔ Server connectivity
+* Snapshot correctness
+* Multi-player sync tests
+
+---
+
+## 🛠️ Engineering Practices
+
+* C++23
+* CMake
+* Dependency manager: vcpkg / conan
+* GitHub Actions CI (build + format + tests)
+* clang-format (Google style)
+* Git hooks (pre-commit & commit-msg)
+* RFC workflow for all major features
+* Documentation auto-generated with Doxygen + Docusaurus
+
+---
 
 ## 📚 Documentation
 
-Comprehensive documentation is available at: [https://matthieuga.github.io/R_TYPE_J.A.M.E.S.](https://matthieuga.github.io/R_TYPE_J.A.M.E.S.)
+Comprehensive documentation is available at: [https://matthieuga.github.io/R_TYPE_J.A.M.E.S./](https://matthieuga.github.io/R_TYPE_J.A.M.E.S./)
+
+Documentation includes:
+
+* Architecture documentation
+* ECS specification
+* Protocol RFC
+* Engine overview
+* Advanced feature documentation (Part 2)
+* Implementation details
+* Comparative study
+* Accessibility documentation
+
+### Accessing local doc :
+
+All docs are available under `/docs`.
 
 ### Running Documentation Locally
 
@@ -52,3 +230,56 @@ To serve the production build locally:
 cd docs
 npm run serve
 ```
+
+
+---
+
+## 📦 Releases
+
+### **v0.5.0 — MVP**
+
+* Fully playable R-Type prototype
+* 4-player multiplayer
+* Stable snapshots
+* ECS complete
+* Packaging scripts
+* Partial documentation
+
+### **v1.0.0 — Final Release**
+
+* Advanced features from Part 2
+* Final documentation site
+* Accessibility compliance
+* Engine as reusable module
+* Full presentation-ready release
+
+---
+
+## 👥 Team J.A.M.E.S.
+
+| Member      | Role                     |
+| ----------- | ------------------------ |
+| J.          | Jocelyn                  |
+| A.          | Arthuryan                |
+| M.          | Matthieu                 |
+| E.          | Enoal                    |
+| S.          | Samuel                   |
+
+---
+
+## 🤝 Contributing
+
+* Use feature branches
+* PR required for all changes
+* 1 reviewer minimum
+* Gitmoji + English commit messages
+* No direct commits to `main`
+* CI must pass
+
+See `CONTRIBUTING.md` for details.
+
+## ℹ️ Additional Information
+
+- **vcpkg setup**: If you don't have vcpkg, see [vcpkg.io](https://vcpkg.io/)
+- **Cross-platform**: Works on Linux and Windows
+- **Authors**: J.A.M.E.S. Development Team
