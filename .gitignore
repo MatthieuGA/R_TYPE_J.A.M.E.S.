@@ -89,3 +89,5 @@ latex/
 
 build_log.txt
 docs/
+*.sh
+.vscode/
