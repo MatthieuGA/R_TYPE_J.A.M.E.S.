@@ -1,6 +1,6 @@
 # 📘 R-Type — Networked Multiplayer Game (J.A.M.E.S.)
 
-*A modern C++23 multiplayer shoot’em up with an original custom engine, an authoritative server, and a Qt-based client.*
+*A modern C++23 multiplayer shoot’em up with an original custom engine, an authoritative server, and a SFML-based client.*
 
 ---
 
@@ -11,7 +11,7 @@ The project features:
 
 * A fully custom **Entity–Component–System (ECS)** engine
 * A **multithreaded authoritative server**
-* A **Qt graphical client**
+* A **SFML graphical client**
 * A fully documented **binary UDP protocol**
 * Smooth rendering, interpolation, and multiplayer support
 * Professional-grade workflow (CI, tests, docs, RFCs, milestones)
@@ -29,7 +29,7 @@ This repository contains both the engine and the game powered by it.
 * Multithreaded server loop
 * UDP networking (inputs → server, snapshots → clients)
 * 4-player support
-* Qt rendering (players, enemies, missiles, starfield)
+* SFML rendering (players, enemies, missiles, starfield)
 * Client interpolation
 * Collisions (AABB)
 * Basic enemy behaviour
@@ -54,7 +54,7 @@ This repository contains both the engine and the game powered by it.
 ## 📋 Prerequisites
 
 - **C++ Compiler** (GCC 7+ / MSVC 2019+ / Clang 11+)
-- **CMake** 3.21 or higher
+- **CMake** 3.23 or higher
 - **vcpkg** (configured with `VCPKG_ROOT` environment variable)
 
 ## 🚀 Build & Run
@@ -128,7 +128,7 @@ cmake --build build -j
 ```txt
 /engine/             → Custom ECS & engine core
 /server/             → Authoritative server
-/client/             → Qt client (graphics, audio, input)
+/client/             → SFML client (graphics, audio, input)
 /docs/               → Documentation, architecture, RFCs
 /tests/              → Unit and functional tests
 /assets/             → Sprites, sounds, UI

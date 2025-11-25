@@ -88,6 +88,7 @@ latex/
 *.backup
 
 build_log.txt
-docs/
+*.pdf
+r-type.txt
 *.sh
 .vscode/
