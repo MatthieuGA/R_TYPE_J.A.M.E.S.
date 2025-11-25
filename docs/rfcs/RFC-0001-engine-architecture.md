@@ -379,13 +379,13 @@ A **System** is a function that operates on entities with specific components.
 │                  SYSTEM                              │
 │           "Pure Logic Functions"                     │
 │                                                      │
-│  Input:  Component arrays                           │
-│  Output: Modified component data                    │
+│  Input:  Component arrays                            │
+│  Output: Modified component data                     │
 │                                                      │
-│  Example: MovementSystem                            │
-│    Reads:  Position[], Velocity[]                   │
-│    Writes: Position[]                               │
-│    Logic:  position += velocity * delta_time        │
+│  Example: MovementSystem                             │
+│    Reads:  Position[], Velocity[]                    │
+│    Writes: Position[]                                │
+│    Logic:  position += velocity * delta_time         │
 └──────────────────────────────────────────────────────┘
 ```
 
@@ -466,7 +466,7 @@ function movement_system(registry):
 │                                                                     │
 │  while running:                                                     │
 │      handle_input()                                                 │
-│      registry.run_systems()    ← Execute all systems               │
+│      registry.run_systems()    ← Execute all systems                │
 │      render()                                                       │
 └─────────────────────────────────────────────────────────────────────┘
                                   ↓
@@ -475,53 +475,53 @@ function movement_system(registry):
 │                    (Central Coordinator)                            │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  Entities:        [0, 1, 2, 3, 4, ...]                            │
-│  Dead Entities:   [2, 7]  ← Recycled IDs                          │
+│  Entities:        [0, 1, 2, 3, 4, ...]                              │
+│  Dead Entities:   [2, 7]  ← Recycled IDs                            │
 │                                                                     │
 │  Components:                                                        │
-│  ┌──────────────────────────────────────────────────────┐         │
-│  │ sparse_array<Position>:                              │         │
-│  │   [0]: {x: 100, y: 200}                             │         │
-│  │   [1]: {x: 300, y: 400}                             │         │
-│  │   [3]: {x: 150, y: 250}                             │         │
-│  └──────────────────────────────────────────────────────┘         │
-│  ┌──────────────────────────────────────────────────────┐         │
-│  │ sparse_array<Velocity>:                              │         │
-│  │   [0]: {dx: 5, dy: 0}                               │         │
-│  │   [1]: {dx: -3, dy: 2}                              │         │
-│  └──────────────────────────────────────────────────────┘         │
-│  ┌──────────────────────────────────────────────────────┐         │
-│  │ sparse_array<Sprite>:                                │         │
-│  │   [0]: {texture: "player.png"}                       │         │
-│  │   [3]: {texture: "enemy.png"}                        │         │
-│  └──────────────────────────────────────────────────────┘         │
+│  ┌──────────────────────────────────────────────────────┐           │
+│  │ sparse_array<Position>:                              │           │
+│  │   [0]: {x: 100, y: 200}                              │           │
+│  │   [1]: {x: 300, y: 400}                              │           │
+│  │   [3]: {x: 150, y: 250}                              │           │
+│  └──────────────────────────────────────────────────────┘           │
+│  ┌──────────────────────────────────────────────────────┐           │
+│  │ sparse_array<Velocity>:                              │           │
+│  │   [0]: {dx: 5, dy: 0}                                │           │
+│  │   [1]: {dx: -3, dy: 2}                               │           │
+│  └──────────────────────────────────────────────────────┘           │
+│  ┌──────────────────────────────────────────────────────┐           │
+│  │ sparse_array<Sprite>:                                │           │
+│  │   [0]: {texture: "player.png"}                       │           │
+│  │   [3]: {texture: "enemy.png"}                        │           │
+│  └──────────────────────────────────────────────────────┘           │
 │                                                                     │
-│  Systems (executed in order):                                      │
-│  1. InputSystem      → Updates Velocity based on player input      │
-│  2. MovementSystem   → Updates Position based on Velocity          │
-│  3. CollisionSystem  → Detects entity overlaps                     │
-│  4. RenderSystem     → Draws Sprites at Positions                  │
+│  Systems (executed in order):                                       │
+│  1. InputSystem      → Updates Velocity based on player input       │
+│  2. MovementSystem   → Updates Position based on Velocity           │
+│  3. CollisionSystem  → Detects entity overlaps                      │
+│  4. RenderSystem     → Draws Sprites at Positions                   │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
                                   ↓
 ┌─────────────────────────────────────────────────────────────────────┐
 │                    ENTITY COMPOSITION                               │
 │                                                                     │
-│  Entity 0 (Player):                                                │
-│    ├─ Position[0]  = {100, 200}                                   │
-│    ├─ Velocity[0]  = {5, 0}                                       │
-│    ├─ Sprite[0]    = {"player.png"}                               │
-│    └─ Health[0]    = {hp: 100, max: 100}                          │
+│  Entity 0 (Player):                                                 │
+│    ├─ Position[0]  = {100, 200}                                     │
+│    ├─ Velocity[0]  = {5, 0}                                         │
+│    ├─ Sprite[0]    = {"player.png"}                                 │
+│    └─ Health[0]    = {hp: 100, max: 100}                            │
 │                                                                     │
-│  Entity 1 (Enemy):                                                 │
-│    ├─ Position[1]  = {300, 400}                                   │
-│    ├─ Velocity[1]  = {-3, 2}                                      │
-│    └─ Sprite[1]    = {"enemy.png"}                                │
+│  Entity 1 (Enemy):                                                  │
+│    ├─ Position[1]  = {300, 400}                                     │
+│    ├─ Velocity[1]  = {-3, 2}                                        │
+│    └─ Sprite[1]    = {"enemy.png"}                                  │
 │                                                                     │
-│  Entity 3 (Static Obstacle):                                       │
-│    ├─ Position[3]  = {150, 250}                                   │
-│    └─ Sprite[3]    = {"obstacle.png"}                             │
-│    (No Velocity = doesn't move)                                    │
+│  Entity 3 (Static Obstacle):                                        │
+│    ├─ Position[3]  = {150, 250}                                     │
+│    └─ Sprite[3]    = {"obstacle.png"}                               │
+│    (No Velocity = doesn't move)                                     │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
