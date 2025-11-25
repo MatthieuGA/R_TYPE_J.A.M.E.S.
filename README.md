@@ -51,68 +51,40 @@ This repository contains both the engine and the game powered by it.
 
 ---
 
-## 🧩 Architecture Overview
+## 📋 Prerequisites
 
-```txt
-┌───────────────────────────────────────────────────────────┐
-│                           ENGINE                          │
-│  ECS (entities, components, systems)                      │
-│  Rendering abstraction                                    │
-│  Networking abstraction                                   │
-│  Input abstraction                                        │
-│  Resources & events                                       │
-└───────────────────────────────────────────────────────────┘
+- **C++ Compiler** (GCC 7+ / MSVC 2019+ / Clang 11+)
+- **CMake** 3.21 or higher
+- **vcpkg** (configured with `VCPKG_ROOT` environment variable)
 
-                ▲                               ▲
+## 🚀 Build & Run
 
-┌───────────────┴──────────────┐   ┌────────────┴─────────────────┐
-│             SERVER           │   │            CLIENT            │
-│ - Authoritative logic        │   │ - Qt rendering               │
-│ - Game loop (fixed step)     │   │ - Input management           │
-│ - Snapshot broadcasting      │   │ - Snapshot interpolation     │
-│ - UDP packet processing      │   │ - Audio & UI                 │
-└──────────────────────────────┘   └──────────────────────────────┘
+```bash
+rm -rf build && mkdir build && cd build && cmake .. -DCMAKE_TOOLCHAIN_FILE="../vcpkg/scripts/buildsystems/vcpkg.cmake" -DCMAKE_BUILD_TYPE=Release && cmake --build . --config Release && cd ..
 ```
 
----
+Then run:
+```bash
+./r-type_client
+```
 
-## 🔌 Networking
+## 📦 Dependencies
 
-### **Protocol**
-
-* Binary-only protocol
-* Built on UDP
-* Sequence numbers + timestamps
-* Input packets (client → server)
-* Snapshot packets (server → client)
-* Entity create / update / destroy events
-
-### **Client-side networking**
-
-* Snapshot reception
-* Reorder buffer
-* Timeline interpolation
-* Rendering at 60 FPS
-
-### **Server-side networking**
-
-* Network thread (receiver)
-* Game thread (authoritative logic)
-* Broadcaster thread (snapshots)
-* Clean disconnect handling
+Dependencies (SFML, Asio) are automatically installed via vcpkg during CMake configuration
 
 ---
 
-## ⚙️ Build Instructions
+## 🔧 Alternative: Using Build Scripts
 
-### **Requirements**
+**Linux:**
+```bash
+./build.sh
+```
 
-* Linux (mandatory)
-* Windows optional
-* CMake ≥ 3.20
-* g++ / clang++ supporting C++23
-* vcpkg or Conan for dependencies
-* Qt 6
+**Windows:**
+```cmd
+build.bat
+```
 
 ---
 
@@ -253,3 +225,9 @@ All docs are available under `/docs`.
 * CI must pass
 
 See `CONTRIBUTING.md` for details.
+
+## ℹ️ Additional Information
+
+- **vcpkg setup**: If you don't have vcpkg, see [vcpkg.io](https://vcpkg.io/)
+- **Cross-platform**: Works on Linux and Windows
+- **Authors**: J.A.M.E.S. Development Team
