@@ -1,23 +1,32 @@
 @echo off
-REM R-TYPE Build Script for Windows with MinGW
-REM Requires: CMake, MinGW (GCC), Git
+REM R-TYPE Build Script for Windows
+REM Requires: CMake, MSVC (Visual Studio 2019+), vcpkg
 
 setlocal
 
 echo ==========================================
-echo R-TYPE Build Script (vcpkg + MinGW)
+echo R-TYPE Build Script (vcpkg + MSVC)
 echo ==========================================
 echo.
 
-REM Set MinGW and CMake paths (adjust if needed)
-set "MINGW_PATH=D:\mingw64\bin"
-set "CMAKE_PATH=C:\Program Files\CMake\bin"
+REM Check for VCPKG_ROOT environment variable
+if "%VCPKG_ROOT%"=="" (
+    echo ERROR: VCPKG_ROOT environment variable is not set
+    echo.
+    echo Please set it to your vcpkg installation directory:
+    echo   $env:VCPKG_ROOT = "C:\path\to\vcpkg"
+    echo.
+    echo Or install vcpkg:
+    echo   git clone https://github.com/microsoft/vcpkg.git
+    echo   cd vcpkg
+    echo   .\bootstrap-vcpkg.bat
+    echo   $env:VCPKG_ROOT = $PWD
+    echo.
+    exit /b 1
+)
 
-REM Add to PATH temporarily
-set "PATH=%PATH%;%CMAKE_PATH%;%MINGW_PATH%"
-
-REM Set vcpkg to use MinGW triplet
-set "VCPKG_DEFAULT_TRIPLET=x64-mingw-dynamic"
+echo ✓ vcpkg found at: %VCPKG_ROOT%
+echo.
 
 REM Check for CMake
 where cmake >nul 2>nul
@@ -27,33 +36,7 @@ if %ERRORLEVEL% NEQ 0 (
     exit /b 1
 )
 
-REM Check for MinGW
-where g++ >nul 2>nul
-if %ERRORLEVEL% NEQ 0 (
-    echo ERROR: MinGW g++ not found
-    echo Please install MinGW or adjust MINGW_PATH in this script
-    exit /b 1
-)
-
 echo ✓ CMake found
-echo ✓ MinGW found
-echo.
-
-REM Bootstrap vcpkg if needed
-if not exist "vcpkg\vcpkg.exe" (
-    echo Bootstrapping vcpkg...
-    cd vcpkg
-    call bootstrap-vcpkg.bat
-    if %ERRORLEVEL% NEQ 0 (
-        echo ERROR: Failed to bootstrap vcpkg
-        cd ..
-        exit /b 1
-    )
-    cd ..
-    echo.
-)
-
-echo ✓ vcpkg is ready
 echo.
 
 REM Create build directory
@@ -66,12 +49,9 @@ echo Configuring with CMake...
 echo ==========================================
 echo.
 
-cmake .. -G "MinGW Makefiles" ^
-    -DCMAKE_MAKE_PROGRAM="%MINGW_PATH%\mingw32-make.exe" ^
-    -DCMAKE_TOOLCHAIN_FILE="..\vcpkg\scripts\buildsystems\vcpkg.cmake" ^
-    -DCMAKE_BUILD_TYPE=Release ^
-    -DVCPKG_TARGET_TRIPLET=x64-mingw-dynamic ^
-    -DVCPKG_HOST_TRIPLET=x64-mingw-dynamic
+cmake .. ^
+    -DCMAKE_TOOLCHAIN_FILE="%VCPKG_ROOT%\scripts\buildsystems\vcpkg.cmake" ^
+    -DCMAKE_BUILD_TYPE=Release
 
 if %ERRORLEVEL% NEQ 0 (
     echo ERROR: CMake configuration failed
