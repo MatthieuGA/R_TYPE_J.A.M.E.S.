@@ -53,7 +53,7 @@ This repository contains both the engine and the game powered by it.
 
 ## 🧩 Architecture Overview
 
-```
+```txt
 ┌───────────────────────────────────────────────────────────┐
 │                           ENGINE                          │
 │  ECS (entities, components, systems)                      │
@@ -153,7 +153,7 @@ cmake --build build -j
 
 ## 📁 Repository Structure
 
-```
+```txt
 /engine/             → Custom ECS & engine core
 /server/             → Authoritative server
 /client/             → Qt client (graphics, audio, input)
