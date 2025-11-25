@@ -17,7 +17,7 @@ Engine::sparse_array<Component::position> const &positions,
 Engine::sparse_array<Component::velocity> const &velocities) {
     for (auto &&[i, pos, vel] :
         Engine::make_indexed_zipper(positions, velocities)) {
-        // std::cerr << "Entity " << i << " Position: ("
+        //  std::cerr << "Entity " << i << " Position: ("
         //     << pos.x << ", " << pos.y << ") "
         //     << "Velocity: (" << vel.vx << ", " << vel.vy << ")\n";
     }
@@ -27,7 +27,7 @@ void controllableSystem(Engine::registry &reg,
 Engine::sparse_array<Component::controllable> const &controls) {
     for (auto &&[i, control] : Engine::make_indexed_zipper(controls)) {
         if (control.isControllable) {
-            //std::cerr << "Entity " << i << " is controllable.\n";
+            //  std::cerr << "Entity " << i << " is controllable.\n";
         }
     }
 }
@@ -41,7 +41,8 @@ Engine::sparse_array<Component::drawable> const &drawables) {
             << " at position (" << pos.x << ", " << pos.y << ") "
             << "with sprite: " << drawable.sprite << " scaled by "
             << drawable.scale << "\n";
-        sf::RectangleShape shape(sf::Vector2f(50.0f * drawable.scale, 50.0f * drawable.scale));
+        sf::RectangleShape shape(sf::Vector2f(50.0f * drawable.scale,
+            50.0f * drawable.scale));
         shape.setPosition(sf::Vector2f(pos.x, pos.y));
         shape.setFillColor(sf::Color::Green);
         window.draw(shape);
