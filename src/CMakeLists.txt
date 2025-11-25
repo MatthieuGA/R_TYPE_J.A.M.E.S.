@@ -18,11 +18,10 @@ set_target_properties(${TARGET}
 
 # Link libraries
 target_link_libraries(${TARGET}
-    PRIVATE sfml-system
-    PRIVATE sfml-window
-    PRIVATE sfml-graphics
-    PRIVATE sfml-network
-    PRIVATE sfml-audio
+    PRIVATE SFML::Window
+    PRIVATE SFML::Graphics
+    PRIVATE SFML::Network
+    PRIVATE SFML::Audio
     PRIVATE asio::asio
 )
 

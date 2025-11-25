@@ -9,7 +9,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Find required packages
-find_package(SFML COMPONENTS system window graphics network audio CONFIG REQUIRED)
+find_package(SFML COMPONENTS Window Graphics Network Audio CONFIG REQUIRED)
 find_package(asio CONFIG REQUIRED)
 
 # Add subdirectories

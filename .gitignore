@@ -74,8 +74,8 @@ Testing/
 *.gcno
 *.gcov
 
-# Documentation generated files
-doxygen/
+# Documentation generated files (keep source docs/)
+doxygen_output/
 html/
 latex/
 
@@ -87,4 +87,5 @@ latex/
 *.bak
 *.backup
 
+build_log.txt
 docs/
