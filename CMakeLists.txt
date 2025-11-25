@@ -15,6 +15,7 @@ find_package(asio CONFIG REQUIRED)
 
 # GoogleTest for unit testing
 include(FetchContent)
+cmake_policy(SET CMP0135 NEW)
 FetchContent_Declare(
   googletest
   URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
@@ -44,4 +45,3 @@ message(STATUS "C++ Standard: ${CMAKE_CXX_STANDARD}")
 message(STATUS "SFML Found: ${SFML_FOUND}")
 message(STATUS "Asio Found: ${asio_FOUND}")
 message(STATUS "==============================================")
-
