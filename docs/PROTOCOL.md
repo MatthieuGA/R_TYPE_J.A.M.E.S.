@@ -1,6 +1,6 @@
 # R-Type Network Protocol Specification
 
-> **Version:** 1.0.0
+> **Version:** 1.0.1
 > **Last Updated:** 25 November 2025
 
 ## Table of Contents
@@ -113,8 +113,8 @@ If the Client and Server disagree on a position (e.g., due to lag or cheating), 
 | :--- | :--- | :--- | :--- |
 | `OpCode` | `u8` | 1 | Unique command identifier. |
 | `PayloadSize` | `u16` | 2 | Size of the data following this header. |
-| `TickId` | `u32` | 4 | The game frame number. Used for UDP reassembly. Set to 0 for TCP. |
 | `PacketIndex`| `u8` | 1 | Index of this packet within the Tick (0, 1, 2...). |
+| `TickId` | `u32` | 4 | The game frame number. Used for UDP reassembly. Set to 0 for TCP. |
 | `PacketCount`| `u8` | 1 | Total number of packets expected for this Tick. |
 | `Reserved` | `u8[3]` | 3 | **Padding to align Header to 12 bytes.** |
 
