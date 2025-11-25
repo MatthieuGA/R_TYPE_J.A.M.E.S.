@@ -202,17 +202,18 @@ class sparse_array {
     std::vector<std::optional<Component>> _data;
     
 public:
-    // O(1) access by entity ID
+    // O(1) access by entity ID (no bounds checking - undefined behavior if out of bounds)
     std::optional<Component>& operator[](size_t entity_id) {
-        if (entity_id >= _data.size()) {
-            _data.resize(entity_id + 1);
-        }
         return _data[entity_id];
     }
     
-    // Insert component at entity position
-    void insert_at(size_t entity_id, Component&& component) {
-        (*this)[entity_id] = std::move(component);
+    // Insert component at entity position (auto-resizes if needed)
+    std::optional<Component>& insert_at(size_t entity_id, Component&& component) {
+        if (entity_id >= _data.size()) {
+            _data.resize(entity_id + 1);
+        }
+        _data[entity_id] = std::move(component);
+        return _data[entity_id];
     }
     
     // Check if entity has this component
