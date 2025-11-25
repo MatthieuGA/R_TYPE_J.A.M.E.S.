@@ -42,7 +42,7 @@ Engine::sparse_array<Component::drawable> const &drawables) {
             << "with sprite: " << drawable.sprite << " scaled by "
             << drawable.scale << "\n";
         sf::RectangleShape shape(sf::Vector2f(50.0f * drawable.scale, 50.0f * drawable.scale));
-        shape.setPosition(pos.x, pos.y);
+        shape.setPosition(sf::Vector2f(pos.x, pos.y));
         shape.setFillColor(sf::Color::Green);
         window.draw(shape);
     }
@@ -92,13 +92,12 @@ void init_registry(Engine::registry &reg, sf::RenderWindow &window) {
 
 int main() {
     Engine::registry reg;
-    sf::RenderWindow window(sf::VideoMode(800, 600), "SFML");
+    sf::RenderWindow window(sf::VideoMode({800, 600}), "SFML");
     init_registry(reg, window);
 
     while (window.isOpen()) {
-        sf::Event event{};
-        while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed)
+        while (auto event = window.pollEvent()) {
+            if (event->is<sf::Event::Closed>())
                 window.close();
         }
 
