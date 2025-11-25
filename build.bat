@@ -1,61 +1,81 @@
 @echo off
-REM R-TYPE J.A.M.E.S. Build Script for Windows
-REM This script sets up vcpkg and builds the project
+REM R-TYPE Build Script for Windows with MinGW
+REM Requires: CMake, MinGW (GCC), Git
+
+setlocal
 
 echo ==========================================
-echo R-TYPE J.A.M.E.S. Build Script
+echo R-TYPE Build Script (vcpkg + MinGW)
 echo ==========================================
 echo.
 
-REM Check if vcpkg is installed
-if "%VCPKG_ROOT%"=="" (
-    echo WARNING: VCPKG_ROOT is not set.
-    echo Please install vcpkg and set VCPKG_ROOT environment variable.
-    echo.
-    echo Quick setup:
-    echo   git clone https://github.com/microsoft/vcpkg.git
-    echo   cd vcpkg
-    echo   .\bootstrap-vcpkg.bat
-    echo   set VCPKG_ROOT=%%CD%%
-    echo.
-    exit /b 1
-)
+REM Set MinGW and CMake paths (adjust if needed)
+set "MINGW_PATH=D:\mingw64\bin"
+set "CMAKE_PATH=C:\Program Files\CMake\bin"
 
-echo vcpkg found at: %VCPKG_ROOT%
-echo.
+REM Add to PATH temporarily
+set "PATH=%PATH%;%CMAKE_PATH%;%MINGW_PATH%"
+
+REM Set vcpkg to use MinGW triplet
+set "VCPKG_DEFAULT_TRIPLET=x64-mingw-dynamic"
 
 REM Check for CMake
 where cmake >nul 2>nul
 if %ERRORLEVEL% NEQ 0 (
-    echo ERROR: CMake is not installed. Please install CMake 3.21 or higher.
+    echo ERROR: CMake is not installed or not in PATH
+    echo Please install CMake from https://cmake.org/download/
     exit /b 1
 )
 
-for /f "tokens=3" %%a in ('cmake --version ^| findstr /R "version"') do set CMAKE_VERSION=%%a
-echo CMake version: %CMAKE_VERSION%
+REM Check for MinGW
+where g++ >nul 2>nul
+if %ERRORLEVEL% NEQ 0 (
+    echo ERROR: MinGW g++ not found
+    echo Please install MinGW or adjust MINGW_PATH in this script
+    exit /b 1
+)
+
+echo ✓ CMake found
+echo ✓ MinGW found
+echo.
+
+REM Bootstrap vcpkg if needed
+if not exist "vcpkg\vcpkg.exe" (
+    echo Bootstrapping vcpkg...
+    cd vcpkg
+    call bootstrap-vcpkg.bat
+    if %ERRORLEVEL% NEQ 0 (
+        echo ERROR: Failed to bootstrap vcpkg
+        cd ..
+        exit /b 1
+    )
+    cd ..
+    echo.
+)
+
+echo ✓ vcpkg is ready
 echo.
 
 REM Create build directory
-set BUILD_DIR=build
-if exist "%BUILD_DIR%" (
-    echo WARNING: Build directory exists. Cleaning...
-    rmdir /s /q "%BUILD_DIR%"
-)
+if not exist "build" mkdir build
+cd build
 
-mkdir "%BUILD_DIR%"
-cd "%BUILD_DIR%"
-
-echo.
+REM Configure with CMake
 echo ==========================================
 echo Configuring with CMake...
 echo ==========================================
 echo.
 
-REM Configure with CMake
-cmake .. -DCMAKE_TOOLCHAIN_FILE="%VCPKG_ROOT%/scripts/buildsystems/vcpkg.cmake" -DCMAKE_BUILD_TYPE=Release
+cmake .. -G "MinGW Makefiles" ^
+    -DCMAKE_MAKE_PROGRAM="%MINGW_PATH%\mingw32-make.exe" ^
+    -DCMAKE_TOOLCHAIN_FILE="..\vcpkg\scripts\buildsystems\vcpkg.cmake" ^
+    -DCMAKE_BUILD_TYPE=Release ^
+    -DVCPKG_TARGET_TRIPLET=x64-mingw-dynamic ^
+    -DVCPKG_HOST_TRIPLET=x64-mingw-dynamic
 
 if %ERRORLEVEL% NEQ 0 (
-    echo ERROR: CMake configuration failed.
+    echo ERROR: CMake configuration failed
+    cd ..
     exit /b 1
 )
 
@@ -69,18 +89,20 @@ REM Build
 cmake --build . --config Release
 
 if %ERRORLEVEL% NEQ 0 (
-    echo ERROR: Build failed.
+    echo ERROR: Build failed
+    cd ..
     exit /b 1
 )
 
+cd ..
+
 echo.
 echo ==========================================
-echo Build completed successfully!
+echo ✓ Build completed successfully!
 echo ==========================================
 echo.
 echo To run the client:
-echo   cd %BUILD_DIR%
-echo   .\Release\r-type_client.exe
+echo   .\r-type_client.exe
 echo.
 
-cd ..
+endlocal

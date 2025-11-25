@@ -1,10 +1,8 @@
-{
-  "name": "r-type-james",
-  "version": "0.1.0",
-  "description": "R-TYPE game engine with networked multiplayer",
+﻿{
+  "name": "r-type",
+  "version": "1.0.0",
   "dependencies": [
     "sfml",
     "asio"
-  ],
-  "builtin-baseline": "75cdbf55732bc8f36e8286d0254feb8083a6dd2a"
+  ]
 }

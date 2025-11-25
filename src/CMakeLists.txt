@@ -1,29 +1,39 @@
 # Source files for the client
-set(CLIENT_SOURCES
-    main.cpp
+set(SRC_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
+
+set(TARGET r-type_client)
+
+set(SRC
+    ${SRC_ROOT}/main.cpp
 )
 
 # Create the client executable
-add_executable(r-type_client ${CLIENT_SOURCES})
+add_executable(${TARGET} ${SRC})
+
+# Set output directory
+set_target_properties(${TARGET}
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/
+)
 
 # Link libraries
-target_link_libraries(r-type_client PRIVATE
-    SFML::System
-    SFML::Window
-    SFML::Graphics
-    SFML::Network
-    SFML::Audio
-    asio::asio
+target_link_libraries(${TARGET}
+    PRIVATE sfml-system
+    PRIVATE sfml-window
+    PRIVATE sfml-graphics
+    PRIVATE sfml-network
+    PRIVATE sfml-audio
+    PRIVATE asio::asio
 )
 
 # Include directories
-target_include_directories(r-type_client PRIVATE
+target_include_directories(${TARGET} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 # Compiler warnings
 if(MSVC)
-    target_compile_options(r-type_client PRIVATE /W4)
+    target_compile_options(${TARGET} PRIVATE /W4)
 else()
-    target_compile_options(r-type_client PRIVATE -Wall -Wextra -Wpedantic)
+    target_compile_options(${TARGET} PRIVATE -Wall -Wextra -Wpedantic)
 endif()
