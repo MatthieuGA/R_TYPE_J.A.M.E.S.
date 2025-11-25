@@ -285,7 +285,7 @@ class registry {
     
     // Component storage (type-erased)
     std::unordered_map<std::type_index, 
-                       std::unique_ptr<sparse_array_base>> _components;
+                       std::unique_ptr<components_holder_base>> _components_arrays;
     
     // Systems
     std::vector<std::function<void(registry&)>> _systems;
@@ -305,24 +305,31 @@ public:
     
     // Register component type
     template <typename Component>
-    void register_component() {
+    sparse_array<Component>& register_component() {
         auto type = std::type_index(typeid(Component));
-        _components[type] = std::make_unique<sparse_array<Component>>();
+        if (_components_arrays.count(type)) {
+            throw std::runtime_error("Component already registered in registry");
+        }
+        _components_arrays[type] = std::make_unique<components_holder<Component>>();
+        // Also registers cleanup function for entity destruction
+        return static_cast<components_holder<Component>*>(
+            _components_arrays[type].get()
+        )->arr;
     }
     
     // Add component to entity
     template <typename Component>
-    void add_component(entity e, Component&& comp) {
-        get_components<Component>()[e.getId()] = std::move(comp);
+    std::optional<Component>& add_component(entity e, Component&& comp) {
+        return get_components<Component>().insert_at(e.getId(), std::move(comp));
     }
     
     // Get component array
     template <typename Component>
     sparse_array<Component>& get_components() {
         auto type = std::type_index(typeid(Component));
-        return *static_cast<sparse_array<Component>*>(
-            _components[type].get()
-        );
+        return *static_cast<components_holder<Component>*>(
+            _components_arrays[type].get()
+        )->arr;
     }
     
     // Register system
@@ -339,6 +346,17 @@ public:
             system(*this);
         }
     }
+};
+
+// Type-erased base class
+struct components_holder_base {
+    virtual ~components_holder_base() = default;
+};
+
+// Template wrapper for each component type
+template <typename T>
+struct components_holder : components_holder_base {
+    sparse_array<T> arr;
 };
 ```
 
@@ -628,11 +646,11 @@ int main() {
     // 2. Create registry
     Engine::registry reg;
     
-    // 3. Register component types
-    reg.register_component<Position>();
-    reg.register_component<Velocity>();
-    reg.register_component<Sprite>();
-    reg.register_component<Health>();
+    // 3. Register component types (returns sparse_array reference)
+    auto& positions = reg.register_component<Position>();
+    auto& velocities = reg.register_component<Velocity>();
+    auto& sprites = reg.register_component<Sprite>();
+    auto& healths = reg.register_component<Health>();
     
     // 4. Create entities
     auto player = reg.spawn_entity();
