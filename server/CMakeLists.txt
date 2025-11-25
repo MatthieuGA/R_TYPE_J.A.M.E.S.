@@ -1,6 +1,10 @@
 add_executable(r-type_server)
 target_sources(r-type_server PRIVATE
     main.cpp
+    src/server/Config.cpp
+)
+target_include_directories(r-type_server PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 target_link_libraries(r-type_server PRIVATE r-type_engine)
 
