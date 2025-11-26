@@ -1,4 +1,4 @@
-# **CONTRIBUTING.md**
+# CONTRIBUTING.md
 
 Thank you for your interest in contributing to **R_TYPE_J.A.M.E.S.**
 This document explains how to work on the project, how branches and commits must be structured, how pull requests are reviewed, and how CI & Git hooks ensure code quality.
@@ -10,7 +10,7 @@ This document explains how to work on the project, how branches and commits must
 We use a simplified GitHub Flow with protected branches, PR reviews, and automated CI.
 All contributions must follow the rules below.
 
-### **Main rules**
+### Main rules
 
 * **Never commit directly to `main`**
 * **Every change = an Issue + a Feature Branch + a Pull Request**
@@ -20,22 +20,22 @@ All contributions must follow the rules below.
 
 ---
 
-# 📁 **2. Branching Strategy**
+## 📁 2. Branching Strategy
 
 We use the following branches:
 
-### **Main Branches**
+### Main Branches
 
 | Branch | Purpose                                                      |
 | ------ | ------------------------------------------------------------ |
 | `main` | Stable production branch. Protected, no direct pushes.       |
 | `dev`  | Integration branch where all features merge before releases. |
 
-### **Feature Branches**
+### Feature Branches
 
 Every task must be implemented in a **dedicated branch**:
 
-```
+```txt
 feature/<issue-number>-short-description
 refactor/<issue-number>-short-description
 bugfix/<issue-number>-short-description
@@ -44,7 +44,7 @@ docs/<issue-number>-short-description
 
 **Examples:**
 
-```
+```txt
 feature/42-implement-ecs-systems
 bugfix/88-fix-snapshot-ordering
 docs/15-update-architecture-md
@@ -52,19 +52,19 @@ docs/15-update-architecture-md
 
 ---
 
-# 📝 **3. Commit Rules**
+## 📝 3. Commit Rules
 
-### **Commit Format**
+### Commit Format
 
 We use **Gitmoji + English commit message**:
 
-```
+```txt
 <gitmoji> [scope] Your message in English
 ```
 
 **Examples:**
 
-```
+```txt
 ✨ [Engine] Add MovementSystem
 🐛 [Network] Fix UDP packet handler crash
 📝 [Docs] Update protocol RFC
@@ -79,7 +79,7 @@ We use **Gitmoji + English commit message**:
 
 ---
 
-# 🔐 **4. Protected Branch Rules**
+## 🔐 4. Protected Branch Rules
 
 ### Branch protection:
 
@@ -91,7 +91,7 @@ We use **Gitmoji + English commit message**:
 
 ---
 
-# 🔄 **5. Pull Request Process**
+## 🔄 5. Pull Request Process
 
 ### Step-by-step:
 
@@ -103,13 +103,13 @@ We use **Gitmoji + English commit message**:
 
 2. **Create a new feature branch**
 
-   ```
+   ```txt
    git checkout -b feature/XX-my-feature
    ```
 
 3. **Push your work**
 
-   ```
+   ```txt
    git push -u origin feature/XX-my-feature
    ```
 
@@ -143,7 +143,7 @@ We use **Gitmoji + English commit message**:
 
 ---
 
-# 🛠️ **6. Git Hooks**
+## 🛠️ 6. Git Hooks & Formatting
 
 This project ships with local Git hooks that contributors **must install**.
 They ensure code consistency *before* PR creation.
@@ -165,7 +165,7 @@ Hooks run automatically on every commit.
 
 ---
 
-# 🔍 **7. CI (GitHub Actions)**
+## 🔍 7. CI (GitHub Actions)
 
 Every Pull Request triggers the CI pipeline:
 
@@ -183,7 +183,7 @@ A PR cannot be merged if **any** CI job fails.
 
 ---
 
-# 🗂️ **8. Issues Guidelines**
+## 🗂️ 8. Issues Guidelines
 
 ### Creating an Issue
 
@@ -210,7 +210,7 @@ Tasks must be **small**:
 
 ---
 
-# 🔧 **9. Code Style**
+## 🔧 9. Code Style
 
 * C++23 required
 * Follow **Google Style (clang-format)**
@@ -223,7 +223,7 @@ Tasks must be **small**:
 
 ---
 
-# 🧪 **10. Testing Requirements**
+## 🧪 10. Testing Requirements
 
 Each feature must include tests when applicable:
 
@@ -235,7 +235,7 @@ Tests must pass before merging.
 
 ---
 
-# 📦 **11. Releases**
+## 📦 11. Releases
 
 Releases are prepared by maintainers and follow:
 
@@ -252,7 +252,7 @@ Example milestones:
 
 ---
 
-# 🤝 **12. Getting Help**
+## 🤝 12. Getting Help
 
 If you have questions:
 
@@ -261,4 +261,3 @@ If you have questions:
 * Tag maintainers in an Issue
 
 We are here to help contributors succeed 🚀
-
