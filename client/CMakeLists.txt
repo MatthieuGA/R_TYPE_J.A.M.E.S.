@@ -1,5 +1,7 @@
 add_executable(r-type_client)
+
 target_sources(r-type_client PRIVATE
     main.cpp
 )
-target_link_libraries(r-type_client PRIVATE r-type_engine)
+target_link_libraries(r-type_client PRIVATE r-type_engine
+    SFML::Window SFML::Graphics SFML::Network SFML::Audio SFML::System)

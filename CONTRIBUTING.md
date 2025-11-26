@@ -29,7 +29,7 @@ We use the following branches:
 | Branch | Purpose                                                      |
 | ------ | ------------------------------------------------------------ |
 | `main` | Stable production branch. Protected, no direct pushes.       |
-| `dev`  | Integration branch where all features merge before releases. |
+| `Epic-...`  | Integration branch where all features merge before releases. should start by 'Epic-' |
 
 ### **Feature Branches**
 
