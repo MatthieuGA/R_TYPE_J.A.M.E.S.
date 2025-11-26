@@ -1,8 +1,8 @@
 Network Working Group                                           J.A.M.E.S
 Request for Comments: 1                                    Epitech Nantes
 Category: Standards Track                                   November 2025
-Version: 1.0.3
-Based on: docs/PROTOCOL.md (v1.0.3)
+Version: 1.1.0
+Based on: docs/PROTOCOL.md (v1.1.0)
 
                      R-Type Game Protocol Specification
 
@@ -207,7 +207,7 @@ Table of Contents
    6.2.  WORLD_SNAPSHOT (0x20)
 
    Direction: Server -> Client
-   Frequency: 20Hz - 60Hz.
+   Frequency: 60Hz.
    Description: The authoritative state of the world.
    Payload Size: 4 bytes + (EntityCount * 12 bytes)
 

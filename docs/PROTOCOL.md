@@ -1,6 +1,6 @@
 # R-Type Network Protocol Specification
 
-> **Version:** 1.0.3
+> **Version:** 1.1.0
 > **Last Updated:** 25 November 2025
 
 ## Table of Contents
@@ -265,7 +265,7 @@ _Note: Even if packet 102 was lost, the server recovers the state at tick 103. T
 ### `0x20` - WORLD_SNAPSHOT
 
 **Direction:** Server -> Client
-**Freq:** High (e.g., 20Hz - 60Hz).
+**Freq:** 60Hz.
 **Description:** The "Source of Truth". Contains the state of every active entity.
 
 **Payload:** _4 bytes (Header) + N * 12 bytes_
