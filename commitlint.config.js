@@ -34,5 +34,14 @@ module.exports = {
 
         // Disable length limit
         'header-max-length': [0],
+
+        // The subject must not end with a period
+        'subject-full-stop': [2, 'never', '.'],
+
+        // Enforce a blank line between header and body
+        'body-leading-blank': [2, 'always'],
+
+        // Enforce a blank line between body and footer
+        'footer-leading-blank': [2, 'always'],
     },
 };
