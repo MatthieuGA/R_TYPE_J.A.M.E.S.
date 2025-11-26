@@ -18,9 +18,9 @@ jobs:
     if: ${{ github.event_name == 'pull_request' && github.base_ref == 'main' && !(startsWith(github.head_ref, 'Epic-') || startsWith(github.head_ref, '1-epic-')) }}
     runs-on: ubuntu-latest
     steps:
-      - name: "Block merge to main unless branch starts with Sprint-"
+      - name: "Block merge to main unless branch starts with Epic-"
         run: |
-          echo "Merges to main are only allowed from branches starting with 'Sprint-'."
+          echo "Merges to main are only allowed from branches starting with 'Epic-'."
           exit 1
   check_coding_style:
     if: github.repository != 'EpitechPGE3-2025/G-CPP-500-NAN-5-2-rtype-6'
