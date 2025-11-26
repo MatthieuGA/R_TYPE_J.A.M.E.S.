@@ -1,6 +1,6 @@
 # R-Type Network Protocol Specification
 
-> **Version:** 1.0.2
+> **Version:** 1.0.3
 > **Last Updated:** 25 November 2025
 
 ## Table of Contents
@@ -194,7 +194,7 @@ If the Client and Server disagree on a position (e.g., due to lag or cheating), 
 ### `0x05` - GAME_START
 
 **Direction:** Server -> Client
-**Description:** Sent when the game is starting.
+**Description:** Sent when the game is starting. Upon sending/receiving this command, the `TickId` counter **MUST** be reset to 0 for the new match.
 
 **Payload:** _4 bytes_
 

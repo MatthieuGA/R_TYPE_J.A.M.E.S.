@@ -1,8 +1,8 @@
 Network Working Group                                           J.A.M.E.S
 Request for Comments: 1                                    Epitech Nantes
 Category: Standards Track                                   November 2025
-Version: 1.0.2
-Based on: docs/PROTOCOL.md (v1.0.2)
+Version: 1.0.3
+Based on: docs/PROTOCOL.md (v1.0.3)
 
                      R-Type Game Protocol Specification
 
@@ -157,6 +157,8 @@ Table of Contents
 
    Direction: Server -> Client
    Description: Triggers the start of the match.
+                Upon sending/receiving this command, the TickId counter
+                MUST be reset to 0 for the new match.
    Payload Size: 4 bytes
 
     0                   1                   2                   3
