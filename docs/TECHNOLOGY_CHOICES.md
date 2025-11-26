@@ -23,7 +23,9 @@ This document justifies the key technology choices for the R-Type project. Each 
 - **Project Requirements:** Binary UDP protocol, multithreaded server, cross-platform (Linux/Windows)
 - **Performance:** Real-time 60 FPS rendering and low-latency networking
 - **Team Expertise:** Leveraging existing knowledge to maximize productivity
-- **Integration:** Seamless compatibility with our toolchain (CMake, C++23)---
+- **Integration:** Seamless compatibility with our toolchain (CMake, C++23)
+
+---
 
 ## Graphics Library: SFML
 
@@ -75,7 +77,7 @@ socket.receive(packet);  // BLOCKS ❌
 
 // Asio (async): Thread handles other clients while waiting
 socket.async_receive_from(buffer, endpoint,
-    [](error_code ec, size_t bytes) {
+    [](asio::error_code ec, size_t bytes) {
         // Called when data arrives ✅
     });
 ```
@@ -172,7 +174,6 @@ cmake -DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake
 - [ECS vs OOP in Game Development](https://www.gamedev.net/tutorials/programming/general-and-gameplay-programming/understanding-component-entity-systems-r3013/)
 - [Binary vs Text Protocols](https://stackoverflow.com/questions/2645708/binary-vs-text-protocols)
 - [UDP vs TCP for Games](https://gafferongames.com/post/udp_vs_tcp/)
-
 
 ### R-Type Project Documentation
 
