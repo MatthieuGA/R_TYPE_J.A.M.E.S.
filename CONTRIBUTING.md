@@ -3,9 +3,24 @@
 Thank you for your interest in contributing to **R_TYPE_J.A.M.E.S.**
 This document explains how to work on the project, how branches and commits must be structured, how pull requests are reviewed, and how CI & Git hooks ensure code quality.
 
+## Table of Contents
+
+1. [Workflow Overview](#1-workflow-overview)
+2. [Branching Strategy](#2-branching-strategy)
+3. [Commit Rules](#3-commit-rules)
+4. [Protected Branch Rules](#4-protected-branch-rules)
+5. [Pull Request Process](#5-pull-request-process)
+6. [Git Hooks & Formatting](#6-git-hooks--formatting)
+7. [CI (GitHub Actions)](#7-ci-github-actions)
+8. [Issues Guidelines](#8-issues-guidelines)
+9. [Code Style](#9-code-style)
+10. [Testing Requirements](#10-testing-requirements)
+11. [Releases](#11-releases)
+12. [Getting Help](#12-getting-help)
+
 ---
 
-# 📌 **1. Workflow Overview**
+## 1. Workflow Overview
 
 We use a simplified GitHub Flow with protected branches, PR reviews, and automated CI.
 All contributions must follow the rules below.
@@ -56,10 +71,13 @@ docs/15-update-architecture-md
 
 ### Commit Format
 
-We use **Gitmoji + English commit message**:
+We use **Gitmoji + English commit message**, strictly enforced by `commitlint`.
+If your message does not match the pattern, the commit will be rejected.
+
+**Pattern:**
 
 ```txt
-<gitmoji> [scope] Your message in English
+<gitmoji> [Scope] Your message in English
 ```
 
 **Examples:**
@@ -145,23 +163,33 @@ We use **Gitmoji + English commit message**:
 
 ## 6. Git Hooks & Formatting
 
-This project ships with local Git hooks that contributors **must install**.
-They ensure code consistency *before* PR creation.
+This project uses **Husky**, **Commitlint**, and **Lint-staged** to ensure code quality and commit message consistency automatically.
 
-### Included hooks:
+### Prerequisites
 
-| Hook         | Purpose                                                    |
-| ------------ | ---------------------------------------------------------- |
-| `pre-commit` | Checks formatting (clang-format), lint, forbidden patterns |
-| `commit-msg` | Validates commit format (Gitmoji + English message)        |
+You must have the following tools installed on your machine:
 
-### Install the hooks:
+* **Node.js & npm** (to run the hooks)
+* **Clang-Format** (to format C++ code)
+* **Clang++** (to check C++ syntax)
 
+### Installation
+
+Run the following command at the project root to install dependencies and activate Git hooks:
+
+```bash
+npm install
+npm run prepare
 ```
-git config core.hooksPath .githooks
-```
 
-Hooks run automatically on every commit.
+### How it works
+
+| Hook | Tool | Action |
+| :--- | :--- | :--- |
+| `pre-commit` | **lint-staged** | Automatically formats staged `.cpp`/`.hpp` files using `clang-format` and checks syntax with `clang++`. |
+| `commit-msg` | **commitlint** | Validates that your commit message follows the [Gitmoji](#3-commit-rules) convention. |
+
+> **Note:** You do not need to run formatting manually. Just stage your files and commit; the system handles the rest.
 
 ---
 
