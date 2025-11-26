@@ -1,15 +1,19 @@
 #include "Engine/initRegistery.hpp"
 
-using Rtype::Client::Component::Transform;
-using Rtype::Client::Component::Drawable;
-using Rtype::Client::Component::RigidBody;
-using Rtype::Client::Component::Controllable;
-
 namespace Rtype::Client {
 void init_registry_components(Engine::registry &reg) {
-    reg.register_component<Transform>();
-    reg.register_component<Drawable>();
-    reg.register_component<RigidBody>();
-    reg.register_component<Controllable>();
+    // Register core components
+    reg.register_component<Rtype::Client::Component::Transform>();
+    reg.register_component<Rtype::Client::Component::Drawable>();
+    reg.register_component<Rtype::Client::Component::RigidBody>();
+    reg.register_component<Rtype::Client::Component::Controllable>();
+    reg.register_component<Rtype::Client::Component::InputState>();
+    reg.register_component<Rtype::Client::Component::HitBox>();
+    // Register gameplay components
+    reg.register_component<Rtype::Client::Component::PlayerTag>();
+    reg.register_component<Rtype::Client::Component::EnemyTag>();
+    reg.register_component<Rtype::Client::Component::Projectile>();
+    reg.register_component<Rtype::Client::Component::Health>();
+    reg.register_component<Rtype::Client::Component::StatsGame>();
 }
 }  // namespace Rtype::Client
