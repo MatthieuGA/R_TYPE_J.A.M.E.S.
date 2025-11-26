@@ -178,8 +178,7 @@ You must have the following tools installed on your machine:
 Run the following command at the project root to install dependencies and activate Git hooks:
 
 ```bash
-npm install
-npm run prepare
+npm install # This automatically runs 'npm run prepare' to set up Git hooks
 ```
 
 ### How it works
