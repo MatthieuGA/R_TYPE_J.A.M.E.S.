@@ -1,0 +1,14 @@
+{
+  "name": "graphics-pocs",
+  "version": "1.0.0",
+  "dependencies": [
+    "sfml",
+    {
+      "name": "sdl2",
+      "default-features": false,
+      "features": ["x11"]
+    },
+    "sdl2-image",
+    "sdl2-ttf"
+  ]
+}
