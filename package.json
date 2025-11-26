@@ -5,7 +5,7 @@
   },
   "lint-staged": {
     "*.{cpp,hpp,c,h,cc}": [
-      "bash -c 'for file in \"$@\"; do clang-format --dry-run --Werror \"$file\" || (clang-format \"$file\" | diff -u \"$file\" - && exit 1); done' --",
+      "clang-format -i",
       "clang++ -std=c++23 -fsyntax-only -I./include -I./src"
     ]
   },
