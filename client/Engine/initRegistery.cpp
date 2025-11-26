@@ -15,5 +15,8 @@ void init_registry_components(Engine::registry &reg) {
     reg.register_component<Rtype::Client::Component::Projectile>();
     reg.register_component<Rtype::Client::Component::Health>();
     reg.register_component<Rtype::Client::Component::StatsGame>();
+    // Register networking components
+    reg.register_component<Rtype::Client::Component::NetworkId>();
+    reg.register_component<Rtype::Client::Component::InterpolatedPosition>();
 }
 }  // namespace Rtype::Client
