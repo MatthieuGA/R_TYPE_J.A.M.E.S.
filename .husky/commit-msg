@@ -1,3 +1,5 @@
+#!/usr/bin/env sh
+
 # Ensure Node.js is available. If not, try to load NVM (if installed at $HOME/.nvm).
 if ! command -v node >/dev/null 2>&1; then
   export NVM_DIR="$HOME/.nvm"
