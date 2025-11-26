@@ -1,6 +1,6 @@
 # R-Type Network Protocol Specification
 
-> **Version:** 1.0.1
+> **Version:** 1.0.2
 > **Last Updated:** 25 November 2025
 
 ## Table of Contents
@@ -66,7 +66,7 @@ To ensure strict binary compatibility, the following field types and sizes are d
 | `Angle` | `u16` | 2 | 0..360 | Degrees |
 | `Position (X/Y)` | `u16` | 2 | 0..65535 | Normalized Coordinate |
 | `Type` | `u8` | 1 | 0..255 | Sprite/Prefab ID |
-| `Username` | `char` | 32 | 32 chars (ASCII) | Fixed-size String (Null-term) |
+| `Username` | `char` | 32 | 0..255 | Fixed-size String (Null-term) |
 
 **Alignment Note:** Structures and Packets are padded to align on 4-byte boundaries where possible to prevent compiler-specific packing issues.
 
