@@ -26,5 +26,5 @@ target_include_directories(r-type_sdl2 PRIVATE
     ${CMAKE_SOURCE_DIR}/ecs/include
 )
 
-# Copy assets to build directory
+# Copy shared assets to build directory
 file(COPY ${CMAKE_SOURCE_DIR}/assets DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

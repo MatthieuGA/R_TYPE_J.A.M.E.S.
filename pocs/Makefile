@@ -32,9 +32,9 @@ reconfigure:
 
 sfml: $(BUILD_DIR)/CMakeCache.txt
 	@echo "Building SFML PoC..."
-	cmake --build $(BUILD_DIR) --target r-type_sfml -j
+	cmake --build $(BUILD_DIR) --target sfml_poc -j
 	@echo "Running SFML PoC..."
-	@cd $(BUILD_DIR)/sfml-demo && ./r-type_sfml
+	@cd $(BUILD_DIR)/sfml-demo && ./sfml_poc
 
 sdl2: $(BUILD_DIR)/CMakeCache.txt
 	@echo "Building SDL2 PoC..."

@@ -22,5 +22,5 @@ target_link_libraries(sfml_poc PRIVATE
     sfml-system
 )
 
-# Copy assets
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/assets DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+# Copy shared assets from project root
+file(COPY ${CMAKE_SOURCE_DIR}/assets DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
