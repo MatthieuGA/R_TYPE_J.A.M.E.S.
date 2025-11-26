@@ -123,6 +123,9 @@ jobs:
       - name: "Configure with CMake"
         working-directory: ${{ github.workspace }}
         run: cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=/opt/vcpkg/scripts/buildsystems/vcpkg.cmake
+      - name: "Build with CMake"
+        working-directory: ${{ github.workspace }}
+        run: cmake --build build
       - name: "Ctest execution"
         working-directory: ${{ github.workspace }}
         run: ctest --test-dir build --output-on-failure
