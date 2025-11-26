@@ -1,7 +1,7 @@
 Network Working Group                                           J.A.M.E.S
 Request for Comments: 1                                    Epitech Nantes
 Category: Standards Track                                   November 2025
-Version: 1.1.0
+Version: 1.1.1
 Based on: docs/PROTOCOL.md (v1.1.1)
 
                      R-Type Game Protocol Specification
@@ -57,12 +57,24 @@ Table of Contents
 
    All multi-byte fields MUST be transmitted in Little Endian format.
 
-   | Type | Size | Range         | Description                         |
-   |------|------|---------------|-------------------------------------|
-   | u8   | 1    | 0..255        | Command ID, Status, Bitmask         |
-   | u16  | 2    | 0..65535      | Payload Size, PlayerID, Coordinate  |
-   | u32  | 4    | 0..4294967295 | TickID, EntityID, Score             |
-   | char | 1    | 0..255        | String characters (ASCII)           |
+   | Field Name  | Type | Size   | Range         | Description                     |
+   |-------------|------|--------|---------------|---------------------------------|
+   | OpCode      | u8   | 1      | 0..255        | Command ID                      |
+   | PayloadSize | u16  | 2      | 0..65535      | Size of following data          |
+   | TickId      | u32  | 4      | 0..4294967295 | Frame counter                   |
+   | PacketIndex | u8   | 1      | 0..255        | Fragment index                  |
+   | PacketCount | u8   | 1      | 0..255        | Total fragments for Tick        |
+   | Reserved    | -    | Varies | -             | Padding bytes, MUST be set to 0 |
+   | PlayerId    | u16  | 2      | 0..65535      | Session ID                      |
+   | EntityId    | u32  | 4      | 0..4294967295 | Unique Object ID (ECS)          |
+   | Status      | u8   | 1      | 0..255        | Error/Success Codes (0=OK)      |
+   | Inputs      | u8   | 1      | 0..255        | Bitmask (Keys held down)        |
+   | Score       | u32  | 4      | 0..4294967295 | Game Score                      |
+   | Lives       | u8   | 1      | 0..255        | Player Life Count               |
+   | Angle       | u16  | 2      | 0..360        | Degrees                         |
+   | Position    | u16  | 2      | 0..65535      | Normalized Coordinate           |
+   | Type        | u8   | 1      | 0..255        | Sprite/Prefab ID                |
+   | Username    | char | 32     | 0..255        | Fixed-size String (Null-term)   |
 
    3.2.  OpCode Categorization
 
