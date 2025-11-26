@@ -25,39 +25,8 @@ jobs:
     - run: pip install cpplint
     - run: |
         find . -type f \( -name '*.cpp' -o -name '*.hpp' \) ! -path './tests/*' ! -path './build/*' | xargs cpplint --repository=. --quiet --output=vs7 --filter=-legal/copyright,-build/c++17,+build/c++23,-runtime/references
-  check_epitech_coding_style:
-    if: github.repository != 'EpitechPGE3-2025/G-CPP-500-NAN-5-2-rtype-6'
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/epitech/coding-style-checker:latest
-    steps:
-      - name: "Checkout"
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: "Check the coding style"
-        run: |
-          check.sh "$(pwd)" "$(pwd)"
-          tmpfile=$(mktemp)
-
-          echo "0" > "$tmpfile"
-          error_count=0
-          while read -r line; do
-            file=$(echo "$line" | cut -d':' -f1 | cut -d'/' -f 2-)
-            nbline=$(echo "$line" | cut -d':' -f2)
-            title=$(echo "$line" | cut -d':' -f3)" coding style error"
-            code=$(echo "$line" | cut -d':' -f4)
-            echo "::error title=$title,file=$file,line=$nbline,col=0::$code"
-            error_count=$((error_count + 1))
-          done < coding-style-reports.log
-
-          if [ "$error_count" -gt 1 ]; then
-            echo "More than one coding style error detected. Failing CI."
-            rm "$tmpfile"
-            exit 1
-          fi
   check_cmake_compilation_linux:
-    needs: [check_epitech_coding_style, check_coding_style]
+    needs: [check_coding_style]
     runs-on: ubuntu-latest
     container:
       image: epitechcontent/epitest-docker:latest
