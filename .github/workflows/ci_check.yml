@@ -124,7 +124,7 @@ jobs:
         working-directory: ${{ github.workspace }}
         run: cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=/opt/vcpkg/scripts/buildsystems/vcpkg.cmake
       - name: "Ctest execution"
-        working-directory: ${{ github.workspace }}/build
+        working-directory: ${{ github.workspace }}
         run: ctest --test-dir build --output-on-failure
   push_to_mirror:
     needs: check_tests_execution
