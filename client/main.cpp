@@ -3,8 +3,8 @@
 #include <SFML/Graphics.hpp>
 
 #include "include/registry.hpp"
-#include "Engine/initRegisteryComponent.hpp"
-#include "Engine/initRegisterySystems.hpp"
+#include "Engine/initRegistryComponent.hpp"
+#include "Engine/initRegistrySystems.hpp"
 
 using Engine::registry;
 namespace RC = Rtype::Client;

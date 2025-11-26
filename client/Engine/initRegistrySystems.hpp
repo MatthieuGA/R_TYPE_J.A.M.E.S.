@@ -1,7 +1,7 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include "include/registry.hpp"
-#include "Engine/initRegisteryComponent.hpp"
+#include "Engine/initRegistryComponent.hpp"
 
 namespace Rtype::Client {
 void init_registry_systems(Engine::registry &reg, sf::RenderWindow &window);
