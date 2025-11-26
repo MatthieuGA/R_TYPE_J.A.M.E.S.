@@ -15,7 +15,7 @@ env:
 
 jobs:
   block_merge_to_main:
-    if: ${{ github.event_name == 'pull_request' && github.base_ref == 'main' && !startsWith(github.head_ref, 'Epic-') }}
+    if: ${{ github.event_name == 'pull_request' && github.base_ref == 'main' && !(startsWith(github.head_ref, 'Epic-') || startsWith(github.head_ref, '1-epic-')) }}
     runs-on: ubuntu-latest
     steps:
       - name: "Block merge to main unless branch starts with Sprint-"
