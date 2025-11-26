@@ -59,7 +59,8 @@ This document justifies the key technology choices for the R-Type project. Each 
 
 | Library | Pros | Cons |
 |---------|------|------|
-| **Asio (standalone)** ✅ | • **Async I/O** (non-blocking)<br>• Cross-platform (Linux/Windows)<br>• Header-only option<br>• Modern C++ (lambdas, RAII)<br>• Perfect for UDP binary protocol | • Moderate learning curve<br>• Template-heavy (compilation time) |
+| **Asio (standalone)** ✅ | • **Async I/O** (non-blocking)<br>• Cross-platform (Linux/Windows)<br>• Header-only option<br>• Modern C++ (lambdas, RAII)<br>• Perfect for UDP binary protocol<br>• Smaller dependency | • Moderate learning curve<br>• Template-heavy (compilation time) |
+| **Boost.Asio** | • Same API as standalone Asio<br>• Very mature/battle-tested<br>• Part of Boost ecosystem | • **Requires entire Boost** (~100MB+)<br>• Slower compilation<br>• Overkill if not using other Boost libs |
 | **Raw Sockets** | • Maximum control<br>• No dependencies | • **Platform-specific** (#ifdef hell)<br>• Manual async I/O (epoll/IOCP)<br>• Complex cross-platform code |
 | **SFML Network** | • Simple API<br>• Integrated with SFML | • **Blocking I/O only**<br>• Requires thread-per-client<br>• Poor for multithreaded server |
 | **ZeroMQ** | • High-level patterns<br>• Message queuing | • **Higher latency**<br>• Overkill for direct client-server<br>• Not designed for real-time games |
