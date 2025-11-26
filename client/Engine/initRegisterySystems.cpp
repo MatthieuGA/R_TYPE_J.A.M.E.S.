@@ -1,19 +1,20 @@
 #include "Engine/initRegisterySystems.hpp"
 #include "include/indexed_zipper.hpp"
 
-using namespace Engine;
+namespace Eng = Engine;
 
 namespace Rtype::Client {
-    using namespace Component;
-void init_registry_systems(registry &reg, sf::RenderWindow &window) {
+namespace Com = Component;
+void init_registry_systems(Eng::registry &reg, sf::RenderWindow &window) {
     // Set up systems
-    reg.add_system<sparse_array<Controllable>>(controllableSystem);
-    reg.add_system<sparse_array<Transform>,
-                    sparse_array<RigidBody>>(positionSystem);
-    reg.add_system<sparse_array<Transform>, sparse_array<Drawable>>(
-        [&window](registry &r,
-                sparse_array<Transform> const &positions,
-                sparse_array<Drawable> &drawables) {
+    reg.add_system<Eng::sparse_array<Com::Controllable>>(controllableSystem);
+    reg.add_system<Eng::sparse_array<Com::Transform>,
+        Eng::sparse_array<Com::RigidBody>>(positionSystem);
+    reg.add_system<Eng::sparse_array<Com::Transform>,
+        Eng::sparse_array<Com::Drawable>>(
+        [&window](Eng::registry &r,
+                Eng::sparse_array<Com::Transform> const &positions,
+                Eng::sparse_array<Com::Drawable> &drawables) {
             drawableSystem(r, window, positions, drawables);
         });
 }

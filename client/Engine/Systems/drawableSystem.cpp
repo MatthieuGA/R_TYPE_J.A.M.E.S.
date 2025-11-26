@@ -1,14 +1,14 @@
+#include <iostream>
 #include "Engine/initRegisterySystems.hpp"
 #include "include/indexed_zipper.hpp"
-#include <iostream>
 
-using namespace Engine;
+namespace Eng = Engine;
 
 namespace Rtype::Client {
-    using namespace Component;
-void setDrawableOrigin(Drawable &drawable) {
+namespace Com = Component;
+void setDrawableOrigin(Com::Drawable &drawable) {
     sf::Vector2f origin;
-    if (drawable.origin == Drawable::CENTER) {
+    if (drawable.origin == Com::Drawable::CENTER) {
         sf::FloatRect bounds = drawable.sprite.getLocalBounds();
         origin = sf::Vector2f(bounds.size.x / 2.0f, bounds.size.y / 2.0f);
     } else {
@@ -17,17 +17,19 @@ void setDrawableOrigin(Drawable &drawable) {
     drawable.sprite.setOrigin(origin);
 }
 
-void initializeDrawable(Drawable &drawable) {
+void initializeDrawable(Com::Drawable &drawable) {
     if (!drawable.texture.loadFromFile(drawable.spritePath))
-        std::cerr << "ERROR: Failed to load sprite from " << drawable.spritePath << "\n";
+        std::cerr << "ERROR: Failed to load sprite from "
+            << drawable.spritePath << "\n";
     else
         drawable.sprite.setTexture(drawable.texture, true);
     setDrawableOrigin(drawable);
     drawable.isLoaded = true;
 }
 
-void drawableSystem(registry &reg, sf::RenderWindow &window,
-sparse_array<Transform> const &transforms, sparse_array<Drawable> &drawables) {
+void drawableSystem(Eng::registry &reg, sf::RenderWindow &window,
+Eng::sparse_array<Com::Transform> const &transforms,
+Eng::sparse_array<Com::Drawable> &drawables) {
     for (auto &&[i, tranform, drawable] :
     make_indexed_zipper(transforms, drawables)) {
         if (!drawable.isLoaded)

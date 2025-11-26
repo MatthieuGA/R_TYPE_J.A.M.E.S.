@@ -6,13 +6,14 @@
 #include "Engine/initRegisteryComponent.hpp"
 #include "Engine/initRegisterySystems.hpp"
 
-using namespace Engine;
-using namespace Rtype::Client;
+using Engine::registry;
+namespace RC = Rtype::Client;
+namespace Component = Rtype::Client::Component;
 
 void init_registry(registry &reg, sf::RenderWindow &window) {
-   init_registry_components(reg);
-   init_registry_systems(reg, window);
-}  // namespace Rtype::Client
+    RC::init_registry_components(reg);
+    RC::init_registry_systems(reg, window);
+}
 
 int main() {
     registry reg;
@@ -24,7 +25,7 @@ int main() {
         reg.emplace_component<Component::Transform>(entity,
             Component::Transform{(i+1) * 150.0f, 100.0f, i * 10.f, 0.2f});
         reg.emplace_component<Component::Drawable>(entity,
-            Component::Drawable("Logo.png", 0,Component::Drawable::CENTER));
+            Component::Drawable("Logo.png", 0, Component::Drawable::CENTER));
     }
 
     while (window.isOpen()) {

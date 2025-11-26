@@ -18,7 +18,7 @@ struct EnemyTag {
 struct Projectile {
     float damage;
     float speed;
-    int ownerId; // ID of the entity that fired the projectile
+    int ownerId;  // ID of the entity that fired the projectile
 };
 
 struct Health {
