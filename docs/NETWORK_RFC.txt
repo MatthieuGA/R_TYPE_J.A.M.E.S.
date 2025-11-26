@@ -2,7 +2,7 @@ Network Working Group                                           J.A.M.E.S
 Request for Comments: 1                                    Epitech Nantes
 Category: Standards Track                                   November 2025
 Version: 1.1.0
-Based on: docs/PROTOCOL.md (v1.1.0)
+Based on: docs/PROTOCOL.md (v1.1.1)
 
                      R-Type Game Protocol Specification
 

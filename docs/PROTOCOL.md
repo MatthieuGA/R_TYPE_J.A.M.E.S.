@@ -1,21 +1,21 @@
 # R-Type Network Protocol Specification
 
-> **Version:** 1.1.0
+> **Version:** 1.1.1
 > **Last Updated:** 25 November 2025
 
 ## Table of Contents
 
 1. [Overview](#1-overview)
-   1.1 [Strategies](#11-strategies)
-   1.2 [Data Types](#12-data-types)
-   1.3 [Data Definitions](#13-data-definitions)
-   1.4 [OpCode Categorization](#14-opcode-categorization)
+   1. [Strategies](#11-strategies)
+   2. [Data Types](#12-data-types)
+   3. [Data Definitions](#13-data-definitions)
+   4. [OpCode Categorization](#14-opcode-categorization)
 2. [Error Handling Strategy](#2-error-handling-strategy)
-   2.1 [Malformed Packets (UDP & TCP)](#21-malformed-packets-udp--tcp)
-   2.2 [Logical Errors (TCP)](#22-logical-errors-tcp)
-   2.3 [Desynchronization (UDP)](#23-desynchronization-udp)
+   1. [Malformed Packets (UDP & TCP)](#21-malformed-packets-udp--tcp)
+   2. [Logical Errors (TCP)](#22-logical-errors-tcp)
+   3. [Desynchronization (UDP)](#23-desynchronization-udp)
 3. [Packet Structure](#3-packet-structure)
-   3.1 [Common Header](#31-common-header)
+   1. [Common Header](#31-common-header)
 4. [TCP Commands (Session Management)](#4-tcp-commands-session-management)
    - [`0x01` CONNECT_REQ](#0x01---connect_req)
    - [`0x02` CONNECT_ACK](#0x02---connect_ack)
