@@ -20,7 +20,7 @@ All contributions must follow the rules below.
 
 ---
 
-## 📁 2. Branching Strategy
+## 2. Branching Strategy
 
 We use the following branches:
 
@@ -52,7 +52,7 @@ docs/15-update-architecture-md
 
 ---
 
-## 📝 3. Commit Rules
+## 3. Commit Rules
 
 ### Commit Format
 
@@ -79,7 +79,7 @@ We use **Gitmoji + English commit message**:
 
 ---
 
-## 🔐 4. Protected Branch Rules
+## 4. Protected Branch Rules
 
 ### Branch protection:
 
@@ -91,7 +91,7 @@ We use **Gitmoji + English commit message**:
 
 ---
 
-## 🔄 5. Pull Request Process
+## 5. Pull Request Process
 
 ### Step-by-step:
 
@@ -143,7 +143,7 @@ We use **Gitmoji + English commit message**:
 
 ---
 
-## 🛠️ 6. Git Hooks & Formatting
+## 6. Git Hooks & Formatting
 
 This project ships with local Git hooks that contributors **must install**.
 They ensure code consistency *before* PR creation.
@@ -165,7 +165,7 @@ Hooks run automatically on every commit.
 
 ---
 
-## 🔍 7. CI (GitHub Actions)
+## 7. CI (GitHub Actions)
 
 Every Pull Request triggers the CI pipeline:
 
@@ -183,7 +183,7 @@ A PR cannot be merged if **any** CI job fails.
 
 ---
 
-## 🗂️ 8. Issues Guidelines
+## 8. Issues Guidelines
 
 ### Creating an Issue
 
@@ -210,7 +210,7 @@ Tasks must be **small**:
 
 ---
 
-## 🔧 9. Code Style
+## 9. Code Style
 
 * C++23 required
 * Follow **Google Style (clang-format)**
@@ -223,7 +223,7 @@ Tasks must be **small**:
 
 ---
 
-## 🧪 10. Testing Requirements
+## 10. Testing Requirements
 
 Each feature must include tests when applicable:
 
@@ -235,7 +235,7 @@ Tests must pass before merging.
 
 ---
 
-## 📦 11. Releases
+## 11. Releases
 
 Releases are prepared by maintainers and follow:
 
@@ -252,7 +252,7 @@ Example milestones:
 
 ---
 
-## 🤝 12. Getting Help
+## 12. Getting Help
 
 If you have questions:
 
