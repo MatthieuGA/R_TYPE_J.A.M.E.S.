@@ -23,8 +23,28 @@ if (ENABLE_COVERAGE AND NOT MSVC)
 endif()
 
 # Find required packages (vcpkg integration)
-find_package(SFML COMPONENTS Window Graphics Network Audio CONFIG REQUIRED)
+find_package(SFML COMPONENTS system window graphics network audio CONFIG REQUIRED)
 find_package(asio CONFIG REQUIRED)
+
+# Provide compatibility aliases so code using SFML::Name targets works with
+# vcpkg-provided SFML 2.x (which exports sfml-name targets).
+if (NOT TARGET SFML::Window)
+    if (TARGET sfml-window)
+        add_library(SFML::Window ALIAS sfml-window)
+    endif()
+    if (TARGET sfml-graphics)
+        add_library(SFML::Graphics ALIAS sfml-graphics)
+    endif()
+    if (TARGET sfml-network)
+        add_library(SFML::Network ALIAS sfml-network)
+    endif()
+    if (TARGET sfml-audio)
+        add_library(SFML::Audio ALIAS sfml-audio)
+    endif()
+    if (TARGET sfml-system)
+        add_library(SFML::System ALIAS sfml-system)
+    endif()
+endif()
 
 # GoogleTest for unit testing
 include(FetchContent)

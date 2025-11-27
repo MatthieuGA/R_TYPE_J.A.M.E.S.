@@ -10,7 +10,7 @@ void setDrawableOrigin(Com::Drawable &drawable) {
     sf::Vector2f origin;
     if (drawable.origin == Com::Drawable::CENTER) {
         sf::FloatRect bounds = drawable.sprite.getLocalBounds();
-        origin = sf::Vector2f(bounds.size.x / 2.0f, bounds.size.y / 2.0f);
+        origin = sf::Vector2f(bounds.width / 2.0f, bounds.height / 2.0f);
     } else {
         origin = sf::Vector2f(0.0f, 0.0f);
     }
@@ -37,8 +37,7 @@ Eng::sparse_array<Com::Drawable> &drawables) {
 
         drawable.sprite.setPosition(sf::Vector2f(tranform.x, tranform.y));
         drawable.sprite.setScale(sf::Vector2f(tranform.scale, tranform.scale));
-        const float radians = tranform.rotationDegrees * (3.14159265f / 180.0f);
-        drawable.sprite.setRotation(sf::radians(radians));
+        drawable.sprite.setRotation(tranform.rotationDegrees);
         window.draw(drawable.sprite);
     }
 }
