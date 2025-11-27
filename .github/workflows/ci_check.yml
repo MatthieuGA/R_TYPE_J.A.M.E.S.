@@ -128,7 +128,9 @@ jobs:
         run: cmake --build build
       - name: "Ctest execution"
         working-directory: ${{ github.workspace }}
-        run: ctest --test-dir build --output-on-failure
+        run: |
+          # Run tests under X virtual framebuffer to provide a DISPLAY for SFML/graphics tests
+          xvfb-run --auto-servernum --server-args='-screen 0 1024x768x24' ctest --test-dir build --output-on-failure
   push_to_mirror:
     needs: check_tests_execution
     runs-on: ubuntu-latest
