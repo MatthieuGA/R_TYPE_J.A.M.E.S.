@@ -7,16 +7,19 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Find SFML
 find_package(SFML 2.6 COMPONENTS graphics window system REQUIRED)
 
-# Add ECS library
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../ecs ${CMAKE_CURRENT_BINARY_DIR}/ecs)
-
 # Create executable
 add_executable(sfml_poc
     src/main.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../engine/src/entity.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../engine/src/registry.cpp
+)
+
+target_include_directories(sfml_poc PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../engine/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
 target_link_libraries(sfml_poc PRIVATE
-    poc_ecs
     sfml-graphics
     sfml-window
     sfml-system

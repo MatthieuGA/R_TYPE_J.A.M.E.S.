@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "components.hpp"
-#include "entity.hpp"
 #include "registry.hpp"
 
 constexpr unsigned int WINDOW_WIDTH = 800;
@@ -22,11 +21,11 @@ constexpr float SHOOT_COOLDOWN = 0.3f; // seconds between shots
 // Render system - draws all entities with Position + Sprite
 void render_system(
     sf::RenderWindow& window,
-    ecs::sparse_array<ecs::Position>& positions,
-    ecs::sparse_array<ecs::Sprite>& sprites,
-    ecs::sparse_array<ecs::Bullet>& bullets,
+    Engine::sparse_array<Position>& positions,
+    Engine::sparse_array<Sprite>& sprites,
+    Engine::sparse_array<Bullet>& bullets,
     std::unordered_map<std::string, sf::Texture>& textures,
-    std::unordered_map<ecs::entity::id_type, sf::Sprite>& sprite_cache)
+    std::unordered_map<std::size_t, sf::Sprite>& sprite_cache)
 {
     for (std::size_t i = 0; i < positions.size() && i < sprites.size(); ++i) {
         if (positions[i] && sprites[i]) {
@@ -77,8 +76,8 @@ void render_system(
 
 // Movement system - updates Position based on Velocity
 void movement_system(
-    ecs::sparse_array<ecs::Position>& positions,
-    ecs::sparse_array<ecs::Velocity>& velocities,
+    Engine::sparse_array<Position>& positions,
+    Engine::sparse_array<Velocity>& velocities,
     float delta_time)
 {
     for (std::size_t i = 0; i < positions.size() && i < velocities.size(); ++i) {
@@ -94,9 +93,9 @@ void movement_system(
 
 // Boundary system - keeps player within screen bounds
 void boundary_system(
-    ecs::sparse_array<ecs::Position>& positions,
-    ecs::sparse_array<ecs::Player>& players,
-    ecs::sparse_array<ecs::Hitbox>& hitboxes)
+    Engine::sparse_array<Position>& positions,
+    Engine::sparse_array<Player>& players,
+    Engine::sparse_array<Hitbox>& hitboxes)
 {
     for (std::size_t i = 0; i < positions.size(); ++i) {
         if (positions[i] && players[i] && hitboxes[i]) {
@@ -114,26 +113,26 @@ void boundary_system(
 
 // Cleanup system - removes entities that went off-screen
 void cleanup_system(
-    ecs::registry& registry,
-    ecs::sparse_array<ecs::Position>& positions,
-    ecs::sparse_array<ecs::Bullet>& bullets,
-    ecs::sparse_array<ecs::Enemy>& enemies)
+    Engine::registry& registry,
+    Engine::sparse_array<Position>& positions,
+    Engine::sparse_array<Bullet>& bullets,
+    Engine::sparse_array<Enemy>& enemies)
 {
-    std::vector<ecs::entity> to_kill;
+    std::vector<Engine::entity> to_kill;
     
     for (std::size_t i = 0; i < positions.size(); ++i) {
-        if (positions[i]) {
+        if (positions.has(i)) {
             const auto& pos = positions[i].value();
-            bool is_bullet = i < bullets.size() && bullets[i].has_value();
-            bool is_enemy = i < enemies.size() && enemies[i].has_value();
+            bool is_bullet = bullets.has(i);
+            bool is_enemy = enemies.has(i);
             
             // Remove bullets that went off-screen (right)
             if (is_bullet && pos.x > WINDOW_WIDTH + 50.0f) {
-                to_kill.push_back(ecs::entity(i));
+                to_kill.push_back(registry.entity_from_index(i));
             }
             // Remove enemies that went off-screen (left)
             if (is_enemy && pos.x < -100.0f) {
-                to_kill.push_back(ecs::entity(i));
+                to_kill.push_back(registry.entity_from_index(i));
             }
         }
     }
@@ -145,25 +144,28 @@ void cleanup_system(
 
 // Collision system - handles bullet-enemy collisions and player-enemy collisions
 bool collision_system(
-    ecs::registry& registry,
-    ecs::sparse_array<ecs::Position>& positions,
-    ecs::sparse_array<ecs::Hitbox>& hitboxes,
-    ecs::sparse_array<ecs::Bullet>& bullets,
-    ecs::sparse_array<ecs::Enemy>& enemies,
-    ecs::sparse_array<ecs::Player>& players)
+    Engine::registry& registry,
+    Engine::sparse_array<Position>& positions,
+    Engine::sparse_array<Hitbox>& hitboxes,
+    Engine::sparse_array<Bullet>& bullets,
+    Engine::sparse_array<Enemy>& enemies,
+    Engine::sparse_array<Player>& players)
 {
-    std::vector<ecs::entity> to_kill;
+    std::vector<Engine::entity> to_kill;
     bool game_over = false;
     
+    // Find max size to iterate safely
+    std::size_t max_size = positions.size();
+    
     // Check all bullets against all enemies
-    for (std::size_t b = 0; b < positions.size(); ++b) {
-        if (!positions[b] || !bullets[b] || !hitboxes[b]) continue;
+    for (std::size_t b = 0; b < max_size; ++b) {
+        if (!positions.has(b) || !bullets.has(b) || !hitboxes.has(b)) continue;
         
         const auto& bullet_pos = positions[b].value();
         const auto& bullet_box = hitboxes[b].value();
         
-        for (std::size_t e = 0; e < positions.size(); ++e) {
-            if (!positions[e] || !enemies[e] || !hitboxes[e]) continue;
+        for (std::size_t e = 0; e < max_size; ++e) {
+            if (!positions.has(e) || !enemies.has(e) || !hitboxes.has(e)) continue;
             if (b == e) continue;
             
             const auto& enemy_pos = positions[e].value();
@@ -176,21 +178,21 @@ bool collision_system(
                              bullet_pos.y > enemy_pos.y + enemy_box.height);
             
             if (collision) {
-                to_kill.push_back(ecs::entity(b)); // Kill bullet
-                to_kill.push_back(ecs::entity(e)); // Kill enemy
+                to_kill.push_back(registry.entity_from_index(b)); // Kill bullet
+                to_kill.push_back(registry.entity_from_index(e)); // Kill enemy
             }
         }
     }
     
     // Check player against all enemies
-    for (std::size_t p = 0; p < positions.size(); ++p) {
-        if (!positions[p] || !players[p] || !hitboxes[p]) continue;
+    for (std::size_t p = 0; p < max_size; ++p) {
+        if (!positions.has(p) || !players.has(p) || !hitboxes.has(p)) continue;
         
         const auto& player_pos = positions[p].value();
         const auto& player_box = hitboxes[p].value();
         
-        for (std::size_t e = 0; e < positions.size(); ++e) {
-            if (!positions[e] || !enemies[e] || !hitboxes[e]) continue;
+        for (std::size_t e = 0; e < max_size; ++e) {
+            if (!positions.has(e) || !enemies.has(e) || !hitboxes.has(e)) continue;
             if (p == e) continue;
             
             const auto& enemy_pos = positions[e].value();
@@ -213,10 +215,8 @@ bool collision_system(
     
     // Remove duplicates and kill entities
     std::sort(to_kill.begin(), to_kill.end(), 
-              [](const ecs::entity& a, const ecs::entity& b) { return a.id() < b.id(); });
-    to_kill.erase(std::unique(to_kill.begin(), to_kill.end(),
-                              [](const ecs::entity& a, const ecs::entity& b) { return a.id() == b.id(); }), 
-                  to_kill.end());
+              [](const Engine::entity& a, const Engine::entity& b) { return a < b; });
+    to_kill.erase(std::unique(to_kill.begin(), to_kill.end()), to_kill.end());
     
     for (auto& entity : to_kill) {
         registry.kill_entity(entity);
@@ -230,29 +230,29 @@ int main()
     // Create window
     sf::RenderWindow window(
         sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT),
-        "R-Type PoC - SFML + ECS"
+        "R-Type PoC - SFML + Engine ECS"
     );
     window.setFramerateLimit(60);
 
     // Create ECS registry
-    ecs::registry registry;
+    Engine::registry registry;
     
     // Register components
-    auto& positions = registry.register_component<ecs::Position>();
-    auto& velocities = registry.register_component<ecs::Velocity>();
-    auto& sprites = registry.register_component<ecs::Sprite>();
-    auto& hitboxes = registry.register_component<ecs::Hitbox>();
-    auto& players = registry.register_component<ecs::Player>();
-    auto& enemies = registry.register_component<ecs::Enemy>();
-    auto& bullets = registry.register_component<ecs::Bullet>();
+    auto& positions = registry.register_component<Position>();
+    auto& velocities = registry.register_component<Velocity>();
+    auto& sprites = registry.register_component<Sprite>();
+    auto& hitboxes = registry.register_component<Hitbox>();
+    auto& players = registry.register_component<Player>();
+    auto& enemies = registry.register_component<Enemy>();
+    auto& bullets = registry.register_component<Bullet>();
 
     // Create player entity (spawns on the left)
     auto player = registry.spawn_entity();
-    registry.add_component(player, ecs::Position{PLAYER_START_X, WINDOW_HEIGHT / 2.0f});
-    registry.add_component(player, ecs::Velocity{0.0f, 0.0f});
-    registry.add_component(player, ecs::Sprite{"assets/player.png", 32.0f, 32.0f});
-    registry.add_component(player, ecs::Hitbox{32.0f, 32.0f});
-    registry.add_component(player, ecs::Player{});
+    registry.add_component(player, Position{PLAYER_START_X, WINDOW_HEIGHT / 2.0f});
+    registry.add_component(player, Velocity{0.0f, 0.0f});
+    registry.add_component(player, Sprite{"assets/player.png", 32.0f, 32.0f});
+    registry.add_component(player, Hitbox{32.0f, 32.0f});
+    registry.add_component(player, Player{});
 
     // Random number generator for enemy spawning
     std::random_device rd;
@@ -261,7 +261,7 @@ int main()
 
     // Texture and sprite cache for rendering
     std::unordered_map<std::string, sf::Texture> texture_cache;
-    std::unordered_map<ecs::entity::id_type, sf::Sprite> sprite_cache;
+    std::unordered_map<std::size_t, sf::Sprite> sprite_cache;
 
     // Game loop timing
     sf::Clock clock;
@@ -327,8 +327,8 @@ int main()
         }
 
         // Input handling - update player velocity (only if not game over)
-        if (!game_over && registry.has_component<ecs::Velocity>(player)) {
-            auto& vel = velocities[player.id()].value();
+        if (!game_over) {
+            auto& vel = velocities[player.getId()].value();
             vel.dx = 0.0f;
             vel.dy = 0.0f;
 
@@ -349,23 +349,21 @@ int main()
         // Shooting - spawn bullet on space press (only if not game over)
         bool space_is_pressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Space);
         if (!game_over && space_is_pressed && !space_was_pressed && shoot_timer <= 0.0f) {
-            if (registry.has_component<ecs::Position>(player)) {
-                const auto& player_pos = positions[player.id()].value();
-                const auto& player_hitbox = hitboxes[player.id()].value();
-                
-                // Spawn bullet in front of player
-                auto bullet = registry.spawn_entity();
-                registry.add_component(bullet, ecs::Position{
-                    player_pos.x + player_hitbox.width,
-                    player_pos.y + player_hitbox.height / 2.0f - 2.0f
-                });
-                registry.add_component(bullet, ecs::Velocity{BULLET_SPEED, 0.0f});
-                registry.add_component(bullet, ecs::Sprite{"assets/player.png", 16.0f, 4.0f});
-                registry.add_component(bullet, ecs::Hitbox{16.0f, 4.0f});
-                registry.add_component(bullet, ecs::Bullet{1.0f});
-                
-                shoot_timer = SHOOT_COOLDOWN;
-            }
+            const auto& player_pos = positions[player.getId()].value();
+            const auto& player_hitbox = hitboxes[player.getId()].value();
+            
+            // Spawn bullet in front of player
+            auto bullet = registry.spawn_entity();
+            registry.add_component(bullet, Position(
+                player_pos.x + player_hitbox.width,
+                player_pos.y + player_hitbox.height / 2.0f - 2.0f
+            ));
+            registry.add_component(bullet, Velocity{BULLET_SPEED, 0.0f});
+            registry.add_component(bullet, Sprite{"assets/player.png", 16.0f, 4.0f});
+            registry.add_component(bullet, Hitbox{16.0f, 4.0f});
+            registry.add_component(bullet, Bullet{1.0f});
+            
+            shoot_timer = SHOOT_COOLDOWN;
         }
         space_was_pressed = space_is_pressed;
 
@@ -374,11 +372,11 @@ int main()
             auto enemy = registry.spawn_entity();
             float spawn_y = height_dist(gen);
             
-            registry.add_component(enemy, ecs::Position{ENEMY_SPAWN_X, spawn_y});
-            registry.add_component(enemy, ecs::Velocity{-ENEMY_SPEED, 0.0f});
-            registry.add_component(enemy, ecs::Sprite{"assets/enemy.png", 32.0f, 32.0f});
-            registry.add_component(enemy, ecs::Hitbox{32.0f, 32.0f});
-            registry.add_component(enemy, ecs::Enemy{});
+            registry.add_component(enemy, Position{ENEMY_SPAWN_X, spawn_y});
+            registry.add_component(enemy, Velocity{-ENEMY_SPEED, 0.0f});
+            registry.add_component(enemy, Sprite{"assets/enemy.png", 32.0f, 32.0f});
+            registry.add_component(enemy, Hitbox{32.0f, 32.0f});
+            registry.add_component(enemy, Enemy{});
             
             enemy_spawn_clock.restart();
         }

@@ -6,8 +6,8 @@
 #include <utility>
 #include <vector>
 
-#include "include/sparse_array.hpp"
-#include "include/entity.hpp"
+#include "sparse_array.hpp"
+#include "entity.hpp"
 
 namespace Engine {
 

@@ -2,8 +2,6 @@
 
 #include <string>
 
-namespace ecs {
-
 // Position component
 struct Position {
     float x{0.0f};
@@ -59,5 +57,3 @@ struct Hitbox {
     Hitbox() = default;
     Hitbox(float w, float h) : width(w), height(h) {}
 };
-
-} // namespace ecs

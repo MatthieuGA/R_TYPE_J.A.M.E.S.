@@ -11,6 +11,11 @@ class entity {
 
     entity &operator=(size_t new_id);
     size_t getId() const { return id_; }
+    
+    // Comparison operators for sorting and equality
+    bool operator<(const entity& other) const { return id_ < other.id_; }
+    bool operator==(const entity& other) const { return id_ == other.id_; }
+    bool operator!=(const entity& other) const { return id_ != other.id_; }
 
  private:
     explicit entity(size_t id) : id_(id) {}

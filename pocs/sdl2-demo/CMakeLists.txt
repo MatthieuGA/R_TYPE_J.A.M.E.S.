@@ -12,10 +12,11 @@ find_package(SDL2_ttf CONFIG REQUIRED)
 # Create executable
 add_executable(r-type_sdl2
     src/main.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../engine/src/entity.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../engine/src/registry.cpp
 )
 
 target_link_libraries(r-type_sdl2 PRIVATE
-    poc_ecs
     $<TARGET_NAME_IF_EXISTS:SDL2::SDL2main>
     $<IF:$<TARGET_EXISTS:SDL2::SDL2>,SDL2::SDL2,SDL2::SDL2-static>
     $<IF:$<TARGET_EXISTS:SDL2_image::SDL2_image>,SDL2_image::SDL2_image,SDL2_image::SDL2_image-static>
@@ -23,7 +24,8 @@ target_link_libraries(r-type_sdl2 PRIVATE
 )
 
 target_include_directories(r-type_sdl2 PRIVATE
-    ${CMAKE_SOURCE_DIR}/ecs/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../engine/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
 # Copy shared assets to build directory
