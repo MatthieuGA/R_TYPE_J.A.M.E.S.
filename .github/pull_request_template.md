@@ -41,9 +41,9 @@ Describe how reviewers can test your changes:
 
 If applicable, include:
 
-- test commands  
-- example inputs  
-- observed outputs  
+- test commands
+- example inputs
+- observed outputs
 
 ---
 
