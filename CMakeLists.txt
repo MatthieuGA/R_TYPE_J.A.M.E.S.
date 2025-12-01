@@ -11,8 +11,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Find required packages (vcpkg integration)
 find_package(SFML COMPONENTS Window Graphics Network Audio CONFIG REQUIRED)
-# Use Boost.Asio (provided via vcpkg `boost-asio`)
-find_package(Boost REQUIRED COMPONENTS asio system)
+find_package(asio CONFIG REQUIRED)
 
 # GoogleTest for unit testing
 include(FetchContent)
@@ -43,6 +42,6 @@ message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 message(STATUS "C++ Compiler: ${CMAKE_CXX_COMPILER}")
 message(STATUS "C++ Standard: ${CMAKE_CXX_STANDARD}")
 message(STATUS "SFML Found: ${SFML_FOUND}")
-message(STATUS "Boost Found: ${Boost_FOUND}")
+message(STATUS "Asio Found: ${asio_FOUND}")
 message(STATUS "==============================================")
 
