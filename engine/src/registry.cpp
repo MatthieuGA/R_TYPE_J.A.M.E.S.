@@ -19,7 +19,7 @@ void registry::kill_entity(entity const &e) {
     for (auto &fn : _erase_fns) {
         if (fn) fn(*this, e);
     }
-    _dead_entities.push_back(e.getId());
+    _dead_entities.push_back(e.get_id());
 }
 
 void registry::run_systems() {

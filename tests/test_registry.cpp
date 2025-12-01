@@ -92,7 +92,7 @@ TEST(RegistryTest, SpawnEntity) {
 
     auto entity = reg.spawn_entity();
 
-    EXPECT_EQ(entity.getId(), 0);
+    EXPECT_EQ(entity.get_id(), 0);
 }
 
 TEST(RegistryTest, SpawnMultipleEntities) {
@@ -102,9 +102,9 @@ TEST(RegistryTest, SpawnMultipleEntities) {
     auto e2 = reg.spawn_entity();
     auto e3 = reg.spawn_entity();
 
-    EXPECT_EQ(e1.getId(), 0);
-    EXPECT_EQ(e2.getId(), 1);
-    EXPECT_EQ(e3.getId(), 2);
+    EXPECT_EQ(e1.get_id(), 0);
+    EXPECT_EQ(e2.get_id(), 1);
+    EXPECT_EQ(e3.get_id(), 2);
 }
 
 TEST(RegistryTest, EntityFromIndex) {
@@ -112,7 +112,7 @@ TEST(RegistryTest, EntityFromIndex) {
 
     auto entity = reg.entity_from_index(42);
 
-    EXPECT_EQ(entity.getId(), 42);
+    EXPECT_EQ(entity.get_id(), 42);
 }
 
 TEST(RegistryTest, KillEntity) {
@@ -137,13 +137,13 @@ TEST(RegistryTest, KillEntityRemovesComponents) {
     auto &positions = reg.get_components<Position>();
     auto &velocities = reg.get_components<Velocity>();
 
-    EXPECT_TRUE(positions.has(entity.getId()));
-    EXPECT_TRUE(velocities.has(entity.getId()));
+    EXPECT_TRUE(positions.has(entity.get_id()));
+    EXPECT_TRUE(velocities.has(entity.get_id()));
 
     reg.kill_entity(entity);
 
-    EXPECT_FALSE(positions.has(entity.getId()));
-    EXPECT_FALSE(velocities.has(entity.getId()));
+    EXPECT_FALSE(positions.has(entity.get_id()));
+    EXPECT_FALSE(velocities.has(entity.get_id()));
 }
 
 TEST(RegistryTest, ReuseDeadEntityId) {
@@ -152,13 +152,13 @@ TEST(RegistryTest, ReuseDeadEntityId) {
     auto e1 = reg.spawn_entity();
     auto e2 = reg.spawn_entity();
 
-    EXPECT_EQ(e1.getId(), 0);
-    EXPECT_EQ(e2.getId(), 1);
+    EXPECT_EQ(e1.get_id(), 0);
+    EXPECT_EQ(e2.get_id(), 1);
 
     reg.kill_entity(e1);
 
     auto e3 = reg.spawn_entity();
-    EXPECT_EQ(e3.getId(), 0);  // Should reuse ID 0
+    EXPECT_EQ(e3.get_id(), 0);  // Should reuse ID 0
 }
 
 // ============================================================================
@@ -206,9 +206,9 @@ TEST(RegistryTest, AddMultipleComponentsToEntity) {
     auto &velocities = reg.get_components<Velocity>();
     auto &healths = reg.get_components<Health>();
 
-    EXPECT_TRUE(positions.has(entity.getId()));
-    EXPECT_TRUE(velocities.has(entity.getId()));
-    EXPECT_TRUE(healths.has(entity.getId()));
+    EXPECT_TRUE(positions.has(entity.get_id()));
+    EXPECT_TRUE(velocities.has(entity.get_id()));
+    EXPECT_TRUE(healths.has(entity.get_id()));
 }
 
 TEST(RegistryTest, AddComponentToMultipleEntities) {
@@ -225,13 +225,13 @@ TEST(RegistryTest, AddComponentToMultipleEntities) {
 
     auto &positions = reg.get_components<Position>();
 
-    EXPECT_TRUE(positions.has(e1.getId()));
-    EXPECT_TRUE(positions.has(e2.getId()));
-    EXPECT_TRUE(positions.has(e3.getId()));
+    EXPECT_TRUE(positions.has(e1.get_id()));
+    EXPECT_TRUE(positions.has(e2.get_id()));
+    EXPECT_TRUE(positions.has(e3.get_id()));
 
-    EXPECT_EQ(positions[e1.getId()]->x, 1.0f);
-    EXPECT_EQ(positions[e2.getId()]->x, 2.0f);
-    EXPECT_EQ(positions[e3.getId()]->x, 3.0f);
+    EXPECT_EQ(positions[e1.get_id()]->x, 1.0f);
+    EXPECT_EQ(positions[e2.get_id()]->x, 2.0f);
+    EXPECT_EQ(positions[e3.get_id()]->x, 3.0f);
 }
 
 TEST(RegistryTest, OverwriteComponent) {
@@ -242,10 +242,10 @@ TEST(RegistryTest, OverwriteComponent) {
 
     reg.add_component(entity, Position{1.0f, 2.0f});
     auto &positions = reg.get_components<Position>();
-    EXPECT_EQ(positions[entity.getId()]->x, 1.0f);
+    EXPECT_EQ(positions[entity.get_id()]->x, 1.0f);
 
     reg.add_component(entity, Position{10.0f, 20.0f});
-    EXPECT_EQ(positions[entity.getId()]->x, 10.0f);
+    EXPECT_EQ(positions[entity.get_id()]->x, 10.0f);
 }
 
 // ============================================================================
@@ -310,11 +310,11 @@ TEST(RegistryTest, RemoveComponent) {
     reg.add_component(entity, Position{1.0f, 2.0f});
 
     auto &positions = reg.get_components<Position>();
-    EXPECT_TRUE(positions.has(entity.getId()));
+    EXPECT_TRUE(positions.has(entity.get_id()));
 
     reg.remove_component<Position>(entity);
 
-    EXPECT_FALSE(positions.has(entity.getId()));
+    EXPECT_FALSE(positions.has(entity.get_id()));
 }
 
 TEST(RegistryTest, RemoveOneOfMultipleComponents) {
@@ -331,8 +331,8 @@ TEST(RegistryTest, RemoveOneOfMultipleComponents) {
 
     reg.remove_component<Position>(entity);
 
-    EXPECT_FALSE(positions.has(entity.getId()));
-    EXPECT_TRUE(velocities.has(entity.getId()));
+    EXPECT_FALSE(positions.has(entity.get_id()));
+    EXPECT_TRUE(velocities.has(entity.get_id()));
 }
 
 TEST(RegistryTest, RemoveComponentFromMultipleEntities) {
@@ -351,9 +351,9 @@ TEST(RegistryTest, RemoveComponentFromMultipleEntities) {
 
     reg.remove_component<Position>(e2);
 
-    EXPECT_TRUE(positions.has(e1.getId()));
-    EXPECT_FALSE(positions.has(e2.getId()));
-    EXPECT_TRUE(positions.has(e3.getId()));
+    EXPECT_TRUE(positions.has(e1.get_id()));
+    EXPECT_FALSE(positions.has(e2.get_id()));
+    EXPECT_TRUE(positions.has(e3.get_id()));
 }
 
 // ============================================================================
@@ -406,8 +406,8 @@ TEST(RegistryTest, SystemModifiesComponents) {
 
     reg.run_systems();
 
-    EXPECT_EQ(positions[entity.getId()]->x, 1.0f);
-    EXPECT_EQ(positions[entity.getId()]->y, 2.0f);
+    EXPECT_EQ(positions[entity.get_id()]->x, 1.0f);
+    EXPECT_EQ(positions[entity.get_id()]->y, 2.0f);
 }
 
 TEST(RegistryTest, MultipleSystemsRun) {
@@ -490,27 +490,27 @@ TEST(RegistryTest, CompleteEntityLifecycle) {
     auto &velocities = reg.get_components<Velocity>();
     auto &healths = reg.get_components<Health>();
 
-    EXPECT_TRUE(positions.has(entity.getId()));
-    EXPECT_TRUE(velocities.has(entity.getId()));
-    EXPECT_TRUE(healths.has(entity.getId()));
+    EXPECT_TRUE(positions.has(entity.get_id()));
+    EXPECT_TRUE(velocities.has(entity.get_id()));
+    EXPECT_TRUE(healths.has(entity.get_id()));
 
     // Modify components
-    positions[entity.getId()]->x = 100.0f;
-    healths[entity.getId()]->hp = 75;
+    positions[entity.get_id()]->x = 100.0f;
+    healths[entity.get_id()]->hp = 75;
 
-    EXPECT_EQ(positions[entity.getId()]->x, 100.0f);
-    EXPECT_EQ(healths[entity.getId()]->hp, 75);
+    EXPECT_EQ(positions[entity.get_id()]->x, 100.0f);
+    EXPECT_EQ(healths[entity.get_id()]->hp, 75);
 
     // Remove one component
     reg.remove_component<Velocity>(entity);
-    EXPECT_FALSE(velocities.has(entity.getId()));
-    EXPECT_TRUE(positions.has(entity.getId()));
-    EXPECT_TRUE(healths.has(entity.getId()));
+    EXPECT_FALSE(velocities.has(entity.get_id()));
+    EXPECT_TRUE(positions.has(entity.get_id()));
+    EXPECT_TRUE(healths.has(entity.get_id()));
 
     // Kill entity
     reg.kill_entity(entity);
-    EXPECT_FALSE(positions.has(entity.getId()));
-    EXPECT_FALSE(healths.has(entity.getId()));
+    EXPECT_FALSE(positions.has(entity.get_id()));
+    EXPECT_FALSE(healths.has(entity.get_id()));
 }
 
 TEST(RegistryTest, MultipleEntitiesWithDifferentComponents) {
@@ -541,19 +541,19 @@ TEST(RegistryTest, MultipleEntitiesWithDifferentComponents) {
     auto &healths = reg.get_components<Health>();
 
     // Verify player
-    EXPECT_TRUE(positions.has(player.getId()));
-    EXPECT_TRUE(velocities.has(player.getId()));
-    EXPECT_TRUE(healths.has(player.getId()));
+    EXPECT_TRUE(positions.has(player.get_id()));
+    EXPECT_TRUE(velocities.has(player.get_id()));
+    EXPECT_TRUE(healths.has(player.get_id()));
 
     // Verify enemy
-    EXPECT_TRUE(positions.has(enemy.getId()));
-    EXPECT_FALSE(velocities.has(enemy.getId()));
-    EXPECT_TRUE(healths.has(enemy.getId()));
+    EXPECT_TRUE(positions.has(enemy.get_id()));
+    EXPECT_FALSE(velocities.has(enemy.get_id()));
+    EXPECT_TRUE(healths.has(enemy.get_id()));
 
     // Verify projectile
-    EXPECT_TRUE(positions.has(projectile.getId()));
-    EXPECT_TRUE(velocities.has(projectile.getId()));
-    EXPECT_FALSE(healths.has(projectile.getId()));
+    EXPECT_TRUE(positions.has(projectile.get_id()));
+    EXPECT_TRUE(velocities.has(projectile.get_id()));
+    EXPECT_FALSE(healths.has(projectile.get_id()));
 }
 
 TEST(RegistryTest, StressTestManyEntities) {
@@ -580,8 +580,8 @@ TEST(RegistryTest, StressTestManyEntities) {
 
     // Verify all entities have components
     for (size_t i = 0; i < num_entities; ++i) {
-        EXPECT_TRUE(positions.has(entities[i].getId()));
-        EXPECT_TRUE(healths.has(entities[i].getId()));
+        EXPECT_TRUE(positions.has(entities[i].get_id()));
+        EXPECT_TRUE(healths.has(entities[i].get_id()));
     }
 
     // Kill half the entities
@@ -591,13 +591,13 @@ TEST(RegistryTest, StressTestManyEntities) {
 
     // Verify first half are dead
     for (size_t i = 0; i < num_entities / 2; ++i) {
-        EXPECT_FALSE(positions.has(entities[i].getId()));
-        EXPECT_FALSE(healths.has(entities[i].getId()));
+        EXPECT_FALSE(positions.has(entities[i].get_id()));
+        EXPECT_FALSE(healths.has(entities[i].get_id()));
     }
 
     // Verify second half are alive
     for (size_t i = num_entities / 2; i < num_entities; ++i) {
-        EXPECT_TRUE(positions.has(entities[i].getId()));
-        EXPECT_TRUE(healths.has(entities[i].getId()));
+        EXPECT_TRUE(positions.has(entities[i].get_id()));
+        EXPECT_TRUE(healths.has(entities[i].get_id()));
     }
 }

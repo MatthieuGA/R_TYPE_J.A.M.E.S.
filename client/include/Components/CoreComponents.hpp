@@ -8,6 +8,10 @@ struct Transform {
     float y;
     float rotationDegrees;
     float scale;
+    enum OriginPoint {
+        TOP_LEFT,
+        CENTER
+    } origin = TOP_LEFT;
 };
 
 struct Drawable {
@@ -15,16 +19,11 @@ struct Drawable {
     int z_index;
     sf::Sprite sprite;
     sf::Texture texture;
-    enum OriginPoint {
-        TOP_LEFT,
-        CENTER
-    } origin = TOP_LEFT;
     bool isLoaded = false;
 
-    Drawable(const std::string& spritePath, int zIndex,
-        OriginPoint originPoint = TOP_LEFT)
+    Drawable(const std::string& spritePath, int zIndex)
         : spritePath("Assets/" + spritePath), z_index(zIndex), texture(),
-        sprite(texture), origin(originPoint), isLoaded(false) {}
+        sprite(texture), isLoaded(false) {}
 };
 
 struct AnimatedSprite {

@@ -6,50 +6,55 @@ namespace Eng = Engine;
 namespace Rtype::Client {
 namespace Com = Component;
 
-void init_render_systems(Eng::registry &reg, sf::RenderWindow &window, sf::Clock &deltaTimeClock) {
-    reg.add_system<Eng::sparse_array<Com::AnimatedSprite>,
+void init_render_systems(Rtype::Client::GameWorld &gameWorld) {
+    gameWorld.registry.add_system<Eng::sparse_array<Com::AnimatedSprite>,
         Eng::sparse_array<Com::Drawable>>(
-        [&deltaTimeClock](Eng::registry &r,
+        [&gameWorld](Eng::registry &r,
                 Eng::sparse_array<Com::AnimatedSprite> &animatedSprites,
                 Eng::sparse_array<Com::Drawable> &drawables) {
-            animationSystem(r, deltaTimeClock, animatedSprites, drawables);
+            animationSystem(r, gameWorld.deltaTimeClock, animatedSprites, drawables);
         });
-    reg.add_system<Eng::sparse_array<Com::Transform>,
+    gameWorld.registry.add_system<Eng::sparse_array<Com::Transform>,
         Eng::sparse_array<Com::Drawable>,
         Eng::sparse_array<Com::AnimatedSprite>>(
-        [&window](Eng::registry &r,
+        [&gameWorld](Eng::registry &r,
                 Eng::sparse_array<Com::Transform> const &transforms,
                 Eng::sparse_array<Com::Drawable> &drawables,
                 Eng::sparse_array<Com::AnimatedSprite> const &animatedSprites) {
-            drawableSystem(r, window, transforms, drawables, animatedSprites);
+            drawableSystem(r, gameWorld.window, transforms, drawables, animatedSprites);
         });
 }
 
-void init_movement_system(Eng::registry &reg, const sf::RenderWindow &window, sf::Clock &deltaTimeClock) {
-    reg.add_system<Eng::sparse_array<Com::Transform>,
+void init_movement_system(Rtype::Client::GameWorld &gameWorld) {
+    gameWorld.registry.add_system<Eng::sparse_array<Com::Transform>,
         Eng::sparse_array<Com::Velocity>>(
-        [&deltaTimeClock](Eng::registry &r,
+        [&gameWorld](Eng::registry &r,
                 Eng::sparse_array<Com::Transform> &transforms,
                 Eng::sparse_array<Com::Velocity> &velocities) {
-            movementSystem(r, deltaTimeClock, transforms, velocities);
+            movementSystem(r, gameWorld.deltaTimeClock, transforms, velocities);
         });
-    reg.add_system<Eng::sparse_array<Com::Transform>,
+    gameWorld.registry.add_system<Eng::sparse_array<Com::Transform>,
         Eng::sparse_array<Com::PlayerTag>>(
-        [&window](Eng::registry &r,
+        [&gameWorld](Eng::registry &r,
                 Eng::sparse_array<Com::Transform> &transforms,
                 Eng::sparse_array<Com::PlayerTag> const &playerTag) {
-            playfieldLimitSystem(r, window, transforms, playerTag);
+            playfieldLimitSystem(r, gameWorld.window, transforms, playerTag);
         });
-    reg.add_system<Eng::sparse_array<Com::Transform>,
-        Eng::sparse_array<Com::HitBox>>(collisionDetectionSystem);
+    gameWorld.registry.add_system<Eng::sparse_array<Com::Transform>,
+        Eng::sparse_array<Com::HitBox>>(
+            [&gameWorld](Eng::registry &r,
+                Eng::sparse_array<Com::Transform> const &transforms,
+                Eng::sparse_array<Com::HitBox> const &hitBoxes) {
+            collisionDetectionSystem(r, gameWorld, transforms, hitBoxes);
+        });
 }
 
-void init_registry_systems(Eng::registry &reg, sf::RenderWindow &window, sf::Clock &deltaTimeClock) {
+void init_registry_systems(Rtype::Client::GameWorld &gameWorld) {
     // Set up systems
-    init_movement_system(reg, window, deltaTimeClock);
-    init_render_systems(reg, window, deltaTimeClock);
-    reg.add_system<>([&deltaTimeClock](Eng::registry &r) {
-        deltaTimeClock.restart();
+    init_movement_system(gameWorld);
+    init_render_systems(gameWorld);
+    gameWorld.registry.add_system<>([&gameWorld](Eng::registry &r) {
+        gameWorld.deltaTimeClock.restart();
     });
 }
 }  // namespace Rtype::Client

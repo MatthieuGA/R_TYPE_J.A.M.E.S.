@@ -15,7 +15,7 @@ inline sparse_array<Component> &registry::register_component() {
         std::function<void(registry&, entity const&)> fn =
             [](registry &r, entity const &e) {
         try {
-            r.get_components<Component>().erase(e.getId());
+            r.get_components<Component>().erase(e.get_id());
         } catch (...) {}
         };
         _erase_fns.push_back(std::move(fn));
@@ -50,20 +50,20 @@ inline sparse_array<Component> const &registry::get_components() const {
 template <typename Component>
 inline typename sparse_array<Component>::reference_type registry::
 add_component(entity_t const &to, Component &&c) {
-    return get_components<Component>().insert_at(to.getId(),
+    return get_components<Component>().insert_at(to.get_id(),
         std::forward<Component>(c));
 }
 
 template <typename Component, typename ... Params>
 inline typename sparse_array<Component>::reference_type registry::
 emplace_component(entity_t const &to, Params &&... p) {
-    return get_components<Component>().emplace_at(to.getId(),
+    return get_components<Component>().emplace_at(to.get_id(),
         std::forward<Params>(p)...);
 }
 
 template <typename Component>
 inline void registry::remove_component(entity_t const &from) {
-    get_components<Component>().erase(from.getId());
+    get_components<Component>().erase(from.get_id());
 }
 
 template <typename T>

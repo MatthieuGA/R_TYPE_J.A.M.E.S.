@@ -96,7 +96,7 @@ private:
     friend class registry;  // Only registry can create entities
     
 public:
-    size_t getId() const { return id_; }
+    size_t get_id() const { return id_; }
 };
 ```
 
@@ -321,7 +321,7 @@ public:
     // Add component to entity
     template <typename Component>
     std::optional<Component>& add_component(entity e, Component&& comp) {
-        return get_components<Component>().insert_at(e.getId(), std::move(comp));
+        return get_components<Component>().insert_at(e.get_id(), std::move(comp));
     }
     
     // Get component array
