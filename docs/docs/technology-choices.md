@@ -20,6 +20,7 @@
 ## Introduction
 
 This document justifies the key technology choices for the R-Type project. Each selection is evaluated based on:
+
 - **Project Requirements:** Binary UDP protocol, multithreaded server, cross-platform (Linux/Windows)
 - **Performance:** Real-time 60 FPS rendering and low-latency networking
 - **Team Expertise:** Leveraging existing knowledge to maximize productivity
@@ -43,11 +44,13 @@ This document justifies the key technology choices for the R-Type project. Each 
 **Critical Factor:** All 5 team members have SFML experience from previous school projects.
 
 **Impact:**
+
 - **0 days** onboarding vs 2-5 days for alternatives
 - Can focus on networking and ECS architecture immediately
 - Familiar debugging and development workflow
 
 **Why It Fits:**
+
 - ✅ Cross-platform (Linux/Windows requirement)
 - ✅ 60 FPS 2D rendering capability
 - ✅ Modern C++23 compatible
@@ -83,12 +86,14 @@ socket.async_receive_from(buffer, endpoint,
 ```
 
 **Project Requirements:**
+
 - ✅ Multithreaded server → Boost.Asio's `io_context` handles multiple clients per thread
 - ✅ UDP networking → Native async UDP support
 - ✅ Cross-platform → No `#ifdef` needed (abstracts epoll/IOCP/kqueue)
 - ✅ Custom binary protocol → Low-level socket control
 
 **Performance:**
+
 - 1 thread handles 100+ clients (vs thread-per-client with blocking I/O)
 - Non-blocking operations prevent slow clients from affecting others
 
@@ -110,6 +115,7 @@ socket.async_receive_from(buffer, endpoint,
 ### Decision: vcpkg (manifest mode)
 
 **Manifest Example:**
+
 ```json
 {
   "dependencies": ["sfml", "boost-asio"]
@@ -117,12 +123,14 @@ socket.async_receive_from(buffer, endpoint,
 ```
 
 **CMake Integration:**
+
 ```bash
 cmake -DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake
 # That's it! No boilerplate in CMakeLists.txt
 ```
 
 **Key Benefits:**
+
 - ✅ Auto-resolves transitive deps (SFML → freetype → zlib → ...)
 - ✅ Cross-platform builds (Windows MSVC + Linux GCC)
 - ✅ Binary caching (CI/CD: 1 min vs 20 min)
