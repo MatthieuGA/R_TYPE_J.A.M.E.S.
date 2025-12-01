@@ -70,7 +70,7 @@ Then run:
 
 ## 📦 Dependencies
 
-Dependencies (SFML, Asio) are automatically installed via vcpkg during CMake configuration
+Dependencies (SFML, Boost.Asio) are automatically installed via vcpkg during CMake configuration
 
 ---
 
@@ -169,7 +169,7 @@ cmake --build build -j
 
 Documentation includes:
 
-* [Technology Choices and Comparative Study](docs/TECHNOLOGY_CHOICES.md) — Why SFML, Asio, and vcpkg
+* [Technology Choices and Comparative Study](docs/TECHNOLOGY_CHOICES.md) — Why SFML, Boost.Asio, and vcpkg
 * Architecture documentation
 * [ECS specification](docs/rfcs/RFC-0001-engine-architecture.md) — Entity-Component-System design
 * Protocol RFC
