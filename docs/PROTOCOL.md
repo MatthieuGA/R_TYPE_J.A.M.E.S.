@@ -1,7 +1,7 @@
 # R-Type Network Protocol Specification
 
-> **Version:** 2.0.0
-> **Last Updated:** 25 November 2025
+> **Version:** 3.0.0
+> **Last Updated:** 1st December 2025
 
 ## Table of Contents
 
@@ -57,7 +57,7 @@ To ensure strict binary compatibility, the following field types and sizes are d
 | `PacketIndex` | `u8` | 1 | 0..255 | Fragment index |
 | `PacketCount` | `u8` | 1 | 0..255 | Total fragments for Tick |
 | `Reserved` | - | Varies | - | Padding bytes, MUST be set to 0 |
-| `PlayerId` | `u16` | 2 | 0..65535 | Session ID |
+| `PlayerId` | `u8` | 1 | 0..255 | Session ID |
 | `EntityId` | `u32` | 4 | 0..4294967295 | Unique Object ID (ECS) |
 | `Status` | `u8` | 1 | 0..255 | Error/Success Codes (0=OK) |
 | `Inputs` | `u8` | 1 | 0..255 | Bitmask (Keys held down) |
@@ -162,9 +162,9 @@ If the Client and Server disagree on a position (e.g., due to lag or cheating), 
 
 | Field | Type | Size | Description |
 | :--- | :--- | :--- | :--- |
-| `PlayerId` | `u16` | 2 | The unique ID assigned to this client (e.g., 1, 2, 3, 4). |
+| `PlayerId` | `u8` | 1 | The unique ID assigned to this client (e.g., 1, 2, 3, 4). |
 | `Status` | `u8` | 1 | **Status Codes:**<br>`0` = OK (Success)<br>`1` = Server Full<br>`2` = Bad Username<br>`3` = Game in Progress |
-| `Reserved` | `u8[1]` | 1 | Padding to align with 4 bytes. |
+| `Reserved` | `u8[2]` | 2 | Padding to align with 4 bytes. |
 
 - **Client Behavior:** If Status is `0`, proceed to Lobby. Otherwise, show error message.
 
@@ -186,8 +186,8 @@ If the Client and Server disagree on a position (e.g., due to lag or cheating), 
 
 | Field | Type | Size | Description |
 | :--- | :--- | :--- | :--- |
-| `PlayerId` | `u16` | 2 | The ID of the player who disconnected. |
-| `Reserved` | `u8[2]` | 2 | Padding to align with 4 bytes. |
+| `PlayerId` | `u8` | 1 | The ID of the player who disconnected. |
+| `Reserved` | `u8[3]` | 3 | Padding to align with 4 bytes. |
 
 - **Client Behavior:** Remove the corresponding player sprite/UI element from the lobby or game.
 
@@ -211,8 +211,8 @@ If the Client and Server disagree on a position (e.g., due to lag or cheating), 
 
 | Field | Type | Size | Description |
 | :--- | :--- | :--- | :--- |
-| `WinningPlayerId` | `u16` | 2 | ID of the winning player (or 0 for draw). |
-| `Reserved` | `u8[2]` | 2 | Padding to align with 4 bytes. |
+| `WinningPlayerId` | `u8` | 1 | ID of the winning player (or 0 for draw). |
+| `Reserved` | `u8[3]` | 3 | Padding to align with 4 bytes. |
 
 ---
 
@@ -315,9 +315,9 @@ Positions are mapped from Screen Space (pixels) to Network Space (0-65535) to sa
 
 | Field | Type | Size | Description |
 | :--- | :--- | :--- | :--- |
-| `PlayerId` | `u16` | 2 | ID of the player to update. |
+| `PlayerId` | `u8` | 1 | ID of the player to update. |
 | `Lives` | `u8` | 1 | Remaining lives. |
-| `Reserved` | `u8[1]` | 1 | Padding to align with 4 bytes. |
+| `Reserved` | `u8[2]` | 2 | Padding to align with 4 bytes. |
 | `Score` | `u32` | 4 | Current score. |
 
 ## 6. Security Considerations

@@ -1,8 +1,8 @@
 Network Working Group                                           J.A.M.E.S
 Request for Comments: 1                                    Epitech Nantes
-Category: Standards Track                                   November 2025
-Version: 2.0.0
-Based on: docs/PROTOCOL.md (v2.0.0)
+Category: Standards Track                                   December 2025
+Version: 3.0.0
+Based on: docs/PROTOCOL.md (v3.0.0)
 
                      R-Type Game Protocol Specification
 
@@ -65,7 +65,7 @@ Table of Contents
    | PacketIndex | u8   | 1      | 0..255        | Fragment index                  |
    | PacketCount | u8   | 1      | 0..255        | Total fragments for Tick        |
    | Reserved    | -    | Varies | -             | Padding bytes, MUST be set to 0 |
-   | PlayerId    | u16  | 2      | 0..65535      | Session ID                      |
+   | PlayerId    | u16  | 1      | 0..65535      | Session ID                      |
    | EntityId    | u32  | 4      | 0..4294967295 | Unique Object ID (ECS)          |
    | Status      | u8   | 1      | 0..255        | Error/Success Codes (0=OK)      |
    | Inputs      | u8   | 1      | 0..255        | Bitmask (Keys held down)        |
@@ -138,7 +138,7 @@ Table of Contents
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |           PlayerId            |     Status    |    Reserved   |
+   |   PlayerId    |     Status    |            Reserved           |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
    Status Codes:
@@ -162,7 +162,7 @@ Table of Contents
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |           PlayerId            |            Reserved           |
+   |   PlayerId    |                    Reserved                   |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
    5.5.  GAME_START (0x05)
@@ -188,7 +188,7 @@ Table of Contents
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |        WinningPlayerId        |            Reserved           |
+   |WinningPlayerId|                    Reserved                   |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 6.  UDP Protocol (Real-time Gameplay)
@@ -266,7 +266,7 @@ Table of Contents
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |           PlayerId            |     Lives     |    Reserved   |
+   |   PlayerId    |     Lives     |            Reserved           |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
    |                             Score                             |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
