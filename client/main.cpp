@@ -25,6 +25,9 @@ void init_entities(registry &reg) {
         Component::AnimatedSprite{
             17, 17, 12, 0, .1f, 0.f, true
         });
+    reg.emplace_component<Component::Velocity>(entity,
+        Component::Velocity{50.0f, 30.0f, 0.0f, 0.0f});
+    reg.emplace_component<Component::PlayerTag>(entity);
 }
 
 int main() {

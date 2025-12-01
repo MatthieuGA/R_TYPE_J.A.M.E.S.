@@ -21,5 +21,8 @@ void animationSystem(Engine::registry &reg, const sf::Clock &deltaTimeClock,
     Engine::sparse_array<Component::AnimatedSprite> &animatedSprites,
     Engine::sparse_array<Component::Drawable> &drawables);
 
+void playfieldLimitSystem(Engine::registry &reg, const sf::RenderWindow &window,
+    Engine::sparse_array<Component::Transform> &transforms,
+    Engine::sparse_array<Component::PlayerTag> const &playerTags);
 
 }  // namespace Rtype::Client
