@@ -30,16 +30,16 @@ graph TD
     end
 
     subgraph Server ["Server Application"]
-        S_Net["Network Module (ASIO)"]
+        S_Net["Network Class (ASIO)"]
         S_Logic[Game Logic]
         S_ECS[ECS Registry]
 
         S_Net -->|Inputs| S_Logic
+        S_Logic -->|Snapshots| S_Net
         S_Logic --> S_ECS
     end
 
-    C_Net ==>|UDP / TCP| S_Net
-    S_Logic ==>|UDP / TCP| C_Net
+    C_Net <==>|UDP / TCP| S_Net
 ```
 
 ---
