@@ -23,6 +23,7 @@ if (ENABLE_COVERAGE AND NOT MSVC)
 endif()
 
 # Find required packages (vcpkg integration)
+# SFML 2.6.2 uses lowercase component names
 find_package(SFML COMPONENTS system window graphics network audio CONFIG REQUIRED)
 # Use Boost.Asio provided by vcpkg (`boost-asio`)
 find_package(Boost REQUIRED COMPONENTS asio system)

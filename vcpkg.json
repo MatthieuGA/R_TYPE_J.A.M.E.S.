@@ -1,12 +1,15 @@
 ﻿{
   "name": "r-type",
   "version": "1.0.0",
-  "builtin-baseline": "d2845dc758c3ba057efce12d8d4c1ebf9c9dd33d",
+  "builtin-baseline": "5bf0c55239da398b8c6f450818c9e28d36bf9966",
   "dependencies": [
+    "sfml",
+    "boost-asio"
+  ],
+  "overrides": [
     {
       "name": "sfml",
-      "version>=": "2.6.1"
-    },
-    "boost-asio"
+      "version": "2.6.2"
+    }
   ]
 }
