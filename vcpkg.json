@@ -1,8 +1,12 @@
 ﻿{
   "name": "r-type",
   "version": "1.0.0",
+  "builtin-baseline": "d2845dc758c3ba057efce12d8d4c1ebf9c9dd33d",
   "dependencies": [
-    "sfml",
+    {
+      "name": "sfml",
+      "version>=": "2.6.1"
+    },
     "asio"
   ]
 }
