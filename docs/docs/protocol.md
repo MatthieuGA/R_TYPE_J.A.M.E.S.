@@ -1,6 +1,6 @@
 # R-Type Network Protocol Specification
 
-> **Version:** 3.1.2
+> **Version:** 3.2.0
 > **Last Updated:** 1st December 2025
 
 ## Table of Contents
@@ -317,16 +317,13 @@ _Note: Even if packet 102 was lost, the server recovers the state at tick 103. T
 | `Angle` | `u16` | 2 | Rotation in degrees (0-360). |
 
 **Note on Coordinates:**
-Positions are mapped from Screen Space (pixels) to Network Space (0-65535) to save bandwidth while maintaining sub-pixel precision.
-Example:
+The game world is defined on a fixed coordinate system of **65535 x 38864** units (approximately 16:9 aspect ratio).
+The client is responsible for mapping these coordinates to its local screen resolution using the rule of three.
 
-- _Encode:_ `NetworkX = (ScreenX / MapWidth) * 65535`
-- _Decode:_ `ScreenX = (NetworkX / 65535) * MapWidth`
+Example for a client with a 1920x1080 screen:
 
-Example for 1920x1080 screen:
-
-- _Encode:_ `ScreenX = 960` → `NetworkX = (960 / 1920) * 65535 ≈ 32767`
-- _Decode:_ `NetworkX = 32767` → `ScreenX = (32767 / 65535) * 1920 ≈ 960`
+- `ScreenX = (NetworkX * 1920) / 65535`
+- `ScreenY = (NetworkY * 1080) / 38864`
 
 ### `0x21` - PLAYER_STATS
 

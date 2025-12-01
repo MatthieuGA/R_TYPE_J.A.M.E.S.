@@ -1,8 +1,8 @@
 Network Working Group                                           J.A.M.E.S
 Request for Comments: 1                                    Epitech Nantes
 Category: Standards Track                                   December 2025
-Version: 3.1.2
-Based on: docs/PROTOCOL.md (v3.1.2)
+Version: 3.2.0
+Based on: docs/PROTOCOL.md (v3.2.0)
 
                      R-Type Game Protocol Specification
 
@@ -280,10 +280,14 @@ Table of Contents
       - Existing ID: Interpolate position.
 
    Coordinate Encoding:
-   Positions are mapped from Screen Space (pixels) to Network Space (0-65535)
-   to save bandwidth while maintaining sub-pixel precision.
-   - Encode: NetworkX = (ScreenX / MapWidth) * 65535
-   - Decode: ScreenX = (NetworkX / 65535) * MapWidth
+   The game world is defined on a fixed coordinate system of 65535 x 38864
+   units (approximately 16:9 aspect ratio). The client is responsible for
+   mapping these coordinates to its local screen resolution using the rule
+   of three.
+
+   Example for a client with a 1920x1080 screen:
+   - ScreenX = (NetworkX * 1920) / 65535
+   - ScreenY = (NetworkY * 1080) / 38864
 
    6.3.  PLAYER_STATS (0x21)
 
