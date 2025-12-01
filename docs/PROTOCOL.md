@@ -1,6 +1,6 @@
 # R-Type Network Protocol Specification
 
-> **Version:** 3.0.1
+> **Version:** 3.0.2
 > **Last Updated:** 1st December 2025
 
 ## Table of Contents
@@ -224,7 +224,7 @@ If the Client and Server disagree on a position (e.g., due to lag or cheating), 
 ### `0x10` - PLAYER_INPUT
 
 **Direction:** Client -> Server
-**Freq:** Every Tick (e.g., 60Hz).
+**Freq:** Every client tick (e.g., 60Hz).
 **Description:** Contains the current state of the controller/keyboard.
 
 **Payload:** _4 bytes_
