@@ -22,7 +22,7 @@ R-TYPE J.A.M.E.S. is built upon a **Client-Server** architecture using a custom 
 graph TD
     subgraph Client ["Client Application"]
         C_Net[Network Thread]
-        C_Render[Graphic Thread]
+        C_Render[Graphics Thread]
         C_Input[Input Handling]
 
         C_Render <-->|Shared State| C_Net
@@ -139,7 +139,7 @@ The client also operates on **2 dedicated threads**:
     - Updates the local "Network State" (the target state to interpolate towards).
     - Sends Player Inputs to the server.
 
-2. **Graphic Thread (Main Thread)**:
+2. **Graphics Thread (Main Thread)**:
     - Handles the Window and Event Polling (SFML requirement).
     - Interpolates entities between the last known state and the current Network State.
     - Renders the scene.
