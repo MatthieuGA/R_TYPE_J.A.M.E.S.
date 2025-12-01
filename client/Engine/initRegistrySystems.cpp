@@ -40,6 +40,8 @@ void init_movement_system(Eng::registry &reg, const sf::RenderWindow &window, sf
                 Eng::sparse_array<Com::PlayerTag> const &playerTag) {
             playfieldLimitSystem(r, window, transforms, playerTag);
         });
+    reg.add_system<Eng::sparse_array<Com::Transform>,
+        Eng::sparse_array<Com::HitBox>>(collisionDetectionSystem);
 }
 
 void init_registry_systems(Eng::registry &reg, sf::RenderWindow &window, sf::Clock &deltaTimeClock) {

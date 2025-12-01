@@ -25,9 +25,26 @@ void init_entities(registry &reg) {
         Component::AnimatedSprite{
             17, 17, 12, 0, .1f, 0.f, true
         });
+    reg.emplace_component<Component::HitBox>(entity,
+        Component::HitBox{17.0f, 17.0f});
     reg.emplace_component<Component::Velocity>(entity,
         Component::Velocity{50.0f, 30.0f, 0.0f, 0.0f});
     reg.emplace_component<Component::PlayerTag>(entity);
+    // Create a second entity
+    auto entity2 = reg.spawn_entity();
+    reg.emplace_component<Component::Transform>(entity2,
+        Component::Transform{450.0f, 100.0f, 0, 4.f});
+    reg.emplace_component<Component::Drawable>(entity2,
+        Component::Drawable("ball_enemy.gif", 0, Component::Drawable::CENTER));
+    reg.emplace_component<Component::AnimatedSprite>(entity2,
+        Component::AnimatedSprite{
+            17, 17, 12, 0, .1f, 0.f, true
+        });
+    reg.emplace_component<Component::HitBox>(entity2,
+        Component::HitBox{17.0f, 17.0f});
+    reg.emplace_component<Component::Velocity>(entity2,
+        Component::Velocity{-50.0f, 30.0f, 0.0f, 0.0f});
+    reg.emplace_component<Component::PlayerTag>(entity2);
 }
 
 int main() {
