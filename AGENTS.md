@@ -163,16 +163,16 @@ Husky and lint-staged automatically format code and check commit messages.
 - **Process:**
   1. Create an Issue.
   2. Create a Branch from `main` (or `Epic-...` branch).
-- **Assets:** Place assets in `assets/` folder. They are copied to the build directory.
+  3. Implement changes.
+  4. Open PR with description and link to issue (`Closes #ID`).
+  5. Ensure CI passes (Build, Tests, Format).
+  6. Squash & Merge.
 
 ## Advanced Goals (Part 2)
 
 - **Standalone Engine:** The engine should be reusable for a second game (e.g., Pong, Mario).
 - **Advanced Networking:** Multi-instance server, Lobbies, Chat, User accounts.
 - **Engine Features:** Scripting (Lua/Python), Physics, Resource Management, Scene Editor.
-  4. Open PR with description and link to issue (`Closes #ID`).
-  5. Ensure CI passes (Build, Tests, Format).
-  6. Squash & Merge.
 
 ## Additional Notes
 
