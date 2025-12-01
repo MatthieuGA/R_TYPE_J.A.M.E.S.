@@ -1,6 +1,6 @@
 # R-Type Network Protocol Specification
 
-> **Version:** 3.1.1
+> **Version:** 3.1.2
 > **Last Updated:** 1st December 2025
 
 ## Table of Contents
@@ -296,7 +296,7 @@ _Note: Even if packet 102 was lost, the server recovers the state at tick 103. T
 **Client Logic:**
 
 1. **Reassemble:** Collect all parts for `TickId`.
-   - **If complete:** Process Snapshot and delete old parts.
+   - **If complete:** Process Snapshot. If any older incomplete ticks are pending, delete them.
    - **If incomplete:** Wait for missing parts (or discard if too old).
 2. **Compare:** Compare received Entity IDs with local Entity IDs.
    - **New ID:** Spawn Entity.

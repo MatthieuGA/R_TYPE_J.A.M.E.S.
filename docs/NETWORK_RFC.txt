@@ -1,8 +1,8 @@
 Network Working Group                                           J.A.M.E.S
 Request for Comments: 1                                    Epitech Nantes
 Category: Standards Track                                   December 2025
-Version: 3.1.1
-Based on: docs/PROTOCOL.md (v3.1.1)
+Version: 3.1.2
+Based on: docs/PROTOCOL.md (v3.1.2)
 
                      R-Type Game Protocol Specification
 
@@ -271,7 +271,8 @@ Table of Contents
 
    Client Logic:
    1. Reassemble: Collect all parts for TickId.
-      - If complete: Process Snapshot, delete old parts.
+      - If complete: Process Snapshot. If any older incomplete ticks are
+        pending, delete them.
       - If incomplete: Wait for missing parts.
    2. Compare:
       - New ID: Spawn Entity.
