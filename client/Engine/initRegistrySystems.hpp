@@ -29,6 +29,7 @@ void playfieldLimitSystem(Engine::registry &reg, const sf::RenderWindow &window,
 
 void collisionDetectionSystem(Engine::registry &reg,
     Rtype::Client::GameWorld &gameWorld,
-    Engine::sparse_array<Component::Transform> const &transforms,
-    Engine::sparse_array<Component::HitBox> const &hitBoxes);
+    Engine::sparse_array<Component::Transform> &transforms,
+    Engine::sparse_array<Component::HitBox> const &hitBoxes,
+    Engine::sparse_array<Component::Solid> const &solids);
 }  // namespace Rtype::Client

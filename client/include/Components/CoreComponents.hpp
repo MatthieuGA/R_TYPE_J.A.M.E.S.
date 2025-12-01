@@ -11,17 +11,17 @@ struct Transform {
     enum OriginPoint {
         TOP_LEFT,
         CENTER
-    } origin = TOP_LEFT;
+    } origin = CENTER;
 };
 
 struct Drawable {
     std::string spritePath;
-    int z_index;
+    int z_index = 0;
     sf::Sprite sprite;
     sf::Texture texture;
     bool isLoaded = false;
 
-    Drawable(const std::string& spritePath, int zIndex)
+    Drawable(const std::string& spritePath, int zIndex = 0)
         : spritePath("Assets/" + spritePath), z_index(zIndex), texture(),
         sprite(texture), isLoaded(false) {}
 };
@@ -30,17 +30,17 @@ struct AnimatedSprite {
     int frameWidth;
     int frameHeight;
     int totalFrames;
-    int currentFrame;
-    float frameDuration;
-    float elapsedTime;
-    bool loop;
+    int currentFrame = 0;
+    float frameDuration = 0.1f;
+    bool loop = true;
+    float elapsedTime = 0.0f;
 };
 
 struct Velocity {
-    float vx;
-    float vy;
-    float accelerationX;
-    float accelerationY;
+    float vx = 0.0f;
+    float vy = 0.0f;
+    float accelerationX = 0.0f;
+    float accelerationY = 0.0f;
 };
 
 struct Controllable {
@@ -60,5 +60,10 @@ struct HitBox {
     float height;
     float offsetX;
     float offsetY;
+};
+
+struct Solid {
+    bool isSolid = true;
+    bool isLocked = false;
 };
 }  // namespace Rtype::Client::Component

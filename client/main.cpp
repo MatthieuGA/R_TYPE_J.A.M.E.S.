@@ -18,35 +18,36 @@ void init_registry(Rtype::Client::GameWorld &gameWorld) {
 }
 
 void init_entities(registry &reg) {
-    auto entity = reg.spawn_entity();
-    reg.emplace_component<Component::Transform>(entity,
-        Component::Transform{150.0f, 100.0f, 0, 4.f, Component::Transform::CENTER});
-    reg.emplace_component<Component::Drawable>(entity,
-        Component::Drawable("ball_enemy.gif", 0));
-    reg.emplace_component<Component::AnimatedSprite>(entity,
-        Component::AnimatedSprite{
-            17, 17, 12, 0, .1f, 0.f, true
-        });
-    reg.emplace_component<Component::HitBox>(entity,
-        Component::HitBox{17.0f, 17.0f});
-    reg.emplace_component<Component::Velocity>(entity,
-        Component::Velocity{50.0f, 30.0f, 0.0f, 0.0f});
-    reg.emplace_component<Component::PlayerTag>(entity);
+    std::vector<registry::entity_t> entities;
+    for (int i = 0; i < 3; ++i) {
+        auto entity = reg.spawn_entity();
+        reg.emplace_component<Component::Drawable>(entity,
+            Component::Drawable("ball_enemy.gif"));
+        reg.emplace_component<Component::AnimatedSprite>(entity,
+            Component::AnimatedSprite{17, 17, 12, rand() % 12});
+        reg.emplace_component<Component::HitBox>(entity,
+            Component::HitBox{17.0f, 17.0f});
+        entities.push_back(entity);
+        reg.emplace_component<Component::PlayerTag>(entity);
+    }
+
+    reg.emplace_component<Component::Transform>(entities[0],
+        Component::Transform{150.0f, 100.0f, 0, 4.f});
+    reg.emplace_component<Component::Solid>(entities[0], Component::Solid{});
+    reg.emplace_component<Component::Velocity>(entities[0],
+        Component::Velocity{100.0f, 30.0f});
+
     // Create a second entity
-    auto entity2 = reg.spawn_entity();
-    reg.emplace_component<Component::Transform>(entity2,
-        Component::Transform{450.0f, 100.0f, 0, 4.f, Component::Transform::CENTER});
-    reg.emplace_component<Component::Drawable>(entity2,
-        Component::Drawable("ball_enemy.gif", 0));
-    reg.emplace_component<Component::AnimatedSprite>(entity2,
-        Component::AnimatedSprite{
-            17, 17, 12, 0, .1f, 0.f, true
-        });
-    reg.emplace_component<Component::HitBox>(entity2,
-        Component::HitBox{17.0f, 17.0f});
-    reg.emplace_component<Component::Velocity>(entity2,
-        Component::Velocity{-50.0f, 30.0f, 0.0f, 0.0f});
-    reg.emplace_component<Component::PlayerTag>(entity2);
+    reg.emplace_component<Component::Transform>(entities[1],
+        Component::Transform{450.0f, 100.0f, 0, 4.f});
+    reg.emplace_component<Component::Solid>(entities[1], Component::Solid{});
+    reg.emplace_component<Component::Velocity>(entities[1],
+        Component::Velocity{-50.0f, 30.0f});
+
+    reg.emplace_component<Component::Transform>(entities[2],
+        Component::Transform{375.0f, 300.0f, 0, 4.f});
+    reg.emplace_component<Component::Solid>(entities[2],
+        Component::Solid{true, true});
 }
 
 int main() {

@@ -4,10 +4,10 @@
 
 // Lists of events
 struct CollisionEvent : public Event {
-    int entityA;
-    int entityB;
+    size_t entityA;
+    size_t entityB;
     Rtype::Client::GameWorld &gameWorld;
-    CollisionEvent(int a, int b, Rtype::Client::GameWorld &gw)
+    CollisionEvent(size_t a, size_t b, Rtype::Client::GameWorld &gw)
         : entityA(a), entityB(b), gameWorld(gw) {}
 };
 

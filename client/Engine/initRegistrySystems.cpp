@@ -41,11 +41,13 @@ void init_movement_system(Rtype::Client::GameWorld &gameWorld) {
             playfieldLimitSystem(r, gameWorld.window, transforms, playerTag);
         });
     gameWorld.registry.add_system<Eng::sparse_array<Com::Transform>,
-        Eng::sparse_array<Com::HitBox>>(
+        Eng::sparse_array<Com::HitBox>,
+        Eng::sparse_array<Com::Solid>>(
             [&gameWorld](Eng::registry &r,
-                Eng::sparse_array<Com::Transform> const &transforms,
-                Eng::sparse_array<Com::HitBox> const &hitBoxes) {
-            collisionDetectionSystem(r, gameWorld, transforms, hitBoxes);
+                Eng::sparse_array<Com::Transform> &transforms,
+                Eng::sparse_array<Com::HitBox> const &hitBoxes,
+                Eng::sparse_array<Com::Solid> const &solids) {
+            collisionDetectionSystem(r, gameWorld, transforms, hitBoxes, solids);
         });
 }
 

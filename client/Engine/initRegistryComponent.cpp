@@ -10,6 +10,7 @@ void init_registry_components(Engine::registry &reg) {
     reg.register_component<Rtype::Client::Component::InputState>();
     reg.register_component<Rtype::Client::Component::HitBox>();
     reg.register_component<Rtype::Client::Component::AnimatedSprite>();
+    reg.register_component<Rtype::Client::Component::Solid>();
     // Register gameplay components
     reg.register_component<Rtype::Client::Component::PlayerTag>();
     reg.register_component<Rtype::Client::Component::EnemyTag>();
