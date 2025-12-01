@@ -782,39 +782,6 @@ Use this checklist during playtests to verify the game meets stated goals.
 - [ ] **No visual desync between clients:** Players in same game see enemies in same positions (within acceptable latency margin).
 - [ ] **Collision detection feels fair:** Player feels hit registration is accurate (no "I wasn't touching that!" moments beyond lag explanation).
 
----
-
-## 10. Future Enhancements (Out of Scope for Initial GDD)
-
-The following features are aspirational and may be implemented in advanced phases of the project.
-
-### 10.1 Additional Content
-
-- **More stages:** Expand from initial 1-2 stages to 5+ stages with distinct themes (asteroid field, alien mothership interior, planetary surface).
-- **More bosses:** Each stage ends with unique boss with custom mechanics.
-- **More enemy types:** Introduce enemies with shields, teleportation, or co-op attack patterns.
-
-### 10.2 Advanced Powerups
-
-- **Homing missiles:** Player shoots missiles that track nearest enemy.
-- **Shield powerup:** Temporary invincibility bubble around player.
-- **Time slow:** Powerup that slows enemy movement and bullets for 5 seconds.
-
-### 10.3 Scripting & Modding
-
-- **Lua scripting system:** Allow level designers to script enemy behaviors, spawn patterns, and custom events without C++ recompilation.
-- **Level editor tool:** Graphical tool to place enemies, obstacles, and powerups; export level data as JSON or binary.
-
-### 10.4 Procedural Content
-
-- **Procedural music:** Adaptive soundtrack that changes intensity based on player health, enemy density, or boss phase.
-- **Procedural levels:** Randomly generated enemy waves within designer-defined constraints for replayability.
-
-### 10.5 Social Features
-
-- **Global leaderboard:** Persistent online scoreboard tracking high scores across all players.
-- **Replay system:** Record and playback gameplay sessions; share replays with others.
-- **Spectator mode:** Allow players to watch ongoing games without participating.
 
 ---
 
@@ -830,15 +797,8 @@ This Game Design Document defines the core vision, mechanics, entity roles, and 
 
 Developers, designers, and testers should reference this document throughout implementation to ensure all features align with the stated design intent. Playtests using the provided checklist will validate whether the game achieves its accessibility and feel goals.
 
-**Next Steps:**
-1. Implement core game loop (movement, shooting, collision) and verify against responsiveness targets.
-2. Build networked server-client architecture with prediction/reconciliation.
-3. Design and test first stage with 3 enemy types and 1 boss.
-4. Conduct accessibility playtests and iterate based on checklist results.
-
 ---
 
 **Document Version:** 1.0  
 **Authors:** R-Type J.A.M.E.S. Team  
-**Approved By:** [Project Lead]  
 **Last Updated:** December 1, 2025
