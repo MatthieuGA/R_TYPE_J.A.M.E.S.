@@ -32,17 +32,17 @@ void init_entities(registry &reg) {
     }
 
     reg.emplace_component<Component::Transform>(entities[0],
-        Component::Transform{150.0f, 100.0f, 0, 4.f});
+        Component::Transform{150.0f, 10.0f, 0, 4.f});
     reg.emplace_component<Component::Solid>(entities[0], Component::Solid{});
     reg.emplace_component<Component::Velocity>(entities[0],
-        Component::Velocity{100.0f, 30.0f});
+        Component::Velocity{300.0f, 30.0f});
 
     // Create a second entity
     reg.emplace_component<Component::Transform>(entities[1],
         Component::Transform{450.0f, 100.0f, 0, 4.f});
     reg.emplace_component<Component::Solid>(entities[1], Component::Solid{});
     reg.emplace_component<Component::Velocity>(entities[1],
-        Component::Velocity{-50.0f, 30.0f});
+        Component::Velocity{-150.0f, 30.0f});
 
     reg.emplace_component<Component::Transform>(entities[2],
         Component::Transform{375.0f, 300.0f, 0, 4.f});

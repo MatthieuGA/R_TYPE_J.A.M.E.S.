@@ -1,19 +1,14 @@
 #include <iostream>
 #include "Engine/initRegistrySystems.hpp"
 #include "include/indexed_zipper.hpp"
-
-namespace Eng = Engine;
+#include "Engine/originTool.hpp"
 
 namespace Rtype::Client {
-namespace Com = Component;
 void setDrawableOrigin(Com::Drawable &drawable, const Com::Transform &transform) {
-    sf::Vector2f origin;
-    if (transform.origin == Com::Transform::CENTER) {
-        sf::FloatRect bounds = drawable.sprite.getLocalBounds();
-        origin = sf::Vector2f(bounds.width / 2.0f, bounds.height / 2.0f);
-    } else {
-        origin = sf::Vector2f(0.0f, 0.0f);
-    }
+    sf::Vector2f origin = get_offset_from_transform(transform,
+        sf::Vector2f(
+            static_cast<float>(drawable.texture.getSize().x),
+            static_cast<float>(drawable.texture.getSize().y)));
     drawable.sprite.setOrigin(origin);
 }
 
@@ -29,13 +24,8 @@ void initializeDrawable(Com::Drawable &drawable, const Com::Transform &transform
 
 void setDrawableAnimationOrigin(Com::Drawable &drawable,
 const Com::AnimatedSprite &animatedSprite, const Com::Transform &transform) {
-    sf::Vector2f origin;
-    if (transform.origin == Com::Transform::CENTER) {
-        origin = sf::Vector2f(animatedSprite.frameWidth / 2.0f,
-            animatedSprite.frameHeight / 2.0f);
-    } else {
-        origin = sf::Vector2f(0.0f, 0.0f);
-    }
+    sf::Vector2f origin = get_offset_from_animated_transform(transform,
+        animatedSprite);
     drawable.sprite.setOrigin(origin);
 }
 

@@ -10,8 +10,16 @@ struct Transform {
     float scale;
     enum OriginPoint {
         TOP_LEFT,
-        CENTER
+        TOP_CENTER,
+        TOP_RIGHT,
+        LEFT_CENTER,
+        CENTER,
+        RIGHT_CENTER,
+        BOTTOM_LEFT,
+        BOTTOM_CENTER,
+        BOTTOM_RIGHT
     } origin = CENTER;
+    sf::Vector2f customOrigin = sf::Vector2f(0.0f, 0.0f);
 };
 
 struct Drawable {

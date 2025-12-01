@@ -3,12 +3,10 @@
 #include "Engine/initRegistrySystems.hpp"
 #include "include/indexed_zipper.hpp"
 #include "Engine/Events/EngineEvent.hpp"
+#include "Engine/originTool.hpp"
 
-namespace Eng = Engine;
 
 namespace Rtype::Client {
-namespace Com = Component;
-
 bool is_colliding_from_offset(const Com::Transform &transformA, const Com::HitBox &hitBoxA,
     const Com::Transform &transformB, const Com::HitBox &hitBoxB,
     sf::Vector2f offsetA, sf::Vector2f offsetB) {
@@ -28,21 +26,15 @@ bool is_colliding_from_offset(const Com::Transform &transformA, const Com::HitBo
     return false;
 }
 
-sf::Vector2f get_offset_for_origin(const Com::Transform &transform,
-    const Com::HitBox &hitBox) {
-    sf::Vector2f offset(0.0f, 0.0f);
-
-    if (transform.origin == Com::Transform::CENTER) {
-        offset.x = -hitBox.width / 2.0f;
-        offset.y = -hitBox.height / 2.0f;
-    }
-    return offset;
-}
-
 bool is_colliding(const Com::Transform &transformA, const Com::HitBox &hitBoxA,
     const Com::Transform &transformB, const Com::HitBox &hitBoxB, Rtype::Client::GameWorld &gameWorld) {
-    sf::Vector2f offsetA = get_offset_for_origin(transformA, hitBoxA);
-    sf::Vector2f offsetB = get_offset_for_origin(transformB, hitBoxB);
+    sf::Vector2f offsetA = get_offset_from_transform(transformA, {hitBoxA.width, hitBoxA.height});
+    sf::Vector2f offsetB = get_offset_from_transform(transformB, {hitBoxB.width, hitBoxB.height});
+
+    offsetA.x = -offsetA.x;
+    offsetA.y = -offsetA.y;
+    offsetB.x = -offsetB.x;
+    offsetB.y = -offsetB.y;
 
     return is_colliding_from_offset(transformA, hitBoxA, transformB, hitBoxB, offsetA, offsetB);
 }
@@ -62,8 +54,12 @@ void compute_collision(Eng::sparse_array<Com::Solid> const &solids, int i, int j
     if (aStuck && bStuck) return;
 
     // Compute offsets and scaled hitboxes (same as is_colliding)
-    sf::Vector2f offsetA = get_offset_for_origin(transformA, hitBoxA);
-    sf::Vector2f offsetB = get_offset_for_origin(transformB, hitBoxB);
+    sf::Vector2f offsetA = get_offset_from_transform(transformA, {hitBoxA.width, hitBoxA.height});
+    sf::Vector2f offsetB = get_offset_from_transform(transformB, {hitBoxB.width, hitBoxB.height});
+    offsetA.x = -offsetA.x;
+    offsetA.y = -offsetA.y;
+    offsetB.x = -offsetB.x;
+    offsetB.y = -offsetB.y;
 
     sf::Vector2f offsetA_scaled = offsetA * transformA.scale;
     sf::Vector2f offsetB_scaled = offsetB * transformB.scale;

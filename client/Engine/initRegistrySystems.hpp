@@ -4,32 +4,34 @@
 #include "Engine/initRegistryComponent.hpp"
 #include "Engine/gameWorld.hpp"
 
+namespace Eng = Engine;
 
 namespace Rtype::Client {
+namespace Com = Component;
 void init_registry_systems(Rtype::Client::GameWorld &gameWorld);
 void init_registry_systems_events(Rtype::Client::GameWorld &gameWorld);
 
 // System function declarations
-void drawableSystem(Engine::registry &reg, sf::RenderWindow &window,
-    Engine::sparse_array<Component::Transform> const &transforms,
-    Engine::sparse_array<Component::Drawable> &drawables,
-    Engine::sparse_array<Component::AnimatedSprite> const &animatedSprites);
+void drawableSystem(Eng::registry &reg, sf::RenderWindow &window,
+    Eng::sparse_array<Com::Transform> const &transforms,
+    Eng::sparse_array<Com::Drawable> &drawables,
+    Eng::sparse_array<Com::AnimatedSprite> const &animatedSprites);
 
-void movementSystem(Engine::registry &reg, const sf::Clock &deltaTimeClock,
-    Engine::sparse_array<Component::Transform> &transforms,
-    Engine::sparse_array<Component::Velocity> &velocities);
+void movementSystem(Eng::registry &reg, const sf::Clock &deltaTimeClock,
+    Eng::sparse_array<Com::Transform> &transforms,
+    Eng::sparse_array<Com::Velocity> &velocities);
 
-void animationSystem(Engine::registry &reg, const sf::Clock &deltaTimeClock,
-    Engine::sparse_array<Component::AnimatedSprite> &animatedSprites,
-    Engine::sparse_array<Component::Drawable> &drawables);
+void animationSystem(Eng::registry &reg, const sf::Clock &deltaTimeClock,
+    Eng::sparse_array<Com::AnimatedSprite> &animatedSprites,
+    Eng::sparse_array<Com::Drawable> &drawables);
 
-void playfieldLimitSystem(Engine::registry &reg, const sf::RenderWindow &window,
-    Engine::sparse_array<Component::Transform> &transforms,
-    Engine::sparse_array<Component::PlayerTag> const &playerTags);
+void playfieldLimitSystem(Eng::registry &reg, const sf::RenderWindow &window,
+    Eng::sparse_array<Com::Transform> &transforms,
+    Eng::sparse_array<Com::PlayerTag> const &playerTags);
 
-void collisionDetectionSystem(Engine::registry &reg,
+void collisionDetectionSystem(Eng::registry &reg,
     Rtype::Client::GameWorld &gameWorld,
-    Engine::sparse_array<Component::Transform> &transforms,
-    Engine::sparse_array<Component::HitBox> const &hitBoxes,
-    Engine::sparse_array<Component::Solid> const &solids);
+    Eng::sparse_array<Com::Transform> &transforms,
+    Eng::sparse_array<Com::HitBox> const &hitBoxes,
+    Eng::sparse_array<Com::Solid> const &solids);
 }  // namespace Rtype::Client
