@@ -10,10 +10,16 @@ void init_registry_systems(Engine::registry &reg, sf::RenderWindow &window,
 // System function declarations
 void drawableSystem(Engine::registry &reg, sf::RenderWindow &window,
     Engine::sparse_array<Component::Transform> const &transforms,
-    Engine::sparse_array<Component::Drawable> &drawables);
+    Engine::sparse_array<Component::Drawable> &drawables,
+    Engine::sparse_array<Component::AnimatedSprite> const &animatedSprites);
 
 void movementSystem(Engine::registry &reg, const sf::Clock &deltaTimeClock,
     Engine::sparse_array<Component::Transform> &transforms,
     Engine::sparse_array<Component::Velocity> &velocities);
+
+void animationSystem(Engine::registry &reg, const sf::Clock &deltaTimeClock,
+    Engine::sparse_array<Component::AnimatedSprite> &animatedSprites,
+    Engine::sparse_array<Component::Drawable> &drawables);
+
 
 }  // namespace Rtype::Client

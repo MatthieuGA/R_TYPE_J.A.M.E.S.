@@ -27,9 +27,41 @@ void initializeDrawable(Com::Drawable &drawable) {
     drawable.isLoaded = true;
 }
 
+void setDrawableAnimationOrigin(Com::Drawable &drawable,
+const Com::AnimatedSprite &animatedSprite) {
+    sf::Vector2f origin;
+    if (drawable.origin == Com::Drawable::CENTER) {
+        origin = sf::Vector2f(animatedSprite.frameWidth / 2.0f,
+            animatedSprite.frameHeight / 2.0f);
+    } else {
+        origin = sf::Vector2f(0.0f, 0.0f);
+    }
+    drawable.sprite.setOrigin(origin);
+}
+
+void initializeDrawableAnimated(Com::Drawable &drawable,
+const Com::AnimatedSprite &animatedSprite) {
+    if (!drawable.texture.loadFromFile(drawable.spritePath))
+        std::cerr << "ERROR: Failed to load sprite from "
+            << drawable.spritePath << "\n";
+    else
+        drawable.sprite.setTexture(drawable.texture, true);
+    setDrawableAnimationOrigin(drawable, animatedSprite);
+    drawable.isLoaded = true;
+}
+
 void drawableSystem(Eng::registry &reg, sf::RenderWindow &window,
 Eng::sparse_array<Com::Transform> const &transforms,
-Eng::sparse_array<Com::Drawable> &drawables) {
+Eng::sparse_array<Com::Drawable> &drawables,
+Eng::sparse_array<Com::AnimatedSprite> const &animatedSprites) {
+    // Draw all entities with Transform and Drawable and AnimatedSprite components
+    for (auto &&[i, tranform, drawable, animatedSprite] :
+    make_indexed_zipper(transforms, drawables, animatedSprites)) {
+        if (!drawable.isLoaded)
+            initializeDrawableAnimated(drawable, animatedSprite);
+    }
+
+    // Else draw entities with Transform and Drawable components
     for (auto &&[i, tranform, drawable] :
     make_indexed_zipper(transforms, drawables)) {
         if (!drawable.isLoaded)

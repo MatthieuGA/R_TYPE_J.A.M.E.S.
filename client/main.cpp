@@ -15,31 +15,39 @@ void init_registry(registry &reg, sf::RenderWindow &window, sf::Clock &deltaTime
     RC::init_registry_systems(reg, window, deltaTimeClock);
 }
 
-int main() {
-    registry reg;
-    sf::Clock deltaTimeClock;
-    sf::RenderWindow window(sf::VideoMode({1280, 920}), "SFML");
-    init_registry(reg, window, deltaTimeClock);
-
+void init_entities(registry &reg) {
     auto entity = reg.spawn_entity();
     reg.emplace_component<Component::Transform>(entity,
-        Component::Transform{150.0f, 100.0f, 0, 1.f});
+        Component::Transform{150.0f, 100.0f, 0, 4.f});
     reg.emplace_component<Component::Drawable>(entity,
         Component::Drawable("ball_enemy.gif", 0, Component::Drawable::CENTER));
-    reg.emplace_component<Component::Velocity>(entity,
-        Component::Velocity{10.0f, 1.5f, 20.0f, 0.0f});
+    reg.emplace_component<Component::AnimatedSprite>(entity,
+        Component::AnimatedSprite{
+            17, 17, 12, 0, .1f, 0.f, true
+        });
+}
 
-    while (window.isOpen()) {
-        sf::Event event;
-        while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed)
-                window.close();
+int main() {
+    try {
+        registry reg;
+        sf::Clock deltaTimeClock;
+        sf::RenderWindow window(sf::VideoMode({1280, 920}), "Rtype");
+
+        init_registry(reg, window, deltaTimeClock);
+        init_entities(reg);
+        while (window.isOpen()) {
+            sf::Event event;
+            while (window.pollEvent(event)) {
+                if (event.type == sf::Event::Closed)
+                    window.close();
+            }
+            window.clear(sf::Color::Black);
+            reg.run_systems();
+            window.display();
         }
-
-        window.clear(sf::Color::Black);
-        reg.run_systems();
-        window.display();
+        return 0;
+    } catch (const std::exception &e) {
+        std::cerr << "Exception: " << e.what() << std::endl;
+        return EXIT_FAILURE;
     }
-
-    return 0;
 }
