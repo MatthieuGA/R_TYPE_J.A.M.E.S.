@@ -1,6 +1,6 @@
 # R-Type Network Protocol Specification
 
-> **Version:** 3.0.0
+> **Version:** 3.0.1
 > **Last Updated:** 1st December 2025
 
 ## Table of Contents
@@ -301,9 +301,15 @@ _Note: Even if packet 102 was lost, the server recovers the state at tick 103. T
 
 **Note on Coordinates:**
 Positions are mapped from Screen Space (pixels) to Network Space (0-65535) to save bandwidth while maintaining sub-pixel precision.
+Example:
 
 - _Encode:_ `NetworkX = (ScreenX / MapWidth) * 65535`
 - _Decode:_ `ScreenX = (NetworkX / 65535) * MapWidth`
+
+Example for 1920x1080 screen:
+
+- _Encode:_ `ScreenX = 960` → `NetworkX = (960 / 1920) * 65535 ≈ 32767`
+- _Decode:_ `NetworkX = 32767` → `ScreenX = (32767 / 65535) * 1920 ≈ 960`
 
 ### `0x21` - PLAYER_STATS
 
