@@ -6,14 +6,14 @@
 
 namespace Com = Rtype::Client::Component;
 
-TEST(ComponentsCore, TransformAndRigidBody) {
+TEST(ComponentsCore, TransformAndVelocity) {
     Com::Transform t{10.0f, 20.0f, 45.0f, 1.25f};
     EXPECT_FLOAT_EQ(t.x, 10.0f);
     EXPECT_FLOAT_EQ(t.y, 20.0f);
     EXPECT_FLOAT_EQ(t.rotationDegrees, 45.0f);
     EXPECT_FLOAT_EQ(t.scale, 1.25f);
 
-    Com::RigidBody rb{3.0f, -1.5f};
+    Com::Velocity rb{3.0f, -1.5f};
     EXPECT_FLOAT_EQ(rb.vx, 3.0f);
     EXPECT_FLOAT_EQ(rb.vy, -1.5f);
 }

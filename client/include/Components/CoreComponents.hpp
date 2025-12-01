@@ -27,9 +27,21 @@ struct Drawable {
         sprite(texture), origin(originPoint), isLoaded(false) {}
 };
 
-struct RigidBody {
+struct AnimatedSprite {
+    int frameWidth;
+    int frameHeight;
+    int totalFrames;
+    int currentFrame;
+    float frameDuration;
+    float elapsedTime;
+    bool loop;
+};
+
+struct Velocity {
     float vx;
     float vy;
+    float accelerationX;
+    float accelerationY;
 };
 
 struct Controllable {
