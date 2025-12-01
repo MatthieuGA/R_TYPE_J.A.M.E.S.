@@ -1,8 +1,8 @@
 Network Working Group                                           J.A.M.E.S
 Request for Comments: 1                                    Epitech Nantes
 Category: Standards Track                                   November 2025
-Version: 1.1.2
-Based on: docs/PROTOCOL.md (v1.1.1)
+Version: 1.1.3
+Based on: docs/PROTOCOL.md (v1.1.2)
 
                      R-Type Game Protocol Specification
 
@@ -81,8 +81,8 @@ Table of Contents
    | Range       | Protocol | Category            |
    |-------------|----------|---------------------|
    | 0x00 - 0x0F | TCP      | Session Management  |
-   | 0x10 - 0x1F | UDP      | Client Gameplay     |
-   | 0x20 - 0x2F | UDP      | Server Gameplay     |
+   | 0x10 - 0x1F | UDP      | Client Inputs     |
+   | 0x20 - 0x2F | UDP      | Server Snapshots     |
 
 4.  Packet Structure
 

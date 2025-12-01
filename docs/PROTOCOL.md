@@ -1,6 +1,6 @@
 # R-Type Network Protocol Specification
 
-> **Version:** 1.1.1
+> **Version:** 1.1.2
 > **Last Updated:** 25 November 2025
 
 ## Table of Contents
@@ -77,8 +77,8 @@ Command IDs (OpCodes) are grouped by protocol and direction to facilitate debugg
 | Range | Protocol | Direction | Category |
 | :--- | :--- | :--- | :--- |
 | `0x00` - `0x0F` | **TCP** | Bi-directional | **Session Management** (Login, Lobby, Game State). |
-| `0x10` - `0x1F` | **UDP** | Client -> Server | **Client Gameplay** (Inputs, Actions). |
-| `0x20` - `0x2F` | **UDP** | Server -> Client | **Server Gameplay** (World State, Stats, Events). |
+| `0x10` - `0x1F` | **UDP** | Client -> Server | **Client Inputs** (Inputs, Actions). |
+| `0x20` - `0x2F` | **UDP** | Server -> Client | **Server Snapshots** (World State, Stats, Events). |
 
 ---
 
