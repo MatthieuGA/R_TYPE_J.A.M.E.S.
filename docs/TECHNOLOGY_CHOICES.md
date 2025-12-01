@@ -10,7 +10,7 @@
 
 1. [Introduction](#introduction)
 2. [Graphics Library: SFML](#graphics-library-sfml)
-3. [Networking Library: Asio](#networking-library-asio)
+3. [Networking Library: Boost.Asio](#networking-library-boostasio)
 4. [Dependency Manager: vcpkg](#dependency-manager-vcpkg)
 5. [Conclusion](#conclusion)
 6. [References](#references)
@@ -55,19 +55,19 @@ This document justifies the key technology choices for the R-Type project. Each 
 
 ---
 
-## Networking Library: Asio
+## Networking Library: Boost.Asio
 
 ### Quick Comparison
 
 | Library | Pros | Cons |
 |---------|------|------|
-| **Asio (standalone)** ✅ | • **Async I/O** (non-blocking)<br>• Cross-platform (Linux/Windows)<br>• Header-only option<br>• Modern C++ (lambdas, RAII)<br>• Perfect for UDP binary protocol<br>• Smaller dependency | • Moderate learning curve<br>• Template-heavy (compilation time) |
-| **Boost.Asio** | • Same API as standalone Asio<br>• Very mature/battle-tested<br>• Part of Boost ecosystem | • **Requires entire Boost** (~100MB+)<br>• Slower compilation<br>• Overkill if not using other Boost libs |
+| **Boost.Asio** ✅ | • **Async I/O** (non-blocking)<br>• Cross-platform (Linux/Windows)<br>• Very mature/battle-tested<br>• Modern C++ (lambdas, RAII)<br>• Perfect for UDP binary protocol<br>• Part of Boost ecosystem<br>• Excellent documentation | • Requires Boost (~100MB+)<br>• Slower compilation<br>• Template-heavy |
+| **Asio (standalone)** | • Same API as Boost.Asio<br>• Header-only option<br>• Smaller dependency | • Less mature than Boost version<br>• Moderate learning curve |
 | **Raw Sockets** | • Maximum control<br>• No dependencies | • **Platform-specific** (#ifdef hell)<br>• Manual async I/O (epoll/IOCP)<br>• Complex cross-platform code |
 | **SFML Network** | • Simple API<br>• Integrated with SFML | • **Blocking I/O only**<br>• Requires thread-per-client<br>• Poor for multithreaded server |
 | **ZeroMQ** | • High-level patterns<br>• Message queuing | • **Higher latency**<br>• Overkill for direct client-server<br>• Not designed for real-time games |
 
-### Decision: Asio (header-only)
+### Decision: Boost.Asio
 
 **Why Async I/O Matters:**
 
@@ -75,7 +75,7 @@ This document justifies the key technology choices for the R-Type project. Each 
 // SFML (blocking): Thread waits idle for data
 socket.receive(packet);  // BLOCKS ❌
 
-// Asio (async): Thread handles other clients while waiting
+// Boost.Asio (async): Thread handles other clients while waiting
 socket.async_receive_from(buffer, endpoint,
     [](asio::error_code ec, size_t bytes) {
         // Called when data arrives ✅
@@ -83,7 +83,7 @@ socket.async_receive_from(buffer, endpoint,
 ```
 
 **Project Requirements:**
-- ✅ Multithreaded server → Asio's `io_context` handles multiple clients per thread
+- ✅ Multithreaded server → Boost.Asio's `io_context` handles multiple clients per thread
 - ✅ UDP networking → Native async UDP support
 - ✅ Cross-platform → No `#ifdef` needed (abstracts epoll/IOCP/kqueue)
 - ✅ Custom binary protocol → Low-level socket control
@@ -112,7 +112,7 @@ socket.async_receive_from(buffer, endpoint,
 **Manifest Example:**
 ```json
 {
-  "dependencies": ["sfml", "asio"]
+  "dependencies": ["sfml", "boost-asio"]
 }
 ```
 
@@ -126,7 +126,7 @@ cmake -DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake
 - ✅ Auto-resolves transitive deps (SFML → freetype → zlib → ...)
 - ✅ Cross-platform builds (Windows MSVC + Linux GCC)
 - ✅ Binary caching (CI/CD: 1 min vs 20 min)
-- ✅ All needed packages available (SFML, Asio, GoogleTest)
+- ✅ All needed packages available (SFML, Boost.Asio, GoogleTest)
 
 ---
 
@@ -137,13 +137,13 @@ cmake -DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake
 | Layer | Technology | Key Reason |
 |-------|-----------|------------|
 | **Graphics** | SFML 2.6+ | **All 5 members proficient** → 0 days learning |
-| **Networking** | Asio (standalone) | Async I/O for multithreaded server |
+| **Networking** | Boost.Asio | Async I/O for multithreaded server |
 | **Dependencies** | vcpkg | One-line CMake integration |
 
 ### Project Requirements Compliance
 
-✅ **Binary UDP Protocol** → Asio provides low-level socket control
-✅ **Multithreaded Server** → Asio io_context thread pool (non-blocking)
+✅ **Binary UDP Protocol** → Boost.Asio provides low-level socket control
+✅ **Multithreaded Server** → Boost.Asio io_context thread pool (non-blocking)
 ✅ **Cross-Platform (Linux/Windows)** → All technologies support both platforms seamlessly
 ✅ **Package Manager** → vcpkg with CMake integration
 ✅ **60 FPS Rendering** → SFML handles real-time 2D graphics
@@ -153,7 +153,7 @@ cmake -DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake
 | Decision | Rationale | Impact |
 |----------|-----------|--------|
 | **SFML over alternatives** | Team already expert | Saves 3-14 days onboarding |
-| **Asio over raw sockets** | Cross-platform async I/O | Eliminates platform-specific code |
+| **Boost.Asio over raw sockets** | Cross-platform async I/O | Eliminates platform-specific code |
 | **vcpkg over Conan/FetchContent** | Simplest CMake integration | One-line configuration |
 
 ---
@@ -164,7 +164,7 @@ cmake -DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake
 
 - [SFML Documentation](https://www.sfml-dev.org/documentation/)
 - [SFML Tutorials](https://www.sfml-dev.org/tutorials/)
-- [Asio Documentation](https://think-async.com/Asio/asio-1.28.0/doc/)
+- [Boost.Asio Documentation](https://www.boost.org/doc/libs/release/doc/html/boost_asio.html)
 - [vcpkg Documentation](https://vcpkg.io/en/getting-started.html)
 - [CMake Documentation](https://cmake.org/documentation/)
 
