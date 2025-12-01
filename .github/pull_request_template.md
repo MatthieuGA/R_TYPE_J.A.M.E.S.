@@ -1,5 +1,6 @@
 ## 🚀 Pull Request Summary
-Closes: #ISSUE_NUMBER  
+
+Closes: #ISSUE_NUMBER
 Milestone: <!-- ex: Milestone 1 -->
 
 ---
