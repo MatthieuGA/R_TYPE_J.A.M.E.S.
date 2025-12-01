@@ -24,7 +24,8 @@ endif()
 
 # Find required packages (vcpkg integration)
 find_package(SFML COMPONENTS system window graphics network audio CONFIG REQUIRED)
-find_package(asio CONFIG REQUIRED)
+# Use Boost.Asio provided by vcpkg (`boost-asio`)
+find_package(Boost REQUIRED COMPONENTS asio system)
 
 # Provide compatibility aliases so code using SFML::Name targets works with
 # vcpkg-provided SFML 2.x (which exports sfml-name targets).
@@ -111,6 +112,6 @@ message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 message(STATUS "C++ Compiler: ${CMAKE_CXX_COMPILER}")
 message(STATUS "C++ Standard: ${CMAKE_CXX_STANDARD}")
 message(STATUS "SFML Found: ${SFML_FOUND}")
-message(STATUS "Asio Found: ${asio_FOUND}")
+message(STATUS "Boost Found: ${Boost_FOUND}")
 message(STATUS "Coverage enabled: ${ENABLE_COVERAGE}")
 message(STATUS "==============================================")

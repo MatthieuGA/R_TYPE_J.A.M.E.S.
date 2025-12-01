@@ -70,7 +70,7 @@ Then run:
 
 ## 📦 Dependencies
 
-Dependencies (SFML, Asio) are automatically installed via vcpkg during CMake configuration
+Dependencies (SFML, Boost.Asio) are automatically installed via vcpkg during CMake configuration
 
 ---
 
