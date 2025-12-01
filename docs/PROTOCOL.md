@@ -1,6 +1,6 @@
 # R-Type Network Protocol Specification
 
-> **Version:** 3.0.2
+> **Version:** 3.1.0
 > **Last Updated:** 1st December 2025
 
 ## Table of Contents
@@ -23,6 +23,7 @@
    - [`0x04` NOTIFY_DISCONNECT](#0x04---notify_disconnect)
    - [`0x05` GAME_START](#0x05---game_start)
    - [`0x06` GAME_END](#0x06---game_end)
+   - [`0x07` READY_STATUS](#0x07---ready_status)
 5. [UDP Commands (Real-time Gameplay)](#5-udp-commands-real-time-gameplay)
    - [`0x10` PLAYER_INPUT](#0x10---player_input)
    - [`0x20` WORLD_SNAPSHOT](#0x20---world_snapshot)
@@ -213,6 +214,22 @@ If the Client and Server disagree on a position (e.g., due to lag or cheating), 
 | :--- | :--- | :--- | :--- |
 | `WinningPlayerId` | `u8` | 1 | ID of the winning player (or 0 for draw). |
 | `Reserved` | `u8[3]` | 3 | Padding to align with 4 bytes. |
+
+### `0x07` - READY_STATUS
+
+**Direction:** Client -> Server
+**Description:** Sent by the client to indicate readiness in the lobby.
+
+**Payload:** _1 byte_
+
+| Field | Type | Size | Description |
+| :--- | :--- | :--- | :--- |
+| `IsReady` | `u8` | 1 | `0` = Not Ready, `1` = Ready. |
+| `Reserved` | `u8[3]` | 3 | Padding to align with 4 bytes. |
+
+- **When to send:** When the user toggles the "Ready" button in the lobby.
+
+When all the players in the lobby have sent `IsReady = 1`, the server automatically starts the game by sending GAME_START to all clients.
 
 ---
 
