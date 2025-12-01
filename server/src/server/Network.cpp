@@ -47,8 +47,7 @@ void Network::do_tcp_accept() {
 
 void Network::do_udp_receive() {
     try {
-        udpSocket.async_receive_from(boost::asio::buffer(udpBuffer),
-            udpRemoteEndpoint,
+        udpSocket.async_receive_from(udpBuffer, udpRemoteEndpoint,
             [this](boost::system::error_code ec, std::size_t bytes_recvd) {
                 if (!ec && bytes_recvd > 0) {
                     std::cout << "Received UDP packet from "
