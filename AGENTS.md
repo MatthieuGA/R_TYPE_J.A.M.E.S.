@@ -37,7 +37,7 @@
 ## Setup Commands
 
 - **Prerequisites:**
-  - C++ Compiler (GCC 7+, MSVC 2019+, or Clang 11+)
+  - C++ Compiler (GCC 12+, MSVC 2022 (17.0+), or Clang 15+)
   - CMake 3.23+
   - vcpkg (Set `VCPKG_ROOT` env var or use the submodule)
   - Node.js & npm (for hooks and docs)
