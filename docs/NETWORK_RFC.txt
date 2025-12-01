@@ -1,7 +1,7 @@
 Network Working Group                                           J.A.M.E.S
 Request for Comments: 1                                    Epitech Nantes
 Category: Standards Track                                   November 2025
-Version: 1.1.1
+Version: 1.1.2
 Based on: docs/PROTOCOL.md (v1.1.1)
 
                      R-Type Game Protocol Specification
@@ -273,8 +273,8 @@ Table of Contents
 
 7.  Error Handling
 
-   o  Malformed Packets: The receiver MUST silently discard any packet
-      with an invalid header or unknown OpCode.
+   o  Malformed Packets: The receiver (server or client) MUST silently
+      discard any packet with an invalid header or unknown OpCode.
 
    o  Logical Errors (TCP): Handled via 'Status' in CONNECT_ACK.
 
