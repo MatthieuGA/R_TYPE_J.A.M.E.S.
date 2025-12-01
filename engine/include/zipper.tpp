@@ -8,13 +8,13 @@ namespace Engine {
 template<class... Containers>
 zipper_iterator<Containers...>::zipper_iterator(iterator_tuple containers, std::size_t max, std::size_t idx)
     : _containers(containers), _max(max), _idx(idx) {
-    skip_to_valid();
+    SkipToValid();
 }
 
 template <class... Containers>
 zipper_iterator<Containers...> &zipper_iterator<Containers...>::operator++() {
     ++_idx;
-    skip_to_valid();
+    SkipToValid();
     return *this;
 }
 
@@ -39,7 +39,7 @@ bool zipper_iterator<Containers...>::all_set(std::index_sequence<Is...>) const {
 }
 
 template <class... Containers>
-void zipper_iterator<Containers...>::skip_to_valid() {
+void zipper_iterator<Containers...>::SkipToValid() {
     while (_idx < _max && !all_set(_seq)) ++_idx;
 }
 
@@ -71,7 +71,7 @@ zipper<Containers...>::end() const {
 
 // Factory helper
 template <class... Containers>
-zipper<Containers...> make_zipper(Containers&... cs) {
+zipper<Containers...> MakeZipper(Containers&... cs) {
     return zipper<Containers...>(cs...);
 }
 

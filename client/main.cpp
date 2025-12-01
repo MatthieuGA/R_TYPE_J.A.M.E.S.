@@ -11,60 +11,62 @@ using Engine::registry;
 namespace RC = Rtype::Client;
 namespace Component = Rtype::Client::Component;
 
-void init_registry(Rtype::Client::GameWorld &gameWorld) {
-    RC::init_registry_components(gameWorld.registry);
-    RC::init_registry_systems_events(gameWorld);
-    RC::init_registry_systems(gameWorld);
+void init_registry(Rtype::Client::GameWorld &game_world) {
+    RC::InitRegistryComponents(game_world.registry_);
+    RC::InitRegistrySystemsEvents(game_world);
+    RC::InitRegistrySystems(game_world);
 }
 
 void init_entities(registry &reg) {
     std::vector<registry::entity_t> entities;
     for (int i = 0; i < 3; ++i) {
-        auto entity = reg.spawn_entity();
-        reg.emplace_component<Component::Drawable>(entity,
+        auto entity = reg.SpawnEntity();
+        reg.EmplaceComponent<Component::Drawable>(entity,
             Component::Drawable("ball_enemy.gif"));
-        reg.emplace_component<Component::AnimatedSprite>(entity,
+        reg.EmplaceComponent<Component::AnimatedSprite>(entity,
             Component::AnimatedSprite{17, 17, 12, rand() % 12});
-        reg.emplace_component<Component::HitBox>(entity,
+        reg.EmplaceComponent<Component::HitBox>(entity,
             Component::HitBox{17.0f, 17.0f});
         entities.push_back(entity);
-        reg.emplace_component<Component::PlayerTag>(entity);
+        reg.EmplaceComponent<Component::PlayerTag>(entity);
     }
 
-    reg.emplace_component<Component::Transform>(entities[0],
-        Component::Transform{150.0f, 10.0f, 0, 4.f});
-    reg.emplace_component<Component::Solid>(entities[0], Component::Solid{});
-    reg.emplace_component<Component::Velocity>(entities[0],
-        Component::Velocity{300.0f, 30.0f});
+    // First entity going down right
+    reg.EmplaceComponent<Component::Transform>(entities[0],
+        Component::Transform{150.0f, 100.0f, 0, 4.f, Component::Transform::CENTER});
+    reg.EmplaceComponent<Component::Solid>(entities[0], Component::Solid{});
+    reg.EmplaceComponent<Component::Velocity>(entities[0],
+        Component::Velocity{100.0f, 30.0f});
 
-    // Create a second entity
-    reg.emplace_component<Component::Transform>(entities[1],
-        Component::Transform{450.0f, 100.0f, 0, 4.f});
-    reg.emplace_component<Component::Solid>(entities[1], Component::Solid{});
-    reg.emplace_component<Component::Velocity>(entities[1],
-        Component::Velocity{-150.0f, 30.0f});
+    // Second entity going up left
+    reg.EmplaceComponent<Component::Transform>(entities[1],
+        Component::Transform{450.0f, 100.0f, 0, 4.f, Component::Transform::CENTER});
+    reg.EmplaceComponent<Component::Solid>(entities[1], Component::Solid{});
+    reg.EmplaceComponent<Component::Velocity>(entities[1],
+        Component::Velocity{-50.0f, 30.0f});
 
-    reg.emplace_component<Component::Transform>(entities[2],
-        Component::Transform{375.0f, 300.0f, 0, 4.f});
-    reg.emplace_component<Component::Solid>(entities[2],
+    // Third entity stationary
+    reg.EmplaceComponent<Component::Transform>(entities[2],
+        Component::Transform{400.f, 250.0f, 0, 4.f, Component::Transform::CENTER});
+    reg.EmplaceComponent<Component::Solid>(entities[2],
         Component::Solid{true, true});
 }
 
 int main() {
     try {
-        Rtype::Client::GameWorld gameWorld;
+        Rtype::Client::GameWorld game_world;
 
-        init_registry(gameWorld);
-        init_entities(gameWorld.registry);
-        while (gameWorld.window.isOpen()) {
+        init_registry(game_world);
+        init_entities(game_world.registry_);
+        while (game_world.window_.isOpen()) {
             sf::Event event;
-            while (gameWorld.window.pollEvent(event)) {
+            while (game_world.window_.pollEvent(event)) {
                 if (event.type == sf::Event::Closed)
-                    gameWorld.window.close();
+                    game_world.window_.close();
             }
-            gameWorld.window.clear(sf::Color::Black);
-            gameWorld.registry.run_systems();
-            gameWorld.window.display();
+            game_world.window_.clear(sf::Color::Black);
+            game_world.registry_.RunSystems();
+            game_world.window_.display();
         }
         return 0;
     } catch (const std::exception &e) {

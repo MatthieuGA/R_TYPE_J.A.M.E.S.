@@ -45,7 +45,7 @@ class sparse_array {
     size_type get_index(value_type const &) const;
 
  private:
-    container_t _data;
+    container_t data_;
 };
 
 }  // namespace Engine

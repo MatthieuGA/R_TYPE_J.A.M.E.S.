@@ -6,57 +6,57 @@ namespace Eng = Engine;
 namespace Rtype::Client {
 namespace Com = Component;
 
-void init_render_systems(Rtype::Client::GameWorld &gameWorld) {
-    gameWorld.registry.add_system<Eng::sparse_array<Com::AnimatedSprite>,
+void init_render_systems(Rtype::Client::GameWorld &game_world) {
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::AnimatedSprite>,
         Eng::sparse_array<Com::Drawable>>(
-        [&gameWorld](Eng::registry &r,
+        [&game_world](Eng::registry &r,
                 Eng::sparse_array<Com::AnimatedSprite> &animatedSprites,
                 Eng::sparse_array<Com::Drawable> &drawables) {
-            animationSystem(r, gameWorld.deltaTimeClock, animatedSprites, drawables);
+            AnimationSystem(r, game_world.delta_time_clock_, animatedSprites, drawables);
         });
-    gameWorld.registry.add_system<Eng::sparse_array<Com::Transform>,
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
         Eng::sparse_array<Com::Drawable>,
         Eng::sparse_array<Com::AnimatedSprite>>(
-        [&gameWorld](Eng::registry &r,
+        [&game_world](Eng::registry &r,
                 Eng::sparse_array<Com::Transform> const &transforms,
                 Eng::sparse_array<Com::Drawable> &drawables,
                 Eng::sparse_array<Com::AnimatedSprite> const &animatedSprites) {
-            drawableSystem(r, gameWorld.window, transforms, drawables, animatedSprites);
+            DrawableSystem(r, game_world.window_, transforms, drawables, animatedSprites);
         });
 }
 
-void init_movement_system(Rtype::Client::GameWorld &gameWorld) {
-    gameWorld.registry.add_system<Eng::sparse_array<Com::Transform>,
+void init_movement_system(Rtype::Client::GameWorld &game_world) {
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
         Eng::sparse_array<Com::Velocity>>(
-        [&gameWorld](Eng::registry &r,
+        [&game_world](Eng::registry &r,
                 Eng::sparse_array<Com::Transform> &transforms,
                 Eng::sparse_array<Com::Velocity> &velocities) {
-            movementSystem(r, gameWorld.deltaTimeClock, transforms, velocities);
+            MovementSystem(r, game_world.delta_time_clock_, transforms, velocities);
         });
-    gameWorld.registry.add_system<Eng::sparse_array<Com::Transform>,
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
         Eng::sparse_array<Com::PlayerTag>>(
-        [&gameWorld](Eng::registry &r,
+        [&game_world](Eng::registry &r,
                 Eng::sparse_array<Com::Transform> &transforms,
                 Eng::sparse_array<Com::PlayerTag> const &playerTag) {
-            playfieldLimitSystem(r, gameWorld.window, transforms, playerTag);
+            PlayfieldLimitSystem(r, game_world.window_, transforms, playerTag);
         });
-    gameWorld.registry.add_system<Eng::sparse_array<Com::Transform>,
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
         Eng::sparse_array<Com::HitBox>,
         Eng::sparse_array<Com::Solid>>(
-            [&gameWorld](Eng::registry &r,
+            [&game_world](Eng::registry &r,
                 Eng::sparse_array<Com::Transform> &transforms,
                 Eng::sparse_array<Com::HitBox> const &hitBoxes,
                 Eng::sparse_array<Com::Solid> const &solids) {
-            collisionDetectionSystem(r, gameWorld, transforms, hitBoxes, solids);
+            CollisionDetectionSystem(r, game_world, transforms, hitBoxes, solids);
         });
 }
 
-void init_registry_systems(Rtype::Client::GameWorld &gameWorld) {
+void InitRegistrySystems(Rtype::Client::GameWorld &game_world) {
     // Set up systems
-    init_movement_system(gameWorld);
-    init_render_systems(gameWorld);
-    gameWorld.registry.add_system<>([&gameWorld](Eng::registry &r) {
-        gameWorld.deltaTimeClock.restart();
+    init_movement_system(game_world);
+    init_render_systems(game_world);
+    game_world.registry_.AddSystem<>([&game_world](Eng::registry &r) {
+        game_world.delta_time_clock_.restart();
     });
 }
 }  // namespace Rtype::Client

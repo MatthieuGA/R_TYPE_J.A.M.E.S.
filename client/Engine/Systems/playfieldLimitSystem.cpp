@@ -6,11 +6,11 @@ namespace Eng = Engine;
 
 namespace Rtype::Client {
 namespace Com = Component;
-void playfieldLimitSystem(Eng::registry &reg, const sf::RenderWindow &window,
+void PlayfieldLimitSystem(Eng::registry &reg, const sf::RenderWindow &window,
     Eng::sparse_array<Com::Transform> &transforms,
-    Eng::sparse_array<Com::PlayerTag> const &playerTags) {
-    for (auto &&[i, tranform, playerTag] :
-        make_indexed_zipper(transforms, playerTags)) {
+    Eng::sparse_array<Com::PlayerTag> const &player_tags) {
+    for (auto &&[i, tranform, player_tag] :
+        make_indexed_zipper(transforms, player_tags)) {
         // Update position based on velocity
         if (tranform.x < 0) tranform.x = 0;
         if (tranform.y < 0) tranform.y = 0;

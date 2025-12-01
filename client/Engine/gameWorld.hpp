@@ -5,16 +5,16 @@
 
 namespace Rtype::Client {
 struct GameWorld {
-    Engine::registry registry;
-    sf::RenderWindow window;
-    sf::Clock deltaTimeClock;
-    EventBus eventBus;
+    Engine::registry registry_;
+    sf::RenderWindow window_;
+    sf::Clock delta_time_clock_;
+    EventBus event_bus_;
 
     GameWorld()
-        : window(sf::VideoMode({1280, 920}), "Rtype") {
-        registry = Engine::registry();
-        deltaTimeClock = sf::Clock();
-        eventBus = EventBus();
+        : window_(sf::VideoMode({1280, 920}), "Rtype") {
+        registry_ = Engine::registry();
+        delta_time_clock_ = sf::Clock();
+        event_bus_ = EventBus();
     }
 };
 }  // namespace Rtype::Client

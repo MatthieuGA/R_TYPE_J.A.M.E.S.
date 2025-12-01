@@ -7,12 +7,12 @@ namespace Eng = Engine;
 namespace Rtype::Client {
 namespace Com = Component;
 
-void init_registry_systems_events(Rtype::Client::GameWorld &gameWorld) {
-    gameWorld.eventBus.subscribe<CollisionEvent>(
+void InitRegistrySystemsEvents(Rtype::Client::GameWorld &game_world) {
+    game_world.event_bus_.Subscribe<CollisionEvent>(
         [](const CollisionEvent &event, int) {
-            auto &player = event.gameWorld.registry.get_components<Com::PlayerTag>();
+            auto &player = event.game_world_.registry_.GetComponents<Com::PlayerTag>();
 
-            if (player.has(event.entityA) || player.has(event.entityB)) {
+            if (player.has(event.entity_a_) || player.has(event.entity_b_)) {
                 // Handle player collision event
             }
         });

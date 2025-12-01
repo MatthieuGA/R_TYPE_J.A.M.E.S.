@@ -4,8 +4,8 @@
 
 namespace Rtype::Client {
 namespace Com = Component;
-sf::Vector2f get_offset_from_transform(const Com::Transform &transform,
-    sf::Vector2f hitBox);
-sf::Vector2f get_offset_from_animated_transform(const Com::Transform &transform,
-    const Com::AnimatedSprite &animatedSprite);
+sf::Vector2f GetOffsetFromTransform(const Com::Transform &transform,
+    sf::Vector2f hit_box);
+sf::Vector2f GetOffsetFromAnimatedTransform(const Com::Transform &transform,
+    const Com::AnimatedSprite &animated_sprite);
 }  // namespace Rtype::Client

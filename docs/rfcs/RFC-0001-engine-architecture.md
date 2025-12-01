@@ -293,7 +293,7 @@ class registry {
     
 public:
     // Create new entity
-    entity spawn_entity() {
+    entity SpawnEntity() {
         size_t id;
         if (!_dead_entities.empty()) {
             id = _dead_entities.back();
@@ -306,7 +306,7 @@ public:
     
     // Register component type
     template <typename Component>
-    sparse_array<Component>& register_component() {
+    sparse_array<Component>& RegisterComponent() {
         auto type = std::type_index(typeid(Component));
         if (_components_arrays.count(type)) {
             throw std::runtime_error("Component already registered in registry");
@@ -320,13 +320,13 @@ public:
     
     // Add component to entity
     template <typename Component>
-    std::optional<Component>& add_component(entity e, Component&& comp) {
-        return get_components<Component>().insert_at(e.get_id(), std::move(comp));
+    std::optional<Component>& AddComponent(entity e, Component&& comp) {
+        return GetComponents<Component>().insert_at(e.get_id(), std::move(comp));
     }
     
     // Get component array
     template <typename Component>
-    sparse_array<Component>& get_components() {
+    sparse_array<Component>& GetComponents() {
         auto type = std::type_index(typeid(Component));
         return *static_cast<components_holder<Component>*>(
             _components_arrays[type].get()
@@ -335,9 +335,9 @@ public:
     
     // Register system
     template <typename... Components, typename Function>
-    void add_system(Function&& f) {
+    void AddSystem(Function&& f) {
         _systems.push_back([f](registry& reg) {
-            f(reg, reg.get_components<Components>()...);
+            f(reg, reg.GetComponents<Components>()...);
         });
     }
     
@@ -366,21 +366,21 @@ struct components_holder : components_holder_base {
 registry = new Registry()
 
 // 1. Register component types
-registry.register_component<Position>()
-registry.register_component<Velocity>()
+registry.RegisterComponent<Position>()
+registry.RegisterComponent<Velocity>()
 
 // 2. Create entities
-player = registry.spawn_entity()
-enemy = registry.spawn_entity()
+player = registry.SpawnEntity()
+enemy = registry.SpawnEntity()
 
 // 3. Add components
-registry.add_component(player, Position{100, 200})
-registry.add_component(player, Velocity{5, 0})
-registry.add_component(enemy, Position{300, 400})
+registry.AddComponent(player, Position{100, 200})
+registry.AddComponent(player, Velocity{5, 0})
+registry.AddComponent(enemy, Position{300, 400})
 
 // 4. Register systems
-registry.add_system<Position, Velocity>(movement_system)
-registry.add_system<Position, Sprite>(render_system)
+registry.AddSystem<Position, Velocity>(movement_system)
+registry.AddSystem<Position, Sprite>(render_system)
 
 // 5. Game loop
 while running:
@@ -463,8 +463,8 @@ void collision_system(registry& reg,
 **Pseudo-code:**
 ```
 function movement_system(registry):
-    positions = registry.get_components<Position>()
-    velocities = registry.get_components<Velocity>()
+    positions = registry.GetComponents<Position>()
+    velocities = registry.GetComponents<Velocity>()
     
     for entity_id in 0..max_entities:
         if positions.has(entity_id) AND velocities.has(entity_id):
@@ -648,32 +648,32 @@ int main() {
     Engine::registry reg;
     
     // 3. Register component types (returns sparse_array reference)
-    auto& positions = reg.register_component<Position>();
-    auto& velocities = reg.register_component<Velocity>();
-    auto& sprites = reg.register_component<Sprite>();
-    auto& healths = reg.register_component<Health>();
+    auto& positions = reg.RegisterComponent<Position>();
+    auto& velocities = reg.RegisterComponent<Velocity>();
+    auto& sprites = reg.RegisterComponent<Sprite>();
+    auto& healths = reg.RegisterComponent<Health>();
     
     // 4. Create entities
-    auto player = reg.spawn_entity();
-    auto enemy1 = reg.spawn_entity();
-    auto enemy2 = reg.spawn_entity();
+    auto player = reg.SpawnEntity();
+    auto enemy1 = reg.SpawnEntity();
+    auto enemy2 = reg.SpawnEntity();
     
     // 5. Compose entities with components
-    reg.add_component(player, Position{100.0f, 200.0f});
-    reg.add_component(player, Velocity{0.0f, 0.0f});
-    reg.add_component(player, Sprite{"player.png"});
-    reg.add_component(player, Health{100});
+    reg.AddComponent(player, Position{100.0f, 200.0f});
+    reg.AddComponent(player, Velocity{0.0f, 0.0f});
+    reg.AddComponent(player, Sprite{"player.png"});
+    reg.AddComponent(player, Health{100});
     
-    reg.add_component(enemy1, Position{300.0f, 400.0f});
-    reg.add_component(enemy1, Velocity{-2.0f, 0.0f});
-    reg.add_component(enemy1, Sprite{"enemy.png"});
+    reg.AddComponent(enemy1, Position{300.0f, 400.0f});
+    reg.AddComponent(enemy1, Velocity{-2.0f, 0.0f});
+    reg.AddComponent(enemy1, Sprite{"enemy.png"});
     
-    reg.add_component(enemy2, Position{500.0f, 300.0f});
-    reg.add_component(enemy2, Velocity{-3.0f, 1.0f});
-    reg.add_component(enemy2, Sprite{"enemy.png"});
+    reg.AddComponent(enemy2, Position{500.0f, 300.0f});
+    reg.AddComponent(enemy2, Velocity{-3.0f, 1.0f});
+    reg.AddComponent(enemy2, Sprite{"enemy.png"});
     
     // 6. Register systems
-    reg.add_system<Position, Velocity>(
+    reg.AddSystem<Position, Velocity>(
         [](auto& reg, auto& positions, auto& velocities) {
             // Movement system
             for (size_t i = 0; i < positions.size(); ++i) {
@@ -685,7 +685,7 @@ int main() {
         }
     );
     
-    reg.add_system<Position, Sprite>(
+    reg.AddSystem<Position, Sprite>(
         [](auto& reg, auto& positions, auto& sprites) {
             // Render system
             for (size_t i = 0; i < positions.size(); ++i) {
@@ -701,7 +701,7 @@ int main() {
     // 7. Game loop
     while (game_running) {
         handle_input(reg);
-        reg.run_systems();  // Execute all systems
+        reg.RunSystems();  // Execute all systems
         present_frame();
     }
     

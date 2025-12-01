@@ -62,7 +62,7 @@ class zipper_iterator {
     template<std::size_t... Is>
     bool all_set(std::index_sequence<Is...>) const;
 
-    void skip_to_valid();
+    void SkipToValid();
 
     template<std::size_t... Is>
     value_type to_value(std::index_sequence<Is...>) const;
@@ -91,7 +91,7 @@ class zipper {
 
 // Factory helper for easier deduction
 template <class... Containers>
-zipper<Containers...> make_zipper(Containers&... cs);
+zipper<Containers...> MakeZipper(Containers&... cs);
 
 }  // namespace Engine
 
