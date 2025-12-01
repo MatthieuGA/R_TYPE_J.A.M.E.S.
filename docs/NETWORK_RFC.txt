@@ -1,7 +1,7 @@
 Network Working Group                                           J.A.M.E.S
 Request for Comments: 1                                    Epitech Nantes
 Category: Standards Track                                   December 2025
-Version: 3.0.1
+Version: 3.0.2
 Based on: docs/PROTOCOL.md (v3.0.1)
 
                      R-Type Game Protocol Specification
@@ -190,6 +190,8 @@ Table of Contents
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
    |WinningPlayerId|                    Reserved                   |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   WinningPlayerId is set to 0 in case of a draw.
 
 6.  UDP Protocol (Real-time Gameplay)
 
