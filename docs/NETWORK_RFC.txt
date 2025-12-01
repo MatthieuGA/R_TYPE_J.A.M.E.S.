@@ -1,8 +1,8 @@
 Network Working Group                                           J.A.M.E.S
 Request for Comments: 1                                    Epitech Nantes
 Category: Standards Track                                   December 2025
-Version: 3.1.0
-Based on: docs/PROTOCOL.md (v3.1.0)
+Version: 3.1.1
+Based on: docs/PROTOCOL.md (v3.1.1)
 
                      R-Type Game Protocol Specification
 
@@ -262,7 +262,7 @@ Table of Contents
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
    |                           EntityId                            |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |      Type     |    Padding    |             PosX              |
+   |      Type     |   Reserved    |             PosX              |
    |               |               |         (Normalized)          |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
    |             PosY              |             Angle             |

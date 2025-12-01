@@ -1,6 +1,6 @@
 # R-Type Network Protocol Specification
 
-> **Version:** 3.1.0
+> **Version:** 3.1.1
 > **Last Updated:** 1st December 2025
 
 ## Table of Contents
@@ -311,7 +311,7 @@ _Note: Even if packet 102 was lost, the server recovers the state at tick 103. T
 | :--- | :--- | :--- | :--- |
 | `EntityId` | `u32` | 4 | Unique ID. |
 | `Type` | `u8` | 1 | Sprite Type (1=P1, 2=Enemy...). |
-| `Padding` | `u8` | 1 | Padding to align with 4 bytes. |
+| `Reserved` | `u8` | 1 | Padding to align with 4 bytes. |
 | `PosX` | `u16` | 2 | **X Position (Normalized).** 0 = Left, 65535 = Right. |
 | `PosY` | `u16` | 2 | **Y Position (Normalized).** 0 = Top, 65535 = Bottom. |
 | `Angle` | `u16` | 2 | Rotation in degrees (0-360). |
