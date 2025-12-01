@@ -87,41 +87,36 @@ classDiagram
 
 ## 3. Server Architecture
 
-The server is the **Authority**. It maintains the "true" state of the game and broadcasts it to clients. It is designed to be robust and multithreaded.
+The server is the **Authority**. It maintains the "true" state of the game and broadcasts it to clients. It is designed to be robust and efficient.
 
 ### Threading Model
 
-The server operates on **2 dedicated threads**:
+The server operates on a **single thread** and uses **ASIO async functions** for asynchronous capabilities. ASIO handles the threading part internally, allowing the server to handle network operations and game logic concurrently without manual thread management.
 
-1. **Network Thread**:
-    - Handles all incoming UDP/TCP traffic using `Asio`.
-    - Deserializes packets.
-    - Pushes valid commands (Inputs, Connections) into a thread-safe **Input Queue**.
-    - Sends outgoing packets (Snapshots) from the **Output Queue**.
+- **Network Operations**:
+  - Handles all incoming UDP/TCP traffic using `Asio` async callbacks.
+  - Deserializes packets directly upon receipt.
+  - Sends outgoing packets (Snapshots) asynchronously.
 
-2. **Game Logic Thread**:
-    - Runs the main Game Loop (fixed timestep).
-    - Pops commands from the **Input Queue**.
-    - Runs ECS Systems (Physics, Collision, AI).
-    - Generates World Snapshots.
-    - Pushes Snapshots to the **Output Queue**.
+- **Game Logic**:
+  - Runs the main Game Loop.
+  - Processes inputs received via network callbacks.
+  - Runs ECS Systems (Physics, Collision, AI).
+  - Generates World Snapshots and schedules them for sending.
 
 ### Server Loop
 
 ```mermaid
 sequenceDiagram
-    participant Net as Network Thread
-    participant Queue as Shared Queue
-    participant Game as Game Logic Thread
+    participant Server as Server (ASIO Loop)
+    participant Client
 
     loop Every Tick
-        Net->>Queue: Push Player Inputs
-        Game->>Queue: Pop Inputs
-        Game->>Game: Update Physics (ECS)
-        Game->>Game: Check Collisions
-        Game->>Queue: Push World Snapshot
-        Queue->>Net: Pop Snapshot
-        Net->>Net: Broadcast to Clients
+        Client->>Server: Send Inputs (Async Receive)
+        Server->>Server: Process Inputs
+        Server->>Server: Update Physics (ECS)
+        Server->>Server: Check Collisions
+        Server->>Client: Broadcast Snapshot (Async Send)
     end
 ```
 
