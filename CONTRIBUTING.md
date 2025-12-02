@@ -1,16 +1,31 @@
-# **CONTRIBUTING.md**
+# CONTRIBUTING.md
 
 Thank you for your interest in contributing to **R_TYPE_J.A.M.E.S.**
 This document explains how to work on the project, how branches and commits must be structured, how pull requests are reviewed, and how CI & Git hooks ensure code quality.
 
+## Table of Contents
+
+1. [Workflow Overview](#1-workflow-overview)
+2. [Branching Strategy](#2-branching-strategy)
+3. [Commit Rules](#3-commit-rules)
+4. [Protected Branch Rules](#4-protected-branch-rules)
+5. [Pull Request Process](#5-pull-request-process)
+6. [Git Hooks & Formatting](#6-git-hooks--formatting)
+7. [CI (GitHub Actions)](#7-ci-github-actions)
+8. [Issues Guidelines](#8-issues-guidelines)
+9. [Code Style](#9-code-style)
+10. [Testing Requirements](#10-testing-requirements)
+11. [Releases](#11-releases)
+12. [Getting Help](#12-getting-help)
+
 ---
 
-# 📌 **1. Workflow Overview**
+## 1. Workflow Overview
 
 We use a simplified GitHub Flow with protected branches, PR reviews, and automated CI.
 All contributions must follow the rules below.
 
-### **Main rules**
+### Main rules
 
 * **Never commit directly to `main`**
 * **Every change = an Issue + a Feature Branch + a Pull Request**
@@ -20,22 +35,22 @@ All contributions must follow the rules below.
 
 ---
 
-# 📁 **2. Branching Strategy**
+## 2. Branching Strategy
 
 We use the following branches:
 
-### **Main Branches**
+### Main Branches
 
 | Branch | Purpose                                                      |
 | ------ | ------------------------------------------------------------ |
 | `main` | Stable production branch. Protected, no direct pushes.       |
-| `dev`  | Integration branch where all features merge before releases. |
+| `Epic-...`  | Integration branch where all features merge before releases. should start by 'Epic-' |
 
-### **Feature Branches**
+### Feature Branches
 
 Every task must be implemented in a **dedicated branch**:
 
-```
+```txt
 feature/<issue-number>-short-description
 refactor/<issue-number>-short-description
 bugfix/<issue-number>-short-description
@@ -44,7 +59,7 @@ docs/<issue-number>-short-description
 
 **Examples:**
 
-```
+```txt
 feature/42-implement-ecs-systems
 bugfix/88-fix-snapshot-ordering
 docs/15-update-architecture-md
@@ -52,19 +67,22 @@ docs/15-update-architecture-md
 
 ---
 
-# 📝 **3. Commit Rules**
+## 3. Commit Rules
 
-### **Commit Format**
+### Commit Format
 
-We use **Gitmoji + English commit message**:
+We use **Gitmoji + English commit message**, strictly enforced by `commitlint`.
+If your message does not match the pattern, the commit will be rejected.
 
-```
-<gitmoji> [scope] Your message in English
+**Pattern:**
+
+```txt
+<gitmoji> [Scope] Your message in English
 ```
 
 **Examples:**
 
-```
+```txt
 ✨ [Engine] Add MovementSystem
 🐛 [Network] Fix UDP packet handler crash
 📝 [Docs] Update protocol RFC
@@ -79,7 +97,7 @@ We use **Gitmoji + English commit message**:
 
 ---
 
-# 🔐 **4. Protected Branch Rules**
+## 4. Protected Branch Rules
 
 ### Branch protection:
 
@@ -91,7 +109,7 @@ We use **Gitmoji + English commit message**:
 
 ---
 
-# 🔄 **5. Pull Request Process**
+## 5. Pull Request Process
 
 ### Step-by-step:
 
@@ -103,13 +121,13 @@ We use **Gitmoji + English commit message**:
 
 2. **Create a new feature branch**
 
-   ```
+   ```txt
    git checkout -b feature/XX-my-feature
    ```
 
 3. **Push your work**
 
-   ```
+   ```txt
    git push -u origin feature/XX-my-feature
    ```
 
@@ -143,29 +161,38 @@ We use **Gitmoji + English commit message**:
 
 ---
 
-# 🛠️ **6. Git Hooks**
+## 6. Git Hooks & Formatting
 
-This project ships with local Git hooks that contributors **must install**.
-They ensure code consistency *before* PR creation.
+This project uses **Husky**, **Commitlint**, and **Lint-staged** to ensure code quality and commit message consistency automatically.
 
-### Included hooks:
+### Prerequisites
 
-| Hook         | Purpose                                                    |
-| ------------ | ---------------------------------------------------------- |
-| `pre-commit` | Checks formatting (clang-format), lint, forbidden patterns |
-| `commit-msg` | Validates commit format (Gitmoji + English message)        |
+You must have the following tools installed on your machine:
 
-### Install the hooks:
+* **Node.js & npm** (to run the hooks)
+* **Clang-Format** (to format C++ code)
+* **Clang++** (to check C++ syntax)
 
+### Installation
+
+Run the following command at the project root to install dependencies and activate Git hooks:
+
+```bash
+npm install # This automatically runs 'npm run prepare' to set up Git hooks
 ```
-git config core.hooksPath .githooks
-```
 
-Hooks run automatically on every commit.
+### How it works
+
+| Hook | Tool | Action |
+| :--- | :--- | :--- |
+| `pre-commit` | **lint-staged** | Automatically formats staged `.cpp`/`.hpp` files using `clang-format` and checks syntax with `clang++`. |
+| `commit-msg` | **commitlint** | Validates that your commit message follows the [Gitmoji](#3-commit-rules) convention. |
+
+> **Note:** You do not need to run formatting manually. Just stage your files and commit; the system handles the rest.
 
 ---
 
-# 🔍 **7. CI (GitHub Actions)**
+## 7. CI (GitHub Actions)
 
 Every Pull Request triggers the CI pipeline:
 
@@ -183,7 +210,7 @@ A PR cannot be merged if **any** CI job fails.
 
 ---
 
-# 🗂️ **8. Issues Guidelines**
+## 8. Issues Guidelines
 
 ### Creating an Issue
 
@@ -210,7 +237,7 @@ Tasks must be **small**:
 
 ---
 
-# 🔧 **9. Code Style**
+## 9. Code Style
 
 * C++23 required
 * Follow **Google Style (clang-format)**
@@ -223,7 +250,7 @@ Tasks must be **small**:
 
 ---
 
-# 🧪 **10. Testing Requirements**
+## 10. Testing Requirements
 
 Each feature must include tests when applicable:
 
@@ -235,7 +262,7 @@ Tests must pass before merging.
 
 ---
 
-# 📦 **11. Releases**
+## 11. Releases
 
 Releases are prepared by maintainers and follow:
 
@@ -252,7 +279,7 @@ Example milestones:
 
 ---
 
-# 🤝 **12. Getting Help**
+## 12. Getting Help
 
 If you have questions:
 
@@ -261,4 +288,3 @@ If you have questions:
 * Tag maintainers in an Issue
 
 We are here to help contributors succeed 🚀
-
