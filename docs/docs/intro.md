@@ -67,7 +67,7 @@ git clone https://github.com/MatthieuGA/R_TYPE_J.A.M.E.S.git
 cd R_TYPE_J.A.M.E.S.
 ```
 
-2. Build the Project
+### 2. Build the Project
 ```bash
 ./build.sh
 or
