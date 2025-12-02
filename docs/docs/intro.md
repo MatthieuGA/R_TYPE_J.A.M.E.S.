@@ -102,7 +102,7 @@ cd build && ctest --output-on-failure
 ```
 
 📚 Next Steps
-- To continue exploring the project:
+To continue exploring the project:
 - Learn how the game engine is structured
 - Understand the network protocol between server and clients
 - Read tutorials on how to extend or modify the engine
