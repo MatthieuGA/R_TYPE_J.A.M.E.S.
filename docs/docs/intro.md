@@ -101,7 +101,7 @@ To execute unit and integration tests:
 cd build && ctest --output-on-failure
 ```
 
-📚 Next Steps
+## 📚 Next Steps
 To continue exploring the project:
 - Learn how the game engine is structured
 - Understand the network protocol between server and clients
