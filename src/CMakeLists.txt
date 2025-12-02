@@ -22,7 +22,8 @@ target_link_libraries(${TARGET}
     PRIVATE SFML::Graphics
     PRIVATE SFML::Network
     PRIVATE SFML::Audio
-    PRIVATE asio::asio
+    PRIVATE Boost::asio
+    PRIVATE Boost::system
 )
 
 # Include directories
