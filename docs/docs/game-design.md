@@ -170,8 +170,8 @@ The Force is a small pod that:
 - Collect more points than the other players.
 
 **Loss Condition:**
-- Player lose all lives while at least one player is still standing
-- Player has less points than at least one player
+- Player loses all lives while at least one player is still standing
+- Player has fewer points than at least one player
 
 ---
 
@@ -407,7 +407,7 @@ Large, powerful enemy encountered at the end of stages. Provides climactic chall
 6. Tail destroyed → boss speed increases, enters **Phase 3**.
 7. **Phase 3:** Core exposed in center, fires dense bullet curtain.
 8. Players use charged shots for high damage bursts.
-9.  Boss destroyed → points distributed from % of total damage given to the boss.
+9.  Boss destroyed → points are distributed to each player in proportion to the amount of damage they dealt to the boss (e.g., if a player dealt 30% of the total damage, they receive 30% of the points).
 
 **Outcome:** Boss fight showcases multi-phase mechanics, coordination in multiplayer, and high-stakes dodge/shoot gameplay. Victory is rewarding both in score and progression.
 
@@ -667,7 +667,7 @@ Audio reinforces player actions, signals threats, and sets the game's tone (tens
    - **Example:** Snake enemies always weave at same frequency; players can memorize timing.
    - **Result:** Players improve through pattern recognition, reducing frustration.
 
-4. **Adjustable Game Speed Settings Server:**
+4. **Adjustable Game Speed (Server Settings):**
    - **Settings:** 75% / 100% / 125% game speed.
    - **Effect:** Slows down or speeds up all entities (including player).
    - **Result:** Players who need more time to process can play at reduced speed.
