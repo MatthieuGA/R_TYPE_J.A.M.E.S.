@@ -53,6 +53,7 @@ endif()
 
 # GoogleTest for unit testing
 include(FetchContent)
+cmake_policy(SET CMP0135 NEW)
 FetchContent_Declare(
   googletest
   URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip

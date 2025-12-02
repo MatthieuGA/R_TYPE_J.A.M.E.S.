@@ -1,67 +1,108 @@
----
+id: intro
+title: Getting Started
 sidebar_position: 1
 ---
 
 # Getting Started
 
-Welcome to the **R-TYPE J.A.M.E.S.** documentation!
+Welcome to the official documentation of **R-TYPE J.A.M.E.S.**  
+This guide explains **the purpose of the project**, **how it works**, and **how to install and run it** on your machine.
 
-R-TYPE J.A.M.E.S. is a modern C++ implementation of the classic R-TYPE game, featuring:
+---
 
-- **Client-Server Architecture**: Networked multiplayer gameplay
-- **Custom Game Engine**: Built with modern C++ practices
-- **ECS (Entity Component System)**: Efficient and scalable game architecture
-- **Cross-platform**: Support for multiple platforms
+## 🎯 Project Goal
 
-## Prerequisites
+**R-TYPE J.A.M.E.S.** is a modern C++ recreation of the iconic arcade game **R-Type**, redesigned to work as a **networked multiplayer game**.
 
-Before you begin, ensure you have the following installed:
+The objective of the project is twofold:
 
-- **CMake** (version 3.20 or higher)
-- **C++ Compiler** with C++17 support (GCC, Clang, or MSVC)
-- **Git**
+### 1. For Players  
+Provide a simple and enjoyable way to play a **multiplayer R-Type experience**, where several players can connect together, fight enemies, and progress through the game.
 
-## Quick Start
+### 2. For Developers  
+Offer a **clean, modern, and modular codebase** that showcases:
 
-### Building the Project
+- A fully custom **client–server architecture**
+- A lightweight **game engine** developed from scratch
+- An **Entity Component System (ECS)** for scalable game logic
+- Modern C++ development practices (CMake, package managers, documentation)
+- A clear, documented **binary UDP protocol** for real-time gameplay
 
-1. Clone the repository:
+This documentation helps both players and developers understand **how to use**, **compile**, and **extend** the project.
+
+---
+
+## 🚀 What You Can Do With R-TYPE J.A.M.E.S.
+
+With this project, you can:
+
+- Launch a dedicated **game server**  
+- Connect one or more **clients** to play together
+- Control your spaceship, fight enemies, shoot missiles, and survive waves of Bydos
+- Observe real-time synchronized multiplayer gameplay
+- Modify or extend the engine if you are a developer
+
+This documentation will guide you through all these steps.
+
+---
+
+## 📦 Prerequisites
+
+To build and run the project, you will need:
+
+- **CMake** version 3.20 or higher  
+- A **C++17-compatible compiler** (GCC, Clang, or MSVC)  
+- **Git**  
+- A dependency **package manager** (Conan, vcpkg, or CMake CPM) depending on your setup
+
+---
+
+## ⚙️ Installation & Build
+
+### 1. Clone the Repository
+
 ```bash
 git clone https://github.com/MatthieuGA/R_TYPE_J.A.M.E.S.git
 cd R_TYPE_J.A.M.E.S.
 ```
 
-2. Configure the project:
+### 2. Build the Project
 ```bash
-cmake -S . -B build
+./build.sh
+or
+./build.bat
 ```
 
-3. Build the project:
-```bash
-cmake --build build -j$(nproc)
-```
+## 🎮 Running the Game
+### Start the Server
 
-### Running the Game
+The server hosts the entire game logic.
+Run it first:
 
-#### Start the Server
 ```bash
 ./build/server/r-type_server
 ```
 
-#### Start the Client
+### Start the Client
+
+Each client represents one player and displays the game:
 ```bash
 ./build/client/r-type_client
 ```
 
-## Running Tests
+You can launch multiple clients on the same machine or across the network.
 
-Run the test suite:
+## 🧪 Running the Test Suite
+
+To execute unit and integration tests:
+
 ```bash
 cd build && ctest --output-on-failure
 ```
 
-## Next Steps
-
-- Learn about the [Architecture](./architecture.md) of the game
-- Understand the [Network Protocol](./protocol.md)
-- Explore the API documentation
+## 📚 Next Steps
+To continue exploring the project:
+- Learn how the game engine is structured
+- Understand the network protocol between server and clients
+- Read tutorials on how to extend or modify the engine
+- Explore the API documentation for developers
