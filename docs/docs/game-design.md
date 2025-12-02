@@ -1,10 +1,10 @@
 # Game Design Document (GDD) — R-Type J.A.M.E.S.
 
 **Project:** R-Type J.A.M.E.S.
-**Genre:** Horizontal Shoot'em'up (Shmup)  
+**Genre:** Horizontal Shoot'em'up (Shmup)
 **Platforms:** Linux, Windows
-**Network:** Multiplayer cooperative (up to 4 players), client-server architecture  
-**Version:** 1.0  
+**Network:** Multiplayer competitive (up to 4 players), client-server architecture
+**Version:** 1.0
 **Last Updated:** December 1, 2025
 
 ---
@@ -13,11 +13,11 @@
 
 ### 1.1 Game Concept
 
-R-Type J.A.M.E.S. is a networked reimagining of the classic 1987 horizontal shoot'em'up R-Type. Players pilot spacecraft through waves of the alien Bydos forces, fighting for survival in a side-scrolling space battlefield. The game emphasizes cooperative multiplayer gameplay where up to 4 players work together against increasingly challenging enemy waves and bosses.
+R-Type J.A.M.E.S. is a networked reimagining of the classic 1987 horizontal shoot'em'up R-Type. Players pilot spacecraft through waves of the alien Bydos forces, fighting for survival in a side-scrolling space battlefield. The game emphasizes competitive multiplayer gameplay where up to 4 players play against each other against increasingly challenging enemy waves and bosses.
 
 ### 1.2 Core Vision
 
-- **Networked Cooperative Play:** Multiple players play against each other across a network, with a central authoritative server managing all game state.
+- **Networked Competitive Play:** Multiple players play against each other across a network, with a central authoritative server managing all game state.
 - **Classic Shmup Feel:** Faithful to the original R-Type's tight controls, challenging enemies, and iconic powerup system.
 - **Server Authority:** All critical gameplay decisions (collision, damage, spawning, scoring) are computed server-side to ensure fairness and consistency.
 - **Accessible & Readable:** Clear visual distinction between entities, customizable controls, and support for players with various accessibility needs.
@@ -114,7 +114,7 @@ The original R-Type (1987, Irem) and its sequels provide the foundation. Similar
 - **Powerup collection:** Small point bonus for pickups.
 
 **Leaderboard:**
-- Scores are tracked per session and globally in the server's directory
+- Scores are tracked per session and globally in the server's database (or persistent storage)
 - Server can broadcast high scores to all clients.
 
 ### 2.6 Progression & Difficulty
@@ -201,7 +201,7 @@ The player-controlled spacecraft. The primary avatar through which the human pla
 
 ### 3.2 Enemy (Bydos)
 
-**Role:**  
+**Role:**
 Hostile entities controlled by the game logic (server). Provide challenge and targets for players.
 
 **Responsibilities:**
@@ -231,7 +231,7 @@ Hostile entities controlled by the game logic (server). Provide challenge and ta
 
 ### 3.3 Bullet / Missile (Projectile)
 
-**Role:**  
+**Role:**
 Ranged attack entities fired by players or enemies.
 
 **Responsibilities:**
@@ -260,7 +260,7 @@ Ranged attack entities fired by players or enemies.
 
 ### 3.4 Powerup / Force
 
-**Role:**  
+**Role:**
 Collectible items that enhance player capabilities.
 
 **Responsibilities:**
@@ -286,7 +286,7 @@ Collectible items that enhance player capabilities.
 
 ### 3.5 Obstacle
 
-**Role:**  
+**Role:**
 Environmental hazards or level geometry that players and enemies must navigate around.
 
 **Responsibilities:**
@@ -310,7 +310,7 @@ Environmental hazards or level geometry that players and enemies must navigate a
 
 ### 3.6 Spawner
 
-**Role:**  
+**Role:**
 Logic entity (not visually represented) that generates enemies at specified intervals.
 
 **Responsibilities:**
@@ -454,7 +454,7 @@ Large, powerful enemy encountered at the end of stages. Provides climactic chall
 
 ### 6.1 Responsiveness (Feel)
 
-**Design Intent:**  
+**Design Intent:**
 Players should feel **immediate control** over their spacecraft. Input lag is the enemy of enjoyment in fast-paced shmups.
 
 **Measurable Targets:**
@@ -476,7 +476,7 @@ Players should feel **immediate control** over their spacecraft. Input lag is th
 
 ### 6.2 Visual Clarity (Readability)
 
-**Design Intent:**  
+**Design Intent:**
 Players must instantly distinguish between friend, foe, danger, and collectibles. In a screen full of entities, clarity prevents frustration and cheap deaths.
 
 **Measurable Targets:**
@@ -509,7 +509,7 @@ Players must instantly distinguish between friend, foe, danger, and collectibles
 
 ### 6.3 Audio Design (Feel)
 
-**Design Intent:**  
+**Design Intent:**
 Audio reinforces player actions, signals threats, and sets the game's tone (tension, excitement, triumph).
 
 **Key Audio Categories:**
@@ -679,12 +679,12 @@ Audio reinforces player actions, signals threats, and sets the game's tone (tens
 ### 8.1 Player Count & Roles
 
 - **Up to 4 players** can join a single game session.
-- All players are **cooperative**; no player-vs-player combat (unless optional "friendly fire" mode enabled).
+- All players are **against** each other;
 - Players share the same screen space (no split-screen; all players visible in the same scrolling viewport).
 
 ### 8.2 Server-Authoritative Model
 
-**Design Principle:**  
+**Design Principle:**
 The server is the **single source of truth** for all gameplay-critical state.
 
 **Server Responsibilities:**
@@ -773,8 +773,7 @@ Use this checklist during playtests to verify the game meets stated goals.
 
 - [ ] **Enemy patterns are learnable:** After 2-3 encounters, player can predict snake enemy movement and dodge effectively.
 - [ ] **Force mechanics are intuitive:** Player understands attach/detach within one wave of experimentation.
-- [ ] **Boss fights feel challenging but fair:** Boss encounter requires multiple attempts but players see improvement each try (not random difficulty).
-- [ ] **Multiplayer coordination is rewarding:** Two players working together (one focuses boss head, one focuses tail) succeed where solo player struggles.
+- [ ] **Boss fights feel challenging but fair:** Boss encounter might require multiple attempts but players see improvement each try (not random difficulty).
 
 ### 9.5 Multiplayer & Networking
 
@@ -799,6 +798,6 @@ Developers, designers, and testers should reference this document throughout imp
 
 ---
 
-**Document Version:** 1.0  
-**Authors:** R-Type J.A.M.E.S. Team  
+**Document Version:** 1.0
+**Authors:** R-Type J.A.M.E.S. Team
 **Last Updated:** December 1, 2025
