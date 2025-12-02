@@ -6,6 +6,9 @@ file(GLOB_RECURSE R_TYPE_TEST_SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
 )
 
+# Exclude server-specific test (compiled separately with server sources/includes)
+list(REMOVE_ITEM R_TYPE_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/test_server.cpp")
+
 if (R_TYPE_TEST_SOURCES)
     add_executable(engine_tests ${R_TYPE_TEST_SOURCES})
 else()
