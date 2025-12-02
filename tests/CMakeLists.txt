@@ -43,23 +43,3 @@ target_link_libraries(server_tests
 
 # Discover server tests for CTest
 gtest_discover_tests(server_tests)
-
-# Create manual test executable for interactive ECS testing
-add_executable(server_manual_test
-    server_manual_test.cpp
-    ${CMAKE_SOURCE_DIR}/server/src/server/Server.cpp
-    ${CMAKE_SOURCE_DIR}/server/src/server/Config.cpp
-    ${CMAKE_SOURCE_DIR}/server/src/server/Network.cpp
-)
-
-target_include_directories(server_manual_test
-    PRIVATE
-        ${CMAKE_SOURCE_DIR}/server/include
-        ${CMAKE_SOURCE_DIR}/engine/include
-)
-
-target_link_libraries(server_manual_test
-    PRIVATE
-        r-type_engine
-        Boost::system
-)
