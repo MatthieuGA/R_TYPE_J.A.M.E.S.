@@ -2,7 +2,7 @@
 #include <boost/asio.hpp>
 #include <thread>
 #include <chrono>
-#include "server/server.hpp"
+#include "server/Server.hpp"
 #include "server/Components.hpp"
 #include "server/Config.hpp"
 
