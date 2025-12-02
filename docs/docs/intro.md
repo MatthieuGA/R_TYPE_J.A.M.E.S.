@@ -93,7 +93,7 @@ Each client represents one player and displays the game:
 
 You can launch multiple clients on the same machine or across the network.
 
-🧪 Running the Test Suite
+## 🧪 Running the Test Suite
 
 To execute unit and integration tests:
 
