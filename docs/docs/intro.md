@@ -74,7 +74,7 @@ or
 ./build.bat
 ```
 
-🎮 Running the Game
+## 🎮 Running the Game
 Start the Server
 
 The server hosts the entire game logic.
