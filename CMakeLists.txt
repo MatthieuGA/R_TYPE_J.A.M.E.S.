@@ -25,8 +25,11 @@ endif()
 # Find required packages (vcpkg integration)
 # SFML 2.6.2 uses lowercase component names
 find_package(SFML COMPONENTS system window graphics network audio CONFIG REQUIRED)
-# Use Boost.Asio provided by vcpkg (`boost-asio`)
-find_package(Boost REQUIRED COMPONENTS asio system)
+
+# Boost components for networking and lock-free data structures
+# boost-asio, boost-system, boost-lockfree from vcpkg
+find_package(Boost REQUIRED COMPONENTS system)
+find_package(Threads REQUIRED)
 
 # Provide compatibility aliases so code using SFML::Name targets works with
 # vcpkg-provided SFML 2.x (which exports sfml-name targets).
@@ -114,5 +117,9 @@ message(STATUS "C++ Compiler: ${CMAKE_CXX_COMPILER}")
 message(STATUS "C++ Standard: ${CMAKE_CXX_STANDARD}")
 message(STATUS "SFML Found: ${SFML_FOUND}")
 message(STATUS "Boost Found: ${Boost_FOUND}")
+if(Boost_FOUND)
+    message(STATUS "  Boost Version: ${Boost_VERSION}")
+    message(STATUS "  Boost Include: ${Boost_INCLUDE_DIRS}")
+endif()
 message(STATUS "Coverage enabled: ${ENABLE_COVERAGE}")
 message(STATUS "==============================================")
