@@ -5,6 +5,8 @@ out/
 cmake-build-*/
 
 # vcpkg
+vcpkg
+/vcpkg
 vcpkg_installed/
 .vcpkg-root
 
@@ -92,7 +94,10 @@ node_modules/
 package-lock.json
 
 build_log.txt
+docs/
+.vscode/
+.cache
+
 *.pdf
 r-type.txt
 *.sh
-.vscode/
