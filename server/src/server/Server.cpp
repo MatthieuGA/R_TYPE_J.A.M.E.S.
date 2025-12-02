@@ -1,6 +1,8 @@
 #include "server/Server.hpp"
-#include "server/Components.hpp"
+
 #include <iostream>
+
+#include "server/Components.hpp"
 
 namespace server {
 
@@ -10,8 +12,7 @@ Server::Server(Config &config, boost::asio::io_context &io_context)
       network_(std::make_unique<Network>(config, io_context)),
       registry_(),
       tick_timer_(io_context),
-      running_(false) {
-}
+      running_(false) {}
 
 Server::~Server() {
     running_ = false;
@@ -37,12 +38,12 @@ void Server::registerComponents() {
 
 void Server::registerSystems() {
     registry_.add_system<Engine::sparse_array<Component::Position>,
-                         Engine::sparse_array<Component::Velocity>>(
+        Engine::sparse_array<Component::Velocity>>(
         [](Engine::registry &reg,
-           Engine::sparse_array<Component::Position> &positions,
-           Engine::sparse_array<Component::Velocity> &velocities) {
+            Engine::sparse_array<Component::Position> &positions,
+            Engine::sparse_array<Component::Velocity> &velocities) {
             for (size_t i = 0; i < positions.size() && i < velocities.size();
-                 ++i) {
+                ++i) {
                 if (positions.has(i) && velocities.has(i)) {
                     auto &pos = positions[i];
                     auto &vel = velocities[i];
@@ -78,8 +79,8 @@ void Server::setupGameTick() {
 void Server::update() {
     registry_.run_systems();
 
-    // TODO: Process network messages from the SPSC queue
-    // TODO: Send state updates to clients
+    // TODO(someone): Process network messages from the SPSC queue
+    // TODO(someone): Send state updates to clients
 }
 
 Engine::registry &Server::getRegistry() {
