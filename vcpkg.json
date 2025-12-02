@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "dependencies": [
     "sfml",
-    "asio"
+    "asio",
+    "boost-system",
+    "boost-asio",
+    "boost-lockfree"
   ]
 }
