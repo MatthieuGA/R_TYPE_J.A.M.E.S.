@@ -1,4 +1,6 @@
 #pragma once
+#include <vector>
+
 #include <boost/asio.hpp>
 #include <boost/lockfree/spsc_queue.hpp>
 #include <server/Config.hpp>
@@ -23,6 +25,14 @@ class Network {
         uint8_t inputState;
     };
 
+    std::optional<PlayerInput> queuePop() {
+        PlayerInput input;
+        if (_udp.queue.pop(input)) {
+            return input;
+        }
+        return std::nullopt;
+    }
+
  private:
     class UDP {
      public:
@@ -32,13 +42,14 @@ class Network {
         void receive();
         boost::asio::ip::port_type port() const;
 
-     private:
-        boost::asio::ip::udp::socket udpSocket;
-        std::array<uint8_t, MAX_UDP_PACKET_SIZE> udpBuffer;
-        boost::asio::ip::udp::endpoint udpRemoteEndpoint;
         boost::lockfree::spsc_queue<PlayerInput,
             boost::lockfree::capacity<QUEUE_SIZE>>
-            udpQueue;
+            queue;
+
+     private:
+        boost::asio::ip::udp::socket socket;
+        std::array<uint8_t, MAX_UDP_PACKET_SIZE> buffer;
+        boost::asio::ip::udp::endpoint remote_endpoint;
     };
 
     class TCP {
@@ -47,9 +58,10 @@ class Network {
         void accept();
         boost::asio::ip::port_type port() const;
 
-        boost::asio::ip::tcp::acceptor tcpAcceptor;
+        boost::asio::ip::tcp::acceptor acceptor;
 
      private:
+        std::vector<boost::asio::ip::tcp::socket> sockets;
     };
 
     UDP _udp;

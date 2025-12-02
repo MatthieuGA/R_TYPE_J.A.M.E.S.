@@ -1,4 +1,5 @@
 #include <iostream>
+#include <utility>
 
 #include <server/Network.hpp>
 
@@ -14,36 +15,33 @@ Network::Network(Config &config, boost::asio::io_context &io)
 }
 
 Network::UDP::UDP(Config &config, boost::asio::io_context &io)
-    : udpSocket(io, boost::asio::ip::udp::endpoint(
-                        boost::asio::ip::make_address(config.getUdpAddress()),
-                        config.getUdpPort())) {}
+    : socket(io, boost::asio::ip::udp::endpoint(
+                     boost::asio::ip::make_address(config.getUdpAddress()),
+                     config.getUdpPort())) {}
 
 Network::TCP::TCP(Config &config, boost::asio::io_context &io)
-    : tcpAcceptor(
-          io, boost::asio::ip::tcp::endpoint(
-                  boost::asio::ip::make_address(config.getTcpAddress()),
-                  config.getTcpPort())) {}
+    : acceptor(io, boost::asio::ip::tcp::endpoint(
+                       boost::asio::ip::make_address(config.getTcpAddress()),
+                       config.getTcpPort())) {}
 
 boost::asio::ip::port_type Network::UDP::port() const {
-    return udpSocket.local_endpoint().port();
+    return socket.local_endpoint().port();
 }
 
 boost::asio::ip::port_type Network::TCP::port() const {
-    return tcpAcceptor.local_endpoint().port();
+    return acceptor.local_endpoint().port();
 }
 
 void Network::TCP::accept() {
     try {
-        tcpAcceptor.async_accept([this](boost::system::error_code ec,
-                                     boost::asio::ip::tcp::socket socket) {
+        acceptor.async_accept([this](boost::system::error_code ec,
+                                  boost::asio::ip::tcp::socket socket) {
             if (!ec) {
                 std::cout << "New TCP connection from "
                           << socket.remote_endpoint().address().to_string()
                           << ":" << port() << std::endl;
-                // Later: store socket in a connection manager, start reading,
-                // etc. auto connection =
-                // std::make_shared<TcpConnection>(std::move(socket));
-                // connection->start();
+                sockets.push_back(std::move(socket));
+                // Async receive and send will be handled elsewhere
             } else {
                 std::cerr << "Error accepting TCP connection: " << ec.message()
                           << std::endl;
@@ -57,18 +55,17 @@ void Network::TCP::accept() {
 
 void Network::UDP::receive() {
     try {
-        udpSocket.async_receive_from(boost::asio::buffer(udpBuffer),
-            udpRemoteEndpoint,
+        socket.async_receive_from(boost::asio::buffer(buffer), remote_endpoint,
             [this](boost::system::error_code ec, std::size_t bytes_recvd) {
                 if (!ec && bytes_recvd > 0) {
                     std::cout << "Received UDP packet from "
-                              << udpRemoteEndpoint.address().to_string() << ":"
-                              << udpRemoteEndpoint.port()
+                              << remote_endpoint.address().to_string() << ":"
+                              << remote_endpoint.port()
                               << ", size: " << bytes_recvd << " bytes"
                               << std::endl;
-                    // Process received UDP packet (push to SPSC queue, etc.)
-                    // Specific function will use bytes_recvd to know the
-                    // actual content of the packet
+                    // Process and deserialize received UDP input packets (push
+                    // to SPSC queue, etc.) Specific function will use
+                    // bytes_recvd to know the actual content of the packet
                 } else {
                     std::cerr << "Error receiving UDP packet: " << ec.message()
                               << std::endl;

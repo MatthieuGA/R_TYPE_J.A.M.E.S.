@@ -24,7 +24,7 @@ jobs:
         python-version: 3.x
     - run: pip install cpplint
     - run: |
-        find . -type f \( -name '*.cpp' -o -name '*.hpp' \) ! -path './tests/*' ! -path './build/*' | xargs cpplint --repository=. --quiet --output=vs7 --filter=-legal/copyright,-build/c++17,+build/c++23,-runtime/references
+        find . -type f \( -name '*.cpp' -o -name '*.hpp' \) ! -path './tests/*' ! -path './build/*' | xargs cpplint --repository=. --quiet --output=vs7 --filter=-legal/copyright,-build/c++17,+build/c++23,-runtime/references,-whitespace/indent_namespace
   check_epitech_coding_style:
     if: github.repository != 'EpitechPGE3-2025/G-CPP-500-NAN-5-2-rtype-6'
     runs-on: ubuntu-latest
