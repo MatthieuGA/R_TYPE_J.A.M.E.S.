@@ -75,7 +75,7 @@ or
 ```
 
 ## 🎮 Running the Game
-Start the Server
+### Start the Server
 
 The server hosts the entire game logic.
 Run it first:
