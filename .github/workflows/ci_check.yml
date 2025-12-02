@@ -6,6 +6,11 @@ on:
     branches-ignore:
       - 'ga-ignore-**'
   pull_request:
+    types: [opened, synchronize, reopened]
+    branches-ignore:
+      - 'ga-ignore-**'
+  pull_request_target:
+    types: [opened, synchronize, reopened]
     branches-ignore:
       - 'ga-ignore-**'
 
@@ -24,7 +29,9 @@ jobs:
           echo "Merges to main are only allowed from branches starting with 'Epic-'."
           exit 1
   check_coding_style:
-    if: github.repository != 'EpitechPGE3-2025/G-CPP-500-NAN-5-2-rtype-6'
+    if: |
+      github.repository != 'EpitechPGE3-2025/G-CPP-500-NAN-5-2-rtype-6' &&
+      (github.event_name != 'pull_request_target' || github.event.pull_request.head.repo.full_name == github.repository)
     name: "Check C++ coding style with cpplint"
     runs-on: ubuntu-latest
     steps:

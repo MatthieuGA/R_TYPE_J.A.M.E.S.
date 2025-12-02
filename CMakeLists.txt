@@ -23,8 +23,13 @@ if (ENABLE_COVERAGE AND NOT MSVC)
 endif()
 
 # Find required packages (vcpkg integration)
+# SFML 2.6.2 uses lowercase component names
 find_package(SFML COMPONENTS system window graphics network audio CONFIG REQUIRED)
-find_package(asio CONFIG REQUIRED)
+
+# Boost components for networking and lock-free data structures
+# boost-asio, boost-system, boost-lockfree from vcpkg
+find_package(Boost REQUIRED COMPONENTS system)
+find_package(Threads REQUIRED)
 
 # Provide compatibility aliases so code using SFML::Name targets works with
 # vcpkg-provided SFML 2.x (which exports sfml-name targets).
@@ -48,6 +53,7 @@ endif()
 
 # GoogleTest for unit testing
 include(FetchContent)
+cmake_policy(SET CMP0135 NEW)
 FetchContent_Declare(
   googletest
   URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
@@ -111,6 +117,10 @@ message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 message(STATUS "C++ Compiler: ${CMAKE_CXX_COMPILER}")
 message(STATUS "C++ Standard: ${CMAKE_CXX_STANDARD}")
 message(STATUS "SFML Found: ${SFML_FOUND}")
-message(STATUS "Asio Found: ${asio_FOUND}")
+message(STATUS "Boost Found: ${Boost_FOUND}")
+if(Boost_FOUND)
+    message(STATUS "  Boost Version: ${Boost_VERSION}")
+    message(STATUS "  Boost Include: ${Boost_INCLUDE_DIRS}")
+endif()
 message(STATUS "Coverage enabled: ${ENABLE_COVERAGE}")
 message(STATUS "==============================================")
