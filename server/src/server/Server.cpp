@@ -34,7 +34,7 @@ void Server::registerComponents() {
 }
 
 void Server::registerSystems() {
-    registry_.add_system<Engine::sparse_array<Component::Position>,
+    registry_.AddSystem<Engine::sparse_array<Component::Position>,
         Engine::sparse_array<Component::Velocity>>(
         [](Engine::registry &reg,
             Engine::sparse_array<Component::Position> &positions,

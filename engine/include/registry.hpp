@@ -46,10 +46,6 @@ class registry {
     template <class ... Components, typename Function>
     void AddSystem(Function &&f);
 
-    // Backwards-compatible system API
-    template <class ... Components, typename Function>
-    void add_system(Function &&f) { AddSystem<Components...>(std::forward<Function>(f)); }
-
     void RunSystems();
 
     // Backwards-compatible run
@@ -71,9 +67,6 @@ class registry {
 
     template <typename Component>
     void RemoveComponent(entity_t const &from);
-
-    template <typename Component>
-    void remove_component(entity_t const &from) { RemoveComponent<Component>(from); }
 
  private:
     std::unordered_map<std::type_index,
