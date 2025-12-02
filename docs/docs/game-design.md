@@ -3,9 +3,65 @@
 **Project:** R-Type J.A.M.E.S.
 **Genre:** Horizontal Shoot'em'up (Shmup)
 **Platforms:** Linux, Windows
-**Network:** Multiplayer competitive (up to 4 players), client-server architecture
-**Version:** 1.0
-**Last Updated:** December 1, 2025
+**Network:** Multiplayer competitive (up to 255 players), client-server architecture
+**Version:** 2.0.0
+**Last Updated:** December 2, 2025
+
+## Table of Contents
+
+1. [Overview & Vision](#1-overview--vision)
+   1. [Game Concept](#11-game-concept)
+   2. [Core Vision](#12-core-vision)
+   3. [Design Philosophy](#13-design-philosophy)
+   4. [Reference & Inspiration](#14-reference--inspiration)
+2. [Core Mechanics (Global Level)](#2-core-mechanics-global-level)
+   1. [Movement](#21-movement)
+   2. [Shooting](#22-shooting)
+   3. [Collision & Health](#23-collision--health)
+   4. [Spawning Logic](#24-spawning-logic)
+   5. [Scoring](#25-scoring)
+   6. [Progression & Difficulty](#26-progression--difficulty)
+   7. [Powerups & The Force](#27-powerups--the-force)
+   8. [Game Loop](#28-game-loop)
+3. [Entity Roles (Global Level)](#3-entity-roles-global-level)
+   1. [Player](#31-player)
+   2. [Enemy (Bydos)](#32-enemy-bydos)
+   3. [Bullet / Missile (Projectile)](#33-bullet--missile-projectile)
+   4. [Powerup / Force](#34-powerup--force)
+   5. [Obstacle](#35-obstacle)
+   6. [Spawner](#36-spawner)
+   7. [Boss](#37-boss)
+4. [Gameplay Examples & Scenarios](#4-gameplay-examples--scenarios)
+   1. [Scenario 1: Early Wave Encounter](#scenario-1-early-wave-encounter)
+   2. [Scenario 2: Mid-Level Challenge with Force](#scenario-2-mid-level-challenge-with-force)
+   3. [Scenario 3: Boss Encounter — Dobkeratops](#scenario-3-boss-encounter--dobkeratops)
+5. [Controls & Input](#5-controls--input)
+   1. [Default Keyboard Mapping](#51-default-keyboard-mapping)
+   2. [Gamepad Support (Optional)](#52-gamepad-support-optional)
+   3. [Input Responsiveness](#53-input-responsiveness)
+   4. [Remapping Support (Accessibility Requirement)](#54-remapping-support-accessibility-requirement)
+6. [Player Experience: Feel & Readability Goals](#6-player-experience-feel--readability-goals)
+   1. [Responsiveness (Feel)](#61-responsiveness-feel)
+   2. [Visual Clarity (Readability)](#62-visual-clarity-readability)
+   3. [Audio Design (Feel)](#63-audio-design-feel)
+7. [Accessibility Intentions & Requirements](#7-accessibility-intentions--requirements)
+   1. [Visual Accessibility](#71-visual-accessibility)
+   2. [Motor/Physical Accessibility](#72-motorphysical-accessibility)
+   3. [Audio/Hearing Accessibility](#73-audiohearing-accessibility)
+   4. [Cognitive Accessibility](#74-cognitive-accessibility)
+8. [Multiplayer & Networking Considerations](#8-multiplayer--networking-considerations)
+   1. [Player Count & Roles](#81-player-count--roles)
+   2. [Server-Authoritative Model](#82-server-authoritative-model)
+   3. [Client-Side Prediction & Reconciliation](#83-client-side-prediction--reconciliation)
+   4. [Visual Identification in Multiplayer](#84-visual-identification-in-multiplayer)
+   5. [Friendly Fire Rules](#85-friendly-fire-rules)
+   6. [Disconnect Handling](#86-disconnect-handling)
+9. [Playtest Checklist](#9-playtest-checklist-accessibility--feel-verification)
+   1. [Responsiveness](#91-responsiveness)
+   2. [Visual Clarity](#92-visual-clarity)
+   3. [Accessibility](#93-accessibility)
+   4. [Gameplay Feel](#94-gameplay-feel)
+   5. [Multiplayer & Networking](#95-multiplayer--networking)
 
 ---
 
@@ -49,6 +105,7 @@ The original R-Type (1987, Irem) and its sequels provide the foundation. Similar
 - Movement is **continuous and analog** within the play area boundaries.
 - **Speed:** Base movement speed allows players to dodge incoming fire while positioning for attacks. Powerups may temporarily boost speed.
 - **Boundaries:** Players cannot leave the visible screen area. Attempting to move beyond boundaries simply stops movement in that direction.
+  - **Crushing Rule:** If the scrolling screen pushes a player against a solid obstacle or the left edge of the screen, the player is instantly destroyed (Instant Death), regardless of remaining Health Points.
 
 **Frame-Independent Timing:**
 - All movement, spawning, and animations use **delta-time** or fixed timestep to ensure consistent behavior regardless of CPU speed or frame rate.
@@ -74,10 +131,11 @@ The original R-Type (1987, Irem) and its sequels provide the foundation. Similar
 ### 2.3 Collision & Health
 
 **Player Health:**
-- Players start with a set number of **lives** (e.g., 3 lives).
-- Taking damage from an enemy, enemy projectile, or environmental hazard **reduces lives by 1**.
-- On life loss, the player **respawns** after a short invincibility (e.g., 2 seconds).
-- When all lives are depleted, the player is **out of the game** but can spectate until the session ends.
+- **Structure:** Players start with **1 Life** and **100 HP (Health Points)**.
+- **Damage:** Taking damage from enemies or projectiles reduces HP (amount depends on enemy type).
+- **Death:** When HP reaches 0, or upon "Crushing" (scrolling collision), the player loses their Life.
+- **Elimination:** Since players start with 1 Life, death typically means elimination from the round (switching to Spectator Mode), unless an "Extra Life" item was collected previously.
+- **Respawn Mechanics:** *If* a player has an Extra Life, they respawn with temporary invincibility (2 seconds), visual blinking, and active ghosting.
 
 **Enemy Health:**
 - Basic enemies: destroyed in 1–3 hits.
@@ -85,17 +143,16 @@ The original R-Type (1987, Irem) and its sequels provide the foundation. Similar
 - Bosses: large health pools, multi-phase battles with changing attack patterns.
 
 **Collision Rules:**
-- **Player vs. Enemy/Enemy Projectile:** Player takes damage (loses a life).
-- **Player Projectile vs. Enemy:** Enemy takes damage; projectile is consumed (unless penetrating).
-- **Player vs. Obstacle:** Some obstacles are destroyable (player can shoot them), others are indestructible (player takes damage on contact).
-- **Force Pod:** When attached to player, the Force **absorbs enemy projectiles** without player taking damage (acts as a shield on the attachment side).
+- **Player vs. Player:** **Ghosting is active.** Players pass through each other physically (no blocking), preventing griefing.
+- **Player vs. Enemy/Projectile:** Reduces Player HP.
+- **Player vs. Obstacle:** Wall collision blocks movement. Being crushed by scrolling = Instant Death.
 
 ### 2.4 Spawning Logic
 
 **Enemy Waves:**
 - Enemies **spawn on the right side of the screen** at intervals determined by the level script.
-- Spawn timing can be **fixed** (scripted waves) or **semi-random** (random enemy types within a wave template).
-- Enemy types vary per wave: basic flyers, snake-pattern enemies, ground turrets, etc.
+- Spawn timing and composition are **strictly deterministic** (fully scripted waves).
+- **No Randomness:** To ensure competitive fairness, there is no RNG in enemy types or spawn patterns. Every match plays identically if players perform identical actions.
 
 **Spawn Triggers:**
 - Time-based: every X seconds, spawn Y enemies.
@@ -106,12 +163,17 @@ The original R-Type (1987, Irem) and its sequels provide the foundation. Similar
 - Each enemy type has a predefined **movement pattern** (straight line, sine wave, snake pattern, stationary turret).
 - Enemies follow pattern until destroyed or leaving the screen (left side despawns them).
 
+**Data Driven Design:**
+All spawn logic (wave composition, timing, enemy types) MUST be loaded from external **JSON configuration files**. No hardcoded values in the engine.
+
 ### 2.5 Scoring
 
 **Point System:**
-- **Enemy destruction:** Each enemy type awards points (e.g., basic = 100pts, tough = 500pts, boss = 5000pts).
-- **Combo/Chain:** Destroying multiple enemies in quick succession may multiply score (optional feature).
-- **Powerup collection:** Small point bonus for pickups.
+- **Pro-rata Scoring:** Points for destroying an enemy are distributed among players based on the **% of damage dealt**.
+- **Last Hit Bonus:** The player who deals the killing blow receives a small flat bonus (e.g., +5%).
+- **Competitive Multiplier:** To balance the fixed difficulty (see 2.6), a score multiplier is applied to living players based on how many players have died.
+  - Formula: `Multiplier = 1 + 0.5 * (Initial_Players - Living_Players)`
+  - *Example:* In a 4-player game, if 3 die, the survivor earns **x2.5 points** per action.
 
 **Leaderboard:**
 - Scores are tracked per session and globally in the server's database (or persistent storage)
@@ -125,53 +187,53 @@ The original R-Type (1987, Irem) and its sequels provide the foundation. Similar
 - Scrolling continues automatically; players cannot backtrack.
 
 **Difficulty Scaling:**
-- **Early waves:** Slower enemies, simple patterns, generous spacing.
-- **Mid-game:** Faster enemies, complex patterns (e.g., snake formations), denser bullet patterns.
-- **Late-game/Boss:** Multi-phase bosses with varied attacks, environmental hazards, tighter timing requirements.
+- **Fixed Challenge:** Difficulty (enemy density, health, damage) is determined at the **start of the match** based on the initial player count (e.g., 4 Players = Difficulty x2.5).
+- **No Downscaling:** The difficulty **does not decrease** if players die during the match. The last survivor must face the challenge intended for the full team, but receives a massive Score Multiplier (see 2.5) as a reward for the risk.
+- **Boss HP:** Boss Health is fixed at the start and does not scale down dynamically.
 
 ### 2.7 Powerups & The Force
 
-**Powerup Drops:**
-- Certain enemies (designated in spawn data) **drop powerups** when destroyed.
-- Powerup types:
-  - **Force Pod:** Iconic R-Type powerup; attachable to player ship.
-  - **Weapon Upgrades:** Change shot type (spread, laser, missiles).
-  - **Speed Boost:** Temporarily increase movement speed.
-  - **Extra Life:** Rare pickup granting an additional life.
+**Powerup Drops & Scripting:**
+- **Scripted Fairness:** Critical powerups (especially The Force) are **scripted via JSON** to appear in waves (e.g., 4 transporters carrying 1 Force each) to guarantee every player has an opportunity to collect one.
+- **No RNG:** Powerups are not random drops. They are assigned to specific enemies in the level data.
+- **Competition:** Since drops are fixed, players must compete to destroy the carrier enemy to claim the item.
+
+**Weapon Upgrades (Generic):**
+- **Rapid Fire:** Increases shooting frequency.
+- **Spread Shot:** Fires 3 projectiles in a cone.
+- **Laser:** Penetrating beam, slower fire rate.
+- **Speed Up:** Increases movement speed (caps at 3 stacks).
+- **Repair:** Restores a portion of HP (New).
 
 **The Force (Core Mechanic):**
-The Force is a small pod that:
+The Force is a small pod that acts as the player's primary defensive and offensive tool.
 - **Attaches** to the front or back of the player ship.
-- When attached **front:** shields player from frontal enemy fire, shoots forward.
-- When attached **back:** shields player from rear fire, shoots backward.
-- Can be **detached** (launched forward) to act as an independent entity, continuing to shoot and block bullets.
-- Can be **recalled** back to the player at any time.
-- Allows **charged shots** when attached (hold fire to charge powerful blast).
+- **Shielding:** When attached, it blocks all enemy projectiles and damages enemies on contact.
+- **Shooting:** It fires additional projectiles (dependent on current weapon).
+- **Detachable:** Can be launched forward to act as an autonomous turret.
+- **Recall:** Can be recalled to the ship, damaging enemies in its return path.
 
 **Force Behavior:**
-- Detached Force moves forward slowly, shooting autonomously.
-- If Force is destroyed (rare), player must collect a new Force powerup.
-- Force is invulnerable when attached; detached Force may have limited durability.
+- **Invulnerable:** The Force cannot be destroyed.
+- **Contact Damage:** The Force deals damage to any enemy it touches (attached or detached).
 
 ### 2.8 Game Loop
 
 **Session Flow:**
-1. Players connect to server, join a game lobby.
-2. Game begins when all players pushed their ready button.
-3. Game starts: all players spawn at the left side of the screen.
-4. Horizontal scrolling starfield begins; enemies spawn from the right.
-5. Players shoot enemies, collect powerups, avoid damage.
-6. After X waves, a boss appears.
-7. Defeat boss → progress to next stage.
-8. Repeat until all stages complete (victory) or all players lose all lives (game over).
+1. Launch Executable with arguments (Server IP/Port).
+2. Input Username.
+3. Join Lobby.
+4. **Ready Check:** All players must toggle "Ready". Game can start with min. 1 player.
+5. **Game Start:** Loading JSON configuration for the match.
+6. Gameplay (Waves -\> Boss -\> Next Stage).
+7. End of Game (All players dead or Game Completed).
 
 **Win Condition:**
-- Be the last player still alive.
-- Collect more points than the other players.
+- **Highest Score:** The player with the highest score at the end of the session wins.
+- *Note:* It is possible to die at the boss but still win if the accumulated score (via damage/multiplier) is higher than the survivor's.
 
 **Loss Condition:**
-- Player loses all lives while at least one player is still standing
-- Player has fewer points than at least one player
+- Being eliminated with a lower score than opponents.
 
 ---
 
@@ -339,9 +401,9 @@ Large, powerful enemy encountered at the end of stages. Provides climactic chall
 - Change behavior at health thresholds (phase transitions).
 
 **Example: Dobkeratops (Stage 1 Boss):**
-- **Phase 1:** Moves in a fixed pattern, shoots bullet spread from mouth.
-- **Phase 2:** Tail detaches and attacks independently.
-- **Phase 3:** Core exposed, vulnerable but fires dense bullet curtain.
+- **Visuals:** Large bio-mechanical creature fused with the environment. Static body, only head/tentacles move.
+- **Weak Point:** The alien head protruding from the chest.
+- **Attacks:** Projectiles from mouth, seeking eyes, or extending tentacles. (No flying detached tail).
 
 **Key Attributes:**
 - Position & large hitbox
@@ -400,11 +462,11 @@ Large, powerful enemy encountered at the end of stages. Provides climactic chall
 
 **Flow:**
 1. Boss enters from right side, filling a large portion of the screen.
-2. **Phase 1:** Boss moves in a slow circular pattern, fires bullet spread from mouth every 2 seconds.
+2. **Phase 1:** Boss remains static (fused to environment), fires bullet spread from mouth every 2 seconds.
 3. Players focus fire on head; Force shields frontal bullets.
-4. After 30% health lost, **Phase 2** triggers: tail detaches, becomes independent enemy shooting from rear.
-5. Players must now dodge bullets from two sources (head and tail).
-6. Tail destroyed → boss speed increases, enters **Phase 3**.
+4. After 30% health lost, **Phase 2** triggers: Boss extends tentacles and increases fire rate.
+5. Players must dodge bullets and tentacle strikes.
+6. Head destroyed → chest opens, enters **Phase 3**.
 7. **Phase 3:** Core exposed in center, fires dense bullet curtain.
 8. Players use charged shots for high damage bursts.
 9.  Boss destroyed → points are distributed to each player in proportion to the amount of damage they dealt to the boss (e.g., if a player dealt 30% of the total damage, they receive 30% of the points).
@@ -492,8 +554,8 @@ Players must instantly distinguish between friend, foe, danger, and collectibles
   - Player ships: Medium (16x16 to 32x32 pixels)
   - Enemies: Varied (16x16 for small, 64x64+ for bosses)
 - **On-Screen Clutter Limit:**
-  - Max **50 active entities** on screen simultaneously (excluding background elements).
-  - If limit reached, server delays new spawns or despawns off-screen enemies.
+  - **Entity Limit:** No arbitrary software limit (e.g., "50 entities").
+  - The engine supports `u32` IDs, allowing for virtually unlimited active entities, constrained only by server hardware performance.
 
 **Background vs. Foreground:**
 - **Starfield:** Low contrast, muted colors (dark blue/black background, dim white/gray stars).
@@ -729,9 +791,7 @@ The server is the **single source of truth** for all gameplay-critical state.
 
 **Default:** Friendly fire **OFF** (player bullets cannot damage other players).
 
-**Optional Mode:** Friendly fire **ON** (player bullets damage teammates). Adds challenge for experienced groups.
-
-**Configuration:** Server sets friendly fire mode at game start; communicated to all clients.
+**Ghosting:** Players are physically non-blocking to teammates (they can fly through each other) to prevent griefing in a competitive scrolling environment.
 
 ### 8.6 Disconnect Handling
 
