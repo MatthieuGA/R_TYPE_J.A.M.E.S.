@@ -87,6 +87,10 @@ latex/
 *.bak
 *.backup
 
+# Node modules
+node_modules/
+package-lock.json
+
 build_log.txt
 *.pdf
 r-type.txt
