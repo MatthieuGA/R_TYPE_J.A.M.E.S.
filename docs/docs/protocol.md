@@ -164,7 +164,7 @@ If the Client and Server disagree on a position (e.g., due to lag or cheating), 
 | Field | Type | Size | Description |
 | :--- | :--- | :--- | :--- |
 | `PlayerId` | `u8` | 1 | The unique ID assigned to this client (e.g., 1, 2, 3, 4). |
-| `Status` | `u8` | 1 | **Status Codes:**<br>`0` = OK (Success)<br>`1` = Server Full<br>`2` = Bad Username<br>`3` = Game in Progress |
+| `Status` | `u8` | 1 | **Status Codes:**<br />`0` = OK (Success)<br />`1` = Server Full<br />`2` = Bad Username<br />`3` = Game in Progress |
 | `Reserved` | `u8[2]` | 2 | Padding to align with 4 bytes. |
 
 - **Client Behavior:** If Status is `0`, proceed to Lobby. Otherwise, show error message.
