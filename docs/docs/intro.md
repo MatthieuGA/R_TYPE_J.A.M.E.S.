@@ -84,7 +84,7 @@ Run it first:
 ./build/server/r-type_server
 ```
 
-Start the Client
+### Start the Client
 
 Each client represents one player and displays the game:
 ```bash
