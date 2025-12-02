@@ -1,12 +1,6 @@
 # Enable Google Test
 include(GoogleTest)
 
-# Create test executable for engine
-add_executable(engine_tests
-    test_sparse_array.cpp
-    test_registry.cpp
-    test_zipper.cpp
-)
 # Gather test sources and create test executable
 file(GLOB_RECURSE R_TYPE_TEST_SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
