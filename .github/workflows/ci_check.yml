@@ -19,6 +19,14 @@ env:
   EXECUTABLES: 'r-type_client,r-type_server'
 
 jobs:
+  block_merge_to_main:
+    if: ${{ github.event_name == 'pull_request' && github.base_ref == 'main' && !(startsWith(github.head_ref, 'Epic-') || startsWith(github.head_ref, '1-epic-')) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Block merge to main unless branch starts with Epic-"
+        run: |
+          echo "Merges to main are only allowed from branches starting with 'Epic-'."
+          exit 1
   check_coding_style:
     if: |
       github.repository != 'EpitechPGE3-2025/G-CPP-500-NAN-5-2-rtype-6' &&
@@ -66,7 +74,7 @@ jobs:
             exit 1
           fi
   check_cmake_compilation_linux:
-    needs: [check_epitech_coding_style, check_coding_style]
+    needs: [check_coding_style]
     runs-on: ubuntu-latest
     container:
       image: epitechcontent/epitest-docker:latest
@@ -104,8 +112,36 @@ jobs:
               exit 1
             fi
           done
-  push_to_mirror:
+  check_tests_execution:
     needs: check_cmake_compilation_linux
+    runs-on: ubuntu-latest
+    container:
+      image: epitechcontent/epitest-docker:latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+      - name: "Install dependencies"
+        run: |
+          apt-get update
+          apt-get install -y xvfb curl zip unzip tar git pkg-config
+      - name: "Setup vcpkg"
+        run: |
+          git clone https://github.com/microsoft/vcpkg.git /opt/vcpkg
+          /opt/vcpkg/bootstrap-vcpkg.sh
+          echo "VCPKG_ROOT=/opt/vcpkg" >> $GITHUB_ENV
+      - name: "Configure with CMake"
+        working-directory: ${{ github.workspace }}
+        run: cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=/opt/vcpkg/scripts/buildsystems/vcpkg.cmake
+      - name: "Build with CMake"
+        working-directory: ${{ github.workspace }}
+        run: cmake --build build
+      - name: "Ctest execution"
+        working-directory: ${{ github.workspace }}
+        run: |
+          # Run tests under X virtual framebuffer to provide a DISPLAY for SFML/graphics tests
+          xvfb-run --auto-servernum --server-args='-screen 0 1024x768x24' ctest --test-dir build --output-on-failure
+  push_to_mirror:
+    needs: check_tests_execution
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'push' }}
     steps:
