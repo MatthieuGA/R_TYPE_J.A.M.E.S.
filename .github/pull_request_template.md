@@ -1,5 +1,6 @@
 ## 🚀 Pull Request Summary
-Closes: #ISSUE_NUMBER  
+
+Closes: #ISSUE_NUMBER
 Milestone: <!-- ex: Milestone 1 -->
 
 ---
@@ -40,9 +41,9 @@ Describe how reviewers can test your changes:
 
 If applicable, include:
 
-- test commands  
-- example inputs  
-- observed outputs  
+- test commands
+- example inputs
+- observed outputs
 
 ---
 

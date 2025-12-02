@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+
+# Ensure Node.js is available. If not, try to load NVM (Node Version Manager) if present.
+if ! command -v node >/dev/null 2>&1; then
+  export NVM_DIR="$HOME/.nvm"
+  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+fi
+
+npx lint-staged

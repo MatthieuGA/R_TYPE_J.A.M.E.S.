@@ -15,6 +15,8 @@ target_sources(r-type_engine
       include/sparse_array.tpp
       include/zipper.hpp
       include/zipper.tpp
+      include/indexed_zipper.hpp
+      include/indexed_zipper.tpp
       include/registry.tpp
 )
 

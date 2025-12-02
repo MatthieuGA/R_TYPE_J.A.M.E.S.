@@ -1,6 +1,6 @@
 # 📘 R-Type — Networked Multiplayer Game (J.A.M.E.S.)
 
-*A modern C++23 multiplayer shoot’em up with an original custom engine, an authoritative server, and a Qt-based client.*
+*A modern C++23 multiplayer shoot’em up with an original custom engine, an authoritative server, and a SFML-based client.*
 
 ---
 
@@ -11,7 +11,7 @@ The project features:
 
 * A fully custom **Entity–Component–System (ECS)** engine
 * A **multithreaded authoritative server**
-* A **Qt graphical client**
+* A **SFML graphical client**
 * A fully documented **binary UDP protocol**
 * Smooth rendering, interpolation, and multiplayer support
 * Professional-grade workflow (CI, tests, docs, RFCs, milestones)
@@ -29,7 +29,7 @@ This repository contains both the engine and the game powered by it.
 * Multithreaded server loop
 * UDP networking (inputs → server, snapshots → clients)
 * 4-player support
-* Qt rendering (players, enemies, missiles, starfield)
+* SFML rendering (players, enemies, missiles, starfield)
 * Client interpolation
 * Collisions (AABB)
 * Basic enemy behaviour
@@ -54,7 +54,7 @@ This repository contains both the engine and the game powered by it.
 ## 📋 Prerequisites
 
 - **C++ Compiler** (GCC 7+ / MSVC 2019+ / Clang 11+)
-- **CMake** 3.21 or higher
+- **CMake** 3.23 or higher
 - **vcpkg** (configured with `VCPKG_ROOT` environment variable)
 
 ## 🚀 Build & Run
@@ -70,7 +70,7 @@ Then run:
 
 ## 📦 Dependencies
 
-Dependencies (SFML, Asio) are automatically installed via vcpkg during CMake configuration
+Dependencies (SFML, Boost.Asio) are automatically installed via vcpkg during CMake configuration
 
 ---
 
@@ -128,7 +128,7 @@ cmake --build build -j
 ```txt
 /engine/             → Custom ECS & engine core
 /server/             → Authoritative server
-/client/             → Qt client (graphics, audio, input)
+/client/             → SFML client (graphics, audio, input)
 /docs/               → Documentation, architecture, RFCs
 /tests/              → Unit and functional tests
 /assets/             → Sprites, sounds, UI
@@ -167,18 +167,70 @@ cmake --build build -j
 
 ## 📚 Documentation
 
+Comprehensive documentation is available at: [https://matthieuga.github.io/R_TYPE_J.A.M.E.S./](https://matthieuga.github.io/R_TYPE_J.A.M.E.S./)
+
 Documentation includes:
 
+* [Technology Choices and Comparative Study](docs/TECHNOLOGY_CHOICES.md) — Why SFML, Boost.Asio, and vcpkg
 * Architecture documentation
-* ECS specification
+* [ECS specification](docs/rfcs/RFC-0001-engine-architecture.md) — Entity-Component-System design
 * Protocol RFC
 * Engine overview
 * Advanced feature documentation (Part 2)
 * Implementation details
-* Comparative study
 * Accessibility documentation
 
+### Accessing local doc :
+
 All docs are available under `/docs`.
+
+### Running Documentation Locally
+
+The project uses [Docusaurus](https://docusaurus.io/) for documentation.
+
+#### Prerequisites
+- Node.js 20.0 or higher
+- npm (comes with Node.js)
+
+#### Setup and Run
+
+1. Navigate to the docs directory:
+```bash
+cd docs
+```
+
+2. Install dependencies (first time only):
+```bash
+npm install
+```
+
+3. Start the development server:
+```bash
+npm start
+```
+
+The documentation will be available at [http://localhost:3000](http://localhost:3000)
+
+#### Build Documentation
+
+To build the documentation for production:
+
+```bash
+cd docs
+npm run build
+```
+
+The static files will be generated in the `docs/build` directory.
+
+#### Serve Built Documentation
+
+To serve the production build locally:
+
+```bash
+cd docs
+npm run serve
+```
+
 
 ---
 
