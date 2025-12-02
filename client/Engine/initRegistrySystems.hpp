@@ -2,8 +2,8 @@
 #include <SFML/Graphics.hpp>
 #include "include/registry.hpp"
 #include "include/indexed_zipper.hpp"
-#include "Engine/initRegistryComponent.hpp"
-#include "Engine/gameWorld.hpp"
+#include "initRegistryComponent.hpp"
+#include "gameWorld.hpp"
 
 namespace Eng = Engine;
 

@@ -4,10 +4,19 @@ file(GLOB_RECURSE R_TYPE_CLIENT_SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
 )
 
+# Build a static library for client engine sources so tests can link against it
+file(GLOB_RECURSE R_TYPE_CLIENT_LIB_SOURCES CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/Engine/*.cpp"
+)
+
+add_library(r-type_client_lib STATIC ${R_TYPE_CLIENT_LIB_SOURCES})
+target_include_directories(r-type_client_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(r-type_client_lib PUBLIC r-type_engine
+    SFML::Window SFML::Graphics SFML::Network SFML::Audio SFML::System)
+
 target_sources(r-type_client PRIVATE ${R_TYPE_CLIENT_SOURCES})
 target_include_directories(r-type_client PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(r-type_client PRIVATE r-type_engine
-    SFML::Window SFML::Graphics SFML::Network SFML::Audio SFML::System)
+target_link_libraries(r-type_client PRIVATE r-type_engine r-type_client_lib)
 
 # Post build copy assets
 add_custom_command(TARGET r-type_client POST_BUILD

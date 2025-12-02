@@ -17,7 +17,14 @@ target_link_libraries(engine_tests
     PRIVATE
         GTest::gtest_main
         r-type_engine
-        SFML::Window SFML::Graphics SFML::Network SFML::Audio SFML::System
+    r-type_client_lib
+    SFML::Window SFML::Graphics SFML::Network SFML::Audio SFML::System
+)
+
+# Ensure test target can find client headers (client/include and client/Engine)
+target_include_directories(engine_tests PRIVATE
+    ${CMAKE_SOURCE_DIR}/client
+    ${CMAKE_SOURCE_DIR}/client/Engine
 )
 
 # Discover tests for CTest
