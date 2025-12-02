@@ -4,40 +4,14 @@ file(GLOB_RECURSE R_TYPE_CLIENT_SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
 )
 
-# Build a static library for client engine sources so tests can link against it
-file(GLOB_RECURSE R_TYPE_CLIENT_LIB_SOURCES CONFIGURE_DEPENDS
-    "${CMAKE_CURRENT_SOURCE_DIR}/Engine/*.cpp"
-)
-
-add_library(r-type_client_lib STATIC ${R_TYPE_CLIENT_LIB_SOURCES})
-target_include_directories(r-type_client_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+# Find threading library for portability
+find_package(Threads REQUIRED)
 
 target_sources(r-type_client PRIVATE ${R_TYPE_CLIENT_SOURCES})
-target_link_libraries(r-type_client PRIVATE r-type_engine r-type_client_lib)
-
-# Include directories
-target_include_directories(r-type_client PRIVATE 
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${Boost_INCLUDE_DIRS}
-)
-
-# Link libraries
-target_link_libraries(r-type_client PRIVATE 
-    r-type_engine
-    SFML::Window 
-    SFML::Graphics 
-    SFML::Network 
-    SFML::Audio 
-    SFML::System
-    Boost::system
-    Threads::Threads
-)
-
-# Platform-specific linking for networking
-if(WIN32)
-    # Windows requires ws2_32 for Boost.Asio
-    target_link_libraries(r-type_client PRIVATE ws2_32 wsock32)
-endif()
+target_include_directories(r-type_client PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${Boost_INCLUDE_DIRS})
+target_link_libraries(r-type_client PRIVATE r-type_engine
+    SFML::Window SFML::Graphics SFML::Network SFML::Audio SFML::System
+    Boost::system Threads::Threads)
 
 # Post build copy assets
 add_custom_command(TARGET r-type_client POST_BUILD

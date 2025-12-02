@@ -10,7 +10,9 @@ class entity {
     virtual ~entity() = default;
 
     entity &operator=(size_t new_id);
-    size_t GetId() const { return id_; }
+   size_t GetId() const { return id_; }
+   // Backwards-compatible snake_case accessor used by older tests/code
+   size_t getId() const { return GetId(); }
 
  private:
     explicit entity(size_t id) : id_(id) {}

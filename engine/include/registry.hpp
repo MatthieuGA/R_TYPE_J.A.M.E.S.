@@ -38,14 +38,32 @@ class registry {
     entity_t EntityFromIndex(std::size_t idx);
     void KillEntity(entity_t const &e);
 
+    // Backwards-compatible entity management
+    entity_t spawn_entity() { return SpawnEntity(); }
+    entity_t entity_from_index(std::size_t idx) { return EntityFromIndex(idx); }
+    void kill_entity(entity_t const &e) { KillEntity(e); }
+
     template <class ... Components, typename Function>
     void AddSystem(Function &&f);
 
+    // Backwards-compatible system API
+    template <class ... Components, typename Function>
+    void add_system(Function &&f) { AddSystem<Components...>(std::forward<Function>(f)); }
+
     void RunSystems();
+
+    // Backwards-compatible run
+    void run_systems() { RunSystems(); }
 
     template <typename Component>
     typename sparse_array<Component>::reference_type
         AddComponent(entity_t const &to, Component &&c);
+
+    template <typename Component>
+    typename sparse_array<Component>::reference_type
+        add_component(entity_t const &to, Component &&c) {
+        return AddComponent<Component>(to, std::forward<Component>(c));
+    }
 
     template <typename Component, typename ... Params>
     typename sparse_array<Component>::reference_type
@@ -53,6 +71,9 @@ class registry {
 
     template <typename Component>
     void RemoveComponent(entity_t const &from);
+
+    template <typename Component>
+    void remove_component(entity_t const &from) { RemoveComponent<Component>(from); }
 
  private:
     std::unordered_map<std::type_index,

@@ -23,12 +23,12 @@ void Server::initialize() {
 }
 
 void Server::registerComponents() {
-    registry_.register_component<Component::Position>();
-    registry_.register_component<Component::Velocity>();
-    registry_.register_component<Component::Health>();
-    registry_.register_component<Component::NetworkId>();
-    registry_.register_component<Component::Player>();
-    registry_.register_component<Component::Enemy>();
+    registry_.RegisterComponent<Component::Position>();
+    registry_.RegisterComponent<Component::Velocity>();
+    registry_.RegisterComponent<Component::Health>();
+    registry_.RegisterComponent<Component::NetworkId>();
+    registry_.RegisterComponent<Component::Player>();
+    registry_.RegisterComponent<Component::Enemy>();
 
     std::cout << "Registered all components" << std::endl;
 }
