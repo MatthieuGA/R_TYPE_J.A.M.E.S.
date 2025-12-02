@@ -44,7 +44,7 @@ TEST(ZipperIteratorTest, Construction) {
     positions.insert_at(0, Position{1.0f, 2.0f});
     velocities.insert_at(0, Velocity{3.0f, 4.0f});
 
-    auto zipper = Engine::make_zipper(positions, velocities);
+    auto zipper = Engine::MakeZipper(positions, velocities);
     auto it = zipper.begin();
 
     EXPECT_NE(it, zipper.end());
@@ -57,7 +57,7 @@ TEST(ZipperIteratorTest, Dereference) {
     positions.insert_at(0, Position{10.0f, 20.0f});
     velocities.insert_at(0, Velocity{5.0f, 10.0f});
 
-    auto zipper = Engine::make_zipper(positions, velocities);
+    auto zipper = Engine::MakeZipper(positions, velocities);
     auto it = zipper.begin();
 
     auto [pos, vel] = *it;
@@ -77,7 +77,7 @@ TEST(ZipperIteratorTest, PreIncrement) {
     positions.insert_at(1, Position{2.0f, 2.0f});
     velocities.insert_at(1, Velocity{2.0f, 2.0f});
 
-    auto zipper = Engine::make_zipper(positions, velocities);
+    auto zipper = Engine::MakeZipper(positions, velocities);
     auto it = zipper.begin();
 
     ++it;
@@ -96,7 +96,7 @@ TEST(ZipperIteratorTest, PostIncrement) {
     positions.insert_at(1, Position{2.0f, 2.0f});
     velocities.insert_at(1, Velocity{2.0f, 2.0f});
 
-    auto zipper = Engine::make_zipper(positions, velocities);
+    auto zipper = Engine::MakeZipper(positions, velocities);
     auto it = zipper.begin();
 
     auto old_it = it++;
@@ -115,7 +115,7 @@ TEST(ZipperIteratorTest, Equality) {
     positions.insert_at(0, Position{1.0f, 1.0f});
     velocities.insert_at(0, Velocity{1.0f, 1.0f});
 
-    auto zipper = Engine::make_zipper(positions, velocities);
+    auto zipper = Engine::MakeZipper(positions, velocities);
     auto it1 = zipper.begin();
     auto it2 = zipper.begin();
 
@@ -129,7 +129,7 @@ TEST(ZipperIteratorTest, Inequality) {
     positions.insert_at(0, Position{1.0f, 1.0f});
     velocities.insert_at(0, Velocity{1.0f, 1.0f});
 
-    auto zipper = Engine::make_zipper(positions, velocities);
+    auto zipper = Engine::MakeZipper(positions, velocities);
     auto it1 = zipper.begin();
     auto it2 = zipper.end();
 
@@ -144,7 +144,7 @@ TEST(ZipperTest, EmptyContainers) {
     Engine::sparse_array<Position> positions;
     Engine::sparse_array<Velocity> velocities;
 
-    auto zipper = Engine::make_zipper(positions, velocities);
+    auto zipper = Engine::MakeZipper(positions, velocities);
 
     EXPECT_EQ(zipper.begin(), zipper.end());
 }
@@ -156,7 +156,7 @@ TEST(ZipperTest, SingleElement) {
     positions.insert_at(0, Position{5.0f, 10.0f});
     velocities.insert_at(0, Velocity{1.0f, 2.0f});
 
-    auto zipper = Engine::make_zipper(positions, velocities);
+    auto zipper = Engine::MakeZipper(positions, velocities);
 
     int count = 0;
     for (auto [pos, vel] : zipper) {
@@ -180,7 +180,7 @@ TEST(ZipperTest, MultipleElements) {
                                          static_cast<float>(i * 4)});
     }
 
-    auto zipper = Engine::make_zipper(positions, velocities);
+    auto zipper = Engine::MakeZipper(positions, velocities);
 
     int count = 0;
     for (auto [pos, vel] : zipper) {
@@ -209,7 +209,7 @@ TEST(ZipperTest, SkipsMissingComponents) {
     positions.insert_at(3, Position{4.0f, 4.0f});
     velocities.insert_at(3, Velocity{4.0f, 4.0f});
 
-    auto zipper = Engine::make_zipper(positions, velocities);
+    auto zipper = Engine::MakeZipper(positions, velocities);
 
     std::vector<float> x_values;
     for (auto [pos, vel] : zipper) {
@@ -238,7 +238,7 @@ TEST(ZipperTest, ThreeContainers) {
     positions.insert_at(2, Position{3.0f, 3.0f});
     healths.insert_at(2, Health{50});
 
-    auto zipper = Engine::make_zipper(positions, velocities, healths);
+    auto zipper = Engine::MakeZipper(positions, velocities, healths);
 
     int count = 0;
     for (auto [pos, vel, hp] : zipper) {
@@ -262,7 +262,7 @@ TEST(ZipperTest, ModifyThroughZipper) {
     velocities.insert_at(1, Velocity{1.0f, 2.0f});
 
     // Apply velocity to position - using non-const zipper
-    for (auto [pos, vel] : Engine::make_zipper(positions, velocities)) {
+    for (auto [pos, vel] : Engine::MakeZipper(positions, velocities)) {
         // Components are now direct references
         pos.x += vel.dx;
         pos.y += vel.dy;
@@ -284,7 +284,7 @@ TEST(ZipperTest, RangeBasedFor) {
     }
 
     int iterations = 0;
-    for (auto [pos, vel] : Engine::make_zipper(positions, velocities)) {
+    for (auto [pos, vel] : Engine::MakeZipper(positions, velocities)) {
         // Components are now direct references
         iterations++;
     }
@@ -309,7 +309,7 @@ TEST(ZipperTest, SparseData) {
     positions.insert_at(100, Position{4.0f, 4.0f});
     velocities.insert_at(100, Velocity{4.0f, 4.0f});
 
-    auto zipper = Engine::make_zipper(positions, velocities);
+    auto zipper = Engine::MakeZipper(positions, velocities);
 
     std::vector<float> x_values;
     for (auto [pos, vel] : zipper) {
@@ -507,7 +507,7 @@ TEST(ZipperIntegrationTest, MovementSystem) {
         });
     }
 
-    for (auto [pos, vel] : Engine::make_zipper(positions, velocities)) {
+    for (auto [pos, vel] : Engine::MakeZipper(positions, velocities)) {
         pos.x += vel.dx;
         pos.y += vel.dy;
     }
@@ -620,7 +620,7 @@ TEST(ZipperIntegrationTest, StressTestManyEntities) {
     }
 
     size_t count = 0;
-    for (auto [pos, vel] : Engine::make_zipper(positions, velocities)) {
+    for (auto [pos, vel] : Engine::MakeZipper(positions, velocities)) {
         count++;
     }
 

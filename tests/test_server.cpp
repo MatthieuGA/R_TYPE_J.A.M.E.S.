@@ -62,12 +62,12 @@ TEST(ServerTest, ComponentsRegisteredAfterInit) {
 
     // All components should be registered and accessible
     EXPECT_NO_THROW({
-        auto &positions = reg.get_components<server::Component::Position>();
-        auto &velocities = reg.get_components<server::Component::Velocity>();
-        auto &healths = reg.get_components<server::Component::Health>();
-        auto &network_ids = reg.get_components<server::Component::NetworkId>();
-        auto &players = reg.get_components<server::Component::Player>();
-        auto &enemies = reg.get_components<server::Component::Enemy>();
+        auto &positions = reg.GetComponents<server::Component::Position>();
+        auto &velocities = reg.GetComponents<server::Component::Velocity>();
+        auto &healths = reg.GetComponents<server::Component::Health>();
+        auto &network_ids = reg.GetComponents<server::Component::NetworkId>();
+        auto &players = reg.GetComponents<server::Component::Player>();
+        auto &enemies = reg.GetComponents<server::Component::Enemy>();
     });
 }
 
@@ -107,8 +107,8 @@ TEST(ServerTest, SpawnPlayerEntity) {
     reg.add_component(player, server::Component::NetworkId{1});
     reg.add_component(player, server::Component::Player{1, "TestPlayer"});
 
-    auto &positions = reg.get_components<server::Component::Position>();
-    auto &players = reg.get_components<server::Component::Player>();
+    auto &positions = reg.GetComponents<server::Component::Position>();
+    auto &players = reg.GetComponents<server::Component::Player>();
 
     EXPECT_TRUE(positions.has(player.getId()));
     EXPECT_TRUE(players.has(player.getId()));
@@ -130,8 +130,8 @@ TEST(ServerTest, SpawnEnemyEntity) {
     reg.add_component(enemy, server::Component::Health{50, 50});
     reg.add_component(enemy, server::Component::Enemy{10, 100});
 
-    auto &positions = reg.get_components<server::Component::Position>();
-    auto &enemies = reg.get_components<server::Component::Enemy>();
+    auto &positions = reg.GetComponents<server::Component::Position>();
+    auto &enemies = reg.GetComponents<server::Component::Enemy>();
 
     EXPECT_TRUE(positions.has(enemy.getId()));
     EXPECT_TRUE(enemies.has(enemy.getId()));
@@ -164,9 +164,9 @@ TEST(ServerTest, MultipleEntitiesWithDifferentComponents) {
     reg.add_component(projectile, server::Component::Position{50.0f, 50.0f});
     reg.add_component(projectile, server::Component::Velocity{5.0f, 0.0f});
 
-    auto &positions = reg.get_components<server::Component::Position>();
-    auto &players = reg.get_components<server::Component::Player>();
-    auto &enemies = reg.get_components<server::Component::Enemy>();
+    auto &positions = reg.GetComponents<server::Component::Position>();
+    auto &players = reg.GetComponents<server::Component::Player>();
+    auto &enemies = reg.GetComponents<server::Component::Enemy>();
 
     EXPECT_TRUE(positions.has(player.getId()));
     EXPECT_TRUE(players.has(player.getId()));
@@ -195,7 +195,7 @@ TEST(ServerTest, MovementSystemUpdatesPosition) {
     reg.add_component(entity, server::Component::Position{0.0f, 0.0f});
     reg.add_component(entity, server::Component::Velocity{1.0f, 2.0f});
 
-    auto &positions = reg.get_components<server::Component::Position>();
+    auto &positions = reg.GetComponents<server::Component::Position>();
 
     EXPECT_EQ(positions[entity.getId()]->x, 0.0f);
     EXPECT_EQ(positions[entity.getId()]->y, 0.0f);
@@ -233,7 +233,7 @@ TEST(ServerTest, MovementSystemMultipleEntities) {
     reg.add_component(e3, server::Component::Position{50.0f, 50.0f});
     reg.add_component(e3, server::Component::Velocity{0.5f, -1.0f});
 
-    auto &positions = reg.get_components<server::Component::Position>();
+    auto &positions = reg.GetComponents<server::Component::Position>();
 
     server.update();
 
@@ -264,7 +264,7 @@ TEST(ServerTest, MovementSystemIgnoresEntitiesWithoutVelocity) {
     auto stationary = reg.spawn_entity();
     reg.add_component(stationary, server::Component::Position{10.0f, 10.0f});
 
-    auto &positions = reg.get_components<server::Component::Position>();
+    auto &positions = reg.GetComponents<server::Component::Position>();
 
     server.update();
 
@@ -292,7 +292,7 @@ TEST(ServerTest, HealthComponentInitialization) {
 
     reg.add_component(entity, server::Component::Health{75, 100});
 
-    auto &healths = reg.get_components<server::Component::Health>();
+    auto &healths = reg.GetComponents<server::Component::Health>();
 
     EXPECT_EQ(healths[entity.getId()]->current, 75);
     EXPECT_EQ(healths[entity.getId()]->max, 100);
@@ -309,7 +309,7 @@ TEST(ServerTest, HealthComponentModification) {
 
     reg.add_component(entity, server::Component::Health{100, 100});
 
-    auto &healths = reg.get_components<server::Component::Health>();
+    auto &healths = reg.GetComponents<server::Component::Health>();
 
     // Take damage
     healths[entity.getId()]->current -= 25;
@@ -344,7 +344,7 @@ TEST(ServerTest, NetworkIdComponent) {
     reg.add_component(e2, server::Component::NetworkId{1002});
     reg.add_component(e3, server::Component::NetworkId{1003});
 
-    auto &network_ids = reg.get_components<server::Component::NetworkId>();
+    auto &network_ids = reg.GetComponents<server::Component::NetworkId>();
 
     EXPECT_EQ(network_ids[e1.getId()]->id, 1001);
     EXPECT_EQ(network_ids[e2.getId()]->id, 1002);
@@ -377,7 +377,7 @@ TEST(ServerTest, SimpleGameScenario) {
     reg.add_component(enemy, server::Component::Health{30, 30});
     reg.add_component(enemy, server::Component::Enemy{20, 50});
 
-    auto &positions = reg.get_components<server::Component::Position>();
+    auto &positions = reg.GetComponents<server::Component::Position>();
 
     // Run 10 game ticks
     for (int i = 0; i < 10; i++) {
@@ -410,7 +410,7 @@ TEST(ServerTest, EntityCleanup) {
         entities.push_back(e);
     }
 
-    auto &positions = reg.get_components<server::Component::Position>();
+    auto &positions = reg.GetComponents<server::Component::Position>();
 
     // Verify all exist
     for (const auto &e : entities) {
@@ -451,7 +451,7 @@ TEST(ServerTest, StressManyEntities) {
         entities.push_back(e);
     }
 
-    auto &positions = reg.get_components<server::Component::Position>();
+    auto &positions = reg.GetComponents<server::Component::Position>();
 
     server.update();
 
@@ -475,7 +475,7 @@ TEST(ServerTest, StressMultipleUpdates) {
     reg.add_component(entity, server::Component::Position{0.0f, 0.0f});
     reg.add_component(entity, server::Component::Velocity{0.1f, 0.1f});
 
-    auto &positions = reg.get_components<server::Component::Position>();
+    auto &positions = reg.GetComponents<server::Component::Position>();
 
     // Run many updates
     const int NUM_UPDATES = 1000;

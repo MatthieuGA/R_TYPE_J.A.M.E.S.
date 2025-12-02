@@ -24,6 +24,8 @@ struct Projectile {
 struct Health {
     int currentHealth;
     int maxHealth;
+    bool invincible;
+    float invincibilityDuration;
 };
 
 struct StatsGame {

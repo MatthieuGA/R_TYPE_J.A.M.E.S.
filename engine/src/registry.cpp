@@ -2,28 +2,28 @@
 
 namespace Engine {
 // Entity management
-registry::entity_t registry::spawn_entity() {
-    if (!_dead_entities.empty()) {
-        std::size_t id = _dead_entities.back();
-        _dead_entities.pop_back();
+registry::entity_t registry::SpawnEntity() {
+    if (!dead_entities_.empty()) {
+        std::size_t id = dead_entities_.back();
+        dead_entities_.pop_back();
         return entity(id);
     }
-    return entity(_next_entity++);
+    return entity(next_entity_++);
 }
 
-registry::entity_t registry::entity_from_index(std::size_t idx) {
+registry::entity_t registry::EntityFromIndex(std::size_t idx) {
     return entity(idx);
 }
 
-void registry::kill_entity(entity const &e) {
-    for (auto &fn : _erase_fns) {
+void registry::KillEntity(entity const &e) {
+    for (auto &fn : erase_fns_) {
         if (fn) fn(*this, e);
     }
-    _dead_entities.push_back(e.getId());
+    dead_entities_.push_back(e.GetId());
 }
 
-void registry::run_systems() {
-    for (auto &s : _systems) {
+void registry::RunSystems() {
+    for (auto &s : systems_) {
         if (s) s(*this);
     }
 }
