@@ -11,6 +11,8 @@ sidebar_position: 2
 - [3. Server Architecture](#3-server-architecture)
 - [4. Client Architecture](#4-client-architecture)
 - [5. Network Protocol Integration](#5-network-protocol-integration)
+- [6. Client Components](#6-client-components)
+- [7. Client Systems](#7-client-systems)
 
 ## 1. Overview
 
@@ -187,3 +189,129 @@ The architecture strictly follows the binary protocol defined in `protocol.md`.
 2. **Server Validation**: Server applies input to the entity's velocity/state.
 3. **Server Snapshot**: Server sends the full list of visible entities (ID, Type, Position, Angle).
 4. **Client Correction**: Client updates its local entities to match the server's snapshot, spawning or destroying entities as needed.
+
+---
+
+## 6. Client Components
+
+The client ECS uses a rich set of components representing **rendering**, **movement**, **gameplay**, **collision**, and **network** state.  
+Below is the complete list used by the client.
+
+### 📦 Rendering & Transform Components
+
+| Component | Purpose |
+|----------|---------|
+| **Transform** | Position, rotation, scale, origin & custom origins |
+| **Drawable** | Sprite path, texture, z-index rendering order |
+| **AnimatedSprite** | Frame-based animation support (frame duration, looping) |
+| **ParallaxLayer** *(planned)* | Represents parallax scrolling layers |
+
+### 🎮 Movement & Control Components
+
+| Component | Purpose |
+|----------|---------|
+| **Velocity** | Entity movement velocity & acceleration |
+| **Controllable** | Marks a player-controllable entity |
+| **InputState** | Player inputs (up, down, shoot…) |
+
+### 🧱 Collision & Physics Components
+
+| Component | Purpose |
+|----------|---------|
+| **HitBox** | Collision rectangle for AABB collisions |
+| **Solid** | Indicates blocking entities or platforms |
+| **Lifetime** *(planned)* | Automatically despawns entities after X seconds |
+| **DespawnOnExit** *(planned)* | Removes offscreen entities (projectiles, enemies) |
+
+### 🧩 Gameplay Components
+
+| Component | Purpose |
+|----------|---------|
+| **PlayerTag** | Identifies a player entity |
+| **EnemyTag** | Identifies an enemy and its type |
+| **Projectile** | Stores damage, speed, and shooter ID |
+| **Health** | HP, max HP, invincibility frames |
+| **StatsGame** | Player score & gameplay stats |
+| **Weapon** *(planned)* | Fire rate, projectile type, cooldown |
+| **PowerUp** *(planned)* | Temporary player boosts |
+| **StateMachine** *(planned)* | For enemy/boss AI behavior |
+
+### 🌐 Networking Components
+
+| Component | Purpose |
+|----------|---------|
+| **NetworkId** | Unique server-synced ID |
+| **InterpolatedPosition** | Target position for snapshot interpolation |
+
+---
+
+## 7. Client Systems
+
+All systems listed here run every frame and operate on specific component combinations.
+
+### ✔ movementSystem
+Updates entity positions using `Velocity` and `Transform`.
+
+### ✔ animationSystem
+Advances frames for all `AnimatedSprite` components.
+
+### ✔ collisionDetectionSystem
+Detects collisions using AABB checks  
+→ Sends `CollisionEvent` via EventBus.
+
+### ✔ drawableSystem
+Loads textures, updates sprite properties, sorts by z-index, and draws them.
+
+### ✔ playfieldLimitSystem
+Prevents the player from leaving the visible screen area.
+
+### ✔ deltaTimeSystem
+Updates delta time each frame via the `GameWorld` timing utility.
+
+### ✔ audioSystem *(planned)*
+Plays sounds on events (shooting, impact, explosion).
+
+### ✔ lifetimeSystem *(planned)*
+Destroys entities whose `Lifetime` counters reach zero.
+
+### ✔ despawnOffscreenSystem *(planned)*
+Removes projectiles and enemies that leave the playfield.
+
+### ✔ stateMachineSystem *(planned)*
+Executes AI logic for enemies and boss patterns.
+
+### ✔ weaponSystem *(planned)*
+Handles fire rate, cooldown, and projectile spawning.
+
+### ✔ parallaxSystem *(planned)*
+Scrolls background layers at different speeds for depth effect.
+
+### ✔ healthSystem *(planned)*
+Applies damage, handles enemy/player death events.
+
+---
+
+## 🔔 Event Bus (Collision & Gameplay Events)
+
+The **Event Bus** provides a decoupled system for communication between systems.
+
+### Example: Collision Handling
+
+```cpp
+game_world.event_bus_.Subscribe<CollisionEvent>(
+    [](const CollisionEvent &event, int) {
+        auto &players = event.game_world_.registry_.GetComponents<Com::PlayerTag>();
+
+        if (players.has(event.entity_a_) || players.has(event.entity_b_)) {
+            // Handle player collision logic (damage, knockback, invincibility...)
+        }
+    }
+);
+```
+
+This system is used for:
+- Player taking damage
+- Enemy death events
+- Projectile collisions
+- Power-up pickups
+- Boss AI triggers
