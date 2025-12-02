@@ -41,6 +41,7 @@ void Network::TCP::accept() {
                           << socket.remote_endpoint().address().to_string()
                           << ":" << port() << std::endl;
                 sockets.push_back(std::move(socket));
+                // Async receive and send will be handled elsewhere
             } else {
                 std::cerr << "Error accepting TCP connection: " << ec.message()
                           << std::endl;
@@ -62,9 +63,9 @@ void Network::UDP::receive() {
                               << remote_endpoint.port()
                               << ", size: " << bytes_recvd << " bytes"
                               << std::endl;
-                    // Process received UDP packet (push to SPSC queue, etc.)
-                    // Specific function will use bytes_recvd to know the
-                    // actual content of the packet
+                    // Process and deserialize received UDP input packets (push
+                    // to SPSC queue, etc.) Specific function will use
+                    // bytes_recvd to know the actual content of the packet
                 } else {
                     std::cerr << "Error receiving UDP packet: " << ec.message()
                               << std::endl;
