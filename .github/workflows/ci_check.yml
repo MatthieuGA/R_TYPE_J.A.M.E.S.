@@ -47,7 +47,7 @@ jobs:
   check_cmake_compilation_and_tests:
     needs: [check_coding_style]
     runs-on: ubuntu-latest
-    name: "Check CMake compilation on Linux"
+    name: "Check CMake compilation and run tests"
     container:
       image: epitechcontent/epitest-docker:latest
     steps:
