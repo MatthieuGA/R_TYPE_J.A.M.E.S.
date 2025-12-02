@@ -1,38 +1,43 @@
+#include <algorithm>
+
 #include "Engine/initRegistrySystems.hpp"
 #include "Engine/Events/EngineEvent.hpp"
 #include "Engine/originTool.hpp"
 
 namespace Rtype::Client {
-bool IsCollidingFromOffset(const Com::Transform &transform_a, const Com::HitBox &hit_box_a,
-    const Com::Transform &transform_b, const Com::HitBox &hit_box_b,
-    sf::Vector2f offset_a, sf::Vector2f offset_b) {
-    sf::Vector2f offset_a_scaled = offset_a * transform_a.scale;
-    sf::Vector2f offset_b_scaled = offset_b * transform_b.scale;
-    sf::Vector2f scaled_hit_box_a = sf::Vector2f(hit_box_a.width * transform_a.scale,
-        hit_box_a.height * transform_a.scale);
-    sf::Vector2f scaled_hit_box_b = sf::Vector2f(hit_box_b.width * transform_b.scale,
-        hit_box_b.height * transform_b.scale);
+bool IsCollidingFromOffset(const Com::Transform &trans_a,
+const Com::HitBox &hb_a, const Com::Transform &trans_b, const Com::HitBox &hb_b,
+sf::Vector2f off_a, sf::Vector2f off_b) {
+    sf::Vector2f scal_off_a = off_a * trans_a.scale;
+    sf::Vector2f scal_off_b = off_b * trans_b.scale;
+    sf::Vector2f scal_hb_a = sf::Vector2f(hb_a.width * trans_a.scale,
+        hb_a.height * trans_a.scale);
+    sf::Vector2f scal_hb_b = sf::Vector2f(hb_b.width * trans_b.scale,
+        hb_b.height * trans_b.scale);
 
-    if (transform_a.x + offset_a_scaled.x < transform_b.x + scaled_hit_box_b.x + offset_b_scaled.x &&
-        transform_a.x + scaled_hit_box_a.x + offset_a_scaled.x > transform_b.x + offset_b_scaled.x &&
-        transform_a.y + offset_a_scaled.y < transform_b.y + scaled_hit_box_b.y + offset_b_scaled.y &&
-        transform_a.y + scaled_hit_box_a.y + offset_a_scaled.y > transform_b.y + offset_b_scaled.y) {
+    if (trans_a.x + scal_off_a.x < trans_b.x + scal_hb_b.x + scal_off_b.x &&
+        trans_a.x + scal_hb_a.x + scal_off_a.x > trans_b.x + scal_off_b.x &&
+        trans_a.y + scal_off_a.y < trans_b.y + scal_hb_b.y + scal_off_b.y &&
+        trans_a.y + scal_hb_a.y + scal_off_a.y > trans_b.y + scal_off_b.y) {
         return true;
     }
     return false;
 }
 
-bool IsColliding(const Com::Transform &transform_a, const Com::HitBox &hit_box_a,
-    const Com::Transform &transform_b, const Com::HitBox &hit_box_b, Rtype::Client::GameWorld &game_world) {
-    sf::Vector2f offset_a = GetOffsetFromTransform(transform_a, {hit_box_a.width, hit_box_a.height});
-    sf::Vector2f offset_b = GetOffsetFromTransform(transform_b, {hit_box_b.width, hit_box_b.height});
+bool IsColliding(const Com::Transform &trans_a, const Com::HitBox &hb_a,
+const Com::Transform &trans_b, const Com::HitBox &hb_b,
+Rtype::Client::GameWorld &game_world) {
+    sf::Vector2f off_a = GetOffsetFromTransform(trans_a,
+        {hb_a.width, hb_a.height});
+    sf::Vector2f off_b = GetOffsetFromTransform(trans_b,
+        {hb_b.width, hb_b.height});
 
-    return IsCollidingFromOffset(transform_a, hit_box_a, transform_b, hit_box_b, offset_a, offset_b);
+    return IsCollidingFromOffset(trans_a, hb_a, trans_b, hb_b, off_a, off_b);
 }
 
 void ComputeCollision(Eng::sparse_array<Com::Solid> const &solids, int i, int j,
-    Com::Transform &transform_a, const Com::HitBox &hit_box_a,
-    Com::Transform &transform_b, const Com::HitBox &hit_box_b) {
+    Com::Transform &trans_a, const Com::HitBox &hb_a,
+    Com::Transform &trans_b, const Com::HitBox &hb_b) {
     // If none are solid, nothing to resolve here
     bool aSolid = solids.has(i) ? solids[i]->isSolid : false;
     bool bSolid = solids.has(j) ? solids[j]->isSolid : false;
@@ -45,24 +50,26 @@ void ComputeCollision(Eng::sparse_array<Com::Solid> const &solids, int i, int j,
     if (aStuck && bStuck) return;
 
     // Compute offsets and scaled hitboxes (same as is_colliding)
-    sf::Vector2f offset_a = GetOffsetFromTransform(transform_a, {hit_box_a.width, hit_box_a.height});
-    sf::Vector2f offset_b = GetOffsetFromTransform(transform_b, {hit_box_b.width, hit_box_b.height});
+    sf::Vector2f off_a = GetOffsetFromTransform(trans_a,
+        {hb_a.width, hb_a.height});
+    sf::Vector2f off_b = GetOffsetFromTransform(trans_b,
+        {hb_b.width, hb_b.height});
 
-    sf::Vector2f offset_a_scaled = offset_a * transform_a.scale;
-    sf::Vector2f offset_b_scaled = offset_b * transform_b.scale;
-    sf::Vector2f scaledA = sf::Vector2f(hit_box_a.width * transform_a.scale,
-        hit_box_a.height * transform_a.scale);
-    sf::Vector2f scaledB = sf::Vector2f(hit_box_b.width * transform_b.scale,
-        hit_box_b.height * transform_b.scale);
+    sf::Vector2f scal_off_a = off_a * trans_a.scale;
+    sf::Vector2f scal_off_b = off_b * trans_b.scale;
+    sf::Vector2f scaledA = sf::Vector2f(hb_a.width * trans_a.scale,
+        hb_a.height * trans_a.scale);
+    sf::Vector2f scaledB = sf::Vector2f(hb_b.width * trans_b.scale,
+        hb_b.height * trans_b.scale);
 
-    float a_min_x = transform_a.x + offset_a_scaled.x;
+    float a_min_x = trans_a.x + scal_off_a.x;
     float a_max_x = a_min_x + scaledA.x;
-    float a_min_y = transform_a.y + offset_a_scaled.y;
+    float a_min_y = trans_a.y + scal_off_a.y;
     float a_max_y = a_min_y + scaledA.y;
 
-    float b_min_x = transform_b.x + offset_b_scaled.x;
+    float b_min_x = trans_b.x + scal_off_b.x;
     float b_max_x = b_min_x + scaledB.x;
-    float b_min_y = transform_b.y + offset_b_scaled.y;
+    float b_min_y = trans_b.y + scal_off_b.y;
     float b_max_y = b_min_y + scaledB.y;
 
     float overlap_x = std::min(a_max_x, b_max_x) - std::max(a_min_x, b_min_x);
@@ -78,12 +85,12 @@ void ComputeCollision(Eng::sparse_array<Com::Solid> const &solids, int i, int j,
         bool a_can_move = aSolid && !aStuck;
         bool b_can_move = bSolid && !bStuck;
         if (a_can_move && b_can_move) {
-            transform_a.x += direction * (overlap_x / 2.0f);
-            transform_b.x -= direction * (overlap_x / 2.0f);
+            trans_a.x += direction * (overlap_x / 2.0f);
+            trans_b.x -= direction * (overlap_x / 2.0f);
         } else if (a_can_move && !b_can_move) {
-            transform_a.x += direction * overlap_x;
+            trans_a.x += direction * overlap_x;
         } else if (!a_can_move && b_can_move) {
-            transform_b.x -= direction * overlap_x;
+            trans_b.x -= direction * overlap_x;
         }
     } else {
         float a_center = (a_min_y + a_max_y) / 2.0f;
@@ -92,29 +99,30 @@ void ComputeCollision(Eng::sparse_array<Com::Solid> const &solids, int i, int j,
         bool a_can_move = aSolid && !aStuck;
         bool b_can_move = bSolid && !bStuck;
         if (a_can_move && b_can_move) {
-            transform_a.y += direction * (overlap_y / 2.0f);
-            transform_b.y -= direction * (overlap_y / 2.0f);
+            trans_a.y += direction * (overlap_y / 2.0f);
+            trans_b.y -= direction * (overlap_y / 2.0f);
         } else if (a_can_move && !b_can_move) {
-            transform_a.y += direction * overlap_y;
+            trans_a.y += direction * overlap_y;
         } else if (!a_can_move && b_can_move) {
-            transform_b.y -= direction * overlap_y;
+            trans_b.y -= direction * overlap_y;
         }
     }
 }
 
-void CollisionDetectionSystem(Eng::registry &reg, Rtype::Client::GameWorld &game_world,
-    Eng::sparse_array<Com::Transform> &transforms,
-    Eng::sparse_array<Com::HitBox> const &hitBoxes,
-    Eng::sparse_array<Com::Solid> const &solids) {
+void CollisionDetectionSystem(Eng::registry &reg,
+Rtype::Client::GameWorld &game_world,
+Eng::sparse_array<Com::Transform> &transforms,
+Eng::sparse_array<Com::HitBox> const &hitBoxes,
+Eng::sparse_array<Com::Solid> const &solids) {
     // Placeholder for collision detection logic
-    for (auto &&[i, transform_a, hit_box_a] :
+    for (auto &&[i, trans_a, hb_a] :
         make_indexed_zipper(transforms, hitBoxes)) {
-        for (auto &&[j, transform_b, hit_box_b] :
+        for (auto &&[j, trans_b, hb_b] :
             make_indexed_zipper(transforms, hitBoxes)) {
             if (i >= j) continue;
-            if (IsColliding(transform_a, hit_box_a, transform_b, hit_box_b, game_world)) {
+            if (IsColliding(trans_a, hb_a, trans_b, hb_b, game_world)) {
                 game_world.event_bus_.Publish(CollisionEvent{i, j, game_world});
-                ComputeCollision(solids, i, j, transform_a, hit_box_a, transform_b, hit_box_b);
+                ComputeCollision(solids, i, j, trans_a, hb_a, trans_b, hb_b);
             }
         }
     }

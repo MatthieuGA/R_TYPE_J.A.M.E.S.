@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cstdio>
+#include <vector>
 #include <SFML/Graphics.hpp>
 
 #include "include/registry.hpp"
@@ -33,21 +34,21 @@ void init_entities(registry &reg) {
 
     // First entity going down right
     reg.EmplaceComponent<Component::Transform>(entities[0],
-        Component::Transform{150.0f, 100.0f, 0, 4.f, Component::Transform::CENTER});
+        Component::Transform{150.0f, 100.0f, 0, 4.f});
     reg.EmplaceComponent<Component::Solid>(entities[0], Component::Solid{});
     reg.EmplaceComponent<Component::Velocity>(entities[0],
         Component::Velocity{100.0f, 30.0f});
 
     // Second entity going up left
     reg.EmplaceComponent<Component::Transform>(entities[1],
-        Component::Transform{450.0f, 100.0f, 0, 4.f, Component::Transform::CENTER});
+        Component::Transform{450.0f, 100.0f, 0, 4.f});
     reg.EmplaceComponent<Component::Solid>(entities[1], Component::Solid{});
     reg.EmplaceComponent<Component::Velocity>(entities[1],
         Component::Velocity{-50.0f, 30.0f});
 
     // Third entity stationary
     reg.EmplaceComponent<Component::Transform>(entities[2],
-        Component::Transform{400.f, 250.0f, 0, 4.f, Component::Transform::CENTER});
+        Component::Transform{400.f, 250.0f, 0, 4.f});
     reg.EmplaceComponent<Component::Solid>(entities[2],
         Component::Solid{true, true});
 }

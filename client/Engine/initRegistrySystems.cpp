@@ -10,9 +10,10 @@ void init_render_systems(Rtype::Client::GameWorld &game_world) {
     game_world.registry_.AddSystem<Eng::sparse_array<Com::AnimatedSprite>,
         Eng::sparse_array<Com::Drawable>>(
         [&game_world](Eng::registry &r,
-                Eng::sparse_array<Com::AnimatedSprite> &animatedSprites,
+                Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
                 Eng::sparse_array<Com::Drawable> &drawables) {
-            AnimationSystem(r, game_world.delta_time_clock_, animatedSprites, drawables);
+        AnimationSystem(r, game_world.delta_time_clock_,
+            animated_sprites, drawables);
         });
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
         Eng::sparse_array<Com::Drawable>,
@@ -20,8 +21,9 @@ void init_render_systems(Rtype::Client::GameWorld &game_world) {
         [&game_world](Eng::registry &r,
                 Eng::sparse_array<Com::Transform> const &transforms,
                 Eng::sparse_array<Com::Drawable> &drawables,
-                Eng::sparse_array<Com::AnimatedSprite> const &animatedSprites) {
-            DrawableSystem(r, game_world.window_, transforms, drawables, animatedSprites);
+                Eng::sparse_array<Com::AnimatedSprite> const &animated_sprite) {
+            DrawableSystem(r, game_world.window_, transforms,
+                drawables, animated_sprite);
         });
 }
 
@@ -31,23 +33,23 @@ void init_movement_system(Rtype::Client::GameWorld &game_world) {
         [&game_world](Eng::registry &r,
                 Eng::sparse_array<Com::Transform> &transforms,
                 Eng::sparse_array<Com::Velocity> &velocities) {
-            MovementSystem(r, game_world.delta_time_clock_, transforms, velocities);
+        MovementSystem(r, game_world.delta_time_clock_, transforms, velocities);
         });
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
         Eng::sparse_array<Com::PlayerTag>>(
         [&game_world](Eng::registry &r,
                 Eng::sparse_array<Com::Transform> &transforms,
                 Eng::sparse_array<Com::PlayerTag> const &playerTag) {
-            PlayfieldLimitSystem(r, game_world.window_, transforms, playerTag);
+        PlayfieldLimitSystem(r, game_world.window_, transforms, playerTag);
         });
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
         Eng::sparse_array<Com::HitBox>,
         Eng::sparse_array<Com::Solid>>(
             [&game_world](Eng::registry &r,
                 Eng::sparse_array<Com::Transform> &transforms,
-                Eng::sparse_array<Com::HitBox> const &hitBoxes,
+                Eng::sparse_array<Com::HitBox> const &hitbox,
                 Eng::sparse_array<Com::Solid> const &solids) {
-            CollisionDetectionSystem(r, game_world, transforms, hitBoxes, solids);
+        CollisionDetectionSystem(r, game_world, transforms, hitbox, solids);
         });
 }
 

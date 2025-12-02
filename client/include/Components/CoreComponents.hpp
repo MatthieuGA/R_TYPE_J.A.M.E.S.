@@ -29,7 +29,7 @@ struct Drawable {
     sf::Texture texture;
     bool isLoaded = false;
 
-    Drawable(const std::string& spritePath, int zIndex = 0)
+    explicit Drawable(const std::string& spritePath, int zIndex = 0)
         : spritePath("Assets/" + spritePath), z_index(zIndex), texture(),
         sprite(texture), isLoaded(false) {}
 };

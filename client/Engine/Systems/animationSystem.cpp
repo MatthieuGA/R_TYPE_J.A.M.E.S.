@@ -1,32 +1,35 @@
 #include "Engine/initRegistrySystems.hpp"
 
 namespace Rtype::Client {
-void NextFrame(Com::AnimatedSprite &animated_sprite, Com::Drawable &drawable) {
-    animated_sprite.currentFrame++;
-    if (animated_sprite.currentFrame >= animated_sprite.totalFrames) {
-        if (animated_sprite.loop)
-            animated_sprite.currentFrame = 0;
+void NextFrame(Com::AnimatedSprite &anim_sprite, Com::Drawable &drawable) {
+    anim_sprite.currentFrame++;
+    if (anim_sprite.currentFrame >= anim_sprite.totalFrames) {
+        if (anim_sprite.loop)
+            anim_sprite.currentFrame = 0;
         else
-            animated_sprite.currentFrame = animated_sprite.totalFrames - 1;
+            anim_sprite.currentFrame = anim_sprite.totalFrames - 1;
     }
-    const int columns = drawable.texture.getSize().x / animated_sprite.frameWidth;
-    const int left = (animated_sprite.currentFrame % columns) * animated_sprite.frameWidth;
-    const int top = (animated_sprite.currentFrame / columns) * animated_sprite.frameHeight;
+    const int columns = drawable.texture.getSize().x / anim_sprite.frameWidth;
+    const int left = (anim_sprite.currentFrame % columns)
+        * anim_sprite.frameWidth;
+    const int top = (anim_sprite.currentFrame / columns)
+        * anim_sprite.frameHeight;
     drawable.sprite.setTextureRect(sf::IntRect(left, top,
-        animated_sprite.frameWidth, animated_sprite.frameHeight));
-    animated_sprite.elapsedTime = 0.0f;
+        anim_sprite.frameWidth, anim_sprite.frameHeight));
+    anim_sprite.elapsedTime = 0.0f;
 }
 
 void AnimationSystem(Eng::registry &reg, const sf::Clock &delta_time_clock,
-Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
+Eng::sparse_array<Com::AnimatedSprite> &anim_sprites,
 Eng::sparse_array<Com::Drawable> &drawables) {
-    for (auto &&[i, animated_sprite, drawable] :
-    make_indexed_zipper(animated_sprites, drawables)) {
+    for (auto &&[i, anim_sprite, drawable] :
+    make_indexed_zipper(anim_sprites, drawables)) {
         if (!drawable.isLoaded) continue;
-        animated_sprite.elapsedTime += delta_time_clock.getElapsedTime().asSeconds();
+        float dt = delta_time_clock.getElapsedTime().asSeconds();
+        anim_sprite.elapsedTime += dt;
 
-        if (animated_sprite.elapsedTime >= animated_sprite.frameDuration)
-            NextFrame(animated_sprite, drawable);
+        if (anim_sprite.elapsedTime >= anim_sprite.frameDuration)
+            NextFrame(anim_sprite, drawable);
     }
 }
 }  // namespace Rtype::Client
