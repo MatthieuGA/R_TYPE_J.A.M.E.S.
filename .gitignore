@@ -1,0 +1,103 @@
+# Build directories
+build/
+build-*/
+out/
+cmake-build-*/
+
+# vcpkg
+vcpkg
+/vcpkg
+vcpkg_installed/
+.vcpkg-root
+
+# Compiled Object files
+*.o
+*.obj
+*.slo
+*.lo
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+r-type_server
+r-type_client
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+CTestTestfile.cmake
+_deps/
+compile_commands.json
+CPackConfig.cmake
+CPackSourceConfig.cmake
+
+# Qt
+*.qm
+*.pro.user
+*.pro.user.*
+.qmake.stash
+moc_*.cpp
+moc_*.h
+qrc_*.cpp
+ui_*.h
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Package managers
+conan/
+.conan/
+
+# Testing
+Testing/
+*.gcda
+*.gcno
+*.gcov
+
+# Documentation generated files (keep source docs/)
+doxygen_output/
+html/
+latex/
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+*.backup
+
+# Node modules
+node_modules/
+package-lock.json
+
+build_log.txt
+docs/
+.vscode/
+.cache
+
+*.pdf
+r-type.txt
+*.sh
