@@ -4,32 +4,42 @@
 
 namespace server {
 Network::Network(Config &config, boost::asio::io_context &io)
+    : _tcp(config, io), _udp(config, io) {
+    std::cout << "Waiting for TCP connections on port " << _tcp.port() << "..."
+              << std::endl;
+    std::cout << "Waiting for UDP packets on port " << _udp.port() << "..."
+              << std::endl;
+    _tcp.accept();
+    _udp.receive();
+}
+
+Network::UDP::UDP(Config &config, boost::asio::io_context &io)
+    : udpSocket(io, boost::asio::ip::udp::endpoint(
+                        boost::asio::ip::make_address(config.getUdpAddress()),
+                        config.getUdpPort())) {}
+
+Network::TCP::TCP(Config &config, boost::asio::io_context &io)
     : tcpAcceptor(
           io, boost::asio::ip::tcp::endpoint(
                   boost::asio::ip::make_address(config.getTcpAddress()),
-                  config.getTcpPort())),
-      udpSocket(io, boost::asio::ip::udp::endpoint(
-                        boost::asio::ip::make_address(config.getUdpAddress()),
-                        config.getUdpPort())),
-      udpRemoteEndpoint(),
-      udpBuffer() {
-    std::cout << "Waiting for TCP connections on port "
-              << tcpAcceptor.local_endpoint().port() << "..." << std::endl;
-    std::cout << "Waiting for UDP packets on port "
-              << udpSocket.local_endpoint().port() << "..." << std::endl;
-    do_tcp_accept();
-    do_udp_receive();
+                  config.getTcpPort())) {}
+
+boost::asio::ip::port_type Network::UDP::port() const {
+    return udpSocket.local_endpoint().port();
 }
 
-void Network::do_tcp_accept() {
+boost::asio::ip::port_type Network::TCP::port() const {
+    return tcpAcceptor.local_endpoint().port();
+}
+
+void Network::TCP::accept() {
     try {
         tcpAcceptor.async_accept([this](boost::system::error_code ec,
                                      boost::asio::ip::tcp::socket socket) {
             if (!ec) {
                 std::cout << "New TCP connection from "
                           << socket.remote_endpoint().address().to_string()
-                          << ":" << socket.remote_endpoint().port()
-                          << std::endl;
+                          << ":" << port() << std::endl;
                 // Later: store socket in a connection manager, start reading,
                 // etc. auto connection =
                 // std::make_shared<TcpConnection>(std::move(socket));
@@ -38,16 +48,17 @@ void Network::do_tcp_accept() {
                 std::cerr << "Error accepting TCP connection: " << ec.message()
                           << std::endl;
             }
-            do_tcp_accept();  // Accept next connection (async chain)
+            accept();  // Accept next connection (async chain)
         });
     } catch (const std::exception &e) {
         std::cerr << "Exception in async_accept: " << e.what() << std::endl;
     }
 }
 
-void Network::do_udp_receive() {
+void Network::UDP::receive() {
     try {
-        udpSocket.async_receive_from(udpBuffer, udpRemoteEndpoint,
+        udpSocket.async_receive_from(boost::asio::buffer(udpBuffer),
+            udpRemoteEndpoint,
             [this](boost::system::error_code ec, std::size_t bytes_recvd) {
                 if (!ec && bytes_recvd > 0) {
                     std::cout << "Received UDP packet from "
@@ -62,7 +73,7 @@ void Network::do_udp_receive() {
                     std::cerr << "Error receiving UDP packet: " << ec.message()
                               << std::endl;
                 }
-                do_udp_receive();  // Receive next UDP packet (async chain)
+                receive();  // Receive next UDP packet (async chain)
             });
     } catch (const std::exception &e) {
         std::cerr << "Exception in async_receive_from: " << e.what()

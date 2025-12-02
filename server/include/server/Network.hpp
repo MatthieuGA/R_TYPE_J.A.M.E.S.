@@ -1,5 +1,6 @@
 #pragma once
 #include <boost/asio.hpp>
+#include <boost/lockfree/spsc_queue.hpp>
 #include <server/Config.hpp>
 
 namespace server {
@@ -17,14 +18,41 @@ class Network {
 
     explicit Network(Config &, boost::asio::io_context &);
 
- private:
-    // SPSC queue for UDP packets, size QUEUE_SIZE
-    boost::asio::ip::tcp::acceptor tcpAcceptor;
-    boost::asio::ip::udp::socket udpSocket;
-    std::array<uint8_t, MAX_UDP_PACKET_SIZE> udpBuffer;
-    boost::asio::ip::udp::endpoint udpRemoteEndpoint;
+    struct PlayerInput {
+        uint8_t playerId;
+        uint8_t inputState;
+    };
 
-    void do_tcp_accept();   // Accept new TCP connections handler
-    void do_udp_receive();  // Receive UDP packets handler
+ private:
+    class UDP {
+     public:
+        explicit UDP(Config &config, boost::asio::io_context &io);
+        void send(const std::array<uint8_t, MAX_UDP_PACKET_SIZE> &data,
+            std::size_t size, const boost::asio::ip::udp::endpoint &endpoint);
+        void receive();
+        boost::asio::ip::port_type port() const;
+
+     private:
+        boost::asio::ip::udp::socket udpSocket;
+        std::array<uint8_t, MAX_UDP_PACKET_SIZE> udpBuffer;
+        boost::asio::ip::udp::endpoint udpRemoteEndpoint;
+        boost::lockfree::spsc_queue<PlayerInput,
+            boost::lockfree::capacity<QUEUE_SIZE>>
+            udpQueue;
+    };
+
+    class TCP {
+     public:
+        explicit TCP(Config &config, boost::asio::io_context &io);
+        void accept();
+        boost::asio::ip::port_type port() const;
+
+        boost::asio::ip::tcp::acceptor tcpAcceptor;
+
+     private:
+    };
+
+    UDP _udp;
+    TCP _tcp;
 };
 }  // namespace server
