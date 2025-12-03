@@ -4,7 +4,7 @@
 **Genre:** Horizontal Shoot'em'up (Shmup)
 **Platforms:** Linux, Windows
 **Network:** Multiplayer competitive (up to 255 players), client-server architecture
-**Version:** 2.0.5
+**Version:** 2.0.6
 **Last Updated:** December 3, 2025
 
 ## Table of Contents
@@ -611,8 +611,8 @@ Players must instantly distinguish between friend, foe, danger, and collectibles
   - Player ships: Medium (16x16 to 32x32 pixels)
   - Enemies: Varied (16x16 for small, 64x64+ for bosses)
 - **On-Screen Clutter Limit:**
-  - **Entity Limit:** No arbitrary software limit (e.g., "50 entities").
-  - The engine supports `u32` IDs, allowing for virtually unlimited active entities, constrained only by server hardware performance.
+  - **Entity Limit:** No hardcoded entity count limit (e.g., not fixed at "50 entities").
+  - The engine supports `u32` IDs, allowing for virtually unlimited active entities, constrained only by server hardware performance and client rendering capabilities.
 
 **Background vs. Foreground:**
 
