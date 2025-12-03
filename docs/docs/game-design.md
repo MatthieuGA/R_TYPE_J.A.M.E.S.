@@ -4,7 +4,7 @@
 **Genre:** Horizontal Shoot'em'up (Shmup)
 **Platforms:** Linux, Windows
 **Network:** Multiplayer competitive (up to 255 players), client-server architecture
-**Version:** 2.0.2
+**Version:** 2.0.3
 **Last Updated:** December 3, 2025
 
 ## Table of Contents
@@ -142,7 +142,7 @@ The original R-Type (1987, Irem) and its sequels provide the foundation. Similar
 - **Damage:** Taking damage from enemies or projectiles reduces HP (amount depends on enemy type).
 - **Death:** When HP reaches 0, or upon "Crushing" (scrolling collision), the player loses their Life.
 - **Elimination:** Since players start with 1 Life, death typically means elimination from the round (switching to Spectator Mode), unless an "Extra Life" item was collected previously.
-- **Respawn Mechanics:** *If* a player has an Extra Life, they respawn with temporary invincibility (2 seconds), visual blinking, and active ghosting.
+- **Respawn Mechanics:** *If* a player has an Extra Life, they respawn with temporary invincibility (2 seconds), visual blinking, and ghosting is active.
 
 **Enemy Health:**
 
