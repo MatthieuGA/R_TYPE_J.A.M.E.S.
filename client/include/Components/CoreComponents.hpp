@@ -24,14 +24,19 @@ struct Transform {
 
 struct Drawable {
     std::string spritePath;
+    std::string shaderPath;
     int z_index = 0;
     sf::Sprite sprite;
     sf::Texture texture;
+    std::shared_ptr<sf::Shader> shader;
     bool isLoaded = false;
 
     explicit Drawable(const std::string& spritePath, int zIndex = 0)
         : spritePath("Assets/Images/" + spritePath), z_index(zIndex), texture(),
-        sprite(texture), isLoaded(false) {}
+        sprite(texture), isLoaded(false), shader(nullptr) {}
+    explicit Drawable(const std::string& spritePath, const std::string &_shader, int zIndex = 0)
+        : spritePath("Assets/Images/" + spritePath), z_index(zIndex), texture(),
+        sprite(texture), isLoaded(false), shaderPath("Assets/Shaders/" + _shader) {}
 };
 
 struct AnimatedSprite {

@@ -13,7 +13,7 @@ void InitRegistrySystems(Rtype::Client::GameWorld &game_world);
 void InitRegistrySystemsEvents(Rtype::Client::GameWorld &game_world);
 
 // System function declarations
-void DrawableSystem(Eng::registry &reg, sf::RenderWindow &window,
+void DrawableSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> const &transforms,
     Eng::sparse_array<Com::Drawable> &drawables,
     Eng::sparse_array<Com::AnimatedSprite> const &animatedSprites);

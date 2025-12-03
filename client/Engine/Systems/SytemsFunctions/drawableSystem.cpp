@@ -4,6 +4,19 @@
 #include "Engine/originTool.hpp"
 
 namespace Rtype::Client {
+
+void InitializeShader(Com::Drawable &drawable) {
+    if (!drawable.shaderPath.empty()) {
+        drawable.shader = std::make_shared<sf::Shader>();
+        if (!drawable.shader->loadFromFile(drawable.shaderPath,
+            sf::Shader::Fragment)) {
+            std::cerr << "ERROR: Failed to load shader from "
+                << drawable.shaderPath << "\n";
+            drawable.shader = nullptr;
+        }
+    }
+}
+
 void SetDrawableOrigin(Com::Drawable &drawable,
 const Com::Transform &transform) {
     sf::Vector2f origin = GetOffsetFromTransform(transform,
@@ -20,6 +33,7 @@ const Com::Transform &transform) {
     else
         drawable.sprite.setTexture(drawable.texture, true);
     SetDrawableOrigin(drawable, transform);
+    InitializeShader(drawable);
     drawable.isLoaded = true;
 }
 
@@ -38,10 +52,11 @@ const Com::AnimatedSprite &animatedSprite, const Com::Transform &transform) {
     else
         drawable.sprite.setTexture(drawable.texture, true);
     SetDrawableAnimationOrigin(drawable, animatedSprite, transform);
+    InitializeShader(drawable);
     drawable.isLoaded = true;
 }
 
-void DrawableSystem(Eng::registry &reg, sf::RenderWindow &window,
+void DrawableSystem(Eng::registry &reg, GameWorld &game_world,
 Eng::sparse_array<Com::Transform> const &transforms,
 Eng::sparse_array<Com::Drawable> &drawables,
 Eng::sparse_array<Com::AnimatedSprite> const &animated_sprites) {
@@ -75,7 +90,14 @@ Eng::sparse_array<Com::AnimatedSprite> const &animated_sprites) {
         drawable->sprite.setPosition(sf::Vector2f(tranform->x, tranform->y));
         drawable->sprite.setScale(sf::Vector2f(tranform->scale, tranform->scale));
         drawable->sprite.setRotation(tranform->rotationDegrees);
-        window.draw(drawable->sprite);
+
+        if (!drawable->shaderPath.empty() && drawable->shader) {
+            drawable->shader->setUniform("time", static_cast<float>(
+                game_world.total_time_clock_.getElapsedTime().asSeconds()));
+            game_world.window_.draw(drawable->sprite, drawable->shader.get());
+        } else {
+            game_world.window_.draw(drawable->sprite);
+        }
     }
 }
 }  // namespace Rtype::Client

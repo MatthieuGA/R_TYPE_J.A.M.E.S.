@@ -22,7 +22,7 @@ void init_render_systems(Rtype::Client::GameWorld &game_world) {
                 Eng::sparse_array<Com::Transform> const &transforms,
                 Eng::sparse_array<Com::Drawable> &drawables,
                 Eng::sparse_array<Com::AnimatedSprite> const &animated_sprite) {
-            DrawableSystem(r, game_world.window_, transforms,
+            DrawableSystem(r, game_world, transforms,
                 drawables, animated_sprite);
         });
 }
