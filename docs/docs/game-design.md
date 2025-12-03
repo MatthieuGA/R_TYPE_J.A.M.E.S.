@@ -4,7 +4,7 @@
 **Genre:** Horizontal Shoot'em'up (Shmup)
 **Platforms:** Linux, Windows
 **Network:** Multiplayer competitive (up to 255 players), client-server architecture
-**Version:** 2.0.6
+**Version:** 2.0.7
 **Last Updated:** December 3, 2025
 
 ## Table of Contents
@@ -264,7 +264,7 @@ The Force is a small pod that acts as the player's primary defensive and offensi
 
 ### 3.1 Player
 
-**Role:**  
+**Role:**
 The player-controlled spacecraft. The primary avatar through which the human player interacts with the game.
 
 **Responsibilities:**
@@ -437,7 +437,7 @@ Logic entity (not visually represented) that generates enemies at specified inte
 
 ### 3.7 Boss
 
-**Role:**  
+**Role:**
 Large, powerful enemy encountered at the end of stages. Provides climactic challenge.
 
 **Responsibilities:**
