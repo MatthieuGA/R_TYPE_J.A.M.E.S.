@@ -4,8 +4,8 @@
 **Genre:** Horizontal Shoot'em'up (Shmup)
 **Platforms:** Linux, Windows
 **Network:** Multiplayer competitive (up to 255 players), client-server architecture
-**Version:** 2.0.1
-**Last Updated:** December 2, 2025
+**Version:** 2.0.2
+**Last Updated:** December 3, 2025
 
 ## Table of Contents
 
@@ -146,7 +146,7 @@ The original R-Type (1987, Irem) and its sequels provide the foundation. Similar
 
 **Enemy Health:**
 
-- Basic enemies: destroyed in 1–3 hits.
+- Basic enemies: destroyed in 1-3 hits.
 - Tougher enemies: require more hits, may have distinct vulnerable points.
 - Bosses: large health pools, multi-phase battles with changing attack patterns.
 
