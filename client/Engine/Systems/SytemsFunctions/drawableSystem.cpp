@@ -45,6 +45,8 @@ void DrawableSystem(Eng::registry &reg, sf::RenderWindow &window,
 Eng::sparse_array<Com::Transform> const &transforms,
 Eng::sparse_array<Com::Drawable> &drawables,
 Eng::sparse_array<Com::AnimatedSprite> const &animated_sprites) {
+    std::vector<int> draw_order;
+
     // Draw all entities with Transform / Drawable / AnimatedSprite components
     for (auto &&[i, tranform, drawable, animated_sprite] :
     make_indexed_zipper(transforms, drawables, animated_sprites)) {
@@ -57,11 +59,23 @@ Eng::sparse_array<Com::AnimatedSprite> const &animated_sprites) {
     make_indexed_zipper(transforms, drawables)) {
         if (!drawable.isLoaded)
             InitializeDrawable(drawable, tranform);
+        draw_order.push_back(i);
+    }
 
-        drawable.sprite.setPosition(sf::Vector2f(tranform.x, tranform.y));
-        drawable.sprite.setScale(sf::Vector2f(tranform.scale, tranform.scale));
-        drawable.sprite.setRotation(tranform.rotationDegrees);
-        window.draw(drawable.sprite);
+    // Sort by z_index
+    std::sort(draw_order.begin(), draw_order.end(),
+    [&drawables](int a, int b) {
+        return drawables[a]->z_index < drawables[b]->z_index;
+    });
+
+    for (auto i : draw_order) {
+        auto &tranform = transforms[i];
+        auto &drawable = drawables[i];
+
+        drawable->sprite.setPosition(sf::Vector2f(tranform->x, tranform->y));
+        drawable->sprite.setScale(sf::Vector2f(tranform->scale, tranform->scale));
+        drawable->sprite.setRotation(tranform->rotationDegrees);
+        window.draw(drawable->sprite);
     }
 }
 }  // namespace Rtype::Client
