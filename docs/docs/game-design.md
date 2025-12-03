@@ -4,7 +4,7 @@
 **Genre:** Horizontal Shoot'em'up (Shmup)
 **Platforms:** Linux, Windows
 **Network:** Multiplayer competitive (up to 255 players), client-server architecture
-**Version:** 2.0.7
+**Version:** 2.0.8
 **Last Updated:** December 3, 2025
 
 ## Table of Contents
@@ -221,7 +221,7 @@ All spawn logic (wave composition, timing, enemy types) MUST be loaded from exte
 - **Spread Shot:** Fires 3 projectiles in a cone.
 - **Laser:** Penetrating beam, slower fire rate.
 - **Speed Up:** Increases movement speed (caps at 3 stacks).
-- **Repair:** Restores a portion of HP (New).
+- **Repair:** Restores a portion of HP.
 
 **The Force (Core Mechanic):**
 The Force is a small pod that acts as the player's primary defensive and offensive tool.
