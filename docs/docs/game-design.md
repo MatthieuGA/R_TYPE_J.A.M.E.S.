@@ -4,7 +4,7 @@
 **Genre:** Horizontal Shoot'em'up (Shmup)
 **Platforms:** Linux, Windows
 **Network:** Multiplayer competitive (up to 255 players), client-server architecture
-**Version:** 2.0.4
+**Version:** 2.0.5
 **Last Updated:** December 3, 2025
 
 ## Table of Contents
@@ -246,7 +246,7 @@ The Force is a small pod that acts as the player's primary defensive and offensi
 3. Join Lobby.
 4. **Ready Check:** All players must toggle "Ready". Game can start with min. 1 player.
 5. **Game Start:** Loading JSON configuration for the match.
-6. Gameplay (Waves -\> Boss -\> Next Stage).
+6. Gameplay (Waves -> Boss -> Next Stage).
 7. End of Game (All players dead or Game Completed).
 
 **Win Condition:**
