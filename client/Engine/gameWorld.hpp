@@ -10,6 +10,7 @@ struct GameWorld {
     sf::Vector2f window_size_;
     sf::Clock delta_time_clock_;
     sf::Clock total_time_clock_;
+    float last_delta_ = 0.0f;
     EventBus event_bus_;
 
     GameWorld()

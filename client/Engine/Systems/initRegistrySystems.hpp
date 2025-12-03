@@ -18,7 +18,7 @@ void DrawableSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Drawable> &drawables,
     Eng::sparse_array<Com::AnimatedSprite> const &animatedSprites);
 
-void MovementSystem(Eng::registry &reg, const sf::Clock &delta_time_clock,
+void MovementSystem(Eng::registry &reg, const float dt,
     Eng::sparse_array<Com::Transform> &transforms,
     Eng::sparse_array<Com::Velocity> &velocities);
 
@@ -27,7 +27,7 @@ void ParallaxSystem(Eng::registry &reg, const GameWorld &game_world,
     Eng::sparse_array<Com::ParrallaxLayer> const &parallax_layers,
     Eng::sparse_array<Com::Drawable> const &drawables);
 
-void AnimationSystem(Eng::registry &reg, const sf::Clock &delta_time_clock,
+void AnimationSystem(Eng::registry &reg, const float dt,
     Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
     Eng::sparse_array<Com::Drawable> &drawables);
 

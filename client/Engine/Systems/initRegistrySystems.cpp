@@ -12,7 +12,7 @@ void init_render_systems(Rtype::Client::GameWorld &game_world) {
         [&game_world](Eng::registry &r,
                 Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
                 Eng::sparse_array<Com::Drawable> &drawables) {
-        AnimationSystem(r, game_world.delta_time_clock_,
+        AnimationSystem(r, game_world.last_delta_,
             animated_sprites, drawables);
         });
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
@@ -33,7 +33,7 @@ void init_movement_system(Rtype::Client::GameWorld &game_world) {
         [&game_world](Eng::registry &r,
                 Eng::sparse_array<Com::Transform> &transforms,
                 Eng::sparse_array<Com::Velocity> &velocities) {
-        MovementSystem(r, game_world.delta_time_clock_, transforms, velocities);
+        MovementSystem(r, game_world.last_delta_, transforms, velocities);
         });
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
         Eng::sparse_array<Com::ParrallaxLayer>,
@@ -66,8 +66,5 @@ void InitRegistrySystems(Rtype::Client::GameWorld &game_world) {
     // Set up systems
     init_movement_system(game_world);
     init_render_systems(game_world);
-    game_world.registry_.AddSystem<>([&game_world](Eng::registry &r) {
-        game_world.delta_time_clock_.restart();
-    });
 }
 }  // namespace Rtype::Client

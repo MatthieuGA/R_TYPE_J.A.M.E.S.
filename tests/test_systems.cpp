@@ -24,7 +24,7 @@ TEST(Systems, MovementSystemUpdatesPosition) {
     // Wait a short time so clock has non-zero elapsed time
     sf::sleep(sf::milliseconds(20));
 
-    MovementSystem(reg, clock, transforms, velocities);
+    MovementSystem(reg, clock.getElapsedTime().asSeconds(), transforms, velocities);
 
     // Expect the transform to have moved to the right
     EXPECT_GT(transforms[0]->x, 0.0f);
@@ -75,7 +75,7 @@ TEST(Systems, AnimationSystemAdvancesFrame) {
     sf::Clock clock;
     sf::sleep(sf::milliseconds(20));
 
-    AnimationSystem(reg, clock, anim_sprites, drawables);
+    AnimationSystem(reg, clock.getElapsedTime().asSeconds(), anim_sprites, drawables);
 
     EXPECT_EQ(anim->currentFrame, 1);
     sf::IntRect rect = drawable->sprite.getTextureRect();

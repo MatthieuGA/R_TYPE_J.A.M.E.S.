@@ -19,13 +19,12 @@ void NextFrame(Com::AnimatedSprite &anim_sprite, Com::Drawable &drawable) {
     anim_sprite.elapsedTime = 0.0f;
 }
 
-void AnimationSystem(Eng::registry &reg, const sf::Clock &delta_time_clock,
+void AnimationSystem(Eng::registry &reg, const float dt,
 Eng::sparse_array<Com::AnimatedSprite> &anim_sprites,
 Eng::sparse_array<Com::Drawable> &drawables) {
     for (auto &&[i, anim_sprite, drawable] :
     make_indexed_zipper(anim_sprites, drawables)) {
         if (!drawable.isLoaded) continue;
-        float dt = delta_time_clock.getElapsedTime().asSeconds();
         anim_sprite.elapsedTime += dt;
 
         if (anim_sprite.elapsedTime >= anim_sprite.frameDuration)

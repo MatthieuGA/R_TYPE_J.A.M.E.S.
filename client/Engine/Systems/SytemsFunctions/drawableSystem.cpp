@@ -13,6 +13,11 @@ void InitializeShader(Com::Drawable &drawable) {
             std::cerr << "ERROR: Failed to load shader from "
                 << drawable.shaderPath << "\n";
             drawable.shader = nullptr;
+        } else {
+            drawable.shader->setUniform("texture", sf::Shader::CurrentTexture);
+            drawable.shader->setUniform("amplitude", 0.002f);  // à ajuster
+            drawable.shader->setUniform("frequency", 20.f);   // à ajuster
+            drawable.shader->setUniform("speed", 2.f);        // à ajuster
         }
     }
 }

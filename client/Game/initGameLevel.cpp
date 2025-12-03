@@ -11,8 +11,13 @@ float speed, float initial_x, float initial_y = 0.0f, int z_index = 0) {
     reg.AddComponent<Component::Transform>(background_entity,
         Component::Transform{initial_x, initial_y, 0.0f, 3.34f,
         Component::Transform::TOP_LEFT});
-    reg.AddComponent<Component::Drawable>(background_entity,
-        Component::Drawable{path, z_index});
+    if (z_index == -7) {
+        reg.AddComponent<Component::Drawable>(background_entity,
+            Component::Drawable{path, "wave.frag", z_index});
+    } else {
+        reg.AddComponent<Component::Drawable>(background_entity,
+            Component::Drawable{path, z_index});
+    }
     reg.AddComponent<Component::ParrallaxLayer>(background_entity,
         Component::ParrallaxLayer{speed});
 }
@@ -25,10 +30,10 @@ void init_game_level(registry &reg) {
         int z_index;
     };
     std::vector<background_info> background_list = {
+        {"Background/Level1/1.png", -5.0f, 0.0f, -10},
         {"Background/Level1/2.png", -15.0f, 0.0f, -9},
         {"Background/Level1/3.png", -25.0f, 0.0f, -8},
         {"Background/Level1/4.png", -35.0f, 0.0f, -7},
-        {"Background/Level1/1.png", -5.0f, 0.0f, -10},
         {"Background/Level1/5.png", -150.0f, -20.0f, 10},
         {"Background/Level1/5.png", -130.0f, -200.0f, 11}
     };

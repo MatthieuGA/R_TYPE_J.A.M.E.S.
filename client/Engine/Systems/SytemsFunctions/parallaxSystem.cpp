@@ -8,7 +8,7 @@ void ParallaxSystem(Eng::registry &reg, const GameWorld &game_world,
     for (auto &&[i, tranform, parallax_layers, drawable] :
         make_indexed_zipper(transforms, parallax_layers, drawables)) {
         if (!drawable.isLoaded) continue;
-        float dt = game_world.delta_time_clock_.getElapsedTime().asSeconds();
+        float dt = game_world.last_delta_;
         // Update position based on parallax scroll speed
         tranform.x += parallax_layers.scrollSpeed * dt;
         if (tranform.x <= -(drawable.texture.getSize().x * tranform.scale)) {
