@@ -1,4 +1,4 @@
-#include "Engine/initRegistrySystems.hpp"
+#include "Engine/Systems/initRegistrySystems.hpp"
 #include "include/indexed_zipper.hpp"
 
 namespace Eng = Engine;
@@ -34,6 +34,15 @@ void init_movement_system(Rtype::Client::GameWorld &game_world) {
                 Eng::sparse_array<Com::Transform> &transforms,
                 Eng::sparse_array<Com::Velocity> &velocities) {
         MovementSystem(r, game_world.delta_time_clock_, transforms, velocities);
+        });
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
+        Eng::sparse_array<Com::ParrallaxLayer>,
+        Eng::sparse_array<Com::Drawable>>(
+        [&game_world](Eng::registry &r,
+                Eng::sparse_array<Com::Transform> &transforms,
+                Eng::sparse_array<Com::ParrallaxLayer> &parallax_layers,
+                Eng::sparse_array<Com::Drawable> &drawables) {
+        ParallaxSystem(r, game_world, transforms, parallax_layers, drawables);
         });
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
         Eng::sparse_array<Com::PlayerTag>>(

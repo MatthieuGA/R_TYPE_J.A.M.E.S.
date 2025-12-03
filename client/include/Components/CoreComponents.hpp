@@ -30,7 +30,7 @@ struct Drawable {
     bool isLoaded = false;
 
     explicit Drawable(const std::string& spritePath, int zIndex = 0)
-        : spritePath("Assets/" + spritePath), z_index(zIndex), texture(),
+        : spritePath("Assets/Images/" + spritePath), z_index(zIndex), texture(),
         sprite(texture), isLoaded(false) {}
 };
 

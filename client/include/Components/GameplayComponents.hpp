@@ -32,4 +32,8 @@ struct StatsGame {
     int score;
 };
 
+struct ParrallaxLayer {
+    float scrollSpeed;
+};
+
 }  // namespace Rtype::Client::Component

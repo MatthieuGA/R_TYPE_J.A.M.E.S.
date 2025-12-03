@@ -1,4 +1,4 @@
-#include "Engine/initRegistrySystems.hpp"
+#include "Engine/Systems/initRegistrySystems.hpp"
 
 namespace Rtype::Client {
 void NextFrame(Com::AnimatedSprite &anim_sprite, Com::Drawable &drawable) {

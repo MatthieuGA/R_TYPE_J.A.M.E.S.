@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "../client/Engine/initRegistrySystems.hpp"
+#include "../client/Engine/Systems/initRegistrySystems.hpp"
 #include "../client/include/Components/CoreComponents.hpp"
 #include "../client/include/Components/GameplayComponents.hpp"
 #include "../client/Engine/Events/EngineEvent.hpp"

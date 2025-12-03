@@ -22,6 +22,11 @@ void MovementSystem(Eng::registry &reg, const sf::Clock &delta_time_clock,
     Eng::sparse_array<Com::Transform> &transforms,
     Eng::sparse_array<Com::Velocity> &velocities);
 
+void ParallaxSystem(Eng::registry &reg, const GameWorld &game_world,
+    Eng::sparse_array<Com::Transform> &transforms,
+    Eng::sparse_array<Com::ParrallaxLayer> const &parallax_layers,
+    Eng::sparse_array<Com::Drawable> const &drawables);
+
 void AnimationSystem(Eng::registry &reg, const sf::Clock &delta_time_clock,
     Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
     Eng::sparse_array<Com::Drawable> &drawables);
@@ -31,7 +36,7 @@ void PlayfieldLimitSystem(Eng::registry &reg, const sf::RenderWindow &window,
     Eng::sparse_array<Com::PlayerTag> const &player_tags);
 
 void CollisionDetectionSystem(Eng::registry &reg,
-    Rtype::Client::GameWorld &game_world,
+    GameWorld &game_world,
     Eng::sparse_array<Com::Transform> &transforms,
     Eng::sparse_array<Com::HitBox> const &hit_boxes,
     Eng::sparse_array<Com::Solid> const &solids);

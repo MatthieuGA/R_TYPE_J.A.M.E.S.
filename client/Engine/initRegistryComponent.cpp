@@ -17,6 +17,7 @@ void InitRegistryComponents(Engine::registry &reg) {
     reg.RegisterComponent<Rtype::Client::Component::Projectile>();
     reg.RegisterComponent<Rtype::Client::Component::Health>();
     reg.RegisterComponent<Rtype::Client::Component::StatsGame>();
+    reg.RegisterComponent<Rtype::Client::Component::ParrallaxLayer>();
     // Register networking components
     reg.RegisterComponent<Rtype::Client::Component::NetworkId>();
     reg.RegisterComponent<Rtype::Client::Component::InterpolatedPosition>();
