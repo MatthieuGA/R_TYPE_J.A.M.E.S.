@@ -22,18 +22,20 @@ R-TYPE J.A.M.E.S. is built upon a **Client-Server** architecture using a custom 
 
 ```mermaid
 graph TD
-    subgraph Client ["Client Application"]
-        C_Net[Network Thread]
-        C_Render[Graphics Thread]
+    subgraph Client ["Client Application (Single Thread)"]
+        C_Main[Main Event Loop]
+        C_ASIO[ASIO Async I/O]
+        C_Render[SFML Rendering]
         C_Input[Input Handling]
 
-        C_Render <-->|Shared State| C_Net
-        C_Input --> C_Net
+        C_Main --> C_ASIO
+        C_Main --> C_Render
+        C_Main --> C_Input
     end
 
-    subgraph Server ["Server Application"]
+    subgraph Server ["Server Application (Single Thread)"]
         S_Net["Network Class (ASIO)"]
-        S_Logic[Game Logic]
+        S_Logic[Game Logic / Tick]
         S_ECS[ECS Registry]
 
         S_Net -->|Inputs| S_Logic
@@ -41,7 +43,7 @@ graph TD
         S_Logic --> S_ECS
     end
 
-    C_Net <==>|UDP / TCP| S_Net
+    C_ASIO <==>|UDP / TCP| S_Net
 ```
 
 ---
@@ -128,20 +130,17 @@ sequenceDiagram
 
 The client is responsible for rendering the game state and capturing user input. It uses **SFML** for graphics and audio.
 
-### Threading Model
+### Event Loop Model
 
-The client also operates on **2 dedicated threads**:
+The client operates on a **single thread** using **ASIO async I/O**:
 
-1. **Network Thread**:
-    - Listens for Server Snapshots (UDP) and Events (TCP).
-    - Updates the local "Network State" (the target state to interpolate towards).
-    - Sends Player Inputs to the server.
-
-2. **Graphics Thread (Main Thread)**:
+- **Main Event Loop**:
     - Handles the Window and Event Polling (SFML requirement).
+    - Listens for Server Snapshots (UDP) and Events (TCP) via ASIO async callbacks.
+    - Updates the local "Network State" (the target state to interpolate towards).
+    - Sends Player Inputs to the server via ASIO async send.
     - Interpolates entities between the last known state and the current Network State.
     - Renders the scene.
-    - Captures Input and pushes it to the Network Thread.
 
 ### Rendering & Interpolation
 
@@ -156,18 +155,18 @@ To ensure smooth gameplay despite network latency, the client does not just "tel
 ```mermaid
 graph LR
     subgraph Input
-        Keyboard -->|Capture| MainThread
+        Keyboard -->|Capture| MainLoop
     end
 
     subgraph Network
-        ServerPacket -->|Receive| NetThread
-        NetThread -->|Update Target| SharedState
-        MainThread -->|Send Input| NetThread
+        ServerPacket -->|Async Receive| ASIO_Callback
+        ASIO_Callback -->|Update Target| GameState
+        MainLoop -->|Async Send Input| ASIO
     end
 
     subgraph Rendering
-        SharedState -->|Interpolate| MainThread
-        MainThread -->|Draw| Screen
+        GameState -->|Interpolate| MainLoop
+        MainLoop -->|Draw| Screen
     end
 ```
 
