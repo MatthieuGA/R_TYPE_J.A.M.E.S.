@@ -4,7 +4,7 @@
 **Genre:** Horizontal Shoot'em'up (Shmup)
 **Platforms:** Linux, Windows
 **Network:** Multiplayer competitive (up to 255 players), client-server architecture
-**Version:** 2.0.3
+**Version:** 2.0.4
 **Last Updated:** December 3, 2025
 
 ## Table of Contents
@@ -152,7 +152,7 @@ The original R-Type (1987, Irem) and its sequels provide the foundation. Similar
 
 **Collision Rules:**
 
-- **Player vs. Player:** **Ghosting is active.** Players pass through each other physically (no blocking), preventing griefing.
+- **Player vs. Player:** **Ghosting is active.** (players pass through each other physically; no blocking), preventing griefing.
 - **Player vs. Enemy/Projectile:** Reduces Player HP.
 - **Player vs. Obstacle:** Wall collision blocks movement. Being crushed by scrolling = Instant Death.
 
