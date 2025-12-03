@@ -2,7 +2,9 @@
 
 #include <optional>
 #include <stdexcept>
+#include <string>
 #include <variant>
+#include <vector>
 
 #include "server/Packets.hpp"
 
@@ -117,7 +119,6 @@ inline PacketParseResult deserialize_packet(const uint8_t *data, size_t size) {
                     "Unknown packet OpCode: 0x" +
                         std::to_string(static_cast<int>(header.op_code))};
         }
-
     } catch (const std::out_of_range &e) {
         return PacketParseResult{false, ConnectReqPacket{}, CommonHeader{},
             std::string("Buffer overflow: ") + e.what()};
@@ -162,10 +163,8 @@ inline PacketBuffer serialize_packet(const PacketVariant &packet,
                           std::is_same_v<T, GameEndPacket> ||
                           std::is_same_v<T, ReadyStatusPacket>) {
                 p.serialize(buffer);
-            }
-            // UDP packets (use tick parameters)
-            else if constexpr (std::is_same_v<T, PlayerInputPacket> ||
-                               std::is_same_v<T, PlayerStatsPacket>) {
+            } else if constexpr (std::is_same_v<T, PlayerInputPacket> ||
+                                 std::is_same_v<T, PlayerStatsPacket>) {
                 p.serialize(buffer, tick_id);
             } else if constexpr (std::is_same_v<T, WorldSnapshotPacket>) {
                 p.serialize(buffer, tick_id, packet_index, packet_count);
