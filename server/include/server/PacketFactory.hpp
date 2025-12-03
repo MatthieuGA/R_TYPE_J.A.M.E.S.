@@ -155,18 +155,27 @@ inline PacketBuffer serialize_packet(const PacketVariant &packet,
             using T = std::decay_t<decltype(p)>;
 
             // TCP packets (ignore tick parameters)
-            if constexpr (std::is_same_v<T, ConnectReqPacket> ||
-                          std::is_same_v<T, ConnectAckPacket> ||
-                          std::is_same_v<T, DisconnectReqPacket> ||
-                          std::is_same_v<T, NotifyDisconnectPacket> ||
-                          std::is_same_v<T, GameStartPacket> ||
-                          std::is_same_v<T, GameEndPacket> ||
-                          std::is_same_v<T, ReadyStatusPacket>) {
+            constexpr bool is_tcp_packet =
+                std::is_same_v<T, ConnectReqPacket> ||
+                std::is_same_v<T, ConnectAckPacket> ||
+                std::is_same_v<T, DisconnectReqPacket> ||
+                std::is_same_v<T, NotifyDisconnectPacket> ||
+                std::is_same_v<T, GameStartPacket> ||
+                std::is_same_v<T, GameEndPacket> ||
+                std::is_same_v<T, ReadyStatusPacket>;
+
+            constexpr bool is_player_input_packet =
+                std::is_same_v<T, PlayerInputPacket> ||
+                std::is_same_v<T, PlayerStatsPacket>;
+
+            constexpr bool is_world_snapshot_packet =
+                std::is_same_v<T, WorldSnapshotPacket>;
+
+            if constexpr (is_tcp_packet) {
                 p.serialize(buffer);
-            } else if constexpr (std::is_same_v<T, PlayerInputPacket> ||
-                                 std::is_same_v<T, PlayerStatsPacket>) {
+            } else if constexpr (is_player_input_packet) {
                 p.serialize(buffer, tick_id);
-            } else if constexpr (std::is_same_v<T, WorldSnapshotPacket>) {
+            } else if constexpr (is_world_snapshot_packet) {
                 p.serialize(buffer, tick_id, packet_index, packet_count);
             }
         },
