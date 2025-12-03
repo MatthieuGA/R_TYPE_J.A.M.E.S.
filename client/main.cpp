@@ -1,12 +1,13 @@
-#include <iostream>
 #include <cstdio>
+#include <iostream>
 #include <vector>
+
 #include <SFML/Graphics.hpp>
 
-#include "include/registry.hpp"
+#include "Engine/gameWorld.hpp"
 #include "Engine/initRegistryComponent.hpp"
 #include "Engine/initRegistrySystems.hpp"
-#include "Engine/gameWorld.hpp"
+#include "include/registry.hpp"
 
 using Engine::registry;
 namespace RC = Rtype::Client;
@@ -22,35 +23,35 @@ void init_entities(registry &reg) {
     std::vector<registry::entity_t> entities;
     for (int i = 0; i < 3; ++i) {
         auto entity = reg.SpawnEntity();
-        reg.EmplaceComponent<Component::Drawable>(entity,
-            Component::Drawable("ball_enemy.gif"));
-        reg.EmplaceComponent<Component::AnimatedSprite>(entity,
-            Component::AnimatedSprite{17, 17, 12, rand() % 12});
-        reg.EmplaceComponent<Component::HitBox>(entity,
-            Component::HitBox{17.0f, 17.0f});
+        reg.EmplaceComponent<Component::Drawable>(
+            entity, Component::Drawable("ball_enemy.gif"));
+        reg.EmplaceComponent<Component::AnimatedSprite>(
+            entity, Component::AnimatedSprite{17, 17, 12, rand() % 12});
+        reg.EmplaceComponent<Component::HitBox>(
+            entity, Component::HitBox{17.0f, 17.0f});
         entities.push_back(entity);
         reg.EmplaceComponent<Component::PlayerTag>(entity);
     }
 
     // First entity going down right
-    reg.EmplaceComponent<Component::Transform>(entities[0],
-        Component::Transform{150.0f, 100.0f, 0, 4.f});
+    reg.EmplaceComponent<Component::Transform>(
+        entities[0], Component::Transform{150.0f, 100.0f, 0, 4.f});
     reg.EmplaceComponent<Component::Solid>(entities[0], Component::Solid{});
-    reg.EmplaceComponent<Component::Velocity>(entities[0],
-        Component::Velocity{100.0f, 30.0f});
+    reg.EmplaceComponent<Component::Velocity>(
+        entities[0], Component::Velocity{100.0f, 30.0f});
 
     // Second entity going up left
-    reg.EmplaceComponent<Component::Transform>(entities[1],
-        Component::Transform{450.0f, 100.0f, 0, 4.f});
+    reg.EmplaceComponent<Component::Transform>(
+        entities[1], Component::Transform{450.0f, 100.0f, 0, 4.f});
     reg.EmplaceComponent<Component::Solid>(entities[1], Component::Solid{});
-    reg.EmplaceComponent<Component::Velocity>(entities[1],
-        Component::Velocity{-50.0f, 30.0f});
+    reg.EmplaceComponent<Component::Velocity>(
+        entities[1], Component::Velocity{-50.0f, 30.0f});
 
     // Third entity stationary
-    reg.EmplaceComponent<Component::Transform>(entities[2],
-        Component::Transform{400.f, 250.0f, 0, 4.f});
-    reg.EmplaceComponent<Component::Solid>(entities[2],
-        Component::Solid{true, true});
+    reg.EmplaceComponent<Component::Transform>(
+        entities[2], Component::Transform{400.f, 250.0f, 0, 4.f});
+    reg.EmplaceComponent<Component::Solid>(
+        entities[2], Component::Solid{true, true});
 }
 
 int main() {

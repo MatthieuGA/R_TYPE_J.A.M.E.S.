@@ -15,14 +15,14 @@ Network::Network(Config &config, boost::asio::io_context &io)
 }
 
 Network::UDP::UDP(Config &config, boost::asio::io_context &io)
-: socket(io, boost::asio::ip::udp::endpoint(
-    boost::asio::ip::make_address(config.getUdpAddress()),
-    config.getUdpPort())) {}
+    : socket(io, boost::asio::ip::udp::endpoint(
+                     boost::asio::ip::make_address(config.getUdpAddress()),
+                     config.getUdpPort())) {}
 
 Network::TCP::TCP(Config &config, boost::asio::io_context &io)
-: acceptor(io, boost::asio::ip::tcp::endpoint(
-    boost::asio::ip::make_address(config.getTcpAddress()),
-    config.getTcpPort())) {}
+    : acceptor(io, boost::asio::ip::tcp::endpoint(
+                       boost::asio::ip::make_address(config.getTcpAddress()),
+                       config.getTcpPort())) {}
 
 boost::asio::ip::port_type Network::UDP::port() const {
     return socket.local_endpoint().port();
