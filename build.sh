@@ -29,17 +29,22 @@ CMAKE_VERSION=$(cmake --version | head -n1 | cut -d' ' -f3)
 echo "✓ CMake version: $CMAKE_VERSION"
 echo ""
 
-# Bootstrap vcpkg if needed
-if [ ! -f "vcpkg/vcpkg" ]; then
-    echo "Bootstrapping vcpkg..."
-    cd vcpkg
-    ./bootstrap-vcpkg.sh
-    testExitStatus $? "vcpkg bootstrap"
-    cd ..
-    echo ""
+# Check for vcpkg
+VCPKG_CMAKE_TOOLCHAIN=""
+if [ -f "vcpkg/scripts/buildsystems/vcpkg.cmake" ]; then
+    VCPKG_CMAKE_TOOLCHAIN="vcpkg/scripts/buildsystems/vcpkg.cmake"
+    echo "✓ Using local vcpkg in project directory"
+elif [ -n "$VCPKG_ROOT" ] && [ -f "$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" ]; then
+    VCPKG_CMAKE_TOOLCHAIN="$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
+    echo "✓ Using vcpkg from VCPKG_ROOT: $VCPKG_ROOT"
+elif [ -f "../vcpkg/scripts/buildsystems/vcpkg.cmake" ]; then
+    VCPKG_CMAKE_TOOLCHAIN="../vcpkg/scripts/buildsystems/vcpkg.cmake"
+    echo "✓ Using vcpkg from parent directory"
+else
+    echo "ERROR: vcpkg not found"
+    echo "Please set VCPKG_ROOT environment variable or install vcpkg in the project directory"
+    exit 1
 fi
-
-echo "✓ vcpkg is ready"
 echo ""
 
 # Create build directory
@@ -51,9 +56,25 @@ echo "Configuring with CMake..."
 echo "=========================================="
 echo ""
 
+# Prepare toolchain path for CMake (build dir is `build/` so make relative if needed)
+if [[ "$VCPKG_CMAKE_TOOLCHAIN" = /* ]]; then
+    TOOLCHAIN_FILE="$VCPKG_CMAKE_TOOLCHAIN"
+else
+    TOOLCHAIN_FILE="../$VCPKG_CMAKE_TOOLCHAIN"
+fi
+
+echo "Using CMake toolchain file: $TOOLCHAIN_FILE"
+
+# Check that a build program (make or ninja) exists for CMake's default generators
+if ! command -v make &> /dev/null && ! command -v ninja &> /dev/null; then
+    echo "ERROR: No build tool found (make or ninja)."
+    echo "Please install 'make' or 'ninja' so CMake can generate build files."
+    exit 1
+fi
+
 # Configure with CMake
 cmake .. \
-    -DCMAKE_TOOLCHAIN_FILE="../vcpkg/scripts/buildsystems/vcpkg.cmake" \
+    -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN_FILE" \
     -DCMAKE_BUILD_TYPE=Release
 
 testExitStatus $? "CMake configuration"
@@ -71,10 +92,13 @@ testExitStatus $? "Build"
 cd ..
 
 echo ""
-echo "=========================================="
+echo "========================================="
 echo "✓ Build completed successfully!"
-echo "=========================================="
+echo "========================================="
 echo ""
 echo "To run the client:"
-echo "  ./r-type_client"
+echo "  ./build/client/r-type_client"
+echo ""
+echo "To run the server:"
+echo "  ./build/server/r-type_server"
 echo ""

@@ -458,8 +458,8 @@ Large, powerful enemy encountered at the end of stages. Provides climactic chall
 Players should feel **immediate control** over their spacecraft. Input lag is the enemy of enjoyment in fast-paced shmups.
 
 **Measurable Targets:**
-- **Input-to-action latency (local):** <50ms from key press to sprite position update.
-- **Networked latency (acceptable):** <150ms round-trip for server validation to feel responsive.
+-- **Input-to-action latency (local):** &lt;50ms from key press to sprite position update.
+-- **Networked latency (acceptable):** &lt;150ms round-trip for server validation to feel responsive.
 - **Frame rate:** Maintain stable 60 FPS minimum; frame drops break player immersion and timing.
 
 **Implementation Strategies:**
@@ -713,7 +713,7 @@ The server is the **single source of truth** for all gameplay-critical state.
 2. **Server validation:** Server receives input, computes authoritative position, sends update to client.
 3. **Reconciliation:** Client compares predicted position with server's authoritative position. If mismatch (e.g., server detected collision), client smoothly corrects position.
 
-**Result:** Player experiences <50ms local responsiveness while maintaining server authority.
+**Result:** Player experiences &lt;50ms local responsiveness while maintaining server authority.
 
 ### 8.4 Visual Identification in Multiplayer
 

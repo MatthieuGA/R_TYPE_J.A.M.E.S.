@@ -70,7 +70,13 @@ Then run:
 
 ## 📦 Dependencies
 
-Dependencies (SFML, Boost.Asio) are automatically installed via vcpkg during CMake configuration
+Dependencies are automatically installed via vcpkg during CMake configuration:
+
+* **SFML 2.6.2** - Graphics, window, network, audio, system
+* **Boost.Asio** - Asynchronous I/O and networking
+* **Boost.System** - System error codes for Boost libraries
+* **Boost.Lockfree** - Lock-free data structures for high-performance concurrent operations
+* **GoogleTest** - Unit testing framework (fetched automatically)
 
 ---
 

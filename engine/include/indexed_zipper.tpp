@@ -5,7 +5,7 @@ namespace Engine {
 
 // indexed_zipper_iterator implementation
 template<class... Containers>
-indexed_zipper_iterator<Containers...>::indexed_zipper_iterator(base_iterator it) 
+indexed_zipper_iterator<Containers...>::indexed_zipper_iterator(base_iterator it)
     : _it(it), _idx(_it._idx) {}
 
 template<class... Containers>
@@ -23,7 +23,7 @@ indexed_zipper_iterator<Containers...> indexed_zipper_iterator<Containers...>::o
 }
 
 template<class... Containers>
-typename indexed_zipper_iterator<Containers...>::value_type 
+typename indexed_zipper_iterator<Containers...>::value_type
 indexed_zipper_iterator<Containers...>::operator*() const {
     return std::tuple_cat(std::tuple<std::size_t>(_idx), *_it);
 }
@@ -33,13 +33,13 @@ template <class... Containers>
 indexed_zipper<Containers...>::indexed_zipper(Containers&... cs) : _zip(cs...) {}
 
 template <class... Containers>
-typename indexed_zipper<Containers...>::iterator 
+typename indexed_zipper<Containers...>::iterator
 indexed_zipper<Containers...>::begin() const {
     return iterator(_zip.begin());
 }
 
 template <class... Containers>
-typename indexed_zipper<Containers...>::iterator 
+typename indexed_zipper<Containers...>::iterator
 indexed_zipper<Containers...>::end() const {
     return iterator(_zip.end());
 }

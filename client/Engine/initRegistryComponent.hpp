@@ -5,5 +5,5 @@
 #include "include/registry.hpp"
 
 namespace Rtype::Client {
-void init_registry_components(Engine::registry &reg);
+void InitRegistryComponents(Engine::registry &reg);
 }  // namespace Rtype::Client
