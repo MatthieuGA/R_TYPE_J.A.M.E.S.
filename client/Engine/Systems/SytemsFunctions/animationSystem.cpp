@@ -23,20 +23,29 @@ void NextFrame(Com::AnimatedSprite &anim_sprite, Com::Drawable &drawable) {
         else
             anim_sprite.currentFrame = anim_sprite.totalFrames - 1;
     }
-    anim_sprite.elapsedTime = 0.0f;
+    SetFrame(anim_sprite, drawable);
 }
 
 void AnimationSystem(Eng::registry &reg, const float dt,
 Eng::sparse_array<Com::AnimatedSprite> &anim_sprites,
 Eng::sparse_array<Com::Drawable> &drawables) {
     for (auto &&[i, anim_sprite, drawable] :
-    make_indexed_zipper(anim_sprites, drawables)) {
-        SetFrame(anim_sprite, drawable);
-        if (!drawable.isLoaded || !anim_sprite.animated) continue;
-        anim_sprite.elapsedTime += dt;
+        make_indexed_zipper(anim_sprites, drawables)) {
+        if (!drawable.isLoaded || !anim_sprite.animated) {
+            SetFrame(anim_sprite, drawable);
+            continue;
+        }
 
-        if (anim_sprite.elapsedTime >= anim_sprite.frameDuration)
-            NextFrame(anim_sprite, drawable);
+        anim_sprite.elapsedTime += dt;
+        if (anim_sprite.frameDuration > 0.0f) {
+            while (anim_sprite.elapsedTime >= anim_sprite.frameDuration) {
+                anim_sprite.elapsedTime -= anim_sprite.frameDuration;
+                NextFrame(anim_sprite, drawable);
+                if (!anim_sprite.loop &&
+                    anim_sprite.currentFrame == anim_sprite.totalFrames - 1)
+                    break;
+            }
+        }
     }
 }
 }  // namespace Rtype::Client

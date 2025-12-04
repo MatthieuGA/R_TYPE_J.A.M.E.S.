@@ -46,8 +46,11 @@ TEST(ComponentsCore, HitBox) {
 }
 
 TEST(ComponentsGameplay, TagsAndProjectile) {
-    Com::PlayerTag p{2};
+    Com::PlayerTag p{400.f, 0.5f, 0.0f, 2};
     EXPECT_EQ(p.playerNumber, 2);
+    EXPECT_FLOAT_EQ(p.speed_max, 400.f);
+    EXPECT_FLOAT_EQ(p.shoot_cooldown_max, 0.5f);
+    EXPECT_FLOAT_EQ(p.shoot_cooldown, 0.0f);
 
     Com::EnemyTag e{Com::EnemyTag::EnemyType::ADVANCED};
     EXPECT_EQ(e.type, Com::EnemyTag::EnemyType::ADVANCED);

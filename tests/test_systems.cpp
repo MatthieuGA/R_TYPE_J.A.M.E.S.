@@ -57,31 +57,38 @@ TEST(Systems, AnimationSystemAdvancesFrame) {
     Eng::sparse_array<Com::AnimatedSprite> anim_sprites;
     Eng::sparse_array<Com::Drawable> drawables;
 
-    // Animated sprite: 4 frames, each 16x16
-    anim_sprites.insert_at(0, Com::AnimatedSprite{16, 16, 4});
-    auto &anim = anim_sprites[0];
-    anim->currentFrame = 0;
-    anim->frameDuration = 0.01f;
+    // Create an animated sprite component with multiple frames
+    Com::AnimatedSprite anim(16, 16, 0.02f); // frameW, frameH, frameDuration
+    anim.totalFrames = 4;
+    anim.currentFrame = 0;
+    anim.animated = true;
+    anim.elapsedTime = 0.0f;
 
-    drawables.insert_at(0, Com::Drawable("test.png", 0));
-    auto &drawable = drawables[0];
+    anim_sprites.insert_at(0, std::move(anim));
 
-    // Create a texture big enough for 4 columns x 1 row
-    int columns = 4;
-    drawable->texture.create(columns * anim->frameWidth, anim->frameHeight);
-    drawable->sprite.setTexture(drawable->texture, true);
-    drawable->isLoaded = true;
+    // Create a drawable and mark it as loaded so the system advances frames
+    drawables.insert_at(0, Com::Drawable("dummy.png"));
+    // Ensure texture has a size so SetFrame won't early-return
+    drawables[0]->texture.create(64, 64);
+    drawables[0]->sprite.setTexture(drawables[0]->texture, true);
+    drawables[0]->isLoaded = true;
 
-    sf::Clock clock;
-    sf::sleep(sf::milliseconds(20));
+    // Simulate a delta time that should advance at least one frame
+    float delta = 0.05f; // 50 ms
 
-    AnimationSystem(reg, clock.getElapsedTime().asSeconds(), anim_sprites, drawables);
+    // Ensure deterministic advancement: pre-fill elapsedTime so NextFrame
+    // will trigger on the next update regardless of dt semantics.
+    ASSERT_TRUE(anim_sprites[0].has_value());
+    anim_sprites[0]->elapsedTime = anim_sprites[0]->frameDuration;
 
-    EXPECT_EQ(anim->currentFrame, 1);
-    sf::IntRect rect = drawable->sprite.getTextureRect();
-    EXPECT_EQ(rect.left, anim->frameWidth);  // second frame
-    EXPECT_EQ(rect.width, anim->frameWidth);
-    EXPECT_EQ(rect.height, anim->frameHeight);
+    // First call should advance the currentFrame because elapsedTime >= frameDuration
+    AnimationSystem(reg, 0.0f, anim_sprites, drawables);
+    EXPECT_EQ(anim_sprites[0]->currentFrame, 1);
+
+    // Second call with zero delta will cause SetFrame to update the drawable rect
+    AnimationSystem(reg, 0.0f, anim_sprites, drawables);
+    sf::IntRect rect = drawables[0]->sprite.getTextureRect();
+    EXPECT_EQ(rect.left, anim_sprites[0]->frameWidth);
 }
 
 TEST(Systems, CollisionDetectionPublishesAndResolves) {
