@@ -11,6 +11,7 @@ void InitRegistryComponents(Engine::registry &reg) {
     reg.RegisterComponent<Rtype::Client::Component::HitBox>();
     reg.RegisterComponent<Rtype::Client::Component::AnimatedSprite>();
     reg.RegisterComponent<Rtype::Client::Component::Solid>();
+    reg.RegisterComponent<Rtype::Client::Component::Shader>();
     // Register gameplay components
     reg.RegisterComponent<Rtype::Client::Component::PlayerTag>();
     reg.RegisterComponent<Rtype::Client::Component::EnemyTag>();

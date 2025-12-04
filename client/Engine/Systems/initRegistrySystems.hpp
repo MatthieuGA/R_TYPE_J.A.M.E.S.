@@ -16,7 +16,8 @@ void InitRegistrySystemsEvents(Rtype::Client::GameWorld &game_world);
 void DrawableSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> const &transforms,
     Eng::sparse_array<Com::Drawable> &drawables,
-    Eng::sparse_array<Com::AnimatedSprite> const &animatedSprites);
+    Eng::sparse_array<Com::AnimatedSprite> const &animatedSprites,
+    Eng::sparse_array<Com::Shader> &shaders);
 
 void MovementSystem(Eng::registry &reg, const float dt,
     Eng::sparse_array<Com::Transform> &transforms,
