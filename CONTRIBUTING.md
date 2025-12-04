@@ -171,7 +171,7 @@ You must have the following tools installed on your machine:
 
 * **Node.js & npm** (to run the hooks)
 * **Clang-Format** (to format C++ code)
-* **Clang++** (to check C++ syntax)
+* **Cpplint** (to check C++ syntax)
 
 ### Installation
 
