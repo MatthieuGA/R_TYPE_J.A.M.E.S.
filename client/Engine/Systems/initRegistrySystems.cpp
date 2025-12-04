@@ -71,6 +71,7 @@ void init_movement_system(Rtype::Client::GameWorld &game_world) {
 
 void InitRegistrySystems(Rtype::Client::GameWorld &game_world) {
     // Set up systems
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::Inputs>>(InputSystem);
     init_movement_system(game_world);
     init_render_systems(game_world);
 }

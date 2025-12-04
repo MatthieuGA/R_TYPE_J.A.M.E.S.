@@ -96,4 +96,11 @@ struct Solid {
     bool isSolid = true;
     bool isLocked = false;
 };
+
+struct Inputs {
+    float horizontal = 0.0f;
+    float vertical = 0.0f;
+    bool shoot = false;
+};
+
 }  // namespace Rtype::Client::Component

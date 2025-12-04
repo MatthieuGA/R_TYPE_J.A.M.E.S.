@@ -13,7 +13,11 @@ namespace Com = Component;
 void InitRegistrySystems(Rtype::Client::GameWorld &game_world);
 void InitRegistrySystemsEvents(Rtype::Client::GameWorld &game_world);
 
+
 // System function declarations
+void InputSystem(Eng::registry &reg,
+    Eng::sparse_array<Com::Inputs> &inputs);
+
 void DrawableSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> const &transforms,
     Eng::sparse_array<Com::Drawable> &drawables,
