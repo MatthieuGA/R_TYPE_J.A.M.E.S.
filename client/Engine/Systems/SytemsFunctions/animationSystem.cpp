@@ -28,7 +28,7 @@ Eng::sparse_array<Com::AnimatedSprite> &anim_sprites,
 Eng::sparse_array<Com::Drawable> &drawables) {
     for (auto &&[i, anim_sprite, drawable] :
     make_indexed_zipper(anim_sprites, drawables)) {
-        if (!drawable.isLoaded) continue;
+        if (!drawable.isLoaded || !anim_sprite.animated) continue;
         anim_sprite.elapsedTime += dt;
 
         if (anim_sprite.elapsedTime >= anim_sprite.frameDuration)

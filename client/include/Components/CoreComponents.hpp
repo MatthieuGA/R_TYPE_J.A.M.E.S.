@@ -35,9 +35,9 @@ struct Drawable {
     sf::Texture texture;
     bool isLoaded = false;
 
-    explicit Drawable(const std::string& spritePath, int zIndex = 0,
+    explicit Drawable(const std::string& spritePath, int z_index = 0,
         float opacity = 1.0f)
-        : spritePath("Assets/Images/" + spritePath), z_index(zIndex), texture(),
+        : spritePath("Assets/Images/" + spritePath), z_index(z_index), texture(),
         opacity(opacity), sprite(texture), isLoaded(false) {}
 };
 
@@ -57,6 +57,7 @@ struct Shader {
 };
 
 struct AnimatedSprite {
+    bool animated = true;
     int frameWidth;
     int frameHeight;
     int totalFrames;
@@ -64,6 +65,16 @@ struct AnimatedSprite {
     float frameDuration = 0.1f;
     bool loop = true;
     float elapsedTime = 0.0f;
+
+    AnimatedSprite(int frameWidth, int frameHeight, float frameDuration,
+        bool loop = true)
+        : frameWidth(frameWidth), frameHeight(frameHeight),
+        totalFrames(0), currentFrame(0), frameDuration(frameDuration),
+        loop(loop), elapsedTime(0.0f), animated(true) {}
+    AnimatedSprite(int frameWidth, int frameHeight, int current_frame)
+        : frameWidth(frameWidth), frameHeight(frameHeight),
+        totalFrames(0), currentFrame(current_frame), frameDuration(0.1f),
+        loop(true), elapsedTime(0.0f), animated(false) {}
 };
 
 struct Velocity {

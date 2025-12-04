@@ -9,13 +9,13 @@ Eng::sparse_array<Com::Inputs> &inputs) {
         input.vertical = 0.0f;
         input.shoot = false;
 
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
             input.horizontal -= 1.0f;
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
             input.horizontal += 1.0f;
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z))
             input.vertical -= 1.0f;
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
             input.vertical += 1.0f;
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
             input.shoot = true;

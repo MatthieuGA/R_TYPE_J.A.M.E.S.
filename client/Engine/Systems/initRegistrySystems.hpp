@@ -48,9 +48,15 @@ void CollisionDetectionSystem(Eng::registry &reg,
 
 void InitializeShaderSystem(Eng::registry &reg,
     Eng::sparse_array<Com::Shader> &shaders);
+
 void InitializeDrawableAnimatedSystem(Eng::registry &reg,
     Eng::sparse_array<Com::Transform> const &transforms,
     Eng::sparse_array<Com::Drawable> &drawables,
     Eng::sparse_array<Com::AnimatedSprite> const &animated_sprites);
+
+void ControllableSystem(Eng::registry &reg,
+    Eng::sparse_array<Com::Inputs> &inputs,
+    Eng::sparse_array<Com::Controllable> const &controllables,
+    Eng::sparse_array<Com::Velocity> &velocities);
 
 }  // namespace Rtype::Client

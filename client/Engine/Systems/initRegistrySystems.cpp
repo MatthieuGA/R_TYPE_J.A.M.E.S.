@@ -69,9 +69,16 @@ void init_movement_system(Rtype::Client::GameWorld &game_world) {
         });
 }
 
+void init_controls_system(Rtype::Client::GameWorld &game_world) {
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::Inputs>>(InputSystem);
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::Inputs>,
+        Eng::sparse_array<Com::Controllable>,
+        Eng::sparse_array<Com::Velocity>>(ControllableSystem);
+}
+
 void InitRegistrySystems(Rtype::Client::GameWorld &game_world) {
     // Set up systems
-    game_world.registry_.AddSystem<Eng::sparse_array<Com::Inputs>>(InputSystem);
+    init_controls_system(game_world);
     init_movement_system(game_world);
     init_render_systems(game_world);
 }

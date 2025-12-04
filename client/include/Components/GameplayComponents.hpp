@@ -34,7 +34,7 @@ struct StatsGame {
 };
 
 struct ParrallaxLayer {
-    float scrollSpeed;
+    float scroll_speed;
 };
 
 }  // namespace Rtype::Client::Component

@@ -10,7 +10,7 @@ void ParallaxSystem(Eng::registry &reg, const GameWorld &game_world,
         if (!drawable.isLoaded) continue;
         float dt = game_world.last_delta_;
         // Update position based on parallax scroll speed
-        tranform.x += parallax_layers.scrollSpeed * dt;
+        tranform.x += parallax_layers.scroll_speed * dt;
         if (tranform.x <= -(drawable.texture.getSize().x * tranform.scale)) {
             tranform.x = game_world.window_size_.x - 2.f;
         }

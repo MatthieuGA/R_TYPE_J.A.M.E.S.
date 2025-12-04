@@ -10,7 +10,7 @@ namespace Rtype::Client {
 
 struct background_info {
     std::string path;
-    float scrollSpeed;
+    float scroll_speed;
     float initialY;
     int z_index;
     bool isWave = false;
@@ -40,10 +40,10 @@ float initial_x) {
     reg.AddComponent<Component::Drawable>(background_entity,
         Component::Drawable{info.path, info.z_index, info.opacity});
     reg.AddComponent<Component::ParrallaxLayer>(background_entity,
-        Component::ParrallaxLayer{info.scrollSpeed});
+        Component::ParrallaxLayer{info.scroll_speed});
 }
 
-void init_game_level(registry &reg) {
+void init_backgrounds(Engine::registry &reg) {
     std::vector<background_info> background_list = {
         {"Background/Level1/1.png", -5.f, 0.f, -10, true, 1.f, .0005f, 0.2f},
         {"Background/Level1/2.png", -15.f, 0.f, -9, true, 6.f, .007f, 1.2f},
@@ -62,6 +62,29 @@ void init_game_level(registry &reg) {
         for (int i = 0; i < 2; i++)
             add_background_entity(reg, background, i * 1920.0f);
     }
+}
+
+void init_player_level(Engine::registry &reg) {
+    auto player_entity = reg.SpawnEntity();
+    reg.AddComponent<Component::Transform>(player_entity,
+        Component::Transform{100.0f, 300.0f, 0.0f, 4.0f,
+        Component::Transform::CENTER});
+    reg.AddComponent<Component::Drawable>(player_entity,
+        Component::Drawable{"OriginalRtype/r-typesheet42.gif"});
+    reg.AddComponent<Component::AnimatedSprite>(player_entity,
+        Component::AnimatedSprite(21, 21, 2));
+    reg.AddComponent<Component::Controllable>(player_entity,
+        Component::Controllable{true});
+    reg.AddComponent<Component::Inputs>(player_entity, Component::Inputs{});
+    reg.AddComponent<Component::Velocity>(player_entity,
+        Component::Velocity{0.0f, 0.0f, 0.0f, 0.0f});
+    reg.AddComponent<Component::PlayerTag>(player_entity,
+        Component::PlayerTag{});
+}
+
+void init_game_level(registry &reg) {
+    init_backgrounds(reg);
+    init_player_level(reg);
 }
 
 }  // namespace Rtype::Client
