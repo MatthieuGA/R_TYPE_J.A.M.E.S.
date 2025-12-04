@@ -1,5 +1,5 @@
-#include <SFML/Graphics.hpp>
 #include <vector>
+#include <SFML/Graphics.hpp>
 #include "Engine/Systems/initRegistrySystems.hpp"
 
 namespace Rtype::Client {

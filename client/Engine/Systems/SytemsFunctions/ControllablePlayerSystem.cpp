@@ -1,6 +1,6 @@
-#include <SFML/Graphics.hpp>
 #include <algorithm>
 #include <cmath>
+#include <SFML/Graphics.hpp>
 #include "Engine/Systems/initRegistrySystems.hpp"
 
 namespace Rtype::Client {

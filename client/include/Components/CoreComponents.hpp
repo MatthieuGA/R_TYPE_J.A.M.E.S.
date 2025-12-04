@@ -3,6 +3,7 @@
 #include <map>
 #include <memory>
 #include <vector>
+#include <utility>
 #include <SFML/Graphics.hpp>
 
 namespace Rtype::Client::Component {
@@ -37,8 +38,8 @@ struct Drawable {
 
     explicit Drawable(const std::string& spritePath, int z_index = 0,
         float opacity = 1.0f)
-        : spritePath("Assets/Images/" + spritePath), z_index(z_index), texture(),
-        opacity(opacity), sprite(texture), isLoaded(false) {}
+        : spritePath("Assets/Images/" + spritePath), z_index(z_index),
+        texture(), opacity(opacity), sprite(texture), isLoaded(false) {}
 
     // Non-copyable to avoid accidental sprite/texture pointer mismatches
     Drawable(Drawable const &) = delete;
