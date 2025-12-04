@@ -1,8 +1,9 @@
 #pragma once
-#include "sparse_array.hpp"
 #include <algorithm>
 #include <cstddef>
 #include <stdexcept>
+
+#include "sparse_array.hpp"
 
 namespace Engine {
 
@@ -12,12 +13,12 @@ template <typename Component>
 sparse_array<Component>::sparse_array() : data_() {}
 
 template <typename Component>
-sparse_array<Component>::sparse_array(sparse_array const &other) :
-data_(other.data_) {}
+sparse_array<Component>::sparse_array(sparse_array const &other)
+    : data_(other.data_) {}
 
 template <typename Component>
-sparse_array<Component>::sparse_array(sparse_array &&other) noexcept :
-data_(std::move(other.data_)) {}
+sparse_array<Component>::sparse_array(sparse_array &&other) noexcept
+    : data_(std::move(other.data_)) {}
 
 template <typename Component>
 sparse_array<Component>::~sparse_array() = default;
@@ -26,16 +27,16 @@ sparse_array<Component>::~sparse_array() = default;
 #pragma region Assignment Operators
 
 template <typename Component>
-sparse_array<Component> &sparse_array<Component>::
-operator=(sparse_array const &other) {
+sparse_array<Component> &sparse_array<Component>::operator=(
+    sparse_array const &other) {
     if (this != &other)
         data_ = other.data_;
     return *this;
 }
 
 template <typename Component>
-sparse_array<Component> &sparse_array<Component>::
-operator=(sparse_array &&other) noexcept {
+sparse_array<Component> &sparse_array<Component>::operator=(
+    sparse_array &&other) noexcept {
     if (this != &other)
         data_ = std::move(other.data_);
     return *this;
@@ -45,14 +46,14 @@ operator=(sparse_array &&other) noexcept {
 #pragma region Element Access
 
 template <typename Component>
-typename sparse_array<Component>::reference_type sparse_array<Component>::
-operator[](size_t idx) {
+typename sparse_array<Component>::reference_type
+sparse_array<Component>::operator[](size_t idx) {
     return data_[idx];
 }
 
 template <typename Component>
-typename sparse_array<Component>::const_reference_type sparse_array<Component>::
-operator[](size_t idx) const {
+typename sparse_array<Component>::const_reference_type
+sparse_array<Component>::operator[](size_t idx) const {
     return data_[idx];
 }
 
@@ -60,38 +61,36 @@ operator[](size_t idx) const {
 #pragma region Iterators
 
 template <typename Component>
-typename sparse_array<Component>::iterator sparse_array<Component>::
-begin() {
+typename sparse_array<Component>::iterator sparse_array<Component>::begin() {
     return data_.begin();
 }
 
 template <typename Component>
-typename sparse_array<Component>::const_iterator sparse_array<Component>::
-begin() const {
+typename sparse_array<Component>::const_iterator
+sparse_array<Component>::begin() const {
     return data_.begin();
 }
 
 template <typename Component>
-typename sparse_array<Component>::const_iterator sparse_array<Component>::
-cbegin() const {
+typename sparse_array<Component>::const_iterator
+sparse_array<Component>::cbegin() const {
     return data_.cbegin();
 }
 
 template <typename Component>
-typename sparse_array<Component>::iterator sparse_array<Component>::
-end() {
+typename sparse_array<Component>::iterator sparse_array<Component>::end() {
     return data_.end();
 }
 
 template <typename Component>
-typename sparse_array<Component>::const_iterator sparse_array<Component>::
-end() const {
+typename sparse_array<Component>::const_iterator sparse_array<Component>::end()
+    const {
     return data_.end();
 }
 
 template <typename Component>
-typename sparse_array<Component>::const_iterator sparse_array<Component>::
-cend() const {
+typename sparse_array<Component>::const_iterator
+sparse_array<Component>::cend() const {
     return data_.cend();
 }
 
@@ -99,8 +98,8 @@ cend() const {
 #pragma region Capacity
 
 template <typename Component>
-typename sparse_array<Component>::size_type sparse_array<Component>::
-size() const {
+typename sparse_array<Component>::size_type sparse_array<Component>::size()
+    const {
     return data_.size();
 }
 
@@ -113,21 +112,21 @@ bool sparse_array<Component>::has(size_type idx) const {
 #pragma region Modifiers
 
 template <typename Component>
-typename sparse_array<Component>::reference_type sparse_array<Component>::
-insert_at(size_type pos, Component &&comp) {
+typename sparse_array<Component>::reference_type
+sparse_array<Component>::insert_at(size_type pos, Component &&comp) {
     return emplace_at(pos, std::move(comp));
 }
 
 template <typename Component>
-typename sparse_array<Component>::reference_type sparse_array<Component>::
-insert_at(size_type pos, Component const &comp) {
+typename sparse_array<Component>::reference_type
+sparse_array<Component>::insert_at(size_type pos, Component const &comp) {
     return emplace_at(pos, comp);
 }
 
 template <typename Component>
 template <class... Params>
-typename sparse_array<Component>::reference_type sparse_array<Component>::
-emplace_at(size_type pos, Params &&... params) {
+typename sparse_array<Component>::reference_type
+sparse_array<Component>::emplace_at(size_type pos, Params &&...params) {
     if (pos >= data_.size()) {
         data_.resize(pos + 1);
     }
@@ -143,8 +142,8 @@ void sparse_array<Component>::erase(size_type pos) {
 }
 
 template <typename Component>
-typename sparse_array<Component>::size_type sparse_array<Component>::
-get_index(value_type const &value) const {
+typename sparse_array<Component>::size_type sparse_array<Component>::get_index(
+    value_type const &value) const {
     const auto *ptr = &value;
     const auto *base = data_.data();
 

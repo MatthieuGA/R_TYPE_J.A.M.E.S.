@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
 
+#include "../client/Engine/Events/EngineEvent.hpp"
 #include "../client/Engine/initRegistrySystems.hpp"
 #include "../client/include/Components/CoreComponents.hpp"
 #include "../client/include/Components/GameplayComponents.hpp"
-#include "../client/Engine/Events/EngineEvent.hpp"
 
 namespace Com = Rtype::Client::Component;
 namespace Eng = Engine;
@@ -79,7 +79,7 @@ TEST(Systems, AnimationSystemAdvancesFrame) {
 
     EXPECT_EQ(anim->currentFrame, 1);
     sf::IntRect rect = drawable->sprite.getTextureRect();
-    EXPECT_EQ(rect.left, anim->frameWidth); // second frame
+    EXPECT_EQ(rect.left, anim->frameWidth);  // second frame
     EXPECT_EQ(rect.width, anim->frameWidth);
     EXPECT_EQ(rect.height, anim->frameHeight);
 }

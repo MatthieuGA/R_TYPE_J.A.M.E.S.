@@ -1,17 +1,21 @@
 #include <gtest/gtest.h>
-#include "include/sparse_array.hpp"
-#include "include/zipper.hpp"
-#include "include/indexed_zipper.hpp"
+
+#include <cmath>
 #include <string>
 #include <vector>
-#include <cmath>
+
+#include "include/indexed_zipper.hpp"
+#include "include/sparse_array.hpp"
+#include "include/zipper.hpp"
 
 // Test components
 struct Position {
     float x;
     float y;
+
     explicit Position(float x = 0.0f, float y = 0.0f) : x(x), y(y) {}
-    bool operator==(const Position& other) const {
+
+    bool operator==(const Position &other) const {
         return x == other.x && y == other.y;
     }
 };
@@ -19,16 +23,20 @@ struct Position {
 struct Velocity {
     float dx;
     float dy;
+
     explicit Velocity(float dx = 0.0f, float dy = 0.0f) : dx(dx), dy(dy) {}
-    bool operator==(const Velocity& other) const {
+
+    bool operator==(const Velocity &other) const {
         return dx == other.dx && dy == other.dy;
     }
 };
 
 struct Health {
     int hp;
+
     explicit Health(int hp = 100) : hp(hp) {}
-    bool operator==(const Health& other) const {
+
+    bool operator==(const Health &other) const {
         return hp == other.hp;
     }
 };
@@ -174,10 +182,10 @@ TEST(ZipperTest, MultipleElements) {
     Engine::sparse_array<Velocity> velocities;
 
     for (int i = 0; i < 5; ++i) {
-        positions.insert_at(i, Position{static_cast<float>(i),
-                                        static_cast<float>(i * 2)});
-        velocities.insert_at(i, Velocity{static_cast<float>(i * 3),
-                                         static_cast<float>(i * 4)});
+        positions.insert_at(
+            i, Position{static_cast<float>(i), static_cast<float>(i * 2)});
+        velocities.insert_at(
+            i, Velocity{static_cast<float>(i * 3), static_cast<float>(i * 4)});
     }
 
     auto zipper = Engine::MakeZipper(positions, velocities);
@@ -448,7 +456,7 @@ TEST(IndexedZipperTest, ModifyUsingIndex) {
 
     // Scale velocity based on index
     for (auto [idx, pos, vel] :
-         Engine::make_indexed_zipper(positions, velocities)) {
+        Engine::make_indexed_zipper(positions, velocities)) {
         vel.dx *= static_cast<float>(idx + 1);
         vel.dy *= static_cast<float>(idx + 1);
     }
@@ -498,13 +506,10 @@ TEST(ZipperIntegrationTest, MovementSystem) {
     Engine::sparse_array<Position> positions;
     Engine::sparse_array<Velocity> velocities;
 
-
     for (int i = 0; i < 5; ++i) {
         positions.insert_at(i, Position{0.0f, 0.0f});
-        velocities.insert_at(i, Velocity{
-            static_cast<float>(i),
-            static_cast<float>(i * 2)
-        });
+        velocities.insert_at(
+            i, Velocity{static_cast<float>(i), static_cast<float>(i * 2)});
     }
 
     for (auto [pos, vel] : Engine::MakeZipper(positions, velocities)) {
@@ -528,12 +533,12 @@ TEST(ZipperIntegrationTest, DamageSystem) {
     positions.insert_at(1, Position{15.0f, 15.0f});  // Out of range
     healths.insert_at(1, Health{100});
 
-    positions.insert_at(2, Position{3.0f, 3.0f});   // In range
+    positions.insert_at(2, Position{3.0f, 3.0f});  // In range
     healths.insert_at(2, Health{75});
 
     // Damage system: entities within 10 units of origin take damage
     for (auto [idx, pos, hp] :
-         Engine::make_indexed_zipper(positions, healths)) {
+        Engine::make_indexed_zipper(positions, healths)) {
         float distance = std::sqrt(pos.x * pos.x + pos.y * pos.y);
         if (distance < 10.0f) {
             hp.hp -= 10;
@@ -559,10 +564,10 @@ TEST(ZipperIntegrationTest, LoggingSystem) {
 
     // Logging system
     for (auto [idx, pos, vel] :
-         Engine::make_indexed_zipper(positions, velocities)) {
-        std::string log = "Entity " + std::to_string(idx) +
-                         ": pos=(" + std::to_string(pos.x) + "," +
-                         std::to_string(pos.y) + ")";
+        Engine::make_indexed_zipper(positions, velocities)) {
+        std::string log = "Entity " + std::to_string(idx) + ": pos=(" +
+                          std::to_string(pos.x) + "," + std::to_string(pos.y) +
+                          ")";
         logs.push_back(log);
     }
 
@@ -594,7 +599,7 @@ TEST(ZipperIntegrationTest, ComplexFilteringSystem) {
 
     int processed = 0;
     for (auto [idx, pos, vel, hp] :
-         Engine::make_indexed_zipper(positions, velocities, healths)) {
+        Engine::make_indexed_zipper(positions, velocities, healths)) {
         // Only entities with all three components - zipper already filtered
         processed++;
     }
@@ -611,10 +616,8 @@ TEST(ZipperIntegrationTest, StressTestManyEntities) {
     // Create entities with both components
     for (size_t i = 0; i < num_entities; ++i) {
         if (i % 2 == 0) {  // Only even indices have both
-            positions.insert_at(i, Position{
-                static_cast<float>(i),
-                static_cast<float>(i)
-            });
+            positions.insert_at(
+                i, Position{static_cast<float>(i), static_cast<float>(i)});
             velocities.insert_at(i, Velocity{1.0f, 1.0f});
         }
     }

@@ -1,15 +1,18 @@
 #include <gtest/gtest.h>
-#include <boost/asio.hpp>
-#include <thread>
+
 #include <chrono>
-#include "server/Server.hpp"
+#include <thread>
+
+#include <boost/asio.hpp>
+
 #include "server/Components.hpp"
 #include "server/Config.hpp"
+#include "server/Server.hpp"
 
 // Helper function to create a config for testing
-server::Config& getTestConfig() {
-    static const char* argv[] = {"test_server"};
-    return server::Config::fromCommandLine(1, const_cast<char**>(argv));
+server::Config &getTestConfig() {
+    static const char *argv[] = {"test_server"};
+    return server::Config::fromCommandLine(1, const_cast<char **>(argv));
 }
 
 // ============================================================================
@@ -18,16 +21,14 @@ server::Config& getTestConfig() {
 
 TEST(ServerTest, ServerConstruction) {
     boost::asio::io_context io;
-    server::Config& config = getTestConfig();
+    server::Config &config = getTestConfig();
 
-    EXPECT_NO_THROW({
-        server::Server server(config, io);
-    });
+    EXPECT_NO_THROW({ server::Server server(config, io); });
 }
 
 TEST(ServerTest, ServerInitialize) {
     boost::asio::io_context io;
-    server::Config& config = getTestConfig();
+    server::Config &config = getTestConfig();
     server::Server server(config, io);
 
     EXPECT_NO_THROW(server.initialize());
@@ -35,7 +36,7 @@ TEST(ServerTest, ServerInitialize) {
 
 TEST(ServerTest, GetRegistryAfterInit) {
     boost::asio::io_context io;
-    server::Config& config = getTestConfig();
+    server::Config &config = getTestConfig();
     server::Server server(config, io);
 
     server.initialize();
@@ -54,7 +55,7 @@ TEST(ServerTest, GetRegistryAfterInit) {
 
 TEST(ServerTest, ComponentsRegisteredAfterInit) {
     boost::asio::io_context io;
-    server::Config& config = getTestConfig();
+    server::Config &config = getTestConfig();
     server::Server server(config, io);
 
     server.initialize();
@@ -77,15 +78,15 @@ TEST(ServerTest, ComponentsRegisteredAfterInit) {
 
 TEST(ServerTest, SpawnEntityWithPosition) {
     boost::asio::io_context io;
-    server::Config& config = getTestConfig();
+    server::Config &config = getTestConfig();
     server::Server server(config, io);
     server.initialize();
 
     Engine::registry &reg = server.getRegistry();
     auto entity = reg.spawn_entity();
 
-    auto &pos = reg.add_component(entity,
-                                   server::Component::Position{100.0f, 200.0f});
+    auto &pos =
+        reg.add_component(entity, server::Component::Position{100.0f, 200.0f});
 
     EXPECT_TRUE(pos.has_value());
     EXPECT_EQ(pos->x, 100.0f);
@@ -94,7 +95,7 @@ TEST(ServerTest, SpawnEntityWithPosition) {
 
 TEST(ServerTest, SpawnPlayerEntity) {
     boost::asio::io_context io;
-    server::Config& config = getTestConfig();
+    server::Config &config = getTestConfig();
     server::Server server(config, io);
     server.initialize();
 
@@ -118,7 +119,7 @@ TEST(ServerTest, SpawnPlayerEntity) {
 
 TEST(ServerTest, SpawnEnemyEntity) {
     boost::asio::io_context io;
-    server::Config& config = getTestConfig();
+    server::Config &config = getTestConfig();
     server::Server server(config, io);
     server.initialize();
 
@@ -141,7 +142,7 @@ TEST(ServerTest, SpawnEnemyEntity) {
 
 TEST(ServerTest, MultipleEntitiesWithDifferentComponents) {
     boost::asio::io_context io;
-    server::Config& config = getTestConfig();
+    server::Config &config = getTestConfig();
     server::Server server(config, io);
     server.initialize();
 
@@ -185,7 +186,7 @@ TEST(ServerTest, MultipleEntitiesWithDifferentComponents) {
 
 TEST(ServerTest, MovementSystemUpdatesPosition) {
     boost::asio::io_context io;
-    server::Config& config = getTestConfig();
+    server::Config &config = getTestConfig();
     server::Server server(config, io);
     server.initialize();
 
@@ -215,7 +216,7 @@ TEST(ServerTest, MovementSystemUpdatesPosition) {
 
 TEST(ServerTest, MovementSystemMultipleEntities) {
     boost::asio::io_context io;
-    server::Config& config = getTestConfig();
+    server::Config &config = getTestConfig();
     server::Server server(config, io);
     server.initialize();
 
@@ -249,7 +250,7 @@ TEST(ServerTest, MovementSystemMultipleEntities) {
 
 TEST(ServerTest, MovementSystemIgnoresEntitiesWithoutVelocity) {
     boost::asio::io_context io;
-    server::Config& config = getTestConfig();
+    server::Config &config = getTestConfig();
     server::Server server(config, io);
     server.initialize();
 
@@ -283,7 +284,7 @@ TEST(ServerTest, MovementSystemIgnoresEntitiesWithoutVelocity) {
 
 TEST(ServerTest, HealthComponentInitialization) {
     boost::asio::io_context io;
-    server::Config& config = getTestConfig();
+    server::Config &config = getTestConfig();
     server::Server server(config, io);
     server.initialize();
 
@@ -300,7 +301,7 @@ TEST(ServerTest, HealthComponentInitialization) {
 
 TEST(ServerTest, HealthComponentModification) {
     boost::asio::io_context io;
-    server::Config& config = getTestConfig();
+    server::Config &config = getTestConfig();
     server::Server server(config, io);
     server.initialize();
 
@@ -330,7 +331,7 @@ TEST(ServerTest, HealthComponentModification) {
 
 TEST(ServerTest, NetworkIdComponent) {
     boost::asio::io_context io;
-    server::Config& config = getTestConfig();
+    server::Config &config = getTestConfig();
     server::Server server(config, io);
     server.initialize();
 
@@ -357,7 +358,7 @@ TEST(ServerTest, NetworkIdComponent) {
 
 TEST(ServerTest, SimpleGameScenario) {
     boost::asio::io_context io;
-    server::Config& config = getTestConfig();
+    server::Config &config = getTestConfig();
     server::Server server(config, io);
     server.initialize();
 
@@ -395,7 +396,7 @@ TEST(ServerTest, SimpleGameScenario) {
 
 TEST(ServerTest, EntityCleanup) {
     boost::asio::io_context io;
-    server::Config& config = getTestConfig();
+    server::Config &config = getTestConfig();
     server::Server server(config, io);
     server.initialize();
 
@@ -405,8 +406,8 @@ TEST(ServerTest, EntityCleanup) {
     std::vector<Engine::entity> entities;
     for (int i = 0; i < 5; i++) {
         auto e = reg.spawn_entity();
-        reg.add_component(e, server::Component::Position{
-            static_cast<float>(i * 10.0f), 0.0f});
+        reg.add_component(e,
+            server::Component::Position{static_cast<float>(i * 10.0f), 0.0f});
         entities.push_back(e);
     }
 
@@ -435,7 +436,7 @@ TEST(ServerTest, EntityCleanup) {
 
 TEST(ServerTest, StressManyEntities) {
     boost::asio::io_context io;
-    server::Config& config = getTestConfig();
+    server::Config &config = getTestConfig();
     server::Server server(config, io);
     server.initialize();
 
@@ -445,8 +446,8 @@ TEST(ServerTest, StressManyEntities) {
 
     for (int i = 0; i < 100; i++) {
         auto e = reg.spawn_entity();
-        reg.add_component(e, server::Component::Position{
-            static_cast<float>(i), static_cast<float>(i)});
+        reg.add_component(e, server::Component::Position{static_cast<float>(i),
+                                 static_cast<float>(i)});
         reg.add_component(e, server::Component::Velocity{1.0f, 1.0f});
         entities.push_back(e);
     }
@@ -456,16 +457,16 @@ TEST(ServerTest, StressManyEntities) {
     server.update();
 
     for (int i = 0; i < 100; i++) {
-        EXPECT_EQ(positions[entities[i].getId()]->x,
-                  static_cast<float>(i + 1));
-        EXPECT_EQ(positions[entities[i].getId()]->y,
-                  static_cast<float>(i + 1));
+        EXPECT_EQ(
+            positions[entities[i].getId()]->x, static_cast<float>(i + 1));
+        EXPECT_EQ(
+            positions[entities[i].getId()]->y, static_cast<float>(i + 1));
     }
 }
 
 TEST(ServerTest, StressMultipleUpdates) {
     boost::asio::io_context io;
-    server::Config& config = getTestConfig();
+    server::Config &config = getTestConfig();
     server::Server server(config, io);
     server.initialize();
 

@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+
 #include <SFML/Graphics.hpp>
 
 namespace Rtype::Client::Component {
@@ -8,6 +9,7 @@ struct Transform {
     float y;
     float rotationDegrees;
     float scale;
+
     enum OriginPoint {
         TOP_LEFT,
         TOP_CENTER,
@@ -19,6 +21,7 @@ struct Transform {
         BOTTOM_CENTER,
         BOTTOM_RIGHT
     } origin = CENTER;
+
     sf::Vector2f customOrigin = sf::Vector2f(0.0f, 0.0f);
 };
 
@@ -29,9 +32,12 @@ struct Drawable {
     sf::Texture texture;
     bool isLoaded = false;
 
-    explicit Drawable(const std::string& spritePath, int zIndex = 0)
-        : spritePath("Assets/" + spritePath), z_index(zIndex), texture(),
-        sprite(texture), isLoaded(false) {}
+    explicit Drawable(const std::string &spritePath, int zIndex = 0)
+        : spritePath("Assets/" + spritePath),
+          z_index(zIndex),
+          texture(),
+          sprite(texture),
+          isLoaded(false) {}
 };
 
 struct AnimatedSprite {

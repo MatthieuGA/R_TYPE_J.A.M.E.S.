@@ -1,19 +1,19 @@
 #include <algorithm>
 
-#include "Engine/initRegistrySystems.hpp"
 #include "Engine/Events/EngineEvent.hpp"
+#include "Engine/initRegistrySystems.hpp"
 #include "Engine/originTool.hpp"
 
 namespace Rtype::Client {
 bool IsCollidingFromOffset(const Com::Transform &trans_a,
-const Com::HitBox &hb_a, const Com::Transform &trans_b, const Com::HitBox &hb_b,
-sf::Vector2f off_a, sf::Vector2f off_b) {
+    const Com::HitBox &hb_a, const Com::Transform &trans_b,
+    const Com::HitBox &hb_b, sf::Vector2f off_a, sf::Vector2f off_b) {
     sf::Vector2f scal_off_a = off_a * trans_a.scale;
     sf::Vector2f scal_off_b = off_b * trans_b.scale;
-    sf::Vector2f scal_hb_a = sf::Vector2f(hb_a.width * trans_a.scale,
-        hb_a.height * trans_a.scale);
-    sf::Vector2f scal_hb_b = sf::Vector2f(hb_b.width * trans_b.scale,
-        hb_b.height * trans_b.scale);
+    sf::Vector2f scal_hb_a =
+        sf::Vector2f(hb_a.width * trans_a.scale, hb_a.height * trans_a.scale);
+    sf::Vector2f scal_hb_b =
+        sf::Vector2f(hb_b.width * trans_b.scale, hb_b.height * trans_b.scale);
 
     if (trans_a.x + scal_off_a.x < trans_b.x + scal_hb_b.x + scal_off_b.x &&
         trans_a.x + scal_hb_a.x + scal_off_a.x > trans_b.x + scal_off_b.x &&
@@ -25,42 +25,44 @@ sf::Vector2f off_a, sf::Vector2f off_b) {
 }
 
 bool IsColliding(const Com::Transform &trans_a, const Com::HitBox &hb_a,
-const Com::Transform &trans_b, const Com::HitBox &hb_b,
-Rtype::Client::GameWorld &game_world) {
-    sf::Vector2f off_a = GetOffsetFromTransform(trans_a,
-        {hb_a.width, hb_a.height});
-    sf::Vector2f off_b = GetOffsetFromTransform(trans_b,
-        {hb_b.width, hb_b.height});
+    const Com::Transform &trans_b, const Com::HitBox &hb_b,
+    Rtype::Client::GameWorld &game_world) {
+    sf::Vector2f off_a =
+        GetOffsetFromTransform(trans_a, {hb_a.width, hb_a.height});
+    sf::Vector2f off_b =
+        GetOffsetFromTransform(trans_b, {hb_b.width, hb_b.height});
 
     return IsCollidingFromOffset(trans_a, hb_a, trans_b, hb_b, off_a, off_b);
 }
 
-void ComputeCollision(Eng::sparse_array<Com::Solid> const &solids, int i, int j,
-    Com::Transform &trans_a, const Com::HitBox &hb_a,
+void ComputeCollision(Eng::sparse_array<Com::Solid> const &solids, int i,
+    int j, Com::Transform &trans_a, const Com::HitBox &hb_a,
     Com::Transform &trans_b, const Com::HitBox &hb_b) {
     // If none are solid, nothing to resolve here
     bool aSolid = solids.has(i) ? solids[i]->isSolid : false;
     bool bSolid = solids.has(j) ? solids[j]->isSolid : false;
-    if (!aSolid && !bSolid) return;
+    if (!aSolid && !bSolid)
+        return;
 
     // Check stuck/locked flags: if an entity is stuck, it must not be moved
     bool aStuck = solids.has(i) ? solids[i]->isLocked : false;
     bool bStuck = solids.has(j) ? solids[j]->isLocked : false;
     // If both are stuck, nothing to resolve
-    if (aStuck && bStuck) return;
+    if (aStuck && bStuck)
+        return;
 
     // Compute offsets and scaled hitboxes (same as is_colliding)
-    sf::Vector2f off_a = GetOffsetFromTransform(trans_a,
-        {hb_a.width, hb_a.height});
-    sf::Vector2f off_b = GetOffsetFromTransform(trans_b,
-        {hb_b.width, hb_b.height});
+    sf::Vector2f off_a =
+        GetOffsetFromTransform(trans_a, {hb_a.width, hb_a.height});
+    sf::Vector2f off_b =
+        GetOffsetFromTransform(trans_b, {hb_b.width, hb_b.height});
 
     sf::Vector2f scal_off_a = off_a * trans_a.scale;
     sf::Vector2f scal_off_b = off_b * trans_b.scale;
-    sf::Vector2f scaledA = sf::Vector2f(hb_a.width * trans_a.scale,
-        hb_a.height * trans_a.scale);
-    sf::Vector2f scaledB = sf::Vector2f(hb_b.width * trans_b.scale,
-        hb_b.height * trans_b.scale);
+    sf::Vector2f scaledA =
+        sf::Vector2f(hb_a.width * trans_a.scale, hb_a.height * trans_a.scale);
+    sf::Vector2f scaledB =
+        sf::Vector2f(hb_b.width * trans_b.scale, hb_b.height * trans_b.scale);
 
     float a_min_x = trans_a.x + scal_off_a.x;
     float a_max_x = a_min_x + scaledA.x;
@@ -75,7 +77,8 @@ void ComputeCollision(Eng::sparse_array<Com::Solid> const &solids, int i, int j,
     float overlap_x = std::min(a_max_x, b_max_x) - std::max(a_min_x, b_min_x);
     float overlap_y = std::min(a_max_y, b_max_y) - std::max(a_min_y, b_min_y);
 
-    if (overlap_x <= 0 || overlap_y <= 0) return;
+    if (overlap_x <= 0 || overlap_y <= 0)
+        return;
 
     // Separate along smallest penetration axis
     if (overlap_x < overlap_y) {
@@ -110,18 +113,20 @@ void ComputeCollision(Eng::sparse_array<Com::Solid> const &solids, int i, int j,
 }
 
 void CollisionDetectionSystem(Eng::registry &reg,
-Rtype::Client::GameWorld &game_world,
-Eng::sparse_array<Com::Transform> &transforms,
-Eng::sparse_array<Com::HitBox> const &hitBoxes,
-Eng::sparse_array<Com::Solid> const &solids) {
+    Rtype::Client::GameWorld &game_world,
+    Eng::sparse_array<Com::Transform> &transforms,
+    Eng::sparse_array<Com::HitBox> const &hitBoxes,
+    Eng::sparse_array<Com::Solid> const &solids) {
     // Placeholder for collision detection logic
     for (auto &&[i, trans_a, hb_a] :
         make_indexed_zipper(transforms, hitBoxes)) {
         for (auto &&[j, trans_b, hb_b] :
             make_indexed_zipper(transforms, hitBoxes)) {
-            if (i >= j) continue;
+            if (i >= j)
+                continue;
             if (IsColliding(trans_a, hb_a, trans_b, hb_b, game_world)) {
-                game_world.event_bus_.Publish(CollisionEvent{i, j, game_world});
+                game_world.event_bus_.Publish(
+                    CollisionEvent{i, j, game_world});
                 ComputeCollision(solids, i, j, trans_a, hb_a, trans_b, hb_b);
             }
         }
