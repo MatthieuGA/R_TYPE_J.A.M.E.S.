@@ -9,7 +9,11 @@ void NextFrame(Com::AnimatedSprite &anim_sprite, Com::Drawable &drawable) {
         else
             anim_sprite.currentFrame = anim_sprite.totalFrames - 1;
     }
+    if (drawable.texture.getSize().x == 0 || anim_sprite.frameWidth == 0)
+        return;
     const int columns = drawable.texture.getSize().x / anim_sprite.frameWidth;
+    if (columns == 0)
+        return;
     const int left =
         (anim_sprite.currentFrame % columns) * anim_sprite.frameWidth;
     const int top =
