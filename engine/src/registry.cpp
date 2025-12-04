@@ -17,14 +17,16 @@ registry::entity_t registry::EntityFromIndex(std::size_t idx) {
 
 void registry::KillEntity(entity const &e) {
     for (auto &fn : erase_fns_) {
-        if (fn) fn(*this, e);
+        if (fn)
+            fn(*this, e);
     }
     dead_entities_.push_back(e.GetId());
 }
 
 void registry::RunSystems() {
     for (auto &s : systems_) {
-        if (s) s(*this);
+        if (s)
+            s(*this);
     }
 }
 }  // namespace Engine

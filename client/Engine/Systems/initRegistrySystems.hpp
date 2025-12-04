@@ -1,9 +1,10 @@
 #pragma once
 #include <SFML/Graphics.hpp>
-#include "include/registry.hpp"
-#include "include/indexed_zipper.hpp"
-#include "Engine/initRegistryComponent.hpp"
+
 #include "Engine/gameWorld.hpp"
+#include "Engine/initRegistryComponent.hpp"
+#include "include/indexed_zipper.hpp"
+#include "include/registry.hpp"
 
 namespace Eng = Engine;
 

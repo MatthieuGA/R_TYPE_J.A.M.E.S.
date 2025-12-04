@@ -27,8 +27,8 @@ endif()
 find_package(SFML COMPONENTS system window graphics network audio CONFIG REQUIRED)
 
 # Boost components for networking and lock-free data structures
-# boost-asio, boost-system, boost-lockfree from vcpkg
-find_package(Boost REQUIRED COMPONENTS system)
+# Use CONFIG mode with vcpkg (CMP0167 compliance)
+find_package(Boost REQUIRED COMPONENTS system CONFIG)
 find_package(Threads REQUIRED)
 
 # Provide compatibility aliases so code using SFML::Name targets works with

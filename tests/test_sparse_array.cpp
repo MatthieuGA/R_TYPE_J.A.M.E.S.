@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
-#include "include/sparse_array.hpp"
+
 #include <string>
+
+#include "include/sparse_array.hpp"
 
 // Test fixture for sparse_array tests
 template <typename T>
@@ -85,7 +87,7 @@ TYPED_TEST(SparseArrayTest, SelfAssignment) {
 TEST(SparseArrayIntTest, InsertAtRvalue) {
     Engine::sparse_array<int> array;
 
-    auto& ref = array.insert_at(0, 42);
+    auto &ref = array.insert_at(0, 42);
 
     EXPECT_EQ(ref, 42);
     EXPECT_EQ(array[0], 42);
@@ -96,7 +98,7 @@ TEST(SparseArrayIntTest, InsertAtLvalue) {
     Engine::sparse_array<int> array;
     int value = 99;
 
-    auto& ref = array.insert_at(0, value);
+    auto &ref = array.insert_at(0, value);
 
     EXPECT_EQ(ref, 99);
     EXPECT_EQ(array[0], 99);
@@ -116,7 +118,7 @@ TEST(SparseArrayIntTest, InsertAtNonSequential) {
 TEST(SparseArrayIntTest, EmplaceAt) {
     Engine::sparse_array<std::string> array;
 
-    auto& ref = array.emplace_at(0, "Hello");
+    auto &ref = array.emplace_at(0, "Hello");
 
     EXPECT_EQ(ref, "Hello");
     EXPECT_EQ(array[0], "Hello");
@@ -125,7 +127,7 @@ TEST(SparseArrayIntTest, EmplaceAt) {
 TEST(SparseArrayIntTest, EmplaceAtWithMultipleArgs) {
     Engine::sparse_array<std::string> array;
 
-    auto& ref = array.emplace_at(0, 5, 'A');  // "AAAAA"
+    auto &ref = array.emplace_at(0, 5, 'A');  // "AAAAA"
 
     EXPECT_EQ(ref, "AAAAA");
 }
@@ -219,7 +221,7 @@ TEST(SparseArrayIntTest, SubscriptOperatorConst) {
     Engine::sparse_array<int> array;
     array.insert_at(0, 42);
 
-    const auto& const_array = array;
+    const auto &const_array = array;
     EXPECT_EQ(const_array[0], 42);
 }
 
@@ -263,7 +265,7 @@ TEST(SparseArrayIntTest, ConstIterator) {
     Engine::sparse_array<int> array;
     array.insert_at(0, 42);
 
-    const auto& const_array = array;
+    const auto &const_array = array;
     auto it = const_array.begin();
 
     EXPECT_NE(it, const_array.end());
@@ -283,7 +285,7 @@ TEST(SparseArrayIntTest, CBeginCEnd) {
 
 TEST(SparseArrayIntTest, GetIndex) {
     Engine::sparse_array<int> array;
-    auto& ref = array.insert_at(5, 42);
+    auto &ref = array.insert_at(5, 42);
 
     auto idx = array.get_index(ref);
 
@@ -368,4 +370,3 @@ TEST(SparseArrayIntTest, MultipleInsertionsAndErasures) {
         }
     }
 }
-

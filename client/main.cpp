@@ -1,11 +1,17 @@
-#include <iostream>
 #include <cstdio>
+#include <iostream>
 #include <vector>
+
 #include <SFML/Graphics.hpp>
 
-#include "Game/InitGameLevel.hpp"
-#include "Game/initRegistry.hpp"
 #include "Engine/gameWorld.hpp"
+#include "Engine/initRegistryComponent.hpp"
+#include "Engine/Systems/initRegistrySystems.hpp"
+#include "include/registry.hpp"
+
+using Engine::registry;
+namespace RC = Rtype::Client;
+namespace Component = Rtype::Client::Component;
 
 int main() {
     try {

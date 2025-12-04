@@ -1,6 +1,8 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+
 #include "include/registry.hpp"
+
 #include "Engine/Events/Event.h"
 
 namespace Rtype::Client {

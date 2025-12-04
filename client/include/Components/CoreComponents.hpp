@@ -11,6 +11,7 @@ struct Transform {
     float y;
     float rotationDegrees;
     float scale;
+
     enum OriginPoint {
         TOP_LEFT,
         TOP_CENTER,
@@ -22,6 +23,7 @@ struct Transform {
         BOTTOM_CENTER,
         BOTTOM_RIGHT
     } origin = CENTER;
+
     sf::Vector2f customOrigin = sf::Vector2f(0.0f, 0.0f);
 };
 

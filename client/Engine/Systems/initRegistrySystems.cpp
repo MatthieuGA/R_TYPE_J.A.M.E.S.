@@ -54,18 +54,18 @@ void init_movement_system(Rtype::Client::GameWorld &game_world) {
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
         Eng::sparse_array<Com::PlayerTag>>(
         [&game_world](Eng::registry &r,
-                Eng::sparse_array<Com::Transform> &transforms,
-                Eng::sparse_array<Com::PlayerTag> const &playerTag) {
-        PlayfieldLimitSystem(r, game_world.window_, transforms, playerTag);
+            Eng::sparse_array<Com::Transform> &transforms,
+            Eng::sparse_array<Com::PlayerTag> const &playerTag) {
+            PlayfieldLimitSystem(r, game_world.window_, transforms, playerTag);
         });
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
-        Eng::sparse_array<Com::HitBox>,
-        Eng::sparse_array<Com::Solid>>(
-            [&game_world](Eng::registry &r,
-                Eng::sparse_array<Com::Transform> &transforms,
-                Eng::sparse_array<Com::HitBox> const &hitbox,
-                Eng::sparse_array<Com::Solid> const &solids) {
-        CollisionDetectionSystem(r, game_world, transforms, hitbox, solids);
+        Eng::sparse_array<Com::HitBox>, Eng::sparse_array<Com::Solid>>(
+        [&game_world](Eng::registry &r,
+            Eng::sparse_array<Com::Transform> &transforms,
+            Eng::sparse_array<Com::HitBox> const &hitbox,
+            Eng::sparse_array<Com::Solid> const &solids) {
+            CollisionDetectionSystem(
+                r, game_world, transforms, hitbox, solids);
         });
 }
 
