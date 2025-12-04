@@ -1,7 +1,8 @@
-#include <SFML/Graphics.hpp>
 #include <cstdio>
 #include <iostream>
 #include <vector>
+
+#include <SFML/Graphics.hpp>
 
 #include "Engine/gameWorld.hpp"
 #include "Game/initRegistry.hpp"
