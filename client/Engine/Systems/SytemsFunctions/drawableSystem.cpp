@@ -1,4 +1,6 @@
 #include <iostream>
+#include <vector>
+#include <algorithm>
 
 #include "Engine/Systems/initRegistrySystems.hpp"
 #include "Engine/originTool.hpp"
@@ -51,14 +53,15 @@ Eng::sparse_array<Com::Shader> &shaders) {
         if (shaders.has(i)) shaderCompOpt = &shaders[i].value();
 
         drawable->sprite.setPosition(sf::Vector2f(tranform->x, tranform->y));
-        drawable->sprite.setScale(sf::Vector2f(tranform->scale, tranform->scale));
+        drawable->sprite.setScale(
+            sf::Vector2f(tranform->scale, tranform->scale));
         drawable->sprite.setRotation(tranform->rotationDegrees);
         drawable->sprite.setColor(sf::Color(255, 255, 255,
             drawable->opacity * 255));
 
         if (shaderCompOpt.has_value() && (*shaderCompOpt)->isLoaded) {
             ((*shaderCompOpt)->shader)->setUniform("time",
-                static_cast<float>(game_world.total_time_clock_.getElapsedTime().asSeconds()));
+                game_world.total_time_clock_.getElapsedTime().asSeconds());
             game_world.window_.draw(drawable->sprite,
                 sf::RenderStates((*shaderCompOpt)->shader.get()));
         } else {

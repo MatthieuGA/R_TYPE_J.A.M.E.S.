@@ -1,6 +1,8 @@
 #pragma once
 #include <string>
 #include <map>
+#include <memory>
+#include <vector>
 #include <SFML/Graphics.hpp>
 
 namespace Rtype::Client::Component {
@@ -31,9 +33,10 @@ struct Drawable {
     sf::Texture texture;
     bool isLoaded = false;
 
-    explicit Drawable(const std::string& spritePath, int zIndex = 0, float opacity = 1.0f)
-        : spritePath("Assets/Images/" + spritePath), z_index(zIndex), texture(), opacity(opacity),
-        sprite(texture), isLoaded(false) {}
+    explicit Drawable(const std::string& spritePath, int zIndex = 0,
+        float opacity = 1.0f)
+        : spritePath("Assets/Images/" + spritePath), z_index(zIndex), texture(),
+        opacity(opacity), sprite(texture), isLoaded(false) {}
 };
 
 struct Shader {
@@ -42,11 +45,13 @@ struct Shader {
     bool isLoaded = false;
     std::map<std::string, float> uniforms_float = {};
 
-    explicit Shader(const std::string& path, std::vector<std::pair<std::string, float>> uf = {})
-        : shaderPath("Assets/Shaders/" + path), shader(nullptr), isLoaded(false) {
+    explicit Shader(const std::string& path,
+        std::vector<std::pair<std::string, float>> uf = {})
+        : shaderPath("Assets/Shaders/" + path), shader(nullptr),
+        isLoaded(false) {
         for (const auto& [name, value] : uf)
             uniforms_float[name] = value;
-        }
+    }
 };
 
 struct AnimatedSprite {

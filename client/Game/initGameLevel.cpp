@@ -1,3 +1,6 @@
+#include <string>
+#include <vector>
+
 #include "include/registry.hpp"
 #include "Game/initGameLevel.hpp"
 #include "include/Components/CoreComponents.hpp"

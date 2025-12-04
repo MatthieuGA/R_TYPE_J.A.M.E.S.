@@ -1,4 +1,7 @@
 #include <iostream>
+#include <vector>
+#include <algorithm>
+#include <memory>
 
 #include "Engine/Systems/initRegistrySystems.hpp"
 #include "Engine/originTool.hpp"
@@ -14,7 +17,8 @@ void InitializeShader(Com::Shader &shader_comp) {
                 << shader_comp.shaderPath << "\n";
             shader_comp.shader = nullptr;
         } else {
-            shader_comp.shader->setUniform("texture", sf::Shader::CurrentTexture);
+            shader_comp.shader->setUniform("texture",
+                sf::Shader::CurrentTexture);
             for (auto& [name, value] : shader_comp.uniforms_float)
                 shader_comp.shader->setUniform(name, value);
             shader_comp.isLoaded = true;

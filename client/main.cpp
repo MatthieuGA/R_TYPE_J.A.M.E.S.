@@ -20,7 +20,8 @@ int main() {
                     game_world.window_.close();
             }
             // Calculate delta time at the beginning of the frame
-            game_world.last_delta_ = game_world.delta_time_clock_.restart().asSeconds();
+            game_world.last_delta_ =
+                game_world.delta_time_clock_.restart().asSeconds();
 
             game_world.window_.clear(sf::Color::Black);
             game_world.registry_.RunSystems();
