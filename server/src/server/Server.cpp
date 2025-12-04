@@ -7,9 +7,12 @@
 namespace server {
 
 Server::Server(Config &config, boost::asio::io_context &io_context)
-: config_(config), io_context_(io_context),
-network_(std::make_unique<Network>(config, io_context)),
-registry_(), tick_timer_(io_context), running_(false) {}
+    : config_(config),
+      io_context_(io_context),
+      network_(std::make_unique<Network>(config, io_context)),
+      registry_(),
+      tick_timer_(io_context),
+      running_(false) {}
 
 Server::~Server() {
     running_ = false;
@@ -23,18 +26,18 @@ void Server::initialize() {
 }
 
 void Server::registerComponents() {
-    registry_.register_component<Component::Position>();
-    registry_.register_component<Component::Velocity>();
-    registry_.register_component<Component::Health>();
-    registry_.register_component<Component::NetworkId>();
-    registry_.register_component<Component::Player>();
-    registry_.register_component<Component::Enemy>();
+    registry_.RegisterComponent<Component::Position>();
+    registry_.RegisterComponent<Component::Velocity>();
+    registry_.RegisterComponent<Component::Health>();
+    registry_.RegisterComponent<Component::NetworkId>();
+    registry_.RegisterComponent<Component::Player>();
+    registry_.RegisterComponent<Component::Enemy>();
 
     std::cout << "Registered all components" << std::endl;
 }
 
 void Server::registerSystems() {
-    registry_.add_system<Engine::sparse_array<Component::Position>,
+    registry_.AddSystem<Engine::sparse_array<Component::Position>,
         Engine::sparse_array<Component::Velocity>>(
         [](Engine::registry &reg,
             Engine::sparse_array<Component::Position> &positions,

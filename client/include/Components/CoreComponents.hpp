@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+
 #include <SFML/Graphics.hpp>
 
 namespace Rtype::Client::Component {
@@ -8,28 +9,52 @@ struct Transform {
     float y;
     float rotationDegrees;
     float scale;
+
+    enum OriginPoint {
+        TOP_LEFT,
+        TOP_CENTER,
+        TOP_RIGHT,
+        LEFT_CENTER,
+        CENTER,
+        RIGHT_CENTER,
+        BOTTOM_LEFT,
+        BOTTOM_CENTER,
+        BOTTOM_RIGHT
+    } origin = CENTER;
+
+    sf::Vector2f customOrigin = sf::Vector2f(0.0f, 0.0f);
 };
 
 struct Drawable {
     std::string spritePath;
-    int z_index;
+    int z_index = 0;
     sf::Sprite sprite;
     sf::Texture texture;
-    enum OriginPoint {
-        TOP_LEFT,
-        CENTER
-    } origin = TOP_LEFT;
     bool isLoaded = false;
 
-    Drawable(const std::string& spritePath, int zIndex,
-        OriginPoint originPoint = TOP_LEFT)
-        : spritePath("Assets/" + spritePath), z_index(zIndex), texture(),
-        sprite(texture), origin(originPoint), isLoaded(false) {}
+    explicit Drawable(const std::string &spritePath, int zIndex = 0)
+        : spritePath("Assets/" + spritePath),
+          z_index(zIndex),
+          texture(),
+          sprite(texture),
+          isLoaded(false) {}
 };
 
-struct RigidBody {
-    float vx;
-    float vy;
+struct AnimatedSprite {
+    int frameWidth;
+    int frameHeight;
+    int totalFrames;
+    int currentFrame = 0;
+    float frameDuration = 0.1f;
+    bool loop = true;
+    float elapsedTime = 0.0f;
+};
+
+struct Velocity {
+    float vx = 0.0f;
+    float vy = 0.0f;
+    float accelerationX = 0.0f;
+    float accelerationY = 0.0f;
 };
 
 struct Controllable {
@@ -49,5 +74,10 @@ struct HitBox {
     float height;
     float offsetX;
     float offsetY;
+};
+
+struct Solid {
+    bool isSolid = true;
+    bool isLocked = false;
 };
 }  // namespace Rtype::Client::Component

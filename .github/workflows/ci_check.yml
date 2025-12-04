@@ -22,6 +22,7 @@ jobs:
   block_merge_to_main:
     if: ${{ github.event_name == 'pull_request' && github.base_ref == 'main' && !(startsWith(github.head_ref, 'Epic-') || startsWith(github.head_ref, '1-epic-')) }}
     runs-on: ubuntu-latest
+    name: "Block merge to main unless branch starts with Epic-"
     steps:
       - name: "Block merge to main unless branch starts with Epic-"
         run: |
@@ -31,18 +32,22 @@ jobs:
     if: |
       github.repository != 'EpitechPGE3-2025/G-CPP-500-NAN-5-2-rtype-6' &&
       (github.event_name != 'pull_request_target' || github.event.pull_request.head.repo.full_name == github.repository)
+    name: "Check C++ coding style with cpplint"
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-python@v5
       with:
         python-version: 3.x
-    - run: pip install cpplint
-    - run: |
-        find . -type f \( -name '*.cpp' -o -name '*.hpp' \) ! -path './tests/*' ! -path './build/*' | xargs cpplint --repository=. --quiet --output=vs7 --filter=-legal/copyright,-build/c++17,+build/c++23,-runtime/references,-whitespace/indent_namespace
-  check_cmake_compilation_linux:
+    - name: "Install cpplint"
+      run: pip install cpplint
+    - name: "Run cpplint"
+      run: |
+        find . -type f \( -name '*.cpp' -o -name '*.hpp' \) ! -path './tests/*' ! -path './build/*' | xargs cpplint --repository=. --quiet --output=vs7 --filter=-legal/copyright,-build/c++17,+build/c++23,-whitespace/indent_namespace,-runtime/references
+  check_cmake_compilation_and_tests:
     needs: [check_coding_style]
     runs-on: ubuntu-latest
+    name: "Check CMake compilation and run tests"
     container:
       image: epitechcontent/epitest-docker:latest
     steps:
@@ -79,36 +84,13 @@ jobs:
               exit 1
             fi
           done
-  check_tests_execution:
-    needs: check_cmake_compilation_linux
-    runs-on: ubuntu-latest
-    container:
-      image: epitechcontent/epitest-docker:latest
-    steps:
-      - name: "Checkout"
-        uses: actions/checkout@v4
-      - name: "Install dependencies"
-        run: |
-          apt-get update
-          apt-get install -y xvfb curl zip unzip tar git pkg-config
-      - name: "Setup vcpkg"
-        run: |
-          git clone https://github.com/microsoft/vcpkg.git /opt/vcpkg
-          /opt/vcpkg/bootstrap-vcpkg.sh
-          echo "VCPKG_ROOT=/opt/vcpkg" >> $GITHUB_ENV
-      - name: "Configure with CMake"
-        working-directory: ${{ github.workspace }}
-        run: cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=/opt/vcpkg/scripts/buildsystems/vcpkg.cmake
-      - name: "Build with CMake"
-        working-directory: ${{ github.workspace }}
-        run: cmake --build build
-      - name: "Ctest execution"
+      - name: "Run Ctest"
         working-directory: ${{ github.workspace }}
         run: |
-          # Run tests under X virtual framebuffer to provide a DISPLAY for SFML/graphics tests
           xvfb-run --auto-servernum --server-args='-screen 0 1024x768x24' ctest --test-dir build --output-on-failure
   push_to_mirror:
-    needs: check_tests_execution
+    needs: check_cmake_compilation_and_tests
+    name: "Push to mirror repository"
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'push' }}
     steps:

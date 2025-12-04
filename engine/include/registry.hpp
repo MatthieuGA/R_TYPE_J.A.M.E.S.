@@ -1,22 +1,22 @@
 #pragma once
-#include <unordered_map>
-#include <typeindex>
-#include <memory>
 #include <functional>
+#include <memory>
+#include <typeindex>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
-#include "include/sparse_array.hpp"
 #include "include/entity.hpp"
+#include "include/sparse_array.hpp"
 
 namespace Engine {
 
-struct components_holder_base {
-    virtual ~components_holder_base() = default;
+struct ComponentsHolderBase {
+    virtual ~ComponentsHolderBase() = default;
 };
 
 template <typename T>
-struct components_holder : components_holder_base {
+struct components_holder : ComponentsHolderBase {
     sparse_array<T> arr;
 };
 
@@ -25,43 +25,67 @@ class registry {
     using entity_t = entity;
 
     template <class Component>
-    sparse_array<Component> &register_component();
+    sparse_array<Component> &RegisterComponent();
 
     template <class Component>
-    sparse_array<Component> &get_components();
+    sparse_array<Component> &GetComponents();
 
     template <class Component>
-    sparse_array<Component> const &get_components() const;
+    sparse_array<Component> const &GetComponents() const;
 
     // Entity management
-    entity_t spawn_entity();
-    entity_t entity_from_index(std::size_t idx);
-    void kill_entity(entity_t const &e);
+    entity_t SpawnEntity();
+    entity_t EntityFromIndex(std::size_t idx);
+    void KillEntity(entity_t const &e);
 
-    template <class ... Components, typename Function>
-    void add_system(Function &&f);
+    // Backwards-compatible entity management
+    entity_t spawn_entity() {
+        return SpawnEntity();
+    }
 
-    void run_systems();
+    entity_t entity_from_index(std::size_t idx) {
+        return EntityFromIndex(idx);
+    }
+
+    void kill_entity(entity_t const &e) {
+        KillEntity(e);
+    }
+
+    template <class... Components, typename Function>
+    void AddSystem(Function &&f);
+
+    void RunSystems();
+
+    // Backwards-compatible run
+    void run_systems() {
+        RunSystems();
+    }
 
     template <typename Component>
-    typename sparse_array<Component>::reference_type
-        add_component(entity_t const &to, Component &&c);
-
-    template <typename Component, typename ... Params>
-    typename sparse_array<Component>::reference_type
-        emplace_component(entity_t const &to, Params &&... p);
+    typename sparse_array<Component>::reference_type AddComponent(
+        entity_t const &to, Component &&c);
 
     template <typename Component>
-    void remove_component(entity_t const &from);
+    typename sparse_array<Component>::reference_type add_component(
+        entity_t const &to, Component &&c) {
+        return AddComponent<Component>(to, std::forward<Component>(c));
+    }
+
+    template <typename Component, typename... Params>
+    typename sparse_array<Component>::reference_type EmplaceComponent(
+        entity_t const &to, Params &&...p);
+
+    template <typename Component>
+    void RemoveComponent(entity_t const &from);
 
  private:
-    std::unordered_map<std::type_index,
-        std::unique_ptr<components_holder_base>> _components_arrays;
-    std::vector<std::function<
-        void(registry&, Engine::entity const&)>> _erase_fns;
-    std::vector<std::function<void(registry&)>> _systems;
-    std::size_t _next_entity = 0;
-    std::vector<std::size_t> _dead_entities;
+    std::unordered_map<std::type_index, std::unique_ptr<ComponentsHolderBase>>
+        components_arrays_;
+    std::vector<std::function<void(registry &, Engine::entity const &)>>
+        erase_fns_;
+    std::vector<std::function<void(registry &)>> systems_;
+    std::size_t next_entity_ = 0;
+    std::vector<std::size_t> dead_entities_;
 };
 
 }  // namespace Engine

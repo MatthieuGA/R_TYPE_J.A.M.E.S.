@@ -1,39 +1,64 @@
 #include <iostream>
-#include "Engine/initRegistrySystems.hpp"
-#include "include/indexed_zipper.hpp"
 
-namespace Eng = Engine;
+#include "Engine/initRegistrySystems.hpp"
+#include "Engine/originTool.hpp"
 
 namespace Rtype::Client {
-namespace Com = Component;
-void setDrawableOrigin(Com::Drawable &drawable) {
-    sf::Vector2f origin;
-    if (drawable.origin == Com::Drawable::CENTER) {
-        sf::FloatRect bounds = drawable.sprite.getLocalBounds();
-        origin = sf::Vector2f(bounds.width / 2.0f, bounds.height / 2.0f);
-    } else {
-        origin = sf::Vector2f(0.0f, 0.0f);
-    }
-    drawable.sprite.setOrigin(origin);
+void SetDrawableOrigin(
+    Com::Drawable &drawable, const Com::Transform &transform) {
+    sf::Vector2f origin = GetOffsetFromTransform(transform,
+        sf::Vector2f(static_cast<float>(drawable.texture.getSize().x),
+            static_cast<float>(drawable.texture.getSize().y)));
+    drawable.sprite.setOrigin(-origin);
 }
 
-void initializeDrawable(Com::Drawable &drawable) {
+void InitializeDrawable(
+    Com::Drawable &drawable, const Com::Transform &transform) {
     if (!drawable.texture.loadFromFile(drawable.spritePath))
         std::cerr << "ERROR: Failed to load sprite from "
-            << drawable.spritePath << "\n";
+                  << drawable.spritePath << "\n";
     else
         drawable.sprite.setTexture(drawable.texture, true);
-    setDrawableOrigin(drawable);
+    SetDrawableOrigin(drawable, transform);
     drawable.isLoaded = true;
 }
 
-void drawableSystem(Eng::registry &reg, sf::RenderWindow &window,
-Eng::sparse_array<Com::Transform> const &transforms,
-Eng::sparse_array<Com::Drawable> &drawables) {
-    for (auto &&[i, tranform, drawable] :
-    make_indexed_zipper(transforms, drawables)) {
+void SetDrawableAnimationOrigin(Com::Drawable &drawable,
+    const Com::AnimatedSprite &animatedSprite,
+    const Com::Transform &transform) {
+    sf::Vector2f origin =
+        GetOffsetFromAnimatedTransform(transform, animatedSprite);
+    drawable.sprite.setOrigin(-origin);
+}
+
+void InitializeDrawableAnimated(Com::Drawable &drawable,
+    const Com::AnimatedSprite &animatedSprite,
+    const Com::Transform &transform) {
+    if (!drawable.texture.loadFromFile(drawable.spritePath))
+        std::cerr << "ERROR: Failed to load sprite from "
+                  << drawable.spritePath << "\n";
+    else
+        drawable.sprite.setTexture(drawable.texture, true);
+    SetDrawableAnimationOrigin(drawable, animatedSprite, transform);
+    drawable.isLoaded = true;
+}
+
+void DrawableSystem(Eng::registry &reg, sf::RenderWindow &window,
+    Eng::sparse_array<Com::Transform> const &transforms,
+    Eng::sparse_array<Com::Drawable> &drawables,
+    Eng::sparse_array<Com::AnimatedSprite> const &animated_sprites) {
+    // Draw all entities with Transform / Drawable / AnimatedSprite components
+    for (auto &&[i, tranform, drawable, animated_sprite] :
+        make_indexed_zipper(transforms, drawables, animated_sprites)) {
         if (!drawable.isLoaded)
-            initializeDrawable(drawable);
+            InitializeDrawableAnimated(drawable, animated_sprite, tranform);
+    }
+
+    // Else draw entities with Transform and Drawable components
+    for (auto &&[i, tranform, drawable] :
+        make_indexed_zipper(transforms, drawables)) {
+        if (!drawable.isLoaded)
+            InitializeDrawable(drawable, tranform);
 
         drawable.sprite.setPosition(sf::Vector2f(tranform.x, tranform.y));
         drawable.sprite.setScale(sf::Vector2f(tranform.scale, tranform.scale));

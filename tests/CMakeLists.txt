@@ -24,6 +24,20 @@ target_link_libraries(engine_tests
         SFML::Window SFML::Graphics SFML::Network SFML::Audio SFML::System
 )
 
+# Ensure test target can find client headers (client/include and client/Engine)
+target_include_directories(engine_tests PRIVATE
+    ${CMAKE_SOURCE_DIR}/client
+    ${CMAKE_SOURCE_DIR}/client/Engine
+)
+
+# Compile client engine sources into the test executable so systems are available
+file(GLOB_RECURSE CLIENT_ENGINE_SOURCES CONFIGURE_DEPENDS
+    "${CMAKE_SOURCE_DIR}/client/Engine/*.cpp"
+)
+if (CLIENT_ENGINE_SOURCES)
+    target_sources(engine_tests PRIVATE ${CLIENT_ENGINE_SOURCES})
+endif()
+
 # Discover tests for CTest
 gtest_discover_tests(engine_tests)
 

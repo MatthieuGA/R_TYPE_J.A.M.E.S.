@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+
 #include <SFML/Graphics.hpp>
 
 namespace Rtype::Client::Component {
@@ -24,6 +25,8 @@ struct Projectile {
 struct Health {
     int currentHealth;
     int maxHealth;
+    bool invincible;
+    float invincibilityDuration;
 };
 
 struct StatsGame {

@@ -5,8 +5,8 @@
 namespace server {
 constexpr uint16_t DEFAULT_TCP_PORT = 50000;
 constexpr uint16_t DEFAULT_UDP_PORT = DEFAULT_TCP_PORT;
-constexpr std::string DEFAULT_TCP_ADDRESS = "0.0.0.0";
-constexpr std::string DEFAULT_UDP_ADDRESS = DEFAULT_TCP_ADDRESS;
+constexpr const char *DEFAULT_TCP_ADDRESS = "0.0.0.0";
+constexpr const char *DEFAULT_UDP_ADDRESS = DEFAULT_TCP_ADDRESS;
 
 class Config {
  public:
