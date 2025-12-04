@@ -63,10 +63,6 @@ bool IsColliding(const Com::Transform &trans_a, const Com::HitBox &hb_a,
 void ComputeCollision(Eng::sparse_array<Com::Solid> const &solids, int i,
     int j, Com::Transform &trans_a, const Com::HitBox &hb_a,
     Com::Transform &trans_b, const Com::HitBox &hb_b) {
-
-void ComputeCollision(Eng::sparse_array<Com::Solid> const &solids, int i,
-    int j, Com::Transform &trans_a, const Com::HitBox &hb_a,
-    Com::Transform &trans_b, const Com::HitBox &hb_b) {
     // If none are solid, nothing to resolve here
     bool aSolid = solids.has(i) ? solids[i]->isSolid : false;
     bool bSolid = solids.has(j) ? solids[j]->isSolid : false;
@@ -155,12 +151,6 @@ void ComputeCollision(Eng::sparse_array<Com::Solid> const &solids, int i,
  * @param hitBoxes Sparse array of HitBox components
  * @param solids Sparse array of Solid components
  */
-void CollisionDetectionSystem(Eng::registry &reg,
-    Rtype::Client::GameWorld &game_world,
-    Eng::sparse_array<Com::Transform> &transforms,
-    Eng::sparse_array<Com::HitBox> const &hitBoxes,
-    Eng::sparse_array<Com::Solid> const &solids) {
-
 void CollisionDetectionSystem(Eng::registry &reg,
     Rtype::Client::GameWorld &game_world,
     Eng::sparse_array<Com::Transform> &transforms,
