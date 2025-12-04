@@ -4,7 +4,7 @@
 
 set -e
 
-cd "$(dirname "$0")"
+cd "$(dirname "$0")/.."
 
 echo "Building packet tests..."
 g++ -std=c++23 -Wall -Wextra \
@@ -19,3 +19,5 @@ echo "Running tests..."
 
 echo ""
 echo "✅ All packet tests passed!"
+
+rm test_packets_binary
