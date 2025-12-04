@@ -5,23 +5,6 @@
 
 namespace Rtype::Client {
 
-void InitializeShader(Com::Shader &shader_comp) {
-    if (!shader_comp.shaderPath.empty()) {
-        shader_comp.shader = std::make_shared<sf::Shader>();
-        if (!shader_comp.shader->loadFromFile(shader_comp.shaderPath,
-            sf::Shader::Type::Fragment)) {
-            std::cerr << "ERROR: Failed to load shader from "
-                << shader_comp.shaderPath << "\n";
-            shader_comp.shader = nullptr;
-        } else {
-            shader_comp.shader->setUniform("texture", sf::Shader::CurrentTexture);
-            for (auto& [name, value] : shader_comp.uniforms_float)
-                shader_comp.shader->setUniform(name, value);
-            shader_comp.isLoaded = true;
-        }
-    }
-}
-
 void SetDrawableOrigin(Com::Drawable &drawable,
 const Com::Transform &transform) {
     sf::Vector2f origin = GetOffsetFromTransform(transform,
@@ -41,42 +24,11 @@ const Com::Transform &transform) {
     drawable.isLoaded = true;
 }
 
-void SetDrawableAnimationOrigin(Com::Drawable &drawable,
-const Com::AnimatedSprite &animatedSprite, const Com::Transform &transform) {
-    sf::Vector2f origin = GetOffsetFromAnimatedTransform(transform,
-        animatedSprite);
-    drawable.sprite.setOrigin(-origin);
-}
-
-void InitializeDrawableAnimated(Com::Drawable &drawable,
-const Com::AnimatedSprite &animatedSprite, const Com::Transform &transform) {
-    if (!drawable.texture.loadFromFile(drawable.spritePath))
-        std::cerr << "ERROR: Failed to load sprite from "
-            << drawable.spritePath << "\n";
-    else
-        drawable.sprite.setTexture(drawable.texture, true);
-    SetDrawableAnimationOrigin(drawable, animatedSprite, transform);
-    drawable.isLoaded = true;
-}
-
 void DrawableSystem(Eng::registry &reg, GameWorld &game_world,
 Eng::sparse_array<Com::Transform> const &transforms,
 Eng::sparse_array<Com::Drawable> &drawables,
-Eng::sparse_array<Com::AnimatedSprite> const &animated_sprites,
 Eng::sparse_array<Com::Shader> &shaders) {
     std::vector<int> draw_order;
-
-    for (auto &&[i, shader] : make_indexed_zipper(shaders)) {
-        if (!shader.isLoaded && !shader.shaderPath.empty())
-            InitializeShader(shader);
-    }
-
-    // Draw all entities with Transform / Drawable / AnimatedSprite components
-    for (auto &&[i, tranform, drawable, animated_sprite] :
-    make_indexed_zipper(transforms, drawables, animated_sprites)) {
-        if (!drawable.isLoaded)
-            InitializeDrawableAnimated(drawable, animated_sprite, tranform);
-    }
 
     // Else draw entities with Transform and Drawable components
     for (auto &&[i, tranform, drawable] :

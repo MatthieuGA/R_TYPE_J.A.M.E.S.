@@ -7,6 +7,13 @@ namespace Rtype::Client {
 namespace Com = Component;
 
 void init_render_systems(Rtype::Client::GameWorld &game_world) {
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::Shader>>
+        (InitializeShaderSystem);
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
+        Eng::sparse_array<Com::Drawable>,
+        Eng::sparse_array<Com::AnimatedSprite>>
+        (InitializeDrawableAnimatedSystem);
+
     game_world.registry_.AddSystem<Eng::sparse_array<Com::AnimatedSprite>,
         Eng::sparse_array<Com::Drawable>>(
         [&game_world](Eng::registry &r,
@@ -17,15 +24,13 @@ void init_render_systems(Rtype::Client::GameWorld &game_world) {
         });
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
         Eng::sparse_array<Com::Drawable>,
-        Eng::sparse_array<Com::AnimatedSprite>,
         Eng::sparse_array<Com::Shader>>(
         [&game_world](Eng::registry &r,
                 Eng::sparse_array<Com::Transform> const &transforms,
                 Eng::sparse_array<Com::Drawable> &drawables,
-                Eng::sparse_array<Com::AnimatedSprite> const &animated_sprite,
                 Eng::sparse_array<Com::Shader> &shaders) {
             DrawableSystem(r, game_world, transforms,
-                drawables, animated_sprite, shaders);
+                drawables, shaders);
         });
 }
 

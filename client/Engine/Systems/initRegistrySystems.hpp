@@ -16,7 +16,6 @@ void InitRegistrySystemsEvents(Rtype::Client::GameWorld &game_world);
 void DrawableSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> const &transforms,
     Eng::sparse_array<Com::Drawable> &drawables,
-    Eng::sparse_array<Com::AnimatedSprite> const &animatedSprites,
     Eng::sparse_array<Com::Shader> &shaders);
 
 void MovementSystem(Eng::registry &reg, const float dt,
@@ -41,4 +40,12 @@ void CollisionDetectionSystem(Eng::registry &reg,
     Eng::sparse_array<Com::Transform> &transforms,
     Eng::sparse_array<Com::HitBox> const &hit_boxes,
     Eng::sparse_array<Com::Solid> const &solids);
+
+void InitializeShaderSystem(Eng::registry &reg,
+    Eng::sparse_array<Com::Shader> &shaders);
+void InitializeDrawableAnimatedSystem(Eng::registry &reg,
+    Eng::sparse_array<Com::Transform> const &transforms,
+    Eng::sparse_array<Com::Drawable> &drawables,
+    Eng::sparse_array<Com::AnimatedSprite> const &animated_sprites);
+
 }  // namespace Rtype::Client
