@@ -1,28 +1,34 @@
 #include <gtest/gtest.h>
-#include "include/registry.hpp"
-#include "include/entity.hpp"
+
 #include <string>
+
+#include "include/entity.hpp"
+#include "include/registry.hpp"
 
 // Test components
 struct Position {
     float x;
     float y;
+
     explicit Position(float x = 0.0f, float y = 0.0f) : x(x), y(y) {}
 };
 
 struct Velocity {
     float dx;
     float dy;
+
     explicit Velocity(float dx = 0.0f, float dy = 0.0f) : dx(dx), dy(dy) {}
 };
 
 struct Health {
     int hp;
+
     explicit Health(int hp = 100) : hp(hp) {}
 };
 
 struct Name {
     std::string value;
+
     explicit Name(std::string const &v = "") : value(v) {}
 };
 
@@ -366,10 +372,11 @@ TEST(RegistryTest, AddSystemLambda) {
 
     bool system_called = false;
 
-    reg.AddSystem<Engine::sparse_array<Position>>([&system_called](
-        Engine::registry &r, Engine::sparse_array<Position> &positions) {
-        system_called = true;
-    });
+    reg.AddSystem<Engine::sparse_array<Position>>(
+        [&system_called](
+            Engine::registry &r, Engine::sparse_array<Position> &positions) {
+            system_called = true;
+        });
 
     reg.RunSystems();
 
@@ -387,20 +394,19 @@ TEST(RegistryTest, SystemModifiesComponents) {
 
     // Movement system
     reg.AddSystem<Engine::sparse_array<Position>,
-                   Engine::sparse_array<Velocity>>([](
-        Engine::registry &r,
-        Engine::sparse_array<Position> &positions,
-        Engine::sparse_array<Velocity> &velocities) {
-        for (size_t i = 0; i < positions.size() && i < velocities.size();
-             ++i) {
-            if (positions.has(i) && velocities.has(i)) {
-                auto &pos = positions[i];
-                auto &vel = velocities[i];
-                pos->x += vel->dx;
-                pos->y += vel->dy;
+        Engine::sparse_array<Velocity>>(
+        [](Engine::registry &r, Engine::sparse_array<Position> &positions,
+            Engine::sparse_array<Velocity> &velocities) {
+            for (size_t i = 0; i < positions.size() && i < velocities.size();
+                ++i) {
+                if (positions.has(i) && velocities.has(i)) {
+                    auto &pos = positions[i];
+                    auto &vel = velocities[i];
+                    pos->x += vel->dx;
+                    pos->y += vel->dy;
+                }
             }
-        }
-    });
+        });
 
     auto &positions = reg.GetComponents<Position>();
 
@@ -416,20 +422,17 @@ TEST(RegistryTest, MultipleSystemsRun) {
 
     int call_count = 0;
 
-    reg.AddSystem<Engine::sparse_array<Position>>([&call_count](
-        Engine::registry &r, Engine::sparse_array<Position> &positions) {
-        call_count++;
-    });
+    reg.AddSystem<Engine::sparse_array<Position>>(
+        [&call_count](Engine::registry &r,
+            Engine::sparse_array<Position> &positions) { call_count++; });
 
-    reg.AddSystem<Engine::sparse_array<Position>>([&call_count](
-        Engine::registry &r, Engine::sparse_array<Position> &positions) {
-        call_count++;
-    });
+    reg.AddSystem<Engine::sparse_array<Position>>(
+        [&call_count](Engine::registry &r,
+            Engine::sparse_array<Position> &positions) { call_count++; });
 
-    reg.AddSystem<Engine::sparse_array<Position>>([&call_count](
-        Engine::registry &r, Engine::sparse_array<Position> &positions) {
-        call_count++;
-    });
+    reg.AddSystem<Engine::sparse_array<Position>>(
+        [&call_count](Engine::registry &r,
+            Engine::sparse_array<Position> &positions) { call_count++; });
 
     reg.RunSystems();
 
@@ -448,19 +451,20 @@ TEST(RegistryTest, SystemAccessesMultipleComponentTypes) {
     bool system_ran = false;
 
     reg.AddSystem<Engine::sparse_array<Position>,
-                   Engine::sparse_array<Health>>([&system_ran](
-        Engine::registry &r,
-        Engine::sparse_array<Position> &positions,
-        Engine::sparse_array<Health> &healths) {
-        system_ran = true;
+        Engine::sparse_array<Health>>(
+        [&system_ran](Engine::registry &r,
+            Engine::sparse_array<Position> &positions,
+            Engine::sparse_array<Health> &healths) {
+            system_ran = true;
 
-        for (size_t i = 0; i < positions.size() && i < healths.size(); ++i) {
-            if (positions.has(i) && healths.has(i)) {
-                EXPECT_TRUE(positions[i].has_value());
-                EXPECT_TRUE(healths[i].has_value());
+            for (size_t i = 0; i < positions.size() && i < healths.size();
+                ++i) {
+                if (positions.has(i) && healths.has(i)) {
+                    EXPECT_TRUE(positions[i].has_value());
+                    EXPECT_TRUE(healths[i].has_value());
+                }
             }
-        }
-    });
+        });
 
     reg.RunSystems();
 
@@ -567,12 +571,10 @@ TEST(RegistryTest, StressTestManyEntities) {
     // Spawn many entities
     for (size_t i = 0; i < num_entities; ++i) {
         entities.push_back(reg.SpawnEntity());
-        reg.AddComponent(entities.back(), Position{
-            static_cast<float>(i),
-            static_cast<float>(i * 2)
-        });
-        reg.EmplaceComponent<Health>(entities.back(),
-                                       static_cast<int>(i % 100));
+        reg.AddComponent(entities.back(),
+            Position{static_cast<float>(i), static_cast<float>(i * 2)});
+        reg.EmplaceComponent<Health>(
+            entities.back(), static_cast<int>(i % 100));
     }
 
     auto &positions = reg.GetComponents<Position>();
