@@ -128,3 +128,84 @@ TEST(Systems, CollisionDetectionPublishesAndResolves) {
     EXPECT_NE(transforms[0]->x, 0.0f);
     EXPECT_NE(transforms[1]->x, 10.0f);
 }
+
+TEST(Systems, ProjectileSystemMovesTransform) {
+    Eng::registry reg;
+    Rtype::Client::GameWorld gw;
+
+    Eng::sparse_array<Com::Transform> transforms;
+    Eng::sparse_array<Com::Projectile> projectiles;
+
+    transforms.insert_at(0, Com::Transform{0.0f, 0.0f, 0.0f, 1.0f});
+    projectiles.insert_at(0, Com::Projectile{5.0f, 200.0f, 1});
+
+    gw.last_delta_ = 0.1f; // 200 * 0.1 = 20
+
+    ProjectileSystem(reg, gw, transforms, projectiles);
+
+    ASSERT_TRUE(transforms[0].has_value());
+    EXPECT_GT(transforms[0]->x, 0.0f);
+}
+
+TEST(Systems, PlayerSystemSetsFrameBasedOnVelocity) {
+    Eng::registry reg;
+
+    Eng::sparse_array<Com::PlayerTag> player_tags;
+    Eng::sparse_array<Com::Velocity> velocities;
+    Eng::sparse_array<Com::AnimatedSprite> animated_sprites;
+
+    player_tags.insert_at(0, Com::PlayerTag{400.f, 0.5f, 0.0f, 1});
+    velocities.insert_at(0, Com::Velocity{0.0f, 100.0f});
+    animated_sprites.insert_at(0, Com::AnimatedSprite(16, 16, 0.1f));
+
+    PlayerSystem(reg, player_tags, velocities, animated_sprites);
+
+    ASSERT_TRUE(animated_sprites[0].has_value());
+    // velocity.vy == 100 -> should map to currentFrame == 1
+    EXPECT_EQ(animated_sprites[0]->currentFrame, 1);
+}
+
+TEST(Systems, ShootSystemCreatesProjectileAndResetsCooldown) {
+    Eng::registry reg;
+    Rtype::Client::GameWorld gw;
+
+    // Register components that createProjectile will add
+    reg.RegisterComponent<Com::Transform>();
+    reg.RegisterComponent<Com::Drawable>();
+    reg.RegisterComponent<Com::AnimatedSprite>();
+    reg.RegisterComponent<Com::Projectile>();
+
+    Eng::sparse_array<Com::Transform> transforms;
+    Eng::sparse_array<Com::Inputs> inputs;
+    Eng::sparse_array<Com::PlayerTag> player_tags;
+
+    transforms.insert_at(0, Com::Transform{10.0f, 20.0f, 0.0f, 1.0f});
+    inputs.insert_at(0, Com::Inputs{0.0f, 0.0f, true});
+    player_tags.insert_at(0, Com::PlayerTag{400.f, 0.1f, 0.0f, 1});
+
+    gw.last_delta_ = 0.016f;
+
+    ShootSystem(reg, gw, transforms, inputs, player_tags);
+
+    // After shooting, cooldown should be reset to max
+    ASSERT_TRUE(player_tags[0].has_value());
+    EXPECT_FLOAT_EQ(player_tags[0]->shoot_cooldown, player_tags[0]->shoot_cooldown_max);
+
+    // The projectile component should have been added to the registry at entity 0
+    auto &projectiles = reg.GetComponents<Com::Projectile>();
+    EXPECT_TRUE(projectiles.has(0));
+}
+
+TEST(Systems, InputSystemResetsInputsWhenNoKeys) {
+    Eng::registry reg;
+
+    Eng::sparse_array<Com::Inputs> inputs;
+    inputs.insert_at(0, Com::Inputs{1.0f, -1.0f, true});
+
+    InputSystem(reg, inputs);
+
+    ASSERT_TRUE(inputs[0].has_value());
+    EXPECT_FLOAT_EQ(inputs[0]->horizontal, 0.0f);
+    EXPECT_FLOAT_EQ(inputs[0]->vertical, 0.0f);
+    EXPECT_FALSE(inputs[0]->shoot);
+}
