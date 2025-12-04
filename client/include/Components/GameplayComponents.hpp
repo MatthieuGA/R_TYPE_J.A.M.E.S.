@@ -6,6 +6,8 @@
 namespace Rtype::Client::Component {
 struct PlayerTag {
     float speed_max;
+    float shoot_cooldown_max;
+    float shoot_cooldown;
     int playerNumber;
 };
 

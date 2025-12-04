@@ -79,7 +79,7 @@ void init_player_level(Engine::registry &reg) {
     reg.AddComponent<Component::Velocity>(player_entity,
         Component::Velocity{0.0f, 0.0f, 0.0f, 0.0f});
     reg.AddComponent<Component::PlayerTag>(player_entity,
-        Component::PlayerTag{400.0f});
+        Component::PlayerTag{400.0f, 0.2f});
 }
 
 void init_game_level(registry &reg) {

@@ -39,6 +39,48 @@ struct Drawable {
         float opacity = 1.0f)
         : spritePath("Assets/Images/" + spritePath), z_index(z_index), texture(),
         opacity(opacity), sprite(texture), isLoaded(false) {}
+
+    // Non-copyable to avoid accidental sprite/texture pointer mismatches
+    Drawable(Drawable const &) = delete;
+    Drawable &operator=(Drawable const &) = delete;
+
+    // Move constructor: ensure sprite is rebound to the moved texture and
+    // visual properties are preserved.
+    Drawable(Drawable &&other) noexcept
+        : spritePath(std::move(other.spritePath)), z_index(other.z_index),
+          opacity(other.opacity), texture(std::move(other.texture)), sprite(),
+          isLoaded(other.isLoaded) {
+        // Rebind sprite to the moved texture and copy visual state
+        sprite.setTexture(texture, true);
+        sprite.setTextureRect(other.sprite.getTextureRect());
+        sprite.setScale(other.sprite.getScale());
+        sprite.setOrigin(other.sprite.getOrigin());
+        sprite.setPosition(other.sprite.getPosition());
+        sprite.setRotation(other.sprite.getRotation());
+        sprite.setColor(other.sprite.getColor());
+    }
+
+    // Move assignment: similar to move ctor
+    Drawable &operator=(Drawable &&other) noexcept {
+        if (this == &other)
+            return *this;
+        spritePath = std::move(other.spritePath);
+        z_index = other.z_index;
+        opacity = other.opacity;
+        texture = std::move(other.texture);
+        isLoaded = other.isLoaded;
+
+        sprite = sf::Sprite();
+        sprite.setTexture(texture, true);
+        sprite.setTextureRect(other.sprite.getTextureRect());
+        sprite.setScale(other.sprite.getScale());
+        sprite.setOrigin(other.sprite.getOrigin());
+        sprite.setPosition(other.sprite.getPosition());
+        sprite.setRotation(other.sprite.getRotation());
+        sprite.setColor(other.sprite.getColor());
+
+        return *this;
+    }
 };
 
 struct Shader {
