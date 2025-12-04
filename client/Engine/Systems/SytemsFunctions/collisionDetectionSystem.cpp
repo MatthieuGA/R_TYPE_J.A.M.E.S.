@@ -2,7 +2,6 @@
 
 #include "Engine/Systems/initRegistrySystems.hpp"
 #include "Engine/Events/EngineEvent.hpp"
-#include "Engine/initRegistrySystems.hpp"
 #include "Engine/originTool.hpp"
 
 namespace Rtype::Client {

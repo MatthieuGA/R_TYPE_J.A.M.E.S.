@@ -7,16 +7,16 @@
 
 namespace Rtype::Client {
 
-void SetDrawableOrigin(Com::Drawable &drawable,
-const Com::Transform &transform) {
+void SetDrawableOrigin(
+Com::Drawable &drawable, const Com::Transform &transform) {
     sf::Vector2f origin = GetOffsetFromTransform(transform,
         sf::Vector2f(static_cast<float>(drawable.texture.getSize().x),
                     static_cast<float>(drawable.texture.getSize().y)));
     drawable.sprite.setOrigin(-origin);
 }
 
-void InitializeDrawable(Com::Drawable &drawable,
-const Com::Transform &transform) {
+void InitializeDrawable(
+Com::Drawable &drawable, const Com::Transform &transform) {
     if (!drawable.texture.loadFromFile(drawable.spritePath))
         std::cerr << "ERROR: Failed to load sprite from "
             << drawable.spritePath << "\n";
@@ -26,7 +26,8 @@ const Com::Transform &transform) {
     drawable.isLoaded = true;
 }
 
-void DrawableSystem(Eng::registry &reg, GameWorld &game_world,
+void DrawableSystem(
+Eng::registry &reg, GameWorld &game_world,
 Eng::sparse_array<Com::Transform> const &transforms,
 Eng::sparse_array<Com::Drawable> &drawables,
 Eng::sparse_array<Com::Shader> &shaders) {
@@ -36,7 +37,7 @@ Eng::sparse_array<Com::Shader> &shaders) {
     for (auto &&[i, tranform, drawable] :
     make_indexed_zipper(transforms, drawables)) {
         if (!drawable.isLoaded)
-                InitializeDrawable(drawable, tranform);
+            InitializeDrawable(drawable, tranform);
         draw_order.push_back(i);
     }
 

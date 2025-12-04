@@ -1,24 +1,21 @@
+#include <SFML/Graphics.hpp>
 #include <cstdio>
 #include <iostream>
 #include <vector>
 
-#include <SFML/Graphics.hpp>
-
 #include "Engine/gameWorld.hpp"
-#include "Engine/initRegistryComponent.hpp"
-#include "Engine/Systems/initRegistrySystems.hpp"
-#include "include/registry.hpp"
+#include "Game/initRegistry.hpp"
+#include "Game/initGameLevel.hpp"
 
 using Engine::registry;
 namespace RC = Rtype::Client;
-namespace Component = Rtype::Client::Component;
 
 int main() {
     try {
-        Rtype::Client::GameWorld game_world;
+        RC::GameWorld game_world;
 
-        Rtype::Client::init_registry(game_world);
-        Rtype::Client::init_game_level(game_world.registry_);
+        RC::init_registry(game_world);
+        RC::init_game_level(game_world.registry_);
         while (game_world.window_.isOpen()) {
             sf::Event event;
             while (game_world.window_.pollEvent(event)) {
