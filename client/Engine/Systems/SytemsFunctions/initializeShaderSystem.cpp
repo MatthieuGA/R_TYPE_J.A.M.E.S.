@@ -7,7 +7,14 @@
 #include "Engine/originTool.hpp"
 
 namespace Rtype::Client {
-
+/**
+ * @brief Load and initialize a fragment shader for a Shader component.
+ *
+ * Loads the shader from disk, sets the `texture` uniform and applies any
+ * preconfigured float uniforms.
+ *
+ * @param shader_comp Shader component to initialize
+ */
 void InitializeShader(Com::Shader &shader_comp) {
     if (!shader_comp.shaderPath.empty()) {
         shader_comp.shader = std::make_shared<sf::Shader>();
@@ -26,7 +33,15 @@ void InitializeShader(Com::Shader &shader_comp) {
     }
 }
 
-
+/**
+ * @brief System that initializes all Shader components that are not loaded.
+ *
+ * Iterates over the shader components and calls `InitializeShader` for
+ * components that have a `shaderPath` and are not yet loaded.
+ *
+ * @param reg Engine registry (unused)
+ * @param shaders Sparse array of Shader components
+ */
 void InitializeShaderSystem(Eng::registry &reg,
 Eng::sparse_array<Com::Shader> &shaders) {
     std::vector<int> draw_order;

@@ -2,6 +2,15 @@
 #include "Engine/Systems/initRegistrySystems.hpp"
 
 namespace Rtype::Client {
+/**
+ * @brief Poll keyboard state and populate the Inputs components.
+ *
+ * This system resets each `Inputs` entry and then maps a fixed set of keys
+ * to the input axes and shoot flag.
+ *
+ * @param reg Engine registry (unused)
+ * @param inputs Sparse array of Inputs components to update
+ */
 void InputSystem(Eng::registry &reg,
 Eng::sparse_array<Com::Inputs> &inputs) {
     for (auto &&[i, input] : make_indexed_zipper(inputs)) {

@@ -4,6 +4,19 @@
 #include "Engine/Systems/initRegistrySystems.hpp"
 
 namespace Rtype::Client {
+/**
+ * @brief Convert player input to acceleration values for controllable entities.
+ *
+ * Computes the required acceleration to reach the desired target velocity in
+ * a fixed `time_to_max` and clamps it by a maximum acceleration derived from
+ * the player's max speed.
+ *
+ * @param reg Engine registry (unused)
+ * @param inputs Sparse array of Inputs components
+ * @param controllables Sparse array of Controllable components
+ * @param velocities Sparse array of Velocity components to update
+ * @param playerTags Sparse array of PlayerTag components (contains speed_max)
+ */
 void ControllablePlayerSystem(Eng::registry &reg,
 Eng::sparse_array<Com::Inputs> &inputs,
 Eng::sparse_array<Com::Controllable> const &controllables,

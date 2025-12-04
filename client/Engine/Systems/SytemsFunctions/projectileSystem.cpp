@@ -3,6 +3,17 @@
 #include "Engine/Systems/initRegistrySystems.hpp"
 
 namespace Rtype::Client {
+/**
+ * @brief Update projectiles and remove those outside an extended window.
+ *
+ * Moves projectiles according to their speed and marks entities for
+ * destruction when they leave a region slightly larger than the window.
+ *
+ * @param reg Engine registry used to kill entities
+ * @param game_world Game world providing window size and delta time
+ * @param transforms Sparse array of Transform components
+ * @param projectiles Sparse array of Projectile components
+ */
 void ProjectileSystem(Eng::registry &reg, GameWorld &game_world,
 Eng::sparse_array<Com::Transform> &transforms,
 Eng::sparse_array<Com::Projectile> &projectiles) {

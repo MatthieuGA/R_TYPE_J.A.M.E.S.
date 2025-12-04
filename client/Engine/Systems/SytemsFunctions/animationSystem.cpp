@@ -1,7 +1,13 @@
 #include "Engine/Systems/initRegistrySystems.hpp"
 
 namespace Rtype::Client {
-
+/**
+ * @brief Sets the texture rectangle on the drawable according to the
+ * current frame stored in the AnimatedSprite.
+ *
+ * @param anim_sprite Animated sprite state (currentFrame, frameWidth/Height)
+ * @param drawable Drawable component containing the texture and sprite
+ */
 void SetFrame(Com::AnimatedSprite &anim_sprite, Com::Drawable &drawable) {
     if (drawable.texture.getSize().x == 0 || anim_sprite.frameWidth == 0)
         return;
@@ -15,6 +21,13 @@ void SetFrame(Com::AnimatedSprite &anim_sprite, Com::Drawable &drawable) {
         left, top, anim_sprite.frameWidth, anim_sprite.frameHeight));
 }
 
+/**
+ * @brief Advance the animated sprite to the next frame and update the
+ * drawable rectangle.
+ *
+ * @param anim_sprite Animated sprite state to advance
+ * @param drawable Drawable component to update
+ */
 void NextFrame(Com::AnimatedSprite &anim_sprite, Com::Drawable &drawable) {
     anim_sprite.currentFrame++;
     if (anim_sprite.currentFrame >= anim_sprite.totalFrames) {
@@ -26,6 +39,18 @@ void NextFrame(Com::AnimatedSprite &anim_sprite, Com::Drawable &drawable) {
     SetFrame(anim_sprite, drawable);
 }
 
+/**
+ * @brief System that updates all animated sprites each frame.
+ *
+ * Accumulates elapsed time and advances frames according to each
+ * AnimatedSprite::frameDuration. If an animation is not looping it will
+ * remain on the last frame.
+ *
+ * @param reg Engine registry (unused in current implementation)
+ * @param dt Delta time (seconds) since last update
+ * @param anim_sprites Sparse array of AnimatedSprite components
+ * @param drawables Sparse array of Drawable components
+ */
 void AnimationSystem(Eng::registry &reg, const float dt,
 Eng::sparse_array<Com::AnimatedSprite> &anim_sprites,
 Eng::sparse_array<Com::Drawable> &drawables) {

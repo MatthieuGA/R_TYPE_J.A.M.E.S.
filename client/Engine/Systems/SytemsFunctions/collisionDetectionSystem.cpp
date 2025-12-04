@@ -5,6 +5,17 @@
 #include "Engine/originTool.hpp"
 
 namespace Rtype::Client {
+/**
+ * @brief Check AABB collision using precomputed offsets and scaled hitboxes.
+ *
+ * @param trans_a Transform of entity A
+ * @param hb_a HitBox of entity A
+ * @param trans_b Transform of entity B
+ * @param hb_b HitBox of entity B
+ * @param off_a Offset for entity A (unscaled)
+ * @param off_b Offset for entity B (unscaled)
+ * @return true if the boxes overlap
+ */
 bool IsCollidingFromOffset(const Com::Transform &trans_a,
     const Com::HitBox &hb_a, const Com::Transform &trans_b,
     const Com::HitBox &hb_b, sf::Vector2f off_a, sf::Vector2f off_b) {
@@ -34,6 +45,24 @@ bool IsColliding(const Com::Transform &trans_a, const Com::HitBox &hb_a,
 
     return IsCollidingFromOffset(trans_a, hb_a, trans_b, hb_b, off_a, off_b);
 }
+
+/**
+ * @brief Compute and resolve penetration between two colliding entities.
+ *
+ * This function will check solidity and lock flags and move one or both
+ * entities along the smallest penetration axis so they no longer overlap.
+ *
+ * @param solids Sparse array of Solid components to query solidity/lock
+ * @param i Index of entity A
+ * @param j Index of entity B
+ * @param trans_a Transform of entity A (may be modified)
+ * @param hb_a HitBox of entity A
+ * @param trans_b Transform of entity B (may be modified)
+ * @param hb_b HitBox of entity B
+ */
+void ComputeCollision(Eng::sparse_array<Com::Solid> const &solids, int i,
+    int j, Com::Transform &trans_a, const Com::HitBox &hb_a,
+    Com::Transform &trans_b, const Com::HitBox &hb_b) {
 
 void ComputeCollision(Eng::sparse_array<Com::Solid> const &solids, int i,
     int j, Com::Transform &trans_a, const Com::HitBox &hb_a,
@@ -111,6 +140,26 @@ void ComputeCollision(Eng::sparse_array<Com::Solid> const &solids, int i,
         }
     }
 }
+
+/**
+ * @brief System that detects collisions for all entities with Transform and
+ * HitBox components and publishes collision events.
+ *
+ * For each pair of entities this system tests AABB overlap, publishes a
+ * CollisionEvent on the `game_world.event_bus_` when a collision is found and
+ * calls `ComputeCollision` to resolve penetration for solid entities.
+ *
+ * @param reg Engine registry (unused in current implementation)
+ * @param game_world Game world context (window size, event bus, etc.)
+ * @param transforms Sparse array of Transform components
+ * @param hitBoxes Sparse array of HitBox components
+ * @param solids Sparse array of Solid components
+ */
+void CollisionDetectionSystem(Eng::registry &reg,
+    Rtype::Client::GameWorld &game_world,
+    Eng::sparse_array<Com::Transform> &transforms,
+    Eng::sparse_array<Com::HitBox> const &hitBoxes,
+    Eng::sparse_array<Com::Solid> const &solids) {
 
 void CollisionDetectionSystem(Eng::registry &reg,
     Rtype::Client::GameWorld &game_world,

@@ -6,7 +6,15 @@
 #include "Engine/originTool.hpp"
 
 namespace Rtype::Client {
-
+/**
+ * @brief Compute and apply the origin for a drawable based on its transform.
+ *
+ * This uses `GetOffsetFromTransform` to respect configured origins (centers,
+ * corners, etc.) so sprites are positioned correctly when drawn.
+ *
+ * @param drawable Drawable component to update
+ * @param transform Transform used to compute the origin
+ */
 void SetDrawableOrigin(
 Com::Drawable &drawable, const Com::Transform &transform) {
     sf::Vector2f origin = GetOffsetFromTransform(transform,
@@ -15,6 +23,15 @@ Com::Drawable &drawable, const Com::Transform &transform) {
     drawable.sprite.setOrigin(-origin);
 }
 
+/**
+ * @brief Load a drawable's texture from disk and initialize its sprite.
+ *
+ * Attempts to load `drawable.spritePath` and sets the sf::Sprite texture.
+ * The drawable origin is calculated afterwards and `isLoaded` is set.
+ *
+ * @param drawable Drawable component to initialize
+ * @param transform Transform used to compute origin
+ */
 void InitializeDrawable(
 Com::Drawable &drawable, const Com::Transform &transform) {
     if (!drawable.texture.loadFromFile(drawable.spritePath))
@@ -26,6 +43,20 @@ Com::Drawable &drawable, const Com::Transform &transform) {
     drawable.isLoaded = true;
 }
 
+/**
+ * @brief Draw all entities that have a Drawable component.
+ *
+ * This system loads textures if needed, sorts entities by `z_index`, updates
+ * sprite transform (position/scale/rotation/opacity) and draws them to the
+ * `game_world.window_`. If a Shader component exists and is loaded it will
+ * be applied during draw.
+ *
+ * @param reg Engine registry (unused)
+ * @param game_world Game world containing the render window and time
+ * @param transforms Sparse array of Transform components
+ * @param drawables Sparse array of Drawable components
+ * @param shaders Sparse array of Shader components
+ */
 void DrawableSystem(
 Eng::registry &reg, GameWorld &game_world,
 Eng::sparse_array<Com::Transform> const &transforms,

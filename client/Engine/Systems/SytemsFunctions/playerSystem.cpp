@@ -2,6 +2,17 @@
 #include "Engine/Systems/initRegistrySystems.hpp"
 
 namespace Rtype::Client {
+/**
+ * @brief Update player animated sprite frame selection based on vertical
+ * velocity.
+ *
+ * Chooses a frame index representing up/down/neutral movement states.
+ *
+ * @param reg Engine registry (unused)
+ * @param player_tags Sparse array of PlayerTag components
+ * @param velocities Sparse array of Velocity components
+ * @param animated_sprites Sparse array of AnimatedSprite components to update
+ */
 void PlayerSystem(Eng::registry &reg,
 Eng::sparse_array<Com::PlayerTag> const &player_tags,
 Eng::sparse_array<Com::Velocity> const &velocities,

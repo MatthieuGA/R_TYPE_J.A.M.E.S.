@@ -1,6 +1,18 @@
 #include "Engine/Systems/initRegistrySystems.hpp"
 
 namespace Rtype::Client {
+/**
+ * @brief Update parallax layer positions according to their scroll speed.
+ *
+ * Moves parallax layer transforms and wraps them when they go off the left
+ * edge to create a looping background.
+ *
+ * @param reg Engine registry (unused)
+ * @param game_world Game world providing `last_delta_` and window size
+ * @param transforms Sparse array of Transform components
+ * @param parallax_layers Sparse array of ParrallaxLayer components
+ * @param drawables Sparse array of Drawable components (for texture size)
+ */
 void ParallaxSystem(Eng::registry &reg, const GameWorld &game_world,
     Eng::sparse_array<Com::Transform> &transforms,
     Eng::sparse_array<Com::ParrallaxLayer> const &parallax_layers,
