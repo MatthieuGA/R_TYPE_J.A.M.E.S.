@@ -49,12 +49,12 @@ void init_backgrounds(Engine::registry &reg) {
         {"Background/Level1/2.png", -15.f, 0.f, -9, true, 6.f, .007f, 1.2f},
         {"Background/Level1/3.png", -25.f, 0.f, -8, true, 6.f, .007f, 1.2f},
         {"Background/Level1/4.png", -35.f, 0.f, -7, true, 4.f, .005f, 1.5f},
-        {"Background/Level1/WaterEffect.jpg", -50.f, 0.f, -6, true, 10.f,
-            .01f, 2.0f, 0.05f, 3.84f},
         {"Background/Level1/5.png", -150.f, -20.f, 10, false, 0.f, 0.f, 0.f,
             0.8f},
         {"Background/Level1/5.png", -130.f, -200.f, 11, false, 0.f, 0.f, 0.f,
             0.6f},
+        {"Background/Level1/WaterEffect.jpg", -50.f, 0.f, 12, true, 10.f,
+            .01f, 2.0f, 0.1f, 3.84f}
     };
 
     // Initialize background entity
@@ -72,14 +72,14 @@ void init_player_level(Engine::registry &reg) {
     reg.AddComponent<Component::Drawable>(player_entity,
         Component::Drawable{"OriginalRtype/r-typesheet42.gif"});
     reg.AddComponent<Component::AnimatedSprite>(player_entity,
-        Component::AnimatedSprite(21, 21, 2));
+        Component::AnimatedSprite(33, 19, 2));
     reg.AddComponent<Component::Controllable>(player_entity,
         Component::Controllable{true});
     reg.AddComponent<Component::Inputs>(player_entity, Component::Inputs{});
     reg.AddComponent<Component::Velocity>(player_entity,
         Component::Velocity{0.0f, 0.0f, 0.0f, 0.0f});
     reg.AddComponent<Component::PlayerTag>(player_entity,
-        Component::PlayerTag{});
+        Component::PlayerTag{400.0f});
 }
 
 void init_game_level(registry &reg) {

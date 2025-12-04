@@ -73,7 +73,11 @@ void init_controls_system(Rtype::Client::GameWorld &game_world) {
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Inputs>>(InputSystem);
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Inputs>,
         Eng::sparse_array<Com::Controllable>,
-        Eng::sparse_array<Com::Velocity>>(ControllableSystem);
+        Eng::sparse_array<Com::Velocity>,
+        Eng::sparse_array<Com::PlayerTag>>(ControllablePlayerSystem);
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::PlayerTag>,
+        Eng::sparse_array<Com::Velocity>,
+        Eng::sparse_array<Com::AnimatedSprite>>(PlayerSystem);
 }
 
 void InitRegistrySystems(Rtype::Client::GameWorld &game_world) {
