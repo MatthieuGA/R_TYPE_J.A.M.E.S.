@@ -5,7 +5,11 @@
 
 #include "Engine/Audio/SFMLAudioBackend.hpp"
 
+#include <algorithm>
 #include <iostream>
+#include <memory>
+#include <string>
+#include <utility>
 
 namespace Rtype::Client::Audio {
 

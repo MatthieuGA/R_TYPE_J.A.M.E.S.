@@ -6,7 +6,7 @@
   "lint-staged": {
     "*.{cpp,hpp,c,h,cc}": [
       "clang-format -i",
-      "clang++ -std=c++23 -fsyntax-only -I./include -I./src -I./server/include -I./engine/include -I./_deps/googletest-src/googletest/include"
+      "clang++ -std=c++23 -fsyntax-only -I./client -I./engine/include -I./server/include -I./vcpkg/installed/x64-linux/include"
     ]
   },
   "devDependencies": {

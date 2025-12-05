@@ -5,6 +5,9 @@
 
 #include "Engine/Audio/AudioManager.hpp"
 
+#include <string>
+#include <utility>
+
 namespace Rtype::Client::Audio {
 
 AudioManager::AudioManager(std::unique_ptr<IAudioBackend> backend)
