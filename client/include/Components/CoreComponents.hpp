@@ -28,6 +28,75 @@ struct Transform {
     sf::Vector2f customOrigin = sf::Vector2f(0.0f, 0.0f);
 };
 
+
+struct ExtraDrawable {
+    std::vector<std::string> spritePaths = {};
+    std::vector<sf::Vector2f> offsets = {};
+    std::vector<int> z_indices = {};
+    std::vector<float> opacities = {};
+    std::vector<sf::Sprite> sprites = {};
+    std::vector<sf::Texture> textures = {};
+    bool isLoaded = false;
+
+    ExtraDrawable(const std::vector<std::string>& spritePaths,
+        const std::vector<sf::Vector2f>& offsets,
+        const std::vector<int>& z_indices,
+        const std::vector<float>& opacities)
+        : spritePaths(spritePaths), offsets(offsets), z_indices(z_indices),
+        opacities(opacities), textures(spritePaths.size()), sprites(spritePaths.size()),
+        isLoaded(false) {
+            for (size_t i = 0; i < spritePaths.size(); ++i)
+                this->spritePaths[i] = "Assets/Images/" + spritePaths[i];
+        }
+
+    // Non-copyable to avoid accidental sprite/texture pointer mismatches
+    ExtraDrawable(ExtraDrawable const &) = delete;
+    ExtraDrawable &operator=(ExtraDrawable const &) = delete;
+
+    // Move constructor: ensure sprites are rebound to the moved textures and
+    // visual properties are preserved.
+    ExtraDrawable(ExtraDrawable &&other) noexcept
+        : spritePaths(std::move(other.spritePaths)), offsets(std::move(other.offsets)),
+          z_indices(std::move(other.z_indices)), opacities(std::move(other.opacities)),
+          textures(std::move(other.textures)), sprites(), isLoaded(other.isLoaded) {
+        sprites.resize(textures.size());
+        for (size_t i = 0; i < textures.size(); ++i) {
+            sprites[i].setTexture(textures[i], true);
+            sprites[i].setTextureRect(other.sprites[i].getTextureRect());
+            sprites[i].setScale(other.sprites[i].getScale());
+            sprites[i].setOrigin(other.sprites[i].getOrigin());
+            sprites[i].setPosition(other.sprites[i].getPosition());
+            sprites[i].setRotation(other.sprites[i].getRotation());
+            sprites[i].setColor(other.sprites[i].getColor());
+        }
+    }
+
+    // Move assignment: similar to move ctor
+    ExtraDrawable &operator=(ExtraDrawable &&other) noexcept {
+        if (this == &other)
+            return *this;
+        spritePaths = std::move(other.spritePaths);
+        offsets = std::move(other.offsets);
+        z_indices = std::move(other.z_indices);
+        opacities = std::move(other.opacities);
+        textures = std::move(other.textures);
+        isLoaded = other.isLoaded;
+
+        sprites.resize(textures.size());
+        for (size_t i = 0; i < textures.size(); ++i) {
+            sprites[i].setTexture(textures[i], true);
+            sprites[i].setTextureRect(other.sprites[i].getTextureRect());
+            sprites[i].setScale(other.sprites[i].getScale());
+            sprites[i].setOrigin(other.sprites[i].getOrigin());
+            sprites[i].setPosition(other.sprites[i].getPosition());
+            sprites[i].setRotation(other.sprites[i].getRotation());
+            sprites[i].setColor(other.sprites[i].getColor());
+        }
+
+        return *this;
+    }
+};
+
 struct Drawable {
     std::string spritePath;
     int z_index = 0;

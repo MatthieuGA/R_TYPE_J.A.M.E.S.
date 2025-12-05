@@ -15,13 +15,31 @@ void InitRegistrySystemsEvents(Rtype::Client::GameWorld &game_world);
 
 
 // System function declarations
-void InputSystem(Eng::registry &reg,
-    Eng::sparse_array<Com::Inputs> &inputs);
+
+// RENDER SYSTEMS
 
 void DrawableSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> const &transforms,
     Eng::sparse_array<Com::Drawable> &drawables,
+    Eng::sparse_array<Com::ExtraDrawable> &extra_drawables,
     Eng::sparse_array<Com::Shader> &shaders);
+
+void AnimationSystem(Eng::registry &reg, const float dt,
+        Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
+        Eng::sparse_array<Com::Drawable> &drawables);
+
+void InitializeShaderSystem(Eng::registry &reg,
+    Eng::sparse_array<Com::Shader> &shaders);
+
+void InitializeDrawableAnimatedSystem(Eng::registry &reg,
+    Eng::sparse_array<Com::Transform> const &transforms,
+    Eng::sparse_array<Com::Drawable> &drawables,
+    Eng::sparse_array<Com::AnimatedSprite> const &animated_sprites);
+
+// MOVEMENT SYSTEMS
+
+void InputSystem(Eng::registry &reg,
+    Eng::sparse_array<Com::Inputs> &inputs);
 
 void MovementSystem(Eng::registry &reg, const float dt,
     Eng::sparse_array<Com::Transform> &transforms,
@@ -31,10 +49,6 @@ void ParallaxSystem(Eng::registry &reg, const GameWorld &game_world,
     Eng::sparse_array<Com::Transform> &transforms,
     Eng::sparse_array<Com::ParrallaxLayer> const &parallax_layers,
     Eng::sparse_array<Com::Drawable> const &drawables);
-
-void AnimationSystem(Eng::registry &reg, const float dt,
-    Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
-    Eng::sparse_array<Com::Drawable> &drawables);
 
 void PlayfieldLimitSystem(Eng::registry &reg, const sf::RenderWindow &window,
     Eng::sparse_array<Com::Transform> &transforms,
@@ -46,19 +60,17 @@ void CollisionDetectionSystem(Eng::registry &reg,
     Eng::sparse_array<Com::HitBox> const &hit_boxes,
     Eng::sparse_array<Com::Solid> const &solids);
 
-void InitializeShaderSystem(Eng::registry &reg,
-    Eng::sparse_array<Com::Shader> &shaders);
-
-void InitializeDrawableAnimatedSystem(Eng::registry &reg,
-    Eng::sparse_array<Com::Transform> const &transforms,
-    Eng::sparse_array<Com::Drawable> &drawables,
-    Eng::sparse_array<Com::AnimatedSprite> const &animated_sprites);
-
 void ControllablePlayerSystem(Eng::registry &reg,
     Eng::sparse_array<Com::Inputs> &inputs,
     Eng::sparse_array<Com::Controllable> const &controllables,
     Eng::sparse_array<Com::Velocity> &velocities,
     Eng::sparse_array<Com::PlayerTag> const &playerTags);
+
+// GAMEPLAY SYSTEMS
+
+void ChargingShowAssetPlayerSystem(Eng::registry &reg,
+    Eng::sparse_array<Com::PlayerTag> &player_tags,
+    Eng::sparse_array<Com::ExtraDrawable> &extra_drawables);
 
 void PlayerSystem(Eng::registry &reg,
     Eng::sparse_array<Com::PlayerTag> const &player_tags,

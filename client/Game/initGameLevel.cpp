@@ -71,6 +71,9 @@ void init_player_level(Engine::registry &reg) {
         Component::Transform::CENTER});
     reg.AddComponent<Component::Drawable>(player_entity,
         Component::Drawable{"OriginalRtype/r-typesheet42.gif"});
+    reg.AddComponent<Component::ExtraDrawable>(player_entity,
+        Component::ExtraDrawable({"OriginalRtype/charging.png"},
+            {sf::Vector2f(115.0f, 0.0f)}, {1}, {0.8f}));
     reg.AddComponent<Component::AnimatedSprite>(player_entity,
         Component::AnimatedSprite(33, 19, 2));
     reg.AddComponent<Component::Controllable>(player_entity,

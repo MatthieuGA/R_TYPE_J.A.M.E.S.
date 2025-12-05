@@ -27,7 +27,7 @@ int ownerId) {
     reg.AddComponent<Component::Drawable>(projectile_entity,
         Component::Drawable("OriginalRtype/r-typesheet1.gif", -1));
     reg.AddComponent<Component::AnimatedSprite>(projectile_entity,
-        Component::AnimatedSprite{29, 22, 25 });
+        Component::AnimatedSprite{29, 22, 25});
     reg.AddComponent<Component::Projectile>(projectile_entity,
         Component::Projectile{40.0f, speed, ownerId});
 }
@@ -56,6 +56,8 @@ Eng::sparse_array<Com::PlayerTag> &player_tags) {
             player_tag.charge_time = 0.0f;
             createChargedProjectile(reg, transform.x, transform.y, i);
         }
+        if (!input.shoot && input.last_shoot_state)
+            player_tag.charge_time = 0.0f;
     }
 }
 }  // namespace Rtype::Client
