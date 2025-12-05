@@ -16,9 +16,11 @@ namespace Rtype::Client {
 void PlayerSystem(Eng::registry &reg,
 Eng::sparse_array<Com::PlayerTag> const &player_tags,
 Eng::sparse_array<Com::Velocity> const &velocities,
+Eng::sparse_array<Com::Transform> &transforms,
 Eng::sparse_array<Com::AnimatedSprite> &animated_sprites) {
-    for (auto &&[i, player_tag, velocity, animated_sprite] :
-    make_indexed_zipper(player_tags, velocities, animated_sprites)) {
+    for (auto &&[i, player_tag, velocity, animated_sprite, transform] :
+    make_indexed_zipper(player_tags, velocities, animated_sprites,
+    transforms)) {
         if (velocity.vy > 200.f)
             animated_sprite.currentFrame = 0;
         else if (velocity.vy >= 75)
@@ -29,6 +31,9 @@ Eng::sparse_array<Com::AnimatedSprite> &animated_sprites) {
             animated_sprite.currentFrame = 3;
         else
             animated_sprite.currentFrame = 2;
+
+        float rotation = velocity.vx / player_tag.speed_max * 5.f;
+        transform.rotationDegrees = rotation;
     }
 }
 }  // namespace Rtype::Client

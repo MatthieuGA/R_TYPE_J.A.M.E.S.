@@ -75,6 +75,7 @@ void ChargingShowAssetPlayerSystem(Eng::registry &reg,
 void PlayerSystem(Eng::registry &reg,
     Eng::sparse_array<Com::PlayerTag> const &player_tags,
     Eng::sparse_array<Com::Velocity> const &velocities,
+    Eng::sparse_array<Com::Transform> &drawables,
     Eng::sparse_array<Com::AnimatedSprite> &animated_sprites);
 
 void ShootPlayerSystem(Eng::registry &reg, GameWorld &game_world,

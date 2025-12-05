@@ -79,6 +79,7 @@ struct Drawable {
     std::string spritePath;
     int z_index = 0;
     float opacity = 1.0f;
+    float rotation = 0.0f;
     sf::Sprite sprite;
     sf::Texture texture;
     bool isLoaded = false;

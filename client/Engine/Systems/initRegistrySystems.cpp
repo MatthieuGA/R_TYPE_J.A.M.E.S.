@@ -80,6 +80,7 @@ void init_controls_system(Rtype::Client::GameWorld &game_world) {
         Eng::sparse_array<Com::PlayerTag>>(ControllablePlayerSystem);
     game_world.registry_.AddSystem<Eng::sparse_array<Com::PlayerTag>,
         Eng::sparse_array<Com::Velocity>,
+        Eng::sparse_array<Com::Transform>,
         Eng::sparse_array<Com::AnimatedSprite>>(PlayerSystem);
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
         Eng::sparse_array<Com::Inputs>,
