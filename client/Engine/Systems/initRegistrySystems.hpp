@@ -21,7 +21,6 @@ void InitRegistrySystemsEvents(Rtype::Client::GameWorld &game_world);
 void DrawableSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> const &transforms,
     Eng::sparse_array<Com::Drawable> &drawables,
-    Eng::sparse_array<Com::ExtraDrawable> &extra_drawables,
     Eng::sparse_array<Com::Shader> &shaders);
 
 void AnimationSystem(Eng::registry &reg, const float dt,
@@ -69,8 +68,7 @@ void ControllablePlayerSystem(Eng::registry &reg,
 // GAMEPLAY SYSTEMS
 
 void ChargingShowAssetPlayerSystem(Eng::registry &reg,
-    Eng::sparse_array<Com::PlayerTag> &player_tags,
-    Eng::sparse_array<Com::ExtraDrawable> &extra_drawables);
+    Eng::sparse_array<Com::PlayerTag> &player_tags);
 
 void PlayerSystem(Eng::registry &reg,
     Eng::sparse_array<Com::PlayerTag> const &player_tags,

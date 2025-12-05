@@ -25,15 +25,13 @@ void init_render_systems(Rtype::Client::GameWorld &game_world) {
         });
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
         Eng::sparse_array<Com::Drawable>,
-        Eng::sparse_array<Com::ExtraDrawable>,
         Eng::sparse_array<Com::Shader>>(
         [&game_world](Eng::registry &r,
                 Eng::sparse_array<Com::Transform> const &transforms,
                 Eng::sparse_array<Com::Drawable> &drawables,
-                Eng::sparse_array<Com::ExtraDrawable> &extra_drawables,
                 Eng::sparse_array<Com::Shader> &shaders) {
             DrawableSystem(r, game_world, transforms,
-                drawables, extra_drawables, shaders);
+                drawables, shaders);
         });
 }
 
@@ -91,8 +89,7 @@ void init_controls_system(Rtype::Client::GameWorld &game_world) {
             Eng::sparse_array<Com::PlayerTag> &player_tags) {
             ShootPlayerSystem(r, game_world, transforms, inputs, player_tags);
         });
-    game_world.registry_.AddSystem<Eng::sparse_array<Com::PlayerTag>,
-        Eng::sparse_array<Com::ExtraDrawable>>(ChargingShowAssetPlayerSystem);
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::PlayerTag>>(ChargingShowAssetPlayerSystem);
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
         Eng::sparse_array<Com::Projectile>>(
         [&game_world](Eng::registry &r,

@@ -26,6 +26,24 @@ struct Transform {
     } origin = CENTER;
 
     sf::Vector2f customOrigin = sf::Vector2f(0.0f, 0.0f);
+    struct Transform* parent = nullptr;
+    sf::Vector2f GetWorldPosition() const {
+        if (parent) {
+            sf::Vector2f parentPos = parent->GetWorldPosition();
+            return sf::Vector2f(x + parentPos.x, y + parentPos.y);
+        }
+        return sf::Vector2f(x, y);
+    }
+    float GetWorldRotation() const {
+        if (parent)
+            return rotationDegrees + parent->GetWorldRotation();
+        return rotationDegrees;
+    }
+    float GetWorldScale() const {
+        if (parent)
+            return scale * parent->GetWorldScale();
+        return scale;
+    }
 };
 
 struct Velocity {
