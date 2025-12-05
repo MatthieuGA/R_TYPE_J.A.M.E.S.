@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <bit>
 #include <concepts>
 #include <cstdint>
 #include <cstring>
@@ -10,11 +11,33 @@
 
 namespace server::network {
 
+namespace detail {
+template <typename T>
+inline T to_little_endian(T value) {
+    if constexpr (std::endian::native == std::endian::little) {
+        return value;
+    } else if constexpr (std::endian::native == std::endian::big) {
+        return std::byteswap(value);
+    } else {
+        static_assert(std::endian::native == std::endian::little ||
+                          std::endian::native == std::endian::big,
+            "Mixed endianness not supported");
+    }
+}
+
+template <typename T>
+inline T from_little_endian(T value) {
+    return to_little_endian(value);
+}
+}  // namespace detail
+
 /**
  * @brief RFC-compliant 12-byte packet header (Section 4.1)
  *
- * Layout (Little Endian):\n *  0                   1                   2 3 0 1
- * 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ * Layout (Little Endian):
+ *
+ *  0                   1                   2                   3
+ *  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  * |     OpCode    |          PayloadSize          |  PacketIndex  |
  * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -22,7 +45,6 @@ namespace server::network {
  * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  * |  PacketCount  |                   Reserved                    |
  * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- *
  * Total size: 12 bytes (packed, no padding)
  */
 struct __attribute__((packed)) CommonHeader {
@@ -94,12 +116,13 @@ class PacketBuffer {
         return header;
     }
 
-    // Write primitive types
+    // Write primitive types (guaranteed little-endian)
     void write_uint8(uint8_t value) {
         buffer_.push_back(value);
     }
 
     void write_uint16(uint16_t value) {
+        value = detail::to_little_endian(value);
         uint8_t bytes[2];
         std::memcpy(bytes, &value, 2);
         buffer_.push_back(bytes[0]);
@@ -107,6 +130,7 @@ class PacketBuffer {
     }
 
     void write_uint32(uint32_t value) {
+        value = detail::to_little_endian(value);
         uint8_t bytes[4];
         std::memcpy(bytes, &value, 4);
         for (int i = 0; i < 4; ++i) {
@@ -115,6 +139,7 @@ class PacketBuffer {
     }
 
     void write_uint64(uint64_t value) {
+        value = detail::to_little_endian(value);
         uint8_t bytes[8];
         std::memcpy(bytes, &value, 8);
         for (int i = 0; i < 8; ++i) {
@@ -124,23 +149,19 @@ class PacketBuffer {
 
     void write_float(float value) {
         static_assert(sizeof(float) == 4);
-        uint8_t bytes[4];
-        std::memcpy(bytes, &value, 4);
-        for (int i = 0; i < 4; ++i) {
-            buffer_.push_back(bytes[i]);
-        }
+        uint32_t bits;
+        std::memcpy(&bits, &value, 4);
+        write_uint32(bits);
     }
 
     void write_double(double value) {
         static_assert(sizeof(double) == 8);
-        uint8_t bytes[8];
-        std::memcpy(bytes, &value, 8);
-        for (int i = 0; i < 8; ++i) {
-            buffer_.push_back(bytes[i]);
-        }
+        uint64_t bits;
+        std::memcpy(&bits, &value, 8);
+        write_uint64(bits);
     }
 
-    // Read primitive types
+    // Read primitive types (guaranteed little-endian)
     uint8_t read_uint8() {
         check_bounds(1);
         return buffer_[read_offset_++];
@@ -151,7 +172,7 @@ class PacketBuffer {
         uint16_t value;
         std::memcpy(&value, &buffer_[read_offset_], 2);
         read_offset_ += 2;
-        return value;
+        return detail::from_little_endian(value);
     }
 
     uint32_t read_uint32() {
@@ -159,7 +180,7 @@ class PacketBuffer {
         uint32_t value;
         std::memcpy(&value, &buffer_[read_offset_], 4);
         read_offset_ += 4;
-        return value;
+        return detail::from_little_endian(value);
     }
 
     uint64_t read_uint64() {
@@ -167,22 +188,20 @@ class PacketBuffer {
         uint64_t value;
         std::memcpy(&value, &buffer_[read_offset_], 8);
         read_offset_ += 8;
-        return value;
+        return detail::from_little_endian(value);
     }
 
     float read_float() {
-        check_bounds(4);
+        uint32_t bits = read_uint32();
         float value;
-        std::memcpy(&value, &buffer_[read_offset_], 4);
-        read_offset_ += 4;
+        std::memcpy(&value, &bits, 4);
         return value;
     }
 
     double read_double() {
-        check_bounds(8);
+        uint64_t bits = read_uint64();
         double value;
-        std::memcpy(&value, &buffer_[read_offset_], 8);
-        read_offset_ += 8;
+        std::memcpy(&value, &bits, 8);
         return value;
     }
 
