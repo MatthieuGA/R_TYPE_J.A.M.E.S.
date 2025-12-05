@@ -100,3 +100,5 @@ docs/
 
 *.pdf
 r-type.txt
+*.sh
+vcpkg_installed/

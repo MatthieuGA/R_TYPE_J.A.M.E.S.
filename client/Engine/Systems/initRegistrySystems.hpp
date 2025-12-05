@@ -14,16 +14,21 @@ void InitRegistrySystems(Rtype::Client::GameWorld &game_world);
 void InitRegistrySystemsEvents(Rtype::Client::GameWorld &game_world);
 
 // System function declarations
-void DrawableSystem(Eng::registry &reg, sf::RenderWindow &window,
+void DrawableSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> const &transforms,
     Eng::sparse_array<Com::Drawable> &drawables,
-    Eng::sparse_array<Com::AnimatedSprite> const &animatedSprites);
+    Eng::sparse_array<Com::Shader> &shaders);
 
-void MovementSystem(Eng::registry &reg, const sf::Clock &delta_time_clock,
+void MovementSystem(Eng::registry &reg, const float dt,
     Eng::sparse_array<Com::Transform> &transforms,
     Eng::sparse_array<Com::Velocity> &velocities);
 
-void AnimationSystem(Eng::registry &reg, const sf::Clock &delta_time_clock,
+void ParallaxSystem(Eng::registry &reg, const GameWorld &game_world,
+    Eng::sparse_array<Com::Transform> &transforms,
+    Eng::sparse_array<Com::ParrallaxLayer> const &parallax_layers,
+    Eng::sparse_array<Com::Drawable> const &drawables);
+
+void AnimationSystem(Eng::registry &reg, const float dt,
     Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
     Eng::sparse_array<Com::Drawable> &drawables);
 
@@ -32,8 +37,16 @@ void PlayfieldLimitSystem(Eng::registry &reg, const sf::RenderWindow &window,
     Eng::sparse_array<Com::PlayerTag> const &player_tags);
 
 void CollisionDetectionSystem(Eng::registry &reg,
-    Rtype::Client::GameWorld &game_world,
+    GameWorld &game_world,
     Eng::sparse_array<Com::Transform> &transforms,
     Eng::sparse_array<Com::HitBox> const &hit_boxes,
     Eng::sparse_array<Com::Solid> const &solids);
+
+void InitializeShaderSystem(Eng::registry &reg,
+    Eng::sparse_array<Com::Shader> &shaders);
+void InitializeDrawableAnimatedSystem(Eng::registry &reg,
+    Eng::sparse_array<Com::Transform> const &transforms,
+    Eng::sparse_array<Com::Drawable> &drawables,
+    Eng::sparse_array<Com::AnimatedSprite> const &animated_sprites);
+
 }  // namespace Rtype::Client

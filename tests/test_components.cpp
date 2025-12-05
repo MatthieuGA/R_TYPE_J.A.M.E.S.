@@ -20,7 +20,7 @@ TEST(ComponentsCore, TransformAndVelocity) {
 
 TEST(ComponentsCore, DrawableBasics) {
     Com::Drawable d("Logo.png", 5);
-    EXPECT_EQ(d.spritePath, std::string("Assets/Logo.png"));
+    EXPECT_EQ(d.spritePath, std::string("Assets/Images/Logo.png"));
     EXPECT_EQ(d.z_index, 5);
     EXPECT_FALSE(d.isLoaded);
 }
