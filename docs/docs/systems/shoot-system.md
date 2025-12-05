@@ -1,6 +1,6 @@
 # Shoot System
 
-**Fichier source:** `client/Engine/Systems/SytemsFunctions/shootSystem.cpp`
+**Fichier source:** `client/Engine/Systems/SytemsFunctions/ShootPlayerSystem.cpp`
 
 **But:** Gérer la mécanique de tir du joueur et créer des entités projectile.
 
@@ -18,7 +18,7 @@
 ## Signature principale
 
 ```cpp
-void ShootSystem(Eng::registry &reg, GameWorld &game_world,
+void ShootPlayerSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> &transforms,
     Eng::sparse_array<Com::Inputs> const &inputs,
     Eng::sparse_array<Com::PlayerTag> &player_tags);

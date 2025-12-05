@@ -85,7 +85,7 @@ void init_controls_system(Rtype::Client::GameWorld &game_world) {
             Eng::sparse_array<Com::Transform> &transforms,
             Eng::sparse_array<Com::Inputs> const &inputs,
             Eng::sparse_array<Com::PlayerTag> &player_tags) {
-            ShootSystem(r, game_world, transforms, inputs, player_tags);
+            ShootPlayerSystem(r, game_world, transforms, inputs, player_tags);
         });
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
         Eng::sparse_array<Com::Projectile>>(

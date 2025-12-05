@@ -5,10 +5,12 @@
 
 namespace Rtype::Client::Component {
 struct PlayerTag {
-    float speed_max;
-    float shoot_cooldown_max;
-    float shoot_cooldown;
-    int playerNumber;
+    float speed_max = 300.0f;
+    float shoot_cooldown_max = 0.3f;
+    float charge_time_min = 0.5f;
+    float shoot_cooldown = 0.0f;
+    float charge_time = 0.0f;
+    int playerNumber = 0;
 };
 
 struct EnemyTag {

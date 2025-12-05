@@ -165,7 +165,7 @@ TEST(Systems, PlayerSystemSetsFrameBasedOnVelocity) {
     EXPECT_EQ(animated_sprites[0]->currentFrame, 1);
 }
 
-TEST(Systems, ShootSystemCreatesProjectileAndResetsCooldown) {
+TEST(Systems, ShootPlayerSystemCreatesProjectileAndResetsCooldown) {
     Eng::registry reg;
     Rtype::Client::GameWorld gw;
 
@@ -185,7 +185,7 @@ TEST(Systems, ShootSystemCreatesProjectileAndResetsCooldown) {
 
     gw.last_delta_ = 0.016f;
 
-    ShootSystem(reg, gw, transforms, inputs, player_tags);
+    ShootPlayerSystem(reg, gw, transforms, inputs, player_tags);
 
     // After shooting, cooldown should be reset to max
     ASSERT_TRUE(player_tags[0].has_value());

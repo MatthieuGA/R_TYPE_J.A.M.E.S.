@@ -14,6 +14,8 @@ namespace Rtype::Client {
 void InputSystem(Eng::registry &reg,
 Eng::sparse_array<Com::Inputs> &inputs) {
     for (auto &&[i, input] : make_indexed_zipper(inputs)) {
+        input.last_shoot_state = input.shoot;
+
         input.horizontal = 0.0f;
         input.vertical = 0.0f;
         input.shoot = false;

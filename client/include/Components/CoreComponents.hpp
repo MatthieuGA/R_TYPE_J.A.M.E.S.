@@ -152,9 +152,12 @@ struct Solid {
 };
 
 struct Inputs {
+    // movement states
     float horizontal = 0.0f;
     float vertical = 0.0f;
+    // shoot states
     bool shoot = false;
+    bool last_shoot_state = false;
 };
 
 }  // namespace Rtype::Client::Component

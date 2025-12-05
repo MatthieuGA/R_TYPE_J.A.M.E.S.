@@ -65,7 +65,7 @@ void PlayerSystem(Eng::registry &reg,
     Eng::sparse_array<Com::Velocity> const &velocities,
     Eng::sparse_array<Com::AnimatedSprite> &animated_sprites);
 
-void ShootSystem(Eng::registry &reg, GameWorld &game_world,
+void ShootPlayerSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> &transforms,
     Eng::sparse_array<Com::Inputs> const &inputs,
     Eng::sparse_array<Com::PlayerTag> &player_tags);
