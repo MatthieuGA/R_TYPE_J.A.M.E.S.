@@ -4,9 +4,17 @@
 #include <memory>
 #include <vector>
 #include <utility>
+#include <cstdint>
+#include <optional>
 #include <SFML/Graphics.hpp>
 
 namespace Rtype::Client::Component {
+/**
+ * @brief Transform component for hierarchical positioning and rotation.
+ *
+ * Uses Entity IDs for parent-child relationships instead of raw pointers
+ * to avoid dangling pointer issues when the sparse_array reallocates.
+ */
 struct Transform {
     float x;
     float y;
@@ -26,23 +34,25 @@ struct Transform {
     } origin = CENTER;
 
     sf::Vector2f customOrigin = sf::Vector2f(0.0f, 0.0f);
-    struct Transform* parent = nullptr;
-    sf::Vector2f GetWorldPosition() const {
-        if (parent) {
-            sf::Vector2f parentPos = parent->GetWorldPosition();
-            return sf::Vector2f(x + parentPos.x, y + parentPos.y);
-        }
-        return sf::Vector2f(x, y);
-    }
+
+    // Parent entity ID (std::nullopt if no parent)
+    std::optional<std::size_t> parent_entity = std::nullopt;
+
+    Transform() = default;
+    Transform(float x, float y, float rotationDegrees, float scale,
+        OriginPoint origin = CENTER,
+        sf::Vector2f customOrigin = sf::Vector2f(0.0f, 0.0f),
+        std::optional<std::size_t> parent_entity = std::nullopt)
+    : x(x), y(y), rotationDegrees(rotationDegrees), scale(scale),
+        origin(origin), customOrigin(customOrigin),
+        parent_entity(parent_entity) {}
+
+    /**
+     * @brief Gets the cumulative rotation including parent rotations.
+     * @note This only uses local rotation; parent rotations must be added by the render system.
+     */
     float GetWorldRotation() const {
-        if (parent)
-            return rotationDegrees + parent->GetWorldRotation();
         return rotationDegrees;
-    }
-    float GetWorldScale() const {
-        if (parent)
-            return scale * parent->GetWorldScale();
-        return scale;
     }
 };
 

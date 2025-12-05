@@ -13,9 +13,9 @@ void SetFrame(Com::AnimatedSprite &anim_sprite, Com::Drawable &drawable) {
         return;
     const int columns = drawable.texture.getSize().x / anim_sprite.frameWidth;
     if (columns == 0) return;
-    const int left =
+    const int left = anim_sprite.first_frame_position.x +
         (anim_sprite.currentFrame % columns) * anim_sprite.frameWidth;
-    const int top =
+    const int top = anim_sprite.first_frame_position.y +
         (anim_sprite.currentFrame / columns) * anim_sprite.frameHeight;
     drawable.sprite.setTextureRect(sf::IntRect(
         left, top, anim_sprite.frameWidth, anim_sprite.frameHeight));

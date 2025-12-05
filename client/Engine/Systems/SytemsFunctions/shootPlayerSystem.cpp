@@ -49,7 +49,8 @@ Eng::sparse_array<Com::PlayerTag> &player_tags) {
             createProjectile(reg, transform.x, transform.y, i);
         }
         // Handle charged shooting
-        if (input.shoot && input.last_shoot_state && player_tag.charge_time < player_tag.charge_time_min)
+        if (input.shoot && input.last_shoot_state &&
+            player_tag.charge_time < player_tag.charge_time_min)
             player_tag.charge_time += game_world.last_delta_;
         if (!input.shoot && input.last_shoot_state &&
             player_tag.charge_time >= player_tag.charge_time_min) {

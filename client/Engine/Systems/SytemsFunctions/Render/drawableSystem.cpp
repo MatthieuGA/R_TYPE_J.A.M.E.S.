@@ -38,6 +38,81 @@ Com::Drawable *drawable, std::optional<Com::Shader*> shaderCompOpt) {
     }
 }
 
+/**
+ * @brief Calculates the world position accounting for hierarchical rotation.
+ *
+ * When a child has a parent, it orbits around the parent's origin.
+ * The position is first rotated by the parent's rotation, then offset.
+ *
+ * @param transform The transform component of the entity.
+ * @param transforms The sparse array of all transforms (to access parent).
+ * @return The world position with rotational hierarchy applied.
+ */
+sf::Vector2f CalculateWorldPositionWithHierarchy(
+    const Com::Transform &transform,
+    const Eng::sparse_array<Com::Transform> &transforms) {
+    if (!transform.parent_entity.has_value()) {
+        return sf::Vector2f(transform.x, transform.y);
+    }
+
+    // Get parent entity ID
+    std::size_t parent_id = transform.parent_entity.value();
+
+    // Check if parent exists and has a Transform component
+    if (!transforms.has(parent_id)) {
+        return sf::Vector2f(transform.x, transform.y);
+    }
+
+    const Com::Transform &parent_transform = transforms[parent_id].value();
+
+    // Recursively get parent's world position and rotation
+    sf::Vector2f parent_pos =
+        CalculateWorldPositionWithHierarchy(parent_transform, transforms);
+    float parent_rotation_rad =
+        parent_transform.rotationDegrees * 3.14159265f / 180.0f;
+
+    // Add parent's parent rotations
+    if (parent_transform.parent_entity.has_value()) {
+        std::size_t grandparent_id = parent_transform.parent_entity.value();
+        if (transforms.has(grandparent_id)) {
+            const Com::Transform &grandparent =
+                transforms[grandparent_id].value();
+            parent_rotation_rad +=
+                grandparent.GetWorldRotation() * 3.14159265f / 180.0f;
+        }
+    }
+
+    // Calculate local position relative to parent's origin
+    float local_x = transform.x;
+    float local_y = transform.y;
+
+    // Rotate local position by parent's rotation
+    float rotated_x = local_x * std::cos(parent_rotation_rad) -
+        local_y * std::sin(parent_rotation_rad);
+    float rotated_y = local_x * std::sin(parent_rotation_rad) +
+        local_y * std::cos(parent_rotation_rad);
+
+    // Apply parent's position
+    return sf::Vector2f(parent_pos.x + rotated_x, parent_pos.y + rotated_y);
+}
+
+float CalculateCumulativeScale(
+    const Com::Transform &transform,
+    const Eng::sparse_array<Com::Transform> &transforms) {
+    float cumulative_scale = transform.scale;
+
+    if (transform.parent_entity.has_value()) {
+        std::size_t parent_id = transform.parent_entity.value();
+        if (transforms.has(parent_id)) {
+            const Com::Transform &parent_transform =
+                transforms[parent_id].value();
+            cumulative_scale *=
+                CalculateCumulativeScale(parent_transform, transforms);
+        }
+    }
+    return cumulative_scale;
+}
+
 void RenderOneEntity(Eng::sparse_array<Com::Transform> const &transforms,
 Eng::sparse_array<Com::Drawable> &drawables,
 Eng::sparse_array<Com::Shader> &shaders,
@@ -49,11 +124,14 @@ GameWorld &game_world, int i) {
     std::optional<Com::Shader*> shaderCompOpt = std::nullopt;
     if (shaders.has(i)) shaderCompOpt = &shaders[i].value();
 
-    drawable->sprite.setPosition(sf::Vector2f(transform->GetWorldPosition().x,
-        transform->GetWorldPosition().y));
-    drawable->sprite.setScale(
-        sf::Vector2f(transform->GetWorldScale(), transform->GetWorldScale()));
-    drawable->sprite.setRotation(transform->GetWorldRotation());
+    // Calculate world position with hierarchical rotation
+    sf::Vector2f world_position =
+        CalculateWorldPositionWithHierarchy(transform.value(), transforms);
+    drawable->sprite.setPosition(world_position);
+    float world_scale = CalculateCumulativeScale(transform.value(), transforms);
+    drawable->sprite.setScale(sf::Vector2f(world_scale, world_scale));
+    // Child rotation only: apply the entity's own rotation
+    drawable->sprite.setRotation(transform->rotationDegrees);
     drawable->sprite.setColor(sf::Color(255, 255, 255,
         drawable->opacity * 255));
     DrawSprite(game_world, drawable->sprite, &drawable.value(), shaderCompOpt);

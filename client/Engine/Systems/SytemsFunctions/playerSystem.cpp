@@ -34,6 +34,13 @@ Eng::sparse_array<Com::AnimatedSprite> &animated_sprites) {
 
         float rotation = velocity.vx / player_tag.speed_max * 5.f;
         transform.rotationDegrees = rotation;
+
+        for (auto &&[j, child_transform] : make_indexed_zipper(transforms)) {
+            if (child_transform.parent_entity.has_value() &&
+                child_transform.parent_entity.value() == i) {
+                child_transform.rotationDegrees = rotation;
+            }
+        }
     }
 }
 }  // namespace Rtype::Client

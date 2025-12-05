@@ -83,10 +83,14 @@ void init_player_level(Engine::registry &reg) {
 
     auto player_charging_entity = reg.SpawnEntity();
     reg.AddComponent<Component::Transform>(player_charging_entity,
-        Component::Transform{100.0f, 0.0f, 0.0f, 1.0f,
-        Component::Transform::CENTER, {0.0f, 0.0f}, &reg.GetComponent<Component::Transform>(player_entity)});
+        Component::Transform(100.0f, 0.0f, 0.0f, 1.0f,
+        Component::Transform::CENTER, {0.0f, 0.0f},
+        player_entity.GetId()));
     reg.AddComponent<Component::Drawable>(player_charging_entity,
-        Component::Drawable{"OriginalRtype/charging.png", 1, 1.0f});
+        Component::Drawable{"OriginalRtype/r-typesheet1.gif", -1, 1.0f});
+    reg.AddComponent<Component::AnimatedSprite>(player_charging_entity,
+        Component::AnimatedSprite(33, 33, 0.1f, true,
+        sf::Vector2f(0.0f, 50.0f), 8));
 }
 
 void init_game_level(registry &reg) {
