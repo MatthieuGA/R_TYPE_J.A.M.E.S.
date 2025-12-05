@@ -30,13 +30,21 @@ struct Drawable {
     int z_index = 0;
     sf::Sprite sprite;
     sf::Texture texture;
+
+    enum OriginPoint {
+        TOP_LEFT,
+        CENTER
+    } origin = TOP_LEFT;
+
     bool isLoaded = false;
 
-    explicit Drawable(const std::string &spritePath, int zIndex = 0)
+    Drawable(const std::string &spritePath, int zIndex,
+        OriginPoint originPoint = TOP_LEFT)
         : spritePath("Assets/" + spritePath),
           z_index(zIndex),
           texture(),
           sprite(texture),
+          origin(originPoint),
           isLoaded(false) {}
 };
 
@@ -79,5 +87,11 @@ struct HitBox {
 struct Solid {
     bool isSolid = true;
     bool isLocked = false;
+};
+
+struct SoundRequest {
+    std::string sound_id;
+    float volume = 1.0f;
+    bool loop = false;
 };
 }  // namespace Rtype::Client::Component

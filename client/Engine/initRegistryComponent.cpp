@@ -6,11 +6,13 @@ void InitRegistryComponents(Engine::registry &reg) {
     reg.RegisterComponent<Rtype::Client::Component::Transform>();
     reg.RegisterComponent<Rtype::Client::Component::Drawable>();
     reg.RegisterComponent<Rtype::Client::Component::Velocity>();
+    reg.RegisterComponent<Rtype::Client::Component::RigidBody>();
     reg.RegisterComponent<Rtype::Client::Component::Controllable>();
     reg.RegisterComponent<Rtype::Client::Component::InputState>();
     reg.RegisterComponent<Rtype::Client::Component::HitBox>();
     reg.RegisterComponent<Rtype::Client::Component::AnimatedSprite>();
     reg.RegisterComponent<Rtype::Client::Component::Solid>();
+    reg.RegisterComponent<Rtype::Client::Component::SoundRequest>();
     // Register gameplay components
     reg.RegisterComponent<Rtype::Client::Component::PlayerTag>();
     reg.RegisterComponent<Rtype::Client::Component::EnemyTag>();

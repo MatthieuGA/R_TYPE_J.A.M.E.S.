@@ -4,7 +4,7 @@
 
 #include <boost/asio.hpp>
 
-#include "include/registry.hpp"
+#include "registry.hpp"
 #include "server/Config.hpp"
 #include "server/Network.hpp"
 

@@ -1,65 +1,47 @@
 #include <cstdio>
 #include <iostream>
-#include <vector>
+#include <memory>
+#include <utility>
 
 #include <SFML/Graphics.hpp>
 
+#include "registry.hpp"
+#include "Engine/Audio/AudioManager.hpp"
+#include "Engine/Audio/SFMLAudioBackend.hpp"
 #include "Engine/gameWorld.hpp"
 #include "Engine/initRegistryComponent.hpp"
 #include "Engine/initRegistrySystems.hpp"
-#include "include/registry.hpp"
 
 using Engine::registry;
 namespace RC = Rtype::Client;
 namespace Component = Rtype::Client::Component;
+namespace Audio = Rtype::Client::Audio;
 
-void init_registry(Rtype::Client::GameWorld &game_world) {
+void init_registry(RC::GameWorld &game_world,
+    Audio::AudioManager &audio_manager) {
     RC::InitRegistryComponents(game_world.registry_);
-    RC::InitRegistrySystemsEvents(game_world);
-    RC::InitRegistrySystems(game_world);
-}
-
-void init_entities(registry &reg) {
-    std::vector<registry::entity_t> entities;
-    for (int i = 0; i < 3; ++i) {
-        auto entity = reg.SpawnEntity();
-        reg.EmplaceComponent<Component::Drawable>(
-            entity, Component::Drawable("ball_enemy.gif"));
-        reg.EmplaceComponent<Component::AnimatedSprite>(
-            entity, Component::AnimatedSprite{17, 17, 12, rand() % 12});
-        reg.EmplaceComponent<Component::HitBox>(
-            entity, Component::HitBox{17.0f, 17.0f});
-        entities.push_back(entity);
-        reg.EmplaceComponent<Component::PlayerTag>(entity);
-    }
-
-    // First entity going down right
-    reg.EmplaceComponent<Component::Transform>(
-        entities[0], Component::Transform{150.0f, 100.0f, 0, 4.f});
-    reg.EmplaceComponent<Component::Solid>(entities[0], Component::Solid{});
-    reg.EmplaceComponent<Component::Velocity>(
-        entities[0], Component::Velocity{100.0f, 30.0f});
-
-    // Second entity going up left
-    reg.EmplaceComponent<Component::Transform>(
-        entities[1], Component::Transform{450.0f, 100.0f, 0, 4.f});
-    reg.EmplaceComponent<Component::Solid>(entities[1], Component::Solid{});
-    reg.EmplaceComponent<Component::Velocity>(
-        entities[1], Component::Velocity{-50.0f, 30.0f});
-
-    // Third entity stationary
-    reg.EmplaceComponent<Component::Transform>(
-        entities[2], Component::Transform{400.f, 250.0f, 0, 4.f});
-    reg.EmplaceComponent<Component::Solid>(
-        entities[2], Component::Solid{true, true});
+    RC::InitRegistrySystems(game_world, audio_manager);
 }
 
 int main() {
     try {
-        Rtype::Client::GameWorld game_world;
+        RC::GameWorld game_world;
 
-        init_registry(game_world);
-        init_entities(game_world.registry_);
+        // Initialize audio subsystem
+        auto audio_backend = std::make_unique<Audio::SFMLAudioBackend>();
+        Audio::AudioManager audio_manager(std::move(audio_backend));
+
+        init_registry(game_world, audio_manager);
+        
+        // Create some entities (simplified from base branch example)
+        for (int i = 0; i < 4; ++i) {
+            auto entity = game_world.registry_.SpawnEntity();
+            game_world.registry_.EmplaceComponent<Component::Transform>(entity,
+                Component::Transform{(i + 1) * 150.0f, 100.0f, i * 10.f, 0.2f});
+            game_world.registry_.EmplaceComponent<Component::Drawable>(entity,
+                Component::Drawable("Logo.png", 0, Component::Drawable::CENTER));
+        }
+
         while (game_world.window_.isOpen()) {
             sf::Event event;
             while (game_world.window_.pollEvent(event)) {
