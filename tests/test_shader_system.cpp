@@ -2,6 +2,7 @@
 
 #include "../client/Engine/Systems/initRegistrySystems.hpp"
 #include "../client/include/Components/CoreComponents.hpp"
+#include "../client/include/Components/RenderComponent.hpp"
 
 namespace Com = Rtype::Client::Component;
 namespace Eng = Engine;

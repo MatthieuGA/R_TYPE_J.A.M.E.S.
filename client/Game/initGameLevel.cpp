@@ -4,6 +4,7 @@
 #include "include/registry.hpp"
 #include "Game/initGameLevel.hpp"
 #include "include/Components/CoreComponents.hpp"
+#include "include/Components/RenderComponent.hpp"
 #include "include/Components/GameplayComponents.hpp"
 
 namespace Rtype::Client {

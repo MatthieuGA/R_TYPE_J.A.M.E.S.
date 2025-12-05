@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "../client/include/Components/CoreComponents.hpp"
+#include "../client/include/Components/RenderComponent.hpp"
 #include "../client/include/Components/GameplayComponents.hpp"
 #include "../client/include/Components/NetworkingComponents.hpp"
 
