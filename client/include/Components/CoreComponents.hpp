@@ -38,6 +38,9 @@ struct Transform {
     // Parent entity ID (std::nullopt if no parent)
     std::optional<std::size_t> parent_entity = std::nullopt;
 
+    // List of child entity IDs for hierarchical relationships
+    std::vector<std::size_t> children;
+
     Transform() = default;
     Transform(float x, float y, float rotationDegrees, float scale,
         OriginPoint origin = CENTER,
@@ -45,7 +48,7 @@ struct Transform {
         std::optional<std::size_t> parent_entity = std::nullopt)
     : x(x), y(y), rotationDegrees(rotationDegrees), scale(scale),
         origin(origin), customOrigin(customOrigin),
-        parent_entity(parent_entity) {}
+        parent_entity(parent_entity), children() {}
 
     /**
      * @brief Gets the cumulative rotation including parent rotations.

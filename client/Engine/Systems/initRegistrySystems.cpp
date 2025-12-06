@@ -89,8 +89,18 @@ void init_controls_system(Rtype::Client::GameWorld &game_world) {
             Eng::sparse_array<Com::PlayerTag> &player_tags) {
             ShootPlayerSystem(r, game_world, transforms, inputs, player_tags);
         });
-    game_world.registry_.AddSystem<Eng::sparse_array<Com::PlayerTag>>
-        (ChargingShowAssetPlayerSystem);
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::PlayerTag>,
+        Eng::sparse_array<Com::Drawable>,
+        Eng::sparse_array<Com::AnimatedSprite>,
+        Eng::sparse_array<Com::Transform>>(
+        [](Eng::registry &r,
+            Eng::sparse_array<Com::PlayerTag> &player_tags,
+            Eng::sparse_array<Com::Drawable> &drawables,
+            Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
+            Eng::sparse_array<Com::Transform> &transforms) {
+            ChargingShowAssetPlayerSystem(r, player_tags, drawables,
+                animated_sprites, transforms);
+        });
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
         Eng::sparse_array<Com::Projectile>>(
         [&game_world](Eng::registry &r,

@@ -91,6 +91,10 @@ void init_player_level(Engine::registry &reg) {
     reg.AddComponent<Component::AnimatedSprite>(player_charging_entity,
         Component::AnimatedSprite(33, 33, 0.1f, true,
         sf::Vector2f(0.0f, 50.0f), 8));
+
+    // Add the charging entity to the player's children list
+    reg.GetComponent<Component::Transform>(player_entity).children.push_back(
+        player_charging_entity.GetId());
 }
 
 void init_game_level(registry &reg) {

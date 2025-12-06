@@ -68,7 +68,10 @@ void ControllablePlayerSystem(Eng::registry &reg,
 // GAMEPLAY SYSTEMS
 
 void ChargingShowAssetPlayerSystem(Eng::registry &reg,
-    Eng::sparse_array<Com::PlayerTag> &player_tags);
+    Eng::sparse_array<Com::PlayerTag> &player_tags,
+    Eng::sparse_array<Com::Drawable> &drawables,
+    Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
+    Eng::sparse_array<Com::Transform> &transforms);
 
 void PlayerSystem(Eng::registry &reg,
     Eng::sparse_array<Com::PlayerTag> const &player_tags,
