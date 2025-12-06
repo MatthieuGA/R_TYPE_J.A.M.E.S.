@@ -32,7 +32,17 @@ int ownerId) {
         Component::Projectile{40.0f, speed, ownerId});
 }
 
-
+/**
+ * @brief System to handle player shooting mechanics.
+ *
+ * This system processes player inputs to manage shooting normal and charged projectiles.
+ *
+ * @param reg The registry containing components.
+ * @param game_world The game world for accessing global state.
+ * @param transforms Sparse array of Transform components.
+ * @param inputs Sparse array of Inputs components.
+ * @param player_tags Sparse array of PlayerTag components.
+ */
 void ShootPlayerSystem(Eng::registry &reg, GameWorld &game_world,
 Eng::sparse_array<Com::Transform> &transforms,
 Eng::sparse_array<Com::Inputs> const &inputs,

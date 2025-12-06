@@ -7,6 +7,15 @@
 
 namespace Rtype::Client {
 
+/**
+ * @brief Set the origin of a drawable based on its transform.
+ *
+ * Uses `GetOffsetFromTransform` to calculate the correct origin
+ * based on the texture size and transform.
+ *
+ * @param drawable Drawable component to update
+ * @param transform Transform used for offset calculation
+ */
 void SetDrawableOrigin(
 Com::Drawable &drawable, const Com::Transform &transform) {
     sf::Vector2f origin = GetOffsetFromTransform(transform,
@@ -15,6 +24,14 @@ Com::Drawable &drawable, const Com::Transform &transform) {
     drawable.sprite.setOrigin(-origin);
 }
 
+/**
+ * @brief Initialize a drawable that uses a static texture.
+ *
+ * Loads the texture, sets the origin based on the transform.
+ *
+ * @param drawable Drawable component to initialize
+ * @param transform Transform for origin calculation
+ */
 void InitializeDrawable(
 Com::Drawable &drawable, const Com::Transform &transform) {
     if (!drawable.texture.loadFromFile(drawable.spritePath))
@@ -26,6 +43,18 @@ Com::Drawable &drawable, const Com::Transform &transform) {
     drawable.isLoaded = true;
 }
 
+/**
+ * @brief Draw a sprite with optional shader.
+ *
+ * If a shader component is provided and loaded, it sets the "time"
+ * uniform and draws the sprite with the shader. Otherwise, it draws
+ * the sprite normally.
+ *
+ * @param game_world The game world containing the render window.
+ * @param sprite The sprite to draw.
+ * @param drawable The drawable component (for reference).
+ * @param shaderCompOpt Optional shader component pointer.
+ */
 void DrawSprite(GameWorld &game_world, sf::Sprite &sprite,
 Com::Drawable *drawable, std::optional<Com::Shader*> shaderCompOpt) {
     if (shaderCompOpt.has_value() && (*shaderCompOpt)->isLoaded) {

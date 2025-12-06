@@ -3,6 +3,15 @@
 
 namespace Rtype::Client {
 
+/**
+ * @brief Set the opacity of child drawable based on player's charge time.
+ *
+ * @param drawables Sparse array of Drawable components.
+ * @param animated_sprites Sparse array of AnimatedSprite components.
+ * @param player_tag The PlayerTag component of the parent entity.
+ * @param transforms Sparse array of Transform components.
+ * @param child_id The ID of the child entity whose drawable to update.
+ */
 void SetOpacityChildren(Eng::sparse_array<Com::Drawable> &drawables,
 Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
 Com::PlayerTag &player_tag, Eng::sparse_array<Com::Transform> &transforms,
@@ -16,6 +25,18 @@ size_t child_id) {
         ? 1.0f : 0.0f;
 }
 
+/**
+ * @brief System to show charging asset for player based on charge time.
+ *
+ * This system updates the opacity of the charging asset child entity
+ * based on the player's charge time.
+ *
+ * @param reg The registry containing components.
+ * @param player_tags Sparse array of PlayerTag components.
+ * @param drawables Sparse array of Drawable components.
+ * @param animated_sprites Sparse array of AnimatedSprite components.
+ * @param transforms Sparse array of Transform components.
+ */
 void ChargingShowAssetPlayerSystem(Eng::registry &reg,
 Eng::sparse_array<Com::PlayerTag> &player_tags,
 Eng::sparse_array<Com::Drawable> &drawables,

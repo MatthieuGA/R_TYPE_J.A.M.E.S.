@@ -6,6 +6,14 @@ namespace Eng = Engine;
 namespace Rtype::Client {
 namespace Com = Component;
 
+/**
+ * @brief Initialize render-related systems in the registry.
+ *
+ * This function sets up the necessary systems for rendering,
+ * including drawable initialization, shader setup, and animation handling.
+ *
+ * @param game_world The game world containing the registry.
+ */
 void init_render_systems(Rtype::Client::GameWorld &game_world) {
     // Initialize systems
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
@@ -35,6 +43,14 @@ void init_render_systems(Rtype::Client::GameWorld &game_world) {
         });
 }
 
+/**
+ * @brief Initialize movement-related systems in the registry.
+ *
+ * This function sets up the necessary systems for handling movement,
+ * including velocity updates, parallax effects, playfield limits, and collision detection.
+ *
+ * @param game_world The game world containing the registry.
+ */
 void init_movement_system(Rtype::Client::GameWorld &game_world) {
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
         Eng::sparse_array<Com::Velocity>>(
@@ -70,6 +86,15 @@ void init_movement_system(Rtype::Client::GameWorld &game_world) {
         });
 }
 
+/**
+ * @brief Initialize control-related systems in the registry.
+ *
+ * This function sets up the necessary systems for handling player input,
+ * controllable entities, player-specific logic, shooting mechanics, and
+ * visual feedback for charging actions.
+ *
+ * @param game_world The game world containing the registry.
+ */
 void init_controls_system(Rtype::Client::GameWorld &game_world) {
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Inputs>>(InputSystem);
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Inputs>,
@@ -110,6 +135,14 @@ void init_controls_system(Rtype::Client::GameWorld &game_world) {
         });
 }
 
+/**
+ * @brief Initialize all registry systems for the game world.
+ *
+ * This function sets up control, movement, and rendering systems
+ * within the provided game world's registry.
+ *
+ * @param game_world The game world containing the registry.
+ */
 void InitRegistrySystems(Rtype::Client::GameWorld &game_world) {
     // Set up systems
     init_controls_system(game_world);

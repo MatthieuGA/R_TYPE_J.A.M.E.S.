@@ -4,16 +4,28 @@ Cette section documente les systèmes moteur (client) utilisés dans le projet R
 
 ## Pages
 
+### Systèmes de Rendu
+
 - [Animation System](./animation-system)
 - [Initialize Animation System](./initialize-animation-system)
 - [Drawable System](./drawable-system)
 - [Initialize Shader System](./initialize-shader-system)
+
+### Systèmes de Contrôle et Input
+
 - [Input System](./input-system)
+- [Controllable Player System](./controllable-player-system)
+
+### Systèmes de Mouvement
+
 - [Movement System](./movement-system)
 - [Parallax System](./parallax-system)
-- [Player System](./player-system)
-- [Controllable Player System](./controllable-player-system)
 - [Playfield Limit System](./playfield-limit-system)
-- [Projectile System](./projectile-system)
+
+### Systèmes de Gameplay
+
+- [Player System](./player-system)
+- [Charging Show Asset System](./charging-show-asset-system)
 - [Shoot System](./shoot-system)
+- [Projectile System](./projectile-system)
 - [Collision Detection System](./collision-detection-system)
