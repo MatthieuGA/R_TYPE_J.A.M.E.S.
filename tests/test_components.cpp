@@ -47,7 +47,14 @@ TEST(ComponentsCore, HitBox) {
 }
 
 TEST(ComponentsGameplay, TagsAndProjectile) {
-    Com::PlayerTag p{400.f, 0.5f, 0.0f, 2};
+    Com::PlayerTag p;
+    p.speed_max = 400.f;
+    p.shoot_cooldown_max = 0.5f;
+    p.charge_time_min = 0.0f;
+    p.shoot_cooldown = 0.0f;
+    p.charge_time = 0.0f;
+    p.playerNumber = 2;
+    
     EXPECT_EQ(p.playerNumber, 2);
     EXPECT_FLOAT_EQ(p.speed_max, 400.f);
     EXPECT_FLOAT_EQ(p.shoot_cooldown_max, 0.5f);

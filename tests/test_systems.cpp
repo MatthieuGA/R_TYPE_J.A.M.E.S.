@@ -183,10 +183,19 @@ TEST(Systems, ShootPlayerSystemCreatesProjectileAndResetsCooldown) {
     Eng::sparse_array<Com::PlayerTag> player_tags;
 
     transforms.insert_at(0, Com::Transform{10.0f, 20.0f, 0.0f, 1.0f});
-    inputs.insert_at(0, Com::Inputs{0.0f, 0.0f, true});
-    player_tags.insert_at(0, Com::PlayerTag{400.f, 0.1f, 0.0f, 1});
+    // Set shoot=true and last_shoot_state=false to trigger a new shot
+    inputs.insert_at(0, Com::Inputs{0.0f, 0.0f, true, false});
+    // Create PlayerTag with proper field values
+    Com::PlayerTag tag;
+    tag.speed_max = 400.0f;
+    tag.shoot_cooldown_max = 0.2f;
+    tag.charge_time_min = 0.5f;
+    tag.shoot_cooldown = 0.0f;  // Ready to shoot
+    tag.charge_time = 0.0f;
+    tag.playerNumber = 1;
+    player_tags.insert_at(0, tag);
 
-    gw.last_delta_ = 0.016f;
+    gw.last_delta_ = 0.03f;
 
     ShootPlayerSystem(reg, gw, transforms, inputs, player_tags);
 
