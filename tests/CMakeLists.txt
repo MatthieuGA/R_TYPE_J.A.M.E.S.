@@ -32,6 +32,7 @@ target_include_directories(engine_tests PRIVATE
 # Compile client engine sources into the test executable so systems are available
 file(GLOB_RECURSE CLIENT_ENGINE_SOURCES CONFIGURE_DEPENDS
     "${CMAKE_SOURCE_DIR}/client/Engine/*.cpp"
+    "${CMAKE_SOURCE_DIR}/client/Game/*.cpp"
 )
 if (CLIENT_ENGINE_SOURCES)
     target_sources(engine_tests PRIVATE ${CLIENT_ENGINE_SOURCES})
