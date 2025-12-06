@@ -12,12 +12,12 @@ Eng::sparse_array<Component::SceneManagement> &sceneManagements) {
             continue;
 
         // onExit de l’ancien état
-        if (gs.table.find(gs.current) != gs.table.end() && gs.table[gs.current].onExit)
-            gs.table[gs.current].onExit(reg);
+        if (gs.scenes.find(gs.current) != gs.scenes.end())
+            gs.scenes[gs.current]->DestroyScene(reg);
 
         // onEnter du nouvel état
-        if (gs.table.find(gs.next) != gs.table.end() && gs.table[gs.next].onEnter)
-            gs.table[gs.next].onEnter(reg);
+        if (gs.scenes.find(gs.next) != gs.scenes.end())
+            gs.scenes[gs.next]->InitScene(reg);
 
         gs.current = gs.next;
         gs.next = "";

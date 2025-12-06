@@ -9,21 +9,15 @@
 #include <SFML/Graphics.hpp>
 
 #include "include/registry.hpp"
+#include "Game/ScenesManagement/Scene_A.hpp"
 
 namespace Eng = Engine;
 
 namespace Rtype::Client::Component {
-using StateFn = std::function<void(Eng::registry& registry)>;
-
 struct SceneManagement {
-    struct GameStateCallbacks {
-        StateFn onEnter;
-        StateFn onExit;
-    };
-
     std::string current = "";
     std::string next = "";
-    std::unordered_map<std::string, GameStateCallbacks> table = {};
+    std::unordered_map<std::string, std::shared_ptr<Scene_A>> scenes;
 };
 
 }  // namespace Rtype::Client::Component

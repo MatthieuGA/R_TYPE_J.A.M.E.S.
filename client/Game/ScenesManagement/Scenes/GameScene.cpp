@@ -2,28 +2,15 @@
 #include <vector>
 
 #include "include/registry.hpp"
-#include "Game/initScenes.hpp"
+#include "Game/ScenesManagement/initScenes.hpp"
 #include "include/Components/CoreComponents.hpp"
 #include "include/Components/RenderComponent.hpp"
 #include "include/Components/GameplayComponents.hpp"
 #include "include/Components/ScenesComponents.hpp"
+#include "Game/ScenesManagement/Scenes/GameScene.hpp"
 
 namespace Rtype::Client {
-
-struct background_info {
-    std::string path;
-    float scroll_speed;
-    float initialY;
-    int z_index;
-    bool isWave = false;
-    float frequency = 20.0f;
-    float amplitude = 0.002f;
-    float wave_speed = 2.0f;
-    float opacity = 1.0f;
-    float scale = 3.34f;
-};
-
-void add_background_entity(Engine::registry &reg, background_info info,
+void GameScene::AddBackgroundEntity(Engine::registry &reg, background_info info,
 float initial_x) {
     auto background_entity = reg.SpawnEntity();
     reg.AddComponent<Component::Transform>(background_entity,
@@ -45,7 +32,7 @@ float initial_x) {
         Component::ParrallaxLayer{info.scroll_speed});
 }
 
-void init_backgrounds(Engine::registry &reg) {
+void GameScene::InitBackgrounds(Engine::registry &reg) {
     std::vector<background_info> background_list = {
         {"Background/Level1/1.png", -5.f, 0.f, -10, true, 1.f, .0005f, 0.2f},
         {"Background/Level1/2.png", -15.f, 0.f, -9, true, 6.f, .007f, 1.2f},
@@ -62,11 +49,11 @@ void init_backgrounds(Engine::registry &reg) {
     // Initialize background entity
     for (const auto& background : background_list) {
         for (int i = 0; i < 2; i++)
-            add_background_entity(reg, background, i * 1920.0f);
+            AddBackgroundEntity(reg, background, i * 1920.0f);
     }
 }
 
-void init_player_level(Engine::registry &reg) {
+void GameScene::InitPlayerLevel(Engine::registry &reg) {
     auto player_entity = reg.SpawnEntity();
     reg.AddComponent<Component::Transform>(player_entity, {
         100.0f, 300.0f, 0.0f, 4.0f, Component::Transform::CENTER});
@@ -98,9 +85,9 @@ void init_player_level(Engine::registry &reg) {
         player_charging_entity.GetId());
 }
 
-void init_game_level(Engine::registry &reg) {
-    init_backgrounds(reg);
-    init_player_level(reg);
+void GameScene::InitScene(Engine::registry &reg) {
+    InitBackgrounds(reg);
+    InitPlayerLevel(reg);
 }
 
 }  // namespace Rtype::Client
