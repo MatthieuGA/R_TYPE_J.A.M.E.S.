@@ -16,6 +16,11 @@ void InitRegistrySystemsEvents(Rtype::Client::GameWorld &game_world);
 
 // System function declarations
 
+// SCENE MANAGEMENT SYSTEMS
+
+void GameStateSystem(Eng::registry &reg,
+    Eng::sparse_array<Com::SceneManagement> &sceneManagements);
+
 // RENDER SYSTEMS
 
 void DrawableSystem(Eng::registry &reg, GameWorld &game_world,

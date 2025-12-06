@@ -2,10 +2,11 @@
 #include <vector>
 
 #include "include/registry.hpp"
-#include "Game/initGameLevel.hpp"
+#include "Game/initScenes.hpp"
 #include "include/Components/CoreComponents.hpp"
 #include "include/Components/RenderComponent.hpp"
 #include "include/Components/GameplayComponents.hpp"
+#include "include/Components/ScenesComponents.hpp"
 
 namespace Rtype::Client {
 
@@ -97,7 +98,7 @@ void init_player_level(Engine::registry &reg) {
         player_charging_entity.GetId());
 }
 
-void init_game_level(registry &reg) {
+void init_game_level(Engine::registry &reg) {
     init_backgrounds(reg);
     init_player_level(reg);
 }

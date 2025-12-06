@@ -23,5 +23,7 @@ void InitRegistryComponents(Engine::registry &reg) {
     // Register networking components
     reg.RegisterComponent<Rtype::Client::Component::NetworkId>();
     reg.RegisterComponent<Rtype::Client::Component::InterpolatedPosition>();
+    // Register scenes components
+    reg.RegisterComponent<Rtype::Client::Component::SceneManagement>();
 }
 }  // namespace Rtype::Client

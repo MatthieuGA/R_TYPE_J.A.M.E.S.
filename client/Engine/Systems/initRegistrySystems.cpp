@@ -135,6 +135,11 @@ void init_controls_system(Rtype::Client::GameWorld &game_world) {
         });
 }
 
+void init_scene_management_system(Rtype::Client::GameWorld &game_world) {
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::SceneManagement>>
+        (GameStateSystem);
+}
+
 /**
  * @brief Initialize all registry systems for the game world.
  *
@@ -145,6 +150,7 @@ void init_controls_system(Rtype::Client::GameWorld &game_world) {
  */
 void InitRegistrySystems(Rtype::Client::GameWorld &game_world) {
     // Set up systems
+    init_scene_management_system(game_world);
     init_controls_system(game_world);
     init_movement_system(game_world);
     init_render_systems(game_world);

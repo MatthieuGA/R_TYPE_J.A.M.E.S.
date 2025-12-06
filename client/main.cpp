@@ -6,7 +6,7 @@
 
 #include "Engine/gameWorld.hpp"
 #include "Game/initRegistry.hpp"
-#include "Game/initGameLevel.hpp"
+#include "Game/initScenes.hpp"
 
 using Engine::registry;
 namespace RC = Rtype::Client;
@@ -16,7 +16,7 @@ int main() {
         RC::GameWorld game_world;
 
         RC::init_registry(game_world);
-        RC::init_game_level(game_world.registry_);
+        RC::init_scene_level(game_world.registry_);
         while (game_world.window_.isOpen()) {
             sf::Event event;
             while (game_world.window_.pollEvent(event)) {
