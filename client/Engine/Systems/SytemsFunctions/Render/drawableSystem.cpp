@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <cmath>
 
 #include "Engine/Systems/initRegistrySystems.hpp"
 #include "Engine/originTool.hpp"
