@@ -162,8 +162,9 @@ GameWorld &game_world, int i) {
     drawable->sprite.setScale(sf::Vector2f(world_scale, world_scale));
     // Child rotation only: apply the entity's own rotation
     drawable->sprite.setRotation(transform->rotationDegrees);
-    drawable->sprite.setColor(sf::Color(255, 255, 255,
-        drawable->opacity * 255));
+    sf::Color color = drawable->color;
+    color.a = static_cast<sf::Uint8>(drawable->opacity * 255);
+    drawable->sprite.setColor(color);
     DrawSprite(game_world, drawable->sprite, &drawable.value(), shaderCompOpt);
 }
 

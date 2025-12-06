@@ -12,6 +12,7 @@ struct Drawable {
     int z_index = 0;
     float opacity = 1.0f;
     float rotation = 0.0f;
+    sf::Color color = sf::Color::White;
     sf::Sprite sprite;
     sf::Texture texture;
     bool isLoaded = false;
@@ -19,7 +20,8 @@ struct Drawable {
     explicit Drawable(const std::string& spritePath, int z_index = 0,
         float opacity = 1.0f)
         : spritePath("Assets/Images/" + spritePath), z_index(z_index),
-        texture(), opacity(opacity), sprite(texture), isLoaded(false) {}
+        texture(), opacity(opacity), sprite(texture), isLoaded(false),
+        color(sf::Color::White) {}
 
     // Non-copyable to avoid accidental sprite/texture pointer mismatches
     Drawable(Drawable const &) = delete;

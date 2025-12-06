@@ -93,4 +93,10 @@ void ProjectileSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> &transforms,
     Eng::sparse_array<Com::Projectile> &projectiles);
 
+void buttonClickSystem(Eng::registry &reg, GameWorld &game_world,
+    Eng::sparse_array<Com::HitBox> &hit_boxes,
+    Eng::sparse_array<Com::Clickable> &clickables,
+    Eng::sparse_array<Com::Drawable> &drawables,
+    Eng::sparse_array<Com::Transform> &transforms);
+
 }  // namespace Rtype::Client

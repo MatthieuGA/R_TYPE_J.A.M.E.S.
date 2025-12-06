@@ -96,6 +96,17 @@ void init_movement_system(Rtype::Client::GameWorld &game_world) {
  * @param game_world The game world containing the registry.
  */
 void init_controls_system(Rtype::Client::GameWorld &game_world) {
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::HitBox>,
+        Eng::sparse_array<Com::Clickable>, Eng::sparse_array<Com::Drawable>,
+        Eng::sparse_array<Com::Transform>>(
+        [&game_world](Eng::registry &r,
+            Eng::sparse_array<Com::HitBox> &hit_boxes,
+            Eng::sparse_array<Com::Clickable> &clickables,
+            Eng::sparse_array<Com::Drawable> &drawables,
+            Eng::sparse_array<Com::Transform> &transforms) {
+            buttonClickSystem(r, game_world, hit_boxes,
+                clickables, drawables, transforms);
+        });
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Inputs>>(InputSystem);
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Inputs>,
         Eng::sparse_array<Com::Controllable>,
