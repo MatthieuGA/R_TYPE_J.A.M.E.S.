@@ -2,6 +2,7 @@
 #include <SFML/Graphics.hpp>
 
 #include "include/Components/CoreComponents.hpp"
+#include "include/Components/RenderComponent.hpp"
 
 namespace Rtype::Client {
 namespace Com = Component;

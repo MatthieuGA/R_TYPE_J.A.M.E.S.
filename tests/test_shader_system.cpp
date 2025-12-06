@@ -2,6 +2,7 @@
 
 #include "../client/Engine/Systems/initRegistrySystems.hpp"
 #include "../client/include/Components/CoreComponents.hpp"
+#include "../client/include/Components/RenderComponent.hpp"
 
 namespace Com = Rtype::Client::Component;
 namespace Eng = Engine;
@@ -23,6 +24,6 @@ TEST(ShaderSystem, LoadsShaderFromAssets) {
     // Run the initialize system which should load the shader
     InitializeShaderSystem(reg, shaders);
 
-    // The shader asset should be loaded and pointer set
+    // The shader asset should not exist, so loading should fail
     EXPECT_FALSE(shaders[0]->isLoaded);
 }
