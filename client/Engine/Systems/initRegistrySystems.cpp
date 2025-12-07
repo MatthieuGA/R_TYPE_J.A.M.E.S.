@@ -41,6 +41,13 @@ void init_render_systems(Rtype::Client::GameWorld &game_world) {
             DrawableSystem(r, game_world, transforms,
                 drawables, shaders);
         });
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
+        Eng::sparse_array<Com::Text>>(
+        [&game_world](Eng::registry &r,
+                Eng::sparse_array<Com::Transform> const &transforms,
+                Eng::sparse_array<Com::Text> &texts) {
+            DrawTextRenderSystem(r, game_world, transforms, texts);
+        });
 }
 
 /**
