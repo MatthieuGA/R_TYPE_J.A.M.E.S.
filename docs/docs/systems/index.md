@@ -14,6 +14,7 @@ Cette section documente les systèmes moteur (client) utilisés dans le projet R
 - [Initialize Animation System](./initialize-animation-system)
 - [Drawable System](./drawable-system)
 - [Initialize Shader System](./initialize-shader-system)
+- [Draw Text System](./draw-text-system)
 
 ### Systèmes de Contrôle et Input
 

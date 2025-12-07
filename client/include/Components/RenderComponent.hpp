@@ -110,7 +110,7 @@ struct AnimatedSprite {
  *
  * The text position, rotation, and scale are controlled by the Transform
  * component. This component only manages the text content, appearance,
- * and font loading.
+ * font loading, per-entity opacity, and an optional local offset.
  */
 struct Text {
     std::string content;
@@ -125,13 +125,13 @@ struct Text {
     sf::Font font;
     bool is_loaded = false;
 
-    explicit Text(const std::string& fontPath, const std::string& content = "",
-        unsigned int characterSize = 30, int z_index = 0,
-        sf::Color color = sf::Color::White,
-        sf::Vector2f offset = sf::Vector2f(0.0f, 0.0f))
-        : content(content), fontPath("Assets/Fonts/" + fontPath),
-          characterSize(characterSize), color(color),
-          opacity(1.0f), z_index(z_index), is_loaded(false), offset(offset) {}
+        explicit Text(const std::string& fontPath, const std::string& content = "",
+                unsigned int characterSize = 30, int z_index = 0,
+                sf::Color color = sf::Color::White,
+                sf::Vector2f offset = sf::Vector2f(0.0f, 0.0f))
+                : content(content), fontPath("Assets/Fonts/" + fontPath),
+                    characterSize(characterSize), color(color),
+                    opacity(1.0f), z_index(z_index), is_loaded(false), offset(offset) {}
 
     // Non-copyable to avoid accidental font pointer mismatches
     Text(Text const &) = delete;

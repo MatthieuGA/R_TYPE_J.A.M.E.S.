@@ -14,7 +14,7 @@ namespace Rtype::Client {
 
 class TestScene : public Scene_A {
 public:
-    void InitScene(Eng::registry &) override { ++init_called; }
+    void InitScene(Eng::registry &, GameWorld &) override { ++init_called; }
     void DestroyScene(Eng::registry &) override { ++destroy_called; }
 
     int init_called = 0;
@@ -24,6 +24,7 @@ public:
 
 TEST(GameStateSystem, NoTransitionWhenNextEmpty) {
     Eng::registry reg;
+    GameWorld game_world;
     Eng::sparse_array<Com::SceneManagement> scene_managements;
 
     auto menu_scene = std::make_shared<TestScene>();
@@ -34,7 +35,7 @@ TEST(GameStateSystem, NoTransitionWhenNextEmpty) {
 
     scene_managements.insert_at(0, sm);
 
-    GameStateSystem(reg, scene_managements);
+    GameStateSystem(reg, game_world, scene_managements);
 
     EXPECT_EQ(menu_scene->destroy_called, 0);
     EXPECT_EQ(menu_scene->init_called, 0);
@@ -45,6 +46,7 @@ TEST(GameStateSystem, NoTransitionWhenNextEmpty) {
 
 TEST(GameStateSystem, NoTransitionWhenNextEqualsCurrent) {
     Eng::registry reg;
+    GameWorld game_world;
     Eng::sparse_array<Com::SceneManagement> scene_managements;
 
     auto menu_scene = std::make_shared<TestScene>();
@@ -55,7 +57,7 @@ TEST(GameStateSystem, NoTransitionWhenNextEqualsCurrent) {
 
     scene_managements.insert_at(0, sm);
 
-    GameStateSystem(reg, scene_managements);
+    GameStateSystem(reg, game_world, scene_managements);
 
     EXPECT_EQ(menu_scene->destroy_called, 0);
     EXPECT_EQ(menu_scene->init_called, 0);
@@ -67,6 +69,7 @@ TEST(GameStateSystem, NoTransitionWhenNextEqualsCurrent) {
 TEST(GameStateSystem, TransitionInvokesDestroyAndInit) {
     Eng::registry reg;
     Eng::sparse_array<Com::SceneManagement> scene_managements;
+    GameWorld game_world;
 
     auto menu_scene = std::make_shared<TestScene>();
     auto game_scene = std::make_shared<TestScene>();
@@ -79,7 +82,7 @@ TEST(GameStateSystem, TransitionInvokesDestroyAndInit) {
 
     scene_managements.insert_at(0, sm);
 
-    GameStateSystem(reg, scene_managements);
+    GameStateSystem(reg, game_world, scene_managements);
 
     EXPECT_EQ(menu_scene->destroy_called, 1);
     EXPECT_EQ(game_scene->init_called, 1);
@@ -91,6 +94,7 @@ TEST(GameStateSystem, TransitionInvokesDestroyAndInit) {
 TEST(GameStateSystem, TransitionHandlesMissingCurrentScene) {
     Eng::registry reg;
     Eng::sparse_array<Com::SceneManagement> scene_managements;
+    GameWorld game_world;
 
     auto game_scene = std::make_shared<TestScene>();
 
@@ -101,7 +105,7 @@ TEST(GameStateSystem, TransitionHandlesMissingCurrentScene) {
 
     scene_managements.insert_at(0, sm);
 
-    GameStateSystem(reg, scene_managements);
+    GameStateSystem(reg, game_world, scene_managements);
 
     EXPECT_EQ(game_scene->init_called, 1);
     ASSERT_TRUE(scene_managements[0].has_value());
@@ -112,6 +116,7 @@ TEST(GameStateSystem, TransitionHandlesMissingCurrentScene) {
 TEST(GameStateSystem, TransitionHandlesMissingNextScene) {
     Eng::registry reg;
     Eng::sparse_array<Com::SceneManagement> scene_managements;
+    GameWorld game_world;
 
     auto menu_scene = std::make_shared<TestScene>();
 
@@ -122,7 +127,7 @@ TEST(GameStateSystem, TransitionHandlesMissingNextScene) {
 
     scene_managements.insert_at(0, sm);
 
-    GameStateSystem(reg, scene_managements);
+    GameStateSystem(reg, game_world, scene_managements);
 
     EXPECT_EQ(menu_scene->destroy_called, 1);
     ASSERT_TRUE(scene_managements[0].has_value());
@@ -133,6 +138,7 @@ TEST(GameStateSystem, TransitionHandlesMissingNextScene) {
 TEST(GameStateSystem, ProcessesMultipleSceneEntries) {
     Eng::registry reg;
     Eng::sparse_array<Com::SceneManagement> scene_managements;
+    GameWorld game_world;
 
     auto menu_scene = std::make_shared<TestScene>();
     auto game_scene = std::make_shared<TestScene>();
@@ -152,7 +158,7 @@ TEST(GameStateSystem, ProcessesMultipleSceneEntries) {
     scene_managements.insert_at(0, sm0);
     scene_managements.insert_at(2, sm1);
 
-    GameStateSystem(reg, scene_managements);
+    GameStateSystem(reg, game_world, scene_managements);
 
     EXPECT_EQ(menu_scene->destroy_called, 1);
     EXPECT_EQ(game_scene->init_called, 1);
