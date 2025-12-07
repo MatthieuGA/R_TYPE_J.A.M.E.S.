@@ -1,12 +1,13 @@
 #pragma once
 
 #include "include/registry.hpp"
+#include "Engine/gameWorld.hpp"
 #include <vector>
 
 namespace Rtype::Client {
 class Scene_A {
 public:
-    virtual void InitScene(Engine::registry &reg);
+    virtual void InitScene(Engine::registry &reg, GameWorld &gameWorld);
     virtual void DestroyScene(Engine::registry &reg);
 
 protected:

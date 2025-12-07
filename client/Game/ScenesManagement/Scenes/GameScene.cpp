@@ -85,7 +85,7 @@ void GameScene::InitPlayerLevel(Engine::registry &reg) {
         player_charging_entity.GetId());
 }
 
-void GameScene::InitScene(Engine::registry &reg) {
+void GameScene::InitScene(Engine::registry &reg, GameWorld &gameWorld) {
     InitBackgrounds(reg);
     InitPlayerLevel(reg);
 }

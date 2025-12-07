@@ -18,7 +18,7 @@ void InitRegistrySystemsEvents(Rtype::Client::GameWorld &game_world);
 
 // SCENE MANAGEMENT SYSTEMS
 
-void GameStateSystem(Eng::registry &reg,
+void GameStateSystem(Eng::registry &reg, GameWorld &gameWorld,
     Eng::sparse_array<Com::SceneManagement> &sceneManagements);
 
 // RENDER SYSTEMS

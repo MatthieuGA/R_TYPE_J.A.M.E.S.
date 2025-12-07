@@ -10,7 +10,7 @@ namespace Rtype::Client {
  * @param reg ECS registry used to access entities and systems.
  * @param sceneManagements Sparse array of scene management components tracking current and next scenes.
  */
-void GameStateSystem(Eng::registry &reg,
+void GameStateSystem(Eng::registry &reg, GameWorld &gameWorld,
     Eng::sparse_array<Component::SceneManagement> &sceneManagements) {
 
     for (auto &&[i, gs] : make_indexed_zipper(sceneManagements)) {
@@ -23,7 +23,7 @@ void GameStateSystem(Eng::registry &reg,
 
         // Call onEnter hook of the new state if it exists
         if (gs.scenes.find(gs.next) != gs.scenes.end())
-            gs.scenes[gs.next]->InitScene(reg);
+            gs.scenes[gs.next]->InitScene(reg, gameWorld);
 
         gs.current = gs.next;
         gs.next = "";

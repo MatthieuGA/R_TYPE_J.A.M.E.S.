@@ -82,6 +82,7 @@ struct InputState {
 struct HitBox {
     float width;
     float height;
+    bool scaleWithTransform = true;
     float offsetX = 0.0f;
     float offsetY = 0.0f;
 };

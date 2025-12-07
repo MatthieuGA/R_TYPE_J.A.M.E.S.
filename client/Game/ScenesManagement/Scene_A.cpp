@@ -1,7 +1,7 @@
 #include "Game/ScenesManagement/Scene_A.hpp"
 
 namespace Rtype::Client {
-void Scene_A::InitScene(Engine::registry &reg)
+void Scene_A::InitScene(Engine::registry &reg, GameWorld &gameWorld)
 {
     // Implementation for initializing the scene
 }

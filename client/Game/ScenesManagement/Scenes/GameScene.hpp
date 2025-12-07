@@ -8,7 +8,7 @@ using Engine::registry;
 class GameScene : public Scene_A {
 public:
     GameScene() = default;
-    void InitScene(registry &reg) override;
+    void InitScene(registry &reg, GameWorld &gameWorld) override;
 
 private:
     struct background_info {

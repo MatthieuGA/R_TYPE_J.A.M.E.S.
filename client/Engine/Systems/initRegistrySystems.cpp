@@ -146,9 +146,20 @@ void init_controls_system(Rtype::Client::GameWorld &game_world) {
         });
 }
 
+/**
+ * @brief Initialize scene management system in the registry.
+ *
+ * This function sets up the system responsible for handling
+ * scene transitions within the provided game world's registry.
+ *
+ * @param game_world The game world containing the registry.
+ */
 void init_scene_management_system(Rtype::Client::GameWorld &game_world) {
-    game_world.registry_.AddSystem<Eng::sparse_array<Com::SceneManagement>>
-        (GameStateSystem);
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::SceneManagement>>(
+        [&game_world](Eng::registry &r,
+            Eng::sparse_array<Com::SceneManagement> &sceneManagements) {
+            GameStateSystem(r, game_world, sceneManagements);
+        });
 }
 
 /**

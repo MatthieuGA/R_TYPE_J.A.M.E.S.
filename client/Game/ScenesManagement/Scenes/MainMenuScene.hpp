@@ -8,6 +8,6 @@ using Engine::registry;
 class MainMenuScene : public Scene_A {
 public:
     MainMenuScene() = default;
-    void InitScene(registry &reg) override;
+    void InitScene(registry &reg, GameWorld &gameWorld) override;
 };
 }  // namespace Rtype::Client

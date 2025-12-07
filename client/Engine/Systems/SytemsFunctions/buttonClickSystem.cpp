@@ -22,19 +22,26 @@ Eng::sparse_array<Com::Transform> &transforms) {
         sf::Vector2f mousePos = game_world.window_.mapPixelToCoords(
             sf::Mouse::getPosition(game_world.window_));
 
-        sf::Vector2f offsetOrigin = GetOffsetFromTransform(transform,
-            sf::Vector2f(hit_box.width, hit_box.height));
+        const float width_computed = hit_box.width *
+            (hit_box.scaleWithTransform ? transform.scale : 1.0f);
+        const float height_computed = hit_box.height *
+            (hit_box.scaleWithTransform ? transform.scale : 1.0f);
 
-        float left = transform.x + offsetOrigin.x;
-        float top = transform.y + offsetOrigin.y;
-        float right = left + hit_box.width;
-        float bottom = top + hit_box.height;
-        bool isHovered = (mousePos.x >= left && mousePos.x <= right &&
+        const sf::Vector2f offsetOrigin = GetOffsetFromTransform(transform,
+            sf::Vector2f(width_computed, height_computed));
+
+        const float left = transform.x + offsetOrigin.x;
+        const float top = transform.y + offsetOrigin.y;
+        const float right = left + width_computed;
+        const float bottom = top + height_computed;
+        const bool isHovered = (mousePos.x >= left && mousePos.x <= right &&
                           mousePos.y >= top && mousePos.y <= bottom);
+
         clickable.isHovered = isHovered;
         if (isHovered && sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
             clickable.isClicked = true;
-        } else if (!sf::Mouse::isButtonPressed(sf::Mouse::Left) && clickable.isClicked) {
+        } else if (!sf::Mouse::isButtonPressed(sf::Mouse::Left) &&
+            clickable.isClicked) {
             // Mouse button released after being clicked
             clickable.isClicked = false;
             if (clickable.onClick)
