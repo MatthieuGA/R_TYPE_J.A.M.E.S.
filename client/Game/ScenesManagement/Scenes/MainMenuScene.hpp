@@ -6,7 +6,7 @@ namespace Rtype::Client {
 using Engine::registry;
 
 class MainMenuScene : public Scene_A {
-public:
+ public:
     MainMenuScene() = default;
     void InitScene(registry &reg, GameWorld &gameWorld) override;
 };

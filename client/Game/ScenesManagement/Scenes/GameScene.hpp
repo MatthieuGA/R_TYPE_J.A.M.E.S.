@@ -1,4 +1,6 @@
 #pragma once
+#include <string>
+
 #include "include/registry.hpp"
 #include "Game/ScenesManagement/Scene_A.hpp"
 
@@ -6,11 +8,11 @@ namespace Rtype::Client {
 using Engine::registry;
 
 class GameScene : public Scene_A {
-public:
+ public:
     GameScene() = default;
     void InitScene(registry &reg, GameWorld &gameWorld) override;
 
-private:
+ private:
     struct background_info {
         std::string path;
         float scroll_speed;

@@ -28,7 +28,6 @@ void GameStateSystem(Eng::registry &reg, GameWorld &gameWorld,
         gs.current = gs.next;
         gs.next = "";
     }
-
 }
 
 }  // namespace Rtype::Client

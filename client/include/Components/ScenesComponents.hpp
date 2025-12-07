@@ -6,6 +6,7 @@
 #include <utility>
 #include <cstdint>
 #include <optional>
+#include <unordered_map>
 #include <SFML/Graphics.hpp>
 
 #include "include/registry.hpp"

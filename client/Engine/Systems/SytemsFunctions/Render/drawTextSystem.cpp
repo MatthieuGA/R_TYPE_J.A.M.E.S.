@@ -19,10 +19,10 @@ namespace Rtype::Client {
  * @param transform Transform for origin calculation
  */
 void InitializeText(Com::Text &text, const Com::Transform &transform) {
-    if (!text.font.loadFromFile(text.fontPath))
+    if (!text.font.loadFromFile(text.fontPath)) {
         std::cerr << "ERROR: Failed to load font from "
             << text.fontPath << "\n";
-    else {
+    } else {
         text.text.setFont(text.font);
         text.text.setString(text.content);
         text.text.setCharacterSize(text.characterSize * 10);  // Scale size
