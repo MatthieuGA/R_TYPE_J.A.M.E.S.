@@ -6,6 +6,7 @@
 #include <utility>
 #include <cstdint>
 #include <optional>
+#include <functional>
 #include <SFML/Graphics.hpp>
 
 namespace Rtype::Client::Component {
@@ -81,8 +82,9 @@ struct InputState {
 struct HitBox {
     float width;
     float height;
-    float offsetX;
-    float offsetY;
+    bool scaleWithTransform = true;
+    float offsetX = 0.0f;
+    float offsetY = 0.0f;
 };
 
 struct Solid {
@@ -97,6 +99,16 @@ struct Inputs {
     // shoot states
     bool shoot = false;
     bool last_shoot_state = false;
+};
+
+struct Clickable {
+    std::function<void()> onClick;
+
+    sf::Color idleColor = sf::Color::White;
+    sf::Color hoverColor = sf::Color(200, 200, 200);
+    sf::Color clickColor = sf::Color(150, 150, 150);
+    bool isHovered = false;
+    bool isClicked = false;
 };
 
 }  // namespace Rtype::Client::Component

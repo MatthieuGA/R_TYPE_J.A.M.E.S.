@@ -76,18 +76,27 @@ void ComputeCollision(Eng::sparse_array<Com::Solid> const &solids, int i,
     if (aStuck && bStuck)
         return;
 
+    float width_computed_a =
+            hb_a.width * (hb_a.scaleWithTransform ? trans_a.scale : 1.0f);
+    float height_computed_a =
+            hb_a.height * (hb_a.scaleWithTransform ? trans_a.scale : 1.0f);
+    float width_computed_b =
+            hb_b.width * (hb_b.scaleWithTransform ? trans_b.scale : 1.0f);
+    float height_computed_b =
+            hb_b.height * (hb_b.scaleWithTransform ? trans_b.scale : 1.0f);
+
     // Compute offsets and scaled hitboxes (same as is_colliding)
     sf::Vector2f off_a =
-        GetOffsetFromTransform(trans_a, {hb_a.width, hb_a.height});
+        GetOffsetFromTransform(trans_a, {width_computed_a, height_computed_a});
     sf::Vector2f off_b =
-        GetOffsetFromTransform(trans_b, {hb_b.width, hb_b.height});
+        GetOffsetFromTransform(trans_b, {width_computed_b, height_computed_b});
 
     sf::Vector2f scal_off_a = off_a * trans_a.scale;
     sf::Vector2f scal_off_b = off_b * trans_b.scale;
-    sf::Vector2f scaledA =
-        sf::Vector2f(hb_a.width * trans_a.scale, hb_a.height * trans_a.scale);
-    sf::Vector2f scaledB =
-        sf::Vector2f(hb_b.width * trans_b.scale, hb_b.height * trans_b.scale);
+    sf::Vector2f scaledA = sf::Vector2f(width_computed_a * trans_a.scale,
+        height_computed_a * trans_a.scale);
+    sf::Vector2f scaledB = sf::Vector2f(width_computed_b * trans_b.scale,
+        height_computed_b * trans_b.scale);
 
     float a_min_x = trans_a.x + scal_off_a.x;
     float a_max_x = a_min_x + scaledA.x;

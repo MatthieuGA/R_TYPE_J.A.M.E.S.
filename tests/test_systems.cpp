@@ -116,8 +116,8 @@ TEST(Systems, CollisionDetectionPublishesAndResolves) {
     transforms.insert_at(0, Com::Transform{0.0f, 0.0f, 0.0f, 1.0f});
     transforms.insert_at(1, Com::Transform{10.0f, 0.0f, 0.0f, 1.0f});
 
-    hitboxes.insert_at(0, Com::HitBox{16.0f, 16.0f, 0.0f, 0.0f});
-    hitboxes.insert_at(1, Com::HitBox{16.0f, 16.0f, 0.0f, 0.0f});
+    hitboxes.insert_at(0, Com::HitBox{16.0f, 16.0f, true, 0.0f, 0.0f});
+    hitboxes.insert_at(1, Com::HitBox{16.0f, 16.0f, true, 0.0f, 0.0f});
 
     solids.insert_at(0, Com::Solid{true, false});
     solids.insert_at(1, Com::Solid{true, false});
@@ -233,5 +233,6 @@ TEST(Systems, InputSystemResetsInputsWhenNoKeys) {
     ASSERT_TRUE(inputs[0].has_value());
     EXPECT_FLOAT_EQ(inputs[0]->horizontal, 0.0f);
     EXPECT_FLOAT_EQ(inputs[0]->vertical, 0.0f);
+    EXPECT_TRUE(inputs[0]->last_shoot_state);
     EXPECT_FALSE(inputs[0]->shoot);
 }

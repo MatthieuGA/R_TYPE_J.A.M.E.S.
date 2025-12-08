@@ -40,7 +40,7 @@ TEST(ComponentsCore, ControllableAndInput) {
 }
 
 TEST(ComponentsCore, HitBox) {
-    Com::HitBox hb{16.0f, 8.0f, 1.0f, 2.0f};
+    Com::HitBox hb{16.0f, 8.0f, true, 1.0f, 2.0f};
     EXPECT_FLOAT_EQ(hb.width, 16.0f);
     EXPECT_FLOAT_EQ(hb.height, 8.0f);
     EXPECT_FLOAT_EQ(hb.offsetX, 1.0f);

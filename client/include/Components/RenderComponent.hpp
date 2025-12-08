@@ -12,6 +12,7 @@ struct Drawable {
     int z_index = 0;
     float opacity = 1.0f;
     float rotation = 0.0f;
+    sf::Color color = sf::Color::White;
     sf::Sprite sprite;
     sf::Texture texture;
     bool isLoaded = false;
@@ -19,7 +20,8 @@ struct Drawable {
     explicit Drawable(const std::string& spritePath, int z_index = 0,
         float opacity = 1.0f)
         : spritePath("Assets/Images/" + spritePath), z_index(z_index),
-        texture(), opacity(opacity), sprite(texture), isLoaded(false) {}
+        texture(), opacity(opacity), sprite(texture), isLoaded(false),
+        color(sf::Color::White) {}
 
     // Non-copyable to avoid accidental sprite/texture pointer mismatches
     Drawable(Drawable const &) = delete;
@@ -101,6 +103,80 @@ struct AnimatedSprite {
         : frameWidth(frameWidth), frameHeight(frameHeight),
         totalFrames(0), currentFrame(current_frame), frameDuration(0.1f),
         loop(true), elapsedTime(0.0f), animated(false) {}
+};
+
+/**
+ * @brief Text component for rendering text with SFML.
+ *
+ * The text position, rotation, and scale are controlled by the Transform
+ * component. This component only manages the text content, appearance,
+ * font loading, per-entity opacity, and an optional local offset.
+ */
+struct Text {
+    std::string content;
+    std::string fontPath;
+    unsigned int characterSize = 30;
+    sf::Color color = sf::Color::White;
+    float opacity = 1.0f;
+    int z_index = 0;
+    sf::Vector2f offset = sf::Vector2f(0.0f, 0.0f);
+
+    sf::Text text;
+    sf::Font font;
+    bool is_loaded = false;
+
+    explicit Text(const std::string& fontPath, const std::string& content = "",
+        unsigned int characterSize = 30, int z_index = 0,
+        sf::Color color = sf::Color::White,
+        sf::Vector2f offset = sf::Vector2f(0.0f, 0.0f))
+            : content(content), fontPath("Assets/Fonts/" + fontPath),
+            characterSize(characterSize), color(color),
+            opacity(1.0f), z_index(z_index), is_loaded(false), offset(offset) {}
+
+    // Non-copyable to avoid accidental font pointer mismatches
+    Text(Text const &) = delete;
+    Text &operator=(Text const &) = delete;
+
+    // Move constructor: rebind text to the moved font
+    Text(Text &&other) noexcept
+        : content(std::move(other.content)),
+          fontPath(std::move(other.fontPath)),
+          characterSize(other.characterSize),
+          color(other.color),
+          opacity(other.opacity),
+          z_index(other.z_index),
+          offset(other.offset),
+          text(),
+          font(std::move(other.font)),
+          is_loaded(other.is_loaded) {
+        text.setFont(font);
+        text.setString(other.text.getString());
+        text.setCharacterSize(other.text.getCharacterSize());
+        text.setFillColor(other.text.getFillColor());
+    }
+
+    // Move assignment: similar to move ctor
+    Text &operator=(Text &&other) noexcept {
+        if (this == &other)
+            return *this;
+        content = std::move(other.content);
+        fontPath = std::move(other.fontPath);
+        characterSize = other.characterSize;
+        color = other.color;
+        opacity = other.opacity;
+        z_index = other.z_index;
+        offset = other.offset;
+        font = std::move(other.font);
+        is_loaded = other.is_loaded;
+
+        text = sf::Text();
+        text.setFont(font);
+        text.setString(other.text.getString());
+        text.setCharacterSize(other.text.getCharacterSize());
+        text.setFillColor(other.text.getFillColor());
+
+        return *this;
+    }
 };
 
 }  // namespace Rtype::Client::Component

@@ -16,12 +16,21 @@ void InitRegistrySystemsEvents(Rtype::Client::GameWorld &game_world);
 
 // System function declarations
 
+// SCENE MANAGEMENT SYSTEMS
+
+void GameStateSystem(Eng::registry &reg, GameWorld &gameWorld,
+    Eng::sparse_array<Com::SceneManagement> &sceneManagements);
+
 // RENDER SYSTEMS
 
 void DrawableSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> const &transforms,
     Eng::sparse_array<Com::Drawable> &drawables,
     Eng::sparse_array<Com::Shader> &shaders);
+
+void DrawTextRenderSystem(Eng::registry &reg, GameWorld &game_world,
+    Eng::sparse_array<Com::Transform> const &transforms,
+    Eng::sparse_array<Com::Text> &texts);
 
 void AnimationSystem(Eng::registry &reg, const float dt,
         Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
@@ -87,5 +96,11 @@ void ShootPlayerSystem(Eng::registry &reg, GameWorld &game_world,
 void ProjectileSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> &transforms,
     Eng::sparse_array<Com::Projectile> &projectiles);
+
+void ButtonClickSystem(Eng::registry &reg, GameWorld &game_world,
+    Eng::sparse_array<Com::HitBox> &hit_boxes,
+    Eng::sparse_array<Com::Clickable> &clickables,
+    Eng::sparse_array<Com::Drawable> &drawables,
+    Eng::sparse_array<Com::Transform> &transforms);
 
 }  // namespace Rtype::Client

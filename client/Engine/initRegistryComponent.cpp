@@ -13,6 +13,8 @@ void InitRegistryComponents(Engine::registry &reg) {
     reg.RegisterComponent<Rtype::Client::Component::Solid>();
     reg.RegisterComponent<Rtype::Client::Component::Shader>();
     reg.RegisterComponent<Rtype::Client::Component::Inputs>();
+    reg.RegisterComponent<Rtype::Client::Component::Clickable>();
+    reg.RegisterComponent<Rtype::Client::Component::Text>();
     // Register gameplay components
     reg.RegisterComponent<Rtype::Client::Component::PlayerTag>();
     reg.RegisterComponent<Rtype::Client::Component::EnemyTag>();
@@ -23,5 +25,7 @@ void InitRegistryComponents(Engine::registry &reg) {
     // Register networking components
     reg.RegisterComponent<Rtype::Client::Component::NetworkId>();
     reg.RegisterComponent<Rtype::Client::Component::InterpolatedPosition>();
+    // Register scenes components
+    reg.RegisterComponent<Rtype::Client::Component::SceneManagement>();
 }
 }  // namespace Rtype::Client
