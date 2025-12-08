@@ -208,6 +208,10 @@ void Network::SendInput(uint8_t input_flags) {
 }
 
 void Network::AsyncReceiveUDP() {
+    // Only schedule a new async receive if the socket is open.
+    if (!udp_socket_.is_open())
+        return;
+
     udp_socket_.async_receive_from(boost::asio::buffer(udp_buffer_),
         server_udp_endpoint_,
         [this](const boost::system::error_code &ec, std::size_t bytes) {
@@ -216,7 +220,14 @@ void Network::AsyncReceiveUDP() {
                     std::cerr
                         << "[Network] UDP receive error: " << ec.message()
                         << std::endl;
-            } else if (bytes >= kHeaderSize) {
+                // Do not reschedule if the socket was closed or operation
+                // aborted to avoid scheduling on a closed socket.
+                if (udp_socket_.is_open())
+                    AsyncReceiveUDP();
+                return;
+            }
+
+            if (bytes >= kHeaderSize) {
                 uint8_t opcode = udp_buffer_[0];
                 uint16_t payload_size = ReadLe16(udp_buffer_.data() + 1);
                 uint32_t tick_id = ReadLe32(udp_buffer_.data() + 4);
@@ -229,8 +240,10 @@ void Network::AsyncReceiveUDP() {
                     snapshot_queue_.push(snap);
                 }
             }
-            // Continue listening
-            AsyncReceiveUDP();
+
+            // Continue listening if still open
+            if (udp_socket_.is_open())
+                AsyncReceiveUDP();
         });
 }
 
@@ -251,13 +264,21 @@ void Network::Disconnect() {
                 static_cast<uint32_t>(current_tick_));
             boost::system::error_code ec;
             boost::asio::write(tcp_socket_, boost::asio::buffer(pkt), ec);
+            // Cancel pending operations to wake up handlers.
+            tcp_socket_.cancel(ec);
         }
     } catch (...) {}
     boost::system::error_code ec;
-    if (udp_socket_.is_open())
+    // Cancel UDP operations and close sockets. Cancel first so handlers
+    // receive operation_aborted and can exit cleanly without being
+    // rescheduled on closed sockets.
+    if (udp_socket_.is_open()) {
+        udp_socket_.cancel(ec);
         udp_socket_.close(ec);
-    if (tcp_socket_.is_open())
+    }
+    if (tcp_socket_.is_open()) {
         tcp_socket_.close(ec);
+    }
     connected_ = false;
 }
 

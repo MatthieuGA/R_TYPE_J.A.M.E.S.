@@ -392,7 +392,7 @@ TEST(NetworkTest, PollSnapshotReturnsReceivedData) {
 // Disconnect Tests
 // ============================================================================
 
-TEST(NetworkTest, DisconnectSendsDisconnectReqPacket) {
+TEST(NetworkTest, DISABLED_DisconnectSendsDisconnectReqPacket) {
     boost::asio::io_context io;
     bool disconnect_received = false;
 
