@@ -1,4 +1,7 @@
 #include <gtest/gtest.h>
+#include <string>
+#include <vector>
+#include <utility>
 
 #include "server/PacketBuffer.hpp"
 #include "server/PacketFactory.hpp"

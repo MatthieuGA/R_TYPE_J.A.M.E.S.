@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
 
+#include <utility>
+
 #include "../client/Engine/Systems/initRegistrySystems.hpp"
 #include "../client/Engine/Events/EngineEvent.hpp"
 #include "../client/include/Components/CoreComponents.hpp"
