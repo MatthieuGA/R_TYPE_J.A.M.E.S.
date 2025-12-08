@@ -5,7 +5,7 @@
 
 #include <SFML/Graphics.hpp>
 
-#include "registry.hpp"
+#include "include/registry.hpp"
 #include "Engine/Audio/AudioManager.hpp"
 #include "Engine/Audio/SFMLAudioBackend.hpp"
 #include "Engine/gameWorld.hpp"

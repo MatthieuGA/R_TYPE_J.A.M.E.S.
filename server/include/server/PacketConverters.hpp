@@ -4,7 +4,7 @@
 #include <utility>
 #include <vector>
 
-#include "registry.hpp"
+#include "include/registry.hpp"
 #include "server/Components.hpp"
 
 // #include "server/Packets.hpp"  // TODO: Create Packets.hpp with packet type

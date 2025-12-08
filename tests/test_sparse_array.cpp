@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "sparse_array.hpp"
+#include "include/sparse_array.hpp"
 
 // Test fixture for sparse_array tests
 template <typename T>

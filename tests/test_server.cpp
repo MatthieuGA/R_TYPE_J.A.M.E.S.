@@ -44,7 +44,7 @@ TEST(ServerTest, GetRegistryAfterInit) {
 
     // Registry should be accessible
     EXPECT_NO_THROW({
-        auto entity = reg.spawn_entity();
+        auto entity = reg.SpawnEntity();
         EXPECT_EQ(entity.getId(), 0);
     });
 }
@@ -83,7 +83,7 @@ TEST(ServerTest, SpawnEntityWithPosition) {
     server.initialize();
 
     Engine::registry &reg = server.getRegistry();
-    auto entity = reg.spawn_entity();
+    auto entity = reg.SpawnEntity();
 
     auto &pos =
         reg.add_component(entity, server::Component::Position{100.0f, 200.0f});
@@ -100,7 +100,7 @@ TEST(ServerTest, SpawnPlayerEntity) {
     server.initialize();
 
     Engine::registry &reg = server.getRegistry();
-    auto player = reg.spawn_entity();
+    auto player = reg.SpawnEntity();
 
     reg.add_component(player, server::Component::Position{0.0f, 0.0f});
     reg.add_component(player, server::Component::Velocity{0.0f, 0.0f});
@@ -124,7 +124,7 @@ TEST(ServerTest, SpawnEnemyEntity) {
     server.initialize();
 
     Engine::registry &reg = server.getRegistry();
-    auto enemy = reg.spawn_entity();
+    auto enemy = reg.SpawnEntity();
 
     reg.add_component(enemy, server::Component::Position{500.0f, 300.0f});
     reg.add_component(enemy, server::Component::Velocity{-2.0f, 0.0f});
@@ -149,19 +149,19 @@ TEST(ServerTest, MultipleEntitiesWithDifferentComponents) {
     Engine::registry &reg = server.getRegistry();
 
     // Create player
-    auto player = reg.spawn_entity();
+    auto player = reg.SpawnEntity();
     reg.add_component(player, server::Component::Position{0.0f, 0.0f});
     reg.add_component(player, server::Component::Player{1, "Player1"});
     reg.add_component(player, server::Component::Health{100, 100});
 
     // Create enemy
-    auto enemy = reg.spawn_entity();
+    auto enemy = reg.SpawnEntity();
     reg.add_component(enemy, server::Component::Position{100.0f, 100.0f});
     reg.add_component(enemy, server::Component::Enemy{15, 50});
     reg.add_component(enemy, server::Component::Velocity{-1.0f, 0.0f});
 
     // Create projectile
-    auto projectile = reg.spawn_entity();
+    auto projectile = reg.SpawnEntity();
     reg.add_component(projectile, server::Component::Position{50.0f, 50.0f});
     reg.add_component(projectile, server::Component::Velocity{5.0f, 0.0f});
 
@@ -191,7 +191,7 @@ TEST(ServerTest, MovementSystemUpdatesPosition) {
     server.initialize();
 
     Engine::registry &reg = server.getRegistry();
-    auto entity = reg.spawn_entity();
+    auto entity = reg.SpawnEntity();
 
     reg.add_component(entity, server::Component::Position{0.0f, 0.0f});
     reg.add_component(entity, server::Component::Velocity{1.0f, 2.0f});
@@ -222,15 +222,15 @@ TEST(ServerTest, MovementSystemMultipleEntities) {
 
     Engine::registry &reg = server.getRegistry();
 
-    auto e1 = reg.spawn_entity();
+    auto e1 = reg.SpawnEntity();
     reg.add_component(e1, server::Component::Position{0.0f, 0.0f});
     reg.add_component(e1, server::Component::Velocity{1.0f, 0.0f});
 
-    auto e2 = reg.spawn_entity();
+    auto e2 = reg.SpawnEntity();
     reg.add_component(e2, server::Component::Position{10.0f, 10.0f});
     reg.add_component(e2, server::Component::Velocity{-2.0f, 3.0f});
 
-    auto e3 = reg.spawn_entity();
+    auto e3 = reg.SpawnEntity();
     reg.add_component(e3, server::Component::Position{50.0f, 50.0f});
     reg.add_component(e3, server::Component::Velocity{0.5f, -1.0f});
 
@@ -257,12 +257,12 @@ TEST(ServerTest, MovementSystemIgnoresEntitiesWithoutVelocity) {
     Engine::registry &reg = server.getRegistry();
 
     // Entity with position and velocity
-    auto moving = reg.spawn_entity();
+    auto moving = reg.SpawnEntity();
     reg.add_component(moving, server::Component::Position{0.0f, 0.0f});
     reg.add_component(moving, server::Component::Velocity{1.0f, 1.0f});
 
     // Entity with only position (no velocity)
-    auto stationary = reg.spawn_entity();
+    auto stationary = reg.SpawnEntity();
     reg.add_component(stationary, server::Component::Position{10.0f, 10.0f});
 
     auto &positions = reg.GetComponents<server::Component::Position>();
@@ -289,7 +289,7 @@ TEST(ServerTest, HealthComponentInitialization) {
     server.initialize();
 
     Engine::registry &reg = server.getRegistry();
-    auto entity = reg.spawn_entity();
+    auto entity = reg.SpawnEntity();
 
     reg.add_component(entity, server::Component::Health{75, 100});
 
@@ -306,7 +306,7 @@ TEST(ServerTest, HealthComponentModification) {
     server.initialize();
 
     Engine::registry &reg = server.getRegistry();
-    auto entity = reg.spawn_entity();
+    auto entity = reg.SpawnEntity();
 
     reg.add_component(entity, server::Component::Health{100, 100});
 
@@ -337,9 +337,9 @@ TEST(ServerTest, NetworkIdComponent) {
 
     Engine::registry &reg = server.getRegistry();
 
-    auto e1 = reg.spawn_entity();
-    auto e2 = reg.spawn_entity();
-    auto e3 = reg.spawn_entity();
+    auto e1 = reg.SpawnEntity();
+    auto e2 = reg.SpawnEntity();
+    auto e3 = reg.SpawnEntity();
 
     reg.add_component(e1, server::Component::NetworkId{1001});
     reg.add_component(e2, server::Component::NetworkId{1002});
@@ -365,14 +365,14 @@ TEST(ServerTest, SimpleGameScenario) {
     Engine::registry &reg = server.getRegistry();
 
     // Spawn player at spawn point
-    auto player = reg.spawn_entity();
+    auto player = reg.SpawnEntity();
     reg.add_component(player, server::Component::Position{50.0f, 400.0f});
     reg.add_component(player, server::Component::Velocity{0.0f, 0.0f});
     reg.add_component(player, server::Component::Health{100, 100});
     reg.add_component(player, server::Component::Player{1, "TestPlayer"});
 
     // Spawn enemy moving towards player
-    auto enemy = reg.spawn_entity();
+    auto enemy = reg.SpawnEntity();
     reg.add_component(enemy, server::Component::Position{800.0f, 400.0f});
     reg.add_component(enemy, server::Component::Velocity{-3.0f, 0.0f});
     reg.add_component(enemy, server::Component::Health{30, 30});
@@ -405,7 +405,7 @@ TEST(ServerTest, EntityCleanup) {
     // Spawn multiple entities
     std::vector<Engine::entity> entities;
     for (int i = 0; i < 5; i++) {
-        auto e = reg.spawn_entity();
+        auto e = reg.SpawnEntity();
         reg.add_component(e,
             server::Component::Position{static_cast<float>(i * 10.0f), 0.0f});
         entities.push_back(e);
@@ -419,8 +419,8 @@ TEST(ServerTest, EntityCleanup) {
     }
 
     // Kill some entities
-    reg.kill_entity(entities[1]);
-    reg.kill_entity(entities[3]);
+    reg.KillEntity(entities[1]);
+    reg.KillEntity(entities[3]);
 
     // Verify correct ones are gone
     EXPECT_TRUE(positions.has(entities[0].getId()));
@@ -445,7 +445,7 @@ TEST(ServerTest, StressManyEntities) {
     std::vector<Engine::entity> entities;
 
     for (int i = 0; i < 100; i++) {
-        auto e = reg.spawn_entity();
+        auto e = reg.SpawnEntity();
         reg.add_component(e, server::Component::Position{static_cast<float>(i),
                                  static_cast<float>(i)});
         reg.add_component(e, server::Component::Velocity{1.0f, 1.0f});
@@ -472,7 +472,7 @@ TEST(ServerTest, StressMultipleUpdates) {
 
     Engine::registry &reg = server.getRegistry();
 
-    auto entity = reg.spawn_entity();
+    auto entity = reg.SpawnEntity();
     reg.add_component(entity, server::Component::Position{0.0f, 0.0f});
     reg.add_component(entity, server::Component::Velocity{0.1f, 0.1f});
 

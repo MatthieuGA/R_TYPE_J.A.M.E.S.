@@ -2,8 +2,8 @@
 
 #include <string>
 
-#include "entity.hpp"
-#include "registry.hpp"
+#include "include/entity.hpp"
+#include "include/registry.hpp"
 
 // Test components
 struct Position {
@@ -39,7 +39,7 @@ struct Name {
 TEST(RegistryTest, RegisterComponent) {
     Engine::registry reg;
 
-    auto &positions = reg.register_component<Position>();
+    auto &positions = reg.RegisterComponent<Position>();
 
     EXPECT_EQ(positions.size(), 0);
 }
@@ -47,9 +47,9 @@ TEST(RegistryTest, RegisterComponent) {
 TEST(RegistryTest, RegisterMultipleComponents) {
     Engine::registry reg;
 
-    auto &positions = reg.register_component<Position>();
-    auto &velocities = reg.register_component<Velocity>();
-    auto &healths = reg.register_component<Health>();
+    auto &positions = reg.RegisterComponent<Position>();
+    auto &velocities = reg.RegisterComponent<Velocity>();
+    auto &healths = reg.RegisterComponent<Health>();
 
     EXPECT_EQ(positions.size(), 0);
     EXPECT_EQ(velocities.size(), 0);
@@ -59,16 +59,16 @@ TEST(RegistryTest, RegisterMultipleComponents) {
 TEST(RegistryTest, RegisterComponentTwiceThrows) {
     Engine::registry reg;
 
-    reg.register_component<Position>();
+    reg.RegisterComponent<Position>();
 
-    EXPECT_THROW(reg.register_component<Position>(), std::runtime_error);
+    EXPECT_THROW(reg.RegisterComponent<Position>(), std::runtime_error);
 }
 
 TEST(RegistryTest, GetComponents) {
     Engine::registry reg;
 
-    reg.register_component<Position>();
-    auto &positions = reg.get_components<Position>();
+    reg.RegisterComponent<Position>();
+    auto &positions = reg.GetComponents<Position>();
 
     EXPECT_EQ(positions.size(), 0);
 }
@@ -76,9 +76,9 @@ TEST(RegistryTest, GetComponents) {
 TEST(RegistryTest, GetComponentsConst) {
     Engine::registry reg;
 
-    reg.register_component<Position>();
+    reg.RegisterComponent<Position>();
     const auto &const_reg = reg;
-    const auto &positions = const_reg.get_components<Position>();
+    const auto &positions = const_reg.GetComponents<Position>();
 
     EXPECT_EQ(positions.size(), 0);
 }
@@ -86,7 +86,7 @@ TEST(RegistryTest, GetComponentsConst) {
 TEST(RegistryTest, GetComponentsNotRegisteredThrows) {
     Engine::registry reg;
 
-    EXPECT_THROW(reg.get_components<Position>(), std::runtime_error);
+    EXPECT_THROW(reg.GetComponents<Position>(), std::runtime_error);
 }
 
 // ============================================================================
@@ -96,7 +96,7 @@ TEST(RegistryTest, GetComponentsNotRegisteredThrows) {
 TEST(RegistryTest, SpawnEntity) {
     Engine::registry reg;
 
-    auto entity = reg.spawn_entity();
+    auto entity = reg.SpawnEntity();
 
     EXPECT_EQ(entity.getId(), 0);
 }
@@ -104,9 +104,9 @@ TEST(RegistryTest, SpawnEntity) {
 TEST(RegistryTest, SpawnMultipleEntities) {
     Engine::registry reg;
 
-    auto e1 = reg.spawn_entity();
-    auto e2 = reg.spawn_entity();
-    auto e3 = reg.spawn_entity();
+    auto e1 = reg.SpawnEntity();
+    auto e2 = reg.SpawnEntity();
+    auto e3 = reg.SpawnEntity();
 
     EXPECT_EQ(e1.getId(), 0);
     EXPECT_EQ(e2.getId(), 1);
@@ -123,30 +123,30 @@ TEST(RegistryTest, EntityFromIndex) {
 
 TEST(RegistryTest, KillEntity) {
     Engine::registry reg;
-    reg.register_component<Position>();
+    reg.RegisterComponent<Position>();
 
-    auto entity = reg.spawn_entity();
+    auto entity = reg.SpawnEntity();
     reg.add_component(entity, Position{10.0f, 20.0f});
 
-    EXPECT_NO_THROW(reg.kill_entity(entity));
+    EXPECT_NO_THROW(reg.KillEntity(entity));
 }
 
 TEST(RegistryTest, KillEntityRemovesComponents) {
     Engine::registry reg;
-    reg.register_component<Position>();
-    reg.register_component<Velocity>();
+    reg.RegisterComponent<Position>();
+    reg.RegisterComponent<Velocity>();
 
-    auto entity = reg.spawn_entity();
+    auto entity = reg.SpawnEntity();
     reg.add_component(entity, Position{10.0f, 20.0f});
     reg.add_component(entity, Velocity{1.0f, 2.0f});
 
-    auto &positions = reg.get_components<Position>();
-    auto &velocities = reg.get_components<Velocity>();
+    auto &positions = reg.GetComponents<Position>();
+    auto &velocities = reg.GetComponents<Velocity>();
 
     EXPECT_TRUE(positions.has(entity.getId()));
     EXPECT_TRUE(velocities.has(entity.getId()));
 
-    reg.kill_entity(entity);
+    reg.KillEntity(entity);
 
     EXPECT_FALSE(positions.has(entity.getId()));
     EXPECT_FALSE(velocities.has(entity.getId()));
@@ -155,15 +155,15 @@ TEST(RegistryTest, KillEntityRemovesComponents) {
 TEST(RegistryTest, ReuseDeadEntityId) {
     Engine::registry reg;
 
-    auto e1 = reg.spawn_entity();
-    auto e2 = reg.spawn_entity();
+    auto e1 = reg.SpawnEntity();
+    auto e2 = reg.SpawnEntity();
 
     EXPECT_EQ(e1.getId(), 0);
     EXPECT_EQ(e2.getId(), 1);
 
-    reg.kill_entity(e1);
+    reg.KillEntity(e1);
 
-    auto e3 = reg.spawn_entity();
+    auto e3 = reg.SpawnEntity();
     EXPECT_EQ(e3.getId(), 0);  // Should reuse ID 0
 }
 
@@ -173,9 +173,9 @@ TEST(RegistryTest, ReuseDeadEntityId) {
 
 TEST(RegistryTest, AddComponentRvalue) {
     Engine::registry reg;
-    reg.register_component<Position>();
+    reg.RegisterComponent<Position>();
 
-    auto entity = reg.spawn_entity();
+    auto entity = reg.SpawnEntity();
     auto &pos = reg.add_component(entity, Position{10.0f, 20.0f});
 
     EXPECT_TRUE(pos.has_value());
@@ -185,9 +185,9 @@ TEST(RegistryTest, AddComponentRvalue) {
 
 TEST(RegistryTest, AddComponentLvalue) {
     Engine::registry reg;
-    reg.register_component<Position>();
+    reg.RegisterComponent<Position>();
 
-    auto entity = reg.spawn_entity();
+    auto entity = reg.SpawnEntity();
     Position pos_value{15.0f, 25.0f};
     auto &pos = reg.add_component(entity, std::move(pos_value));
 
@@ -198,19 +198,19 @@ TEST(RegistryTest, AddComponentLvalue) {
 
 TEST(RegistryTest, AddMultipleComponentsToEntity) {
     Engine::registry reg;
-    reg.register_component<Position>();
-    reg.register_component<Velocity>();
-    reg.register_component<Health>();
+    reg.RegisterComponent<Position>();
+    reg.RegisterComponent<Velocity>();
+    reg.RegisterComponent<Health>();
 
-    auto entity = reg.spawn_entity();
+    auto entity = reg.SpawnEntity();
 
     reg.add_component(entity, Position{1.0f, 2.0f});
     reg.add_component(entity, Velocity{3.0f, 4.0f});
     reg.add_component(entity, Health{100});
 
-    auto &positions = reg.get_components<Position>();
-    auto &velocities = reg.get_components<Velocity>();
-    auto &healths = reg.get_components<Health>();
+    auto &positions = reg.GetComponents<Position>();
+    auto &velocities = reg.GetComponents<Velocity>();
+    auto &healths = reg.GetComponents<Health>();
 
     EXPECT_TRUE(positions.has(entity.getId()));
     EXPECT_TRUE(velocities.has(entity.getId()));
@@ -219,17 +219,17 @@ TEST(RegistryTest, AddMultipleComponentsToEntity) {
 
 TEST(RegistryTest, AddComponentToMultipleEntities) {
     Engine::registry reg;
-    reg.register_component<Position>();
+    reg.RegisterComponent<Position>();
 
-    auto e1 = reg.spawn_entity();
-    auto e2 = reg.spawn_entity();
-    auto e3 = reg.spawn_entity();
+    auto e1 = reg.SpawnEntity();
+    auto e2 = reg.SpawnEntity();
+    auto e3 = reg.SpawnEntity();
 
     reg.add_component(e1, Position{1.0f, 1.0f});
     reg.add_component(e2, Position{2.0f, 2.0f});
     reg.add_component(e3, Position{3.0f, 3.0f});
 
-    auto &positions = reg.get_components<Position>();
+    auto &positions = reg.GetComponents<Position>();
 
     EXPECT_TRUE(positions.has(e1.getId()));
     EXPECT_TRUE(positions.has(e2.getId()));
@@ -242,12 +242,12 @@ TEST(RegistryTest, AddComponentToMultipleEntities) {
 
 TEST(RegistryTest, OverwriteComponent) {
     Engine::registry reg;
-    reg.register_component<Position>();
+    reg.RegisterComponent<Position>();
 
-    auto entity = reg.spawn_entity();
+    auto entity = reg.SpawnEntity();
 
     reg.add_component(entity, Position{1.0f, 2.0f});
-    auto &positions = reg.get_components<Position>();
+    auto &positions = reg.GetComponents<Position>();
     EXPECT_EQ(positions[entity.getId()]->x, 1.0f);
 
     reg.add_component(entity, Position{10.0f, 20.0f});
@@ -260,10 +260,10 @@ TEST(RegistryTest, OverwriteComponent) {
 
 TEST(RegistryTest, EmplaceComponent) {
     Engine::registry reg;
-    reg.register_component<Position>();
+    reg.RegisterComponent<Position>();
 
-    auto entity = reg.spawn_entity();
-    auto &pos = reg.emplace_component<Position>(entity, 5.0f, 10.0f);
+    auto entity = reg.SpawnEntity();
+    auto &pos = reg.EmplaceComponent<Position>(entity, 5.0f, 10.0f);
 
     EXPECT_TRUE(pos.has_value());
     EXPECT_EQ(pos->x, 5.0f);
@@ -272,10 +272,10 @@ TEST(RegistryTest, EmplaceComponent) {
 
 TEST(RegistryTest, EmplaceComponentWithSingleArg) {
     Engine::registry reg;
-    reg.register_component<Health>();
+    reg.RegisterComponent<Health>();
 
-    auto entity = reg.spawn_entity();
-    auto &health = reg.emplace_component<Health>(entity, 150);
+    auto entity = reg.SpawnEntity();
+    auto &health = reg.EmplaceComponent<Health>(entity, 150);
 
     EXPECT_TRUE(health.has_value());
     EXPECT_EQ(health->hp, 150);
@@ -283,10 +283,10 @@ TEST(RegistryTest, EmplaceComponentWithSingleArg) {
 
 TEST(RegistryTest, EmplaceComponentDefaultConstructor) {
     Engine::registry reg;
-    reg.register_component<Position>();
+    reg.RegisterComponent<Position>();
 
-    auto entity = reg.spawn_entity();
-    auto &pos = reg.emplace_component<Position>(entity);
+    auto entity = reg.SpawnEntity();
+    auto &pos = reg.EmplaceComponent<Position>(entity);
 
     EXPECT_TRUE(pos.has_value());
     EXPECT_EQ(pos->x, 0.0f);
@@ -295,10 +295,10 @@ TEST(RegistryTest, EmplaceComponentDefaultConstructor) {
 
 TEST(RegistryTest, EmplaceComponentString) {
     Engine::registry reg;
-    reg.register_component<Name>();
+    reg.RegisterComponent<Name>();
 
-    auto entity = reg.spawn_entity();
-    auto &name = reg.emplace_component<Name>(entity, "Player");
+    auto entity = reg.SpawnEntity();
+    auto &name = reg.EmplaceComponent<Name>(entity, "Player");
 
     EXPECT_TRUE(name.has_value());
     EXPECT_EQ(name->value, "Player");
@@ -310,32 +310,32 @@ TEST(RegistryTest, EmplaceComponentString) {
 
 TEST(RegistryTest, RemoveComponent) {
     Engine::registry reg;
-    reg.register_component<Position>();
+    reg.RegisterComponent<Position>();
 
-    auto entity = reg.spawn_entity();
+    auto entity = reg.SpawnEntity();
     reg.add_component(entity, Position{1.0f, 2.0f});
 
-    auto &positions = reg.get_components<Position>();
+    auto &positions = reg.GetComponents<Position>();
     EXPECT_TRUE(positions.has(entity.getId()));
 
-    reg.remove_component<Position>(entity);
+    reg.RemoveComponent<Position>(entity);
 
     EXPECT_FALSE(positions.has(entity.getId()));
 }
 
 TEST(RegistryTest, RemoveOneOfMultipleComponents) {
     Engine::registry reg;
-    reg.register_component<Position>();
-    reg.register_component<Velocity>();
+    reg.RegisterComponent<Position>();
+    reg.RegisterComponent<Velocity>();
 
-    auto entity = reg.spawn_entity();
+    auto entity = reg.SpawnEntity();
     reg.add_component(entity, Position{1.0f, 2.0f});
     reg.add_component(entity, Velocity{3.0f, 4.0f});
 
-    auto &positions = reg.get_components<Position>();
-    auto &velocities = reg.get_components<Velocity>();
+    auto &positions = reg.GetComponents<Position>();
+    auto &velocities = reg.GetComponents<Velocity>();
 
-    reg.remove_component<Position>(entity);
+    reg.RemoveComponent<Position>(entity);
 
     EXPECT_FALSE(positions.has(entity.getId()));
     EXPECT_TRUE(velocities.has(entity.getId()));
@@ -343,19 +343,19 @@ TEST(RegistryTest, RemoveOneOfMultipleComponents) {
 
 TEST(RegistryTest, RemoveComponentFromMultipleEntities) {
     Engine::registry reg;
-    reg.register_component<Position>();
+    reg.RegisterComponent<Position>();
 
-    auto e1 = reg.spawn_entity();
-    auto e2 = reg.spawn_entity();
-    auto e3 = reg.spawn_entity();
+    auto e1 = reg.SpawnEntity();
+    auto e2 = reg.SpawnEntity();
+    auto e3 = reg.SpawnEntity();
 
     reg.add_component(e1, Position{1.0f, 1.0f});
     reg.add_component(e2, Position{2.0f, 2.0f});
     reg.add_component(e3, Position{3.0f, 3.0f});
 
-    auto &positions = reg.get_components<Position>();
+    auto &positions = reg.GetComponents<Position>();
 
-    reg.remove_component<Position>(e2);
+    reg.RemoveComponent<Position>(e2);
 
     EXPECT_TRUE(positions.has(e1.getId()));
     EXPECT_FALSE(positions.has(e2.getId()));
@@ -368,11 +368,11 @@ TEST(RegistryTest, RemoveComponentFromMultipleEntities) {
 
 TEST(RegistryTest, AddSystemLambda) {
     Engine::registry reg;
-    reg.register_component<Position>();
+    reg.RegisterComponent<Position>();
 
     bool system_called = false;
 
-    reg.add_system<Engine::sparse_array<Position>>(
+    reg.AddSystem<Engine::sparse_array<Position>>(
         [&system_called](
             Engine::registry &r, Engine::sparse_array<Position> &positions) {
             system_called = true;
@@ -385,15 +385,15 @@ TEST(RegistryTest, AddSystemLambda) {
 
 TEST(RegistryTest, SystemModifiesComponents) {
     Engine::registry reg;
-    reg.register_component<Position>();
-    reg.register_component<Velocity>();
+    reg.RegisterComponent<Position>();
+    reg.RegisterComponent<Velocity>();
 
-    auto entity = reg.spawn_entity();
+    auto entity = reg.SpawnEntity();
     reg.add_component(entity, Position{0.0f, 0.0f});
     reg.add_component(entity, Velocity{1.0f, 2.0f});
 
     // Movement system
-    reg.add_system<Engine::sparse_array<Position>,
+    reg.AddSystem<Engine::sparse_array<Position>,
         Engine::sparse_array<Velocity>>(
         [](Engine::registry &r, Engine::sparse_array<Position> &positions,
             Engine::sparse_array<Velocity> &velocities) {
@@ -408,7 +408,7 @@ TEST(RegistryTest, SystemModifiesComponents) {
             }
         });
 
-    auto &positions = reg.get_components<Position>();
+    auto &positions = reg.GetComponents<Position>();
 
     reg.run_systems();
 
@@ -418,19 +418,19 @@ TEST(RegistryTest, SystemModifiesComponents) {
 
 TEST(RegistryTest, MultipleSystemsRun) {
     Engine::registry reg;
-    reg.register_component<Position>();
+    reg.RegisterComponent<Position>();
 
     int call_count = 0;
 
-    reg.add_system<Engine::sparse_array<Position>>(
+    reg.AddSystem<Engine::sparse_array<Position>>(
         [&call_count](Engine::registry &r,
             Engine::sparse_array<Position> &positions) { call_count++; });
 
-    reg.add_system<Engine::sparse_array<Position>>(
+    reg.AddSystem<Engine::sparse_array<Position>>(
         [&call_count](Engine::registry &r,
             Engine::sparse_array<Position> &positions) { call_count++; });
 
-    reg.add_system<Engine::sparse_array<Position>>(
+    reg.AddSystem<Engine::sparse_array<Position>>(
         [&call_count](Engine::registry &r,
             Engine::sparse_array<Position> &positions) { call_count++; });
 
@@ -441,16 +441,16 @@ TEST(RegistryTest, MultipleSystemsRun) {
 
 TEST(RegistryTest, SystemAccessesMultipleComponentTypes) {
     Engine::registry reg;
-    reg.register_component<Position>();
-    reg.register_component<Health>();
+    reg.RegisterComponent<Position>();
+    reg.RegisterComponent<Health>();
 
-    auto entity = reg.spawn_entity();
+    auto entity = reg.SpawnEntity();
     reg.add_component(entity, Position{10.0f, 10.0f});
     reg.add_component(entity, Health{50});
 
     bool system_ran = false;
 
-    reg.add_system<Engine::sparse_array<Position>,
+    reg.AddSystem<Engine::sparse_array<Position>,
         Engine::sparse_array<Health>>(
         [&system_ran](Engine::registry &r,
             Engine::sparse_array<Position> &positions,
@@ -477,22 +477,22 @@ TEST(RegistryTest, SystemAccessesMultipleComponentTypes) {
 
 TEST(RegistryTest, CompleteEntityLifecycle) {
     Engine::registry reg;
-    reg.register_component<Position>();
-    reg.register_component<Velocity>();
-    reg.register_component<Health>();
+    reg.RegisterComponent<Position>();
+    reg.RegisterComponent<Velocity>();
+    reg.RegisterComponent<Health>();
 
     // Create entity
-    auto entity = reg.spawn_entity();
+    auto entity = reg.SpawnEntity();
 
     // Add components
     reg.add_component(entity, Position{0.0f, 0.0f});
     reg.add_component(entity, Velocity{5.0f, 10.0f});
-    reg.emplace_component<Health>(entity, 100);
+    reg.EmplaceComponent<Health>(entity, 100);
 
     // Verify components exist
-    auto &positions = reg.get_components<Position>();
-    auto &velocities = reg.get_components<Velocity>();
-    auto &healths = reg.get_components<Health>();
+    auto &positions = reg.GetComponents<Position>();
+    auto &velocities = reg.GetComponents<Velocity>();
+    auto &healths = reg.GetComponents<Health>();
 
     EXPECT_TRUE(positions.has(entity.getId()));
     EXPECT_TRUE(velocities.has(entity.getId()));
@@ -506,26 +506,26 @@ TEST(RegistryTest, CompleteEntityLifecycle) {
     EXPECT_EQ(healths[entity.getId()]->hp, 75);
 
     // Remove one component
-    reg.remove_component<Velocity>(entity);
+    reg.RemoveComponent<Velocity>(entity);
     EXPECT_FALSE(velocities.has(entity.getId()));
     EXPECT_TRUE(positions.has(entity.getId()));
     EXPECT_TRUE(healths.has(entity.getId()));
 
     // Kill entity
-    reg.kill_entity(entity);
+    reg.KillEntity(entity);
     EXPECT_FALSE(positions.has(entity.getId()));
     EXPECT_FALSE(healths.has(entity.getId()));
 }
 
 TEST(RegistryTest, MultipleEntitiesWithDifferentComponents) {
     Engine::registry reg;
-    reg.register_component<Position>();
-    reg.register_component<Velocity>();
-    reg.register_component<Health>();
+    reg.RegisterComponent<Position>();
+    reg.RegisterComponent<Velocity>();
+    reg.RegisterComponent<Health>();
 
-    auto player = reg.spawn_entity();
-    auto enemy = reg.spawn_entity();
-    auto projectile = reg.spawn_entity();
+    auto player = reg.SpawnEntity();
+    auto enemy = reg.SpawnEntity();
+    auto projectile = reg.SpawnEntity();
 
     // Player has all components
     reg.add_component(player, Position{0.0f, 0.0f});
@@ -540,9 +540,9 @@ TEST(RegistryTest, MultipleEntitiesWithDifferentComponents) {
     reg.add_component(projectile, Position{10.0f, 10.0f});
     reg.add_component(projectile, Velocity{15.0f, 0.0f});
 
-    auto &positions = reg.get_components<Position>();
-    auto &velocities = reg.get_components<Velocity>();
-    auto &healths = reg.get_components<Health>();
+    auto &positions = reg.GetComponents<Position>();
+    auto &velocities = reg.GetComponents<Velocity>();
+    auto &healths = reg.GetComponents<Health>();
 
     // Verify player
     EXPECT_TRUE(positions.has(player.getId()));
@@ -562,23 +562,23 @@ TEST(RegistryTest, MultipleEntitiesWithDifferentComponents) {
 
 TEST(RegistryTest, StressTestManyEntities) {
     Engine::registry reg;
-    reg.register_component<Position>();
-    reg.register_component<Health>();
+    reg.RegisterComponent<Position>();
+    reg.RegisterComponent<Health>();
 
     const size_t num_entities = 1000;
     std::vector<Engine::entity> entities;
 
     // Spawn many entities
     for (size_t i = 0; i < num_entities; ++i) {
-        entities.push_back(reg.spawn_entity());
+        entities.push_back(reg.SpawnEntity());
         reg.add_component(entities.back(),
             Position{static_cast<float>(i), static_cast<float>(i * 2)});
-        reg.emplace_component<Health>(
+        reg.EmplaceComponent<Health>(
             entities.back(), static_cast<int>(i % 100));
     }
 
-    auto &positions = reg.get_components<Position>();
-    auto &healths = reg.get_components<Health>();
+    auto &positions = reg.GetComponents<Position>();
+    auto &healths = reg.GetComponents<Health>();
 
     // Verify all entities have components
     for (size_t i = 0; i < num_entities; ++i) {
@@ -588,7 +588,7 @@ TEST(RegistryTest, StressTestManyEntities) {
 
     // Kill half the entities
     for (size_t i = 0; i < num_entities / 2; ++i) {
-        reg.kill_entity(entities[i]);
+        reg.KillEntity(entities[i]);
     }
 
     // Verify first half are dead
