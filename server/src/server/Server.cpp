@@ -1,18 +1,26 @@
 #include "server/Server.hpp"
 
+#include <algorithm>
 #include <iostream>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "server/Components.hpp"
+#include "server/PacketBuffer.hpp"
+#include "server/Packets.hpp"
 
 namespace server {
 
 Server::Server(Config &config, boost::asio::io_context &io_context)
-: config_(config),
-io_context_(io_context),
-network_(std::make_unique<Network>(config, io_context)),
-registry_(),
-tick_timer_(io_context),
-running_(false) {}
+    : config_(config),
+      io_context_(io_context),
+      network_(std::make_unique<Network>(config, io_context)),
+      registry_(),
+      tick_timer_(io_context),
+      running_(false),
+      next_player_id_(1) {}
 
 Server::~Server() {
     running_ = false;
@@ -22,7 +30,16 @@ void Server::initialize() {
     std::cout << "Initializing server..." << std::endl;
     registerComponents();
     registerSystems();
+
+    // Register TCP accept callback
+    network_->getTcp().setAcceptCallback(
+        [this](boost::asio::ip::tcp::socket socket) {
+            handleTcpAccept(std::move(socket));
+        });
+
     std::cout << "Server initialized successfully" << std::endl;
+    std::cout << "Ready to accept TCP connections (max "
+              << static_cast<int>(MAX_CLIENTS) << " players)" << std::endl;
 }
 
 void Server::registerComponents() {
@@ -85,6 +102,187 @@ void Server::update() {
 
 Engine::registry &Server::getRegistry() {
     return registry_;
+}
+
+// ============================================================================
+// TCP Connection Handlers
+// ============================================================================
+
+void Server::handleTcpAccept(boost::asio::ip::tcp::socket socket) {
+    std::cout << "handleTcpAccept: New connection from "
+              << socket.remote_endpoint().address().to_string() << ":"
+              << socket.remote_endpoint().port() << std::endl;
+
+    // Allocate buffer on heap (lambda must own it for async lifetime)
+    auto buffer = std::make_shared<std::vector<uint8_t>>(44);  // 12 + 32 bytes
+
+    // Move socket into shared_ptr before calling async_receive
+    // (can't call method on socket after it's moved into lambda capture)
+    auto socket_ptr =
+        std::make_shared<boost::asio::ip::tcp::socket>(std::move(socket));
+
+    // Start async receive for CONNECT_REQ packet
+    socket_ptr->async_receive(boost::asio::buffer(*buffer),
+        [this, buffer, socket_ptr](
+            boost::system::error_code ec, std::size_t bytes_read) {
+            if (ec) {
+                std::cerr << "Error reading CONNECT_REQ: " << ec.message()
+                          << std::endl;
+                return;
+            }
+
+            // CONNECT_REQ must be exactly 44 bytes (12 header + 32 username)
+            if (bytes_read < 44) {
+                std::cerr << "Incomplete CONNECT_REQ: expected 44 bytes, got "
+                          << bytes_read << std::endl;
+                return;
+            }
+
+            // Parse header
+            network::PacketBuffer packet_buffer(*buffer);
+            network::CommonHeader header = packet_buffer.read_header();
+
+            if (header.op_code !=
+                static_cast<uint8_t>(network::PacketType::ConnectReq)) {
+                std::cerr << "Expected CONNECT_REQ (0x01), got opcode 0x"
+                          << std::hex << static_cast<int>(header.op_code)
+                          << std::dec << std::endl;
+                return;
+            }
+
+            // Extract payload (username)
+            std::vector<uint8_t> payload(
+                buffer->begin() + 12,  // Skip 12-byte header
+                buffer->begin() + 12 +
+                    32);  // 32-byte username null-terminated
+
+            handleConnectReq(*socket_ptr, payload);
+        });
+}
+
+void Server::handleConnectReq(boost::asio::ip::tcp::socket &socket,
+    const std::vector<uint8_t> &payload) {
+    // Deserialize CONNECT_REQ
+    network::PacketBuffer buffer(payload);
+    network::ConnectReqPacket req =
+        network::ConnectReqPacket::deserialize(buffer);
+    std::string username = req.get_username();
+
+    std::cout << "CONNECT_REQ from username: '" << username << "'"
+              << std::endl;
+
+    // Validation: Empty username
+    if (username.empty() ||
+        username.find_first_not_of('\0') == std::string::npos) {
+        std::cerr << "Rejected: Empty username" << std::endl;
+        sendConnectAck(socket, 0, network::ConnectAckPacket::BadUsername);
+        return;
+    }
+
+    // Validation: Username already taken
+    if (isUsernameTaken(username)) {
+        std::cerr << "Rejected: Username '" << username << "' already taken"
+                  << std::endl;
+        sendConnectAck(socket, 0, network::ConnectAckPacket::BadUsername);
+        return;
+    }
+
+    // Validation: Server full
+    if (clients_.size() >= MAX_CLIENTS) {
+        std::cerr << "Rejected: Server full (" << clients_.size() << "/"
+                  << static_cast<int>(MAX_CLIENTS) << " players)" << std::endl;
+        sendConnectAck(socket, 0, network::ConnectAckPacket::ServerFull);
+        return;
+    }
+
+    // Assign PlayerId and add to clients map
+    uint8_t player_id = assignPlayerId();
+
+    // Create ClientConnection and move socket ownership
+    ClientConnection connection(player_id, std::move(socket));
+    connection.username = username;
+
+    std::cout << "Player connected: '" << username << "' assigned ID "
+              << static_cast<int>(player_id) << std::endl;
+
+    // Send CONNECT_ACK (must send before moving connection into map)
+    sendConnectAck(
+        connection.tcp_socket, player_id, network::ConnectAckPacket::OK);
+
+    // Transfer ownership to clients_ map
+    clients_.emplace(player_id, std::move(connection));
+}
+
+void Server::sendConnectAck(boost::asio::ip::tcp::socket &socket,
+    uint8_t player_id, network::ConnectAckPacket::Status status) {
+    network::ConnectAckPacket ack;
+    ack.player_id = network::PlayerId{player_id};
+    ack.status = status;
+    ack.reserved = {0, 0};
+
+    // Serialize packet
+    network::PacketBuffer buffer;
+    ack.serialize(buffer);
+    const auto &data = buffer.data();
+
+    // Send async (use shared_ptr to keep data alive)
+    auto data_copy = std::make_shared<std::vector<uint8_t>>(data);
+
+    socket.async_send(boost::asio::buffer(*data_copy),
+        [data_copy, player_id, status](
+            boost::system::error_code ec, std::size_t) {
+            if (ec) {
+                std::cerr << "Error sending CONNECT_ACK to player "
+                          << static_cast<int>(player_id) << ": "
+                          << ec.message() << std::endl;
+            } else {
+                std::cout << "Sent CONNECT_ACK: PlayerId="
+                          << static_cast<int>(player_id)
+                          << ", Status=" << static_cast<int>(status)
+                          << std::endl;
+            }
+        });
+}
+
+uint8_t Server::assignPlayerId() {
+    uint8_t id = next_player_id_++;
+
+    // Handle wraparound (skip 0, which is reserved for "no player")
+    if (next_player_id_ == 0) {
+        next_player_id_ = 1;
+    }
+
+    // Ensure uniqueness (in case of wraparound collision)
+    while (clients_.find(id) != clients_.end()) {
+        id = next_player_id_++;
+        if (next_player_id_ == 0) {
+            next_player_id_ = 1;
+        }
+    }
+
+    return id;
+}
+
+void Server::removeClient(uint8_t player_id) {
+    auto it = clients_.find(player_id);
+    if (it == clients_.end()) {
+        std::cerr << "removeClient: Player " << static_cast<int>(player_id)
+                  << " not found" << std::endl;
+        return;
+    }
+
+    std::cout << "Player " << static_cast<int>(player_id) << " ('"
+              << it->second.username << "') disconnected" << std::endl;
+
+    // TCP socket closes automatically (object is destroyed)
+    clients_.erase(it);
+}
+
+bool Server::isUsernameTaken(const std::string &username) const {
+    return std::any_of(
+        clients_.begin(), clients_.end(), [&username](const auto &pair) {
+            return pair.second.username == username;
+        });
 }
 
 }  // namespace server
