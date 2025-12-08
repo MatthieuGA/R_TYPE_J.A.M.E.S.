@@ -7,7 +7,7 @@
 namespace Com = Rtype::Client::Component;
 namespace Eng = Engine;
 
-using namespace Rtype::Client;
+using Rtype::Client::InitializeShaderSystem;
 
 TEST(ShaderSystem, LoadsShaderFromAssets) {
     Eng::registry reg;
