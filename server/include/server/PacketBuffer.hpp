@@ -2,7 +2,6 @@
 
 #include <array>
 #include <bit>
-#include <concepts>
 #include <cstdint>
 #include <cstring>
 #include <stdexcept>
