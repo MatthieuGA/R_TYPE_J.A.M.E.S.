@@ -35,6 +35,19 @@ bool IsCollidingFromOffset(const Com::Transform &trans_a,
     return false;
 }
 
+/**
+ * @brief Check AABB collision between two entities.
+ *
+ * This function computes the offsets based on the transforms and hitboxes,
+ * then calls `IsCollidingFromOffset` to determine if a collision occurs.
+ *
+ * @param trans_a Transform of entity A
+ * @param hb_a HitBox of entity A
+ * @param trans_b Transform of entity B
+ * @param hb_b HitBox of entity B
+ * @param game_world Game world context (unused in current implementation)
+ * @return true if the boxes overlap
+ */
 bool IsColliding(const Com::Transform &trans_a, const Com::HitBox &hb_a,
     const Com::Transform &trans_b, const Com::HitBox &hb_b,
     Rtype::Client::GameWorld &game_world) {
