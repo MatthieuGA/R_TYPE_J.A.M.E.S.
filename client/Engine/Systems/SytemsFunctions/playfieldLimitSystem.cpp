@@ -1,4 +1,5 @@
 #include <iostream>
+
 #include "Engine/Systems/initRegistrySystems.hpp"
 #include "include/indexed_zipper.hpp"
 
@@ -6,6 +7,7 @@ namespace Eng = Engine;
 
 namespace Rtype::Client {
 namespace Com = Component;
+
 /**
  * @brief Clamp entity transforms to remain inside the render window.
  *

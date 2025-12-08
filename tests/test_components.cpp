@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+
 #include <string>
 
 #include "../client/include/Components/CoreComponents.hpp"

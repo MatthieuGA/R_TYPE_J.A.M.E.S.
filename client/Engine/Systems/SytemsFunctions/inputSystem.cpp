@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+
 #include "Engine/Systems/initRegistrySystems.hpp"
 
 namespace Rtype::Client {
@@ -11,8 +12,7 @@ namespace Rtype::Client {
  * @param reg Engine registry (unused)
  * @param inputs Sparse array of Inputs components to update
  */
-void InputSystem(Eng::registry &reg,
-Eng::sparse_array<Com::Inputs> &inputs) {
+void InputSystem(Eng::registry &reg, Eng::sparse_array<Com::Inputs> &inputs) {
     for (auto &&[i, input] : make_indexed_zipper(inputs)) {
         input.last_shoot_state = input.shoot;
 

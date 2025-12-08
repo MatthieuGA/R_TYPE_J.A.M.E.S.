@@ -19,7 +19,8 @@ void ParallaxSystem(Eng::registry &reg, const GameWorld &game_world,
     Eng::sparse_array<Com::Drawable> const &drawables) {
     for (auto &&[i, tranform, parallax_layers, drawable] :
         make_indexed_zipper(transforms, parallax_layers, drawables)) {
-        if (!drawable.isLoaded) continue;
+        if (!drawable.isLoaded)
+            continue;
         float dt = game_world.last_delta_;
         // Update position based on parallax scroll speed
         tranform.x += parallax_layers.scroll_speed * dt;

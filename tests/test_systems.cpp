@@ -11,12 +11,12 @@
 namespace Com = Rtype::Client::Component;
 namespace Eng = Engine;
 
-using Rtype::Client::MovementSystem;
-using Rtype::Client::PlayfieldLimitSystem;
 using Rtype::Client::AnimationSystem;
-using Rtype::Client::PlayerSystem;
-using Rtype::Client::InputSystem;
 using Rtype::Client::CollisionDetectionSystem;
+using Rtype::Client::InputSystem;
+using Rtype::Client::MovementSystem;
+using Rtype::Client::PlayerSystem;
+using Rtype::Client::PlayfieldLimitSystem;
 using Rtype::Client::ProjectileSystem;
 using Rtype::Client::ShootPlayerSystem;
 
