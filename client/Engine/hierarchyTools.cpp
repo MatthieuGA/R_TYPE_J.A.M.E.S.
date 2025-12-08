@@ -1,5 +1,5 @@
-#pragma once
 #include <cmath>
+#include <numbers>
 #include "Engine/hierarchyTools.hpp"
 
 namespace Rtype::Client {
@@ -62,7 +62,7 @@ sf::Vector2f CalculateWorldPositionWithHierarchy(
     sf::Vector2f parent_pos =
         CalculateWorldPositionWithHierarchy(parent_transform, transforms);
     float parent_rotation_rad =
-        parent_transform.rotationDegrees * 3.14159265f / 180.0f;
+        parent_transform.rotationDegrees * std::numbers::pi / 180.0f;
 
     // Add parent's parent rotations
     if (parent_transform.parent_entity.has_value()) {
@@ -71,7 +71,7 @@ sf::Vector2f CalculateWorldPositionWithHierarchy(
             const Com::Transform &grandparent =
                 transforms[grandparent_id].value();
             parent_rotation_rad +=
-                grandparent.GetWorldRotation() * 3.14159265f / 180.0f;
+                grandparent.GetWorldRotation() * std::numbers::pi / 180.0f;
         }
     }
 

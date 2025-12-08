@@ -42,7 +42,7 @@ TEST_F(ButtonClickSystemTest, DetectsHoverWhenMouseInsideBounds) {
     // Simulate mouse at center of button (100, 100)
     // Note: In real test we can't control sf::Mouse position directly,
     // so this test verifies the system runs without errors
-    buttonClickSystem(reg, game_world, hit_boxes, clickables,
+    ButtonClickSystem(reg, game_world, hit_boxes, clickables,
         drawables, transforms);
 
     ASSERT_TRUE(clickables[0].has_value());
@@ -67,7 +67,7 @@ TEST_F(ButtonClickSystemTest, UpdatesColorBasedOnState) {
     clickables.insert_at(0, clickable);
     drawables.insert_at(0, std::move(drawable));
 
-    buttonClickSystem(reg, game_world, hit_boxes, clickables,
+    ButtonClickSystem(reg, game_world, hit_boxes, clickables,
         drawables, transforms);
 
     ASSERT_TRUE(drawables[0].has_value());
@@ -91,7 +91,7 @@ TEST_F(ButtonClickSystemTest, ScalesHitBoxWithTransformWhenEnabled) {
     clickables.insert_at(0, clickable);
     drawables.insert_at(0, std::move(drawable));
 
-    buttonClickSystem(reg, game_world, hit_boxes, clickables,
+    ButtonClickSystem(reg, game_world, hit_boxes, clickables,
         drawables, transforms);
 
     // System should compute hitbox as 40*2 = 80 wide, 20*2 = 40 tall
@@ -112,7 +112,7 @@ TEST_F(ButtonClickSystemTest, DoesNotScaleHitBoxWhenDisabled) {
     clickables.insert_at(0, clickable);
     drawables.insert_at(0, std::move(drawable));
 
-    buttonClickSystem(reg, game_world, hit_boxes, clickables,
+    ButtonClickSystem(reg, game_world, hit_boxes, clickables,
         drawables, transforms);
 
     // System should use 60x40 without scaling (ignoring transform.scale)
@@ -140,7 +140,7 @@ TEST_F(ButtonClickSystemTest, TriggersOnClickCallbackWhenReleased) {
     // First pass: set clicked state
     clickables[0]->isClicked = true;
 
-    buttonClickSystem(reg, game_world, hit_boxes, clickables,
+    ButtonClickSystem(reg, game_world, hit_boxes, clickables,
         drawables, transforms);
 
     // In real scenario, mouse release would trigger callback
@@ -172,7 +172,7 @@ TEST_F(ButtonClickSystemTest, HandlesMultipleButtons) {
     drawables.insert_at(0, std::move(d1));
     drawables.insert_at(1, std::move(d2));
 
-    buttonClickSystem(reg, game_world, hit_boxes, clickables,
+    ButtonClickSystem(reg, game_world, hit_boxes, clickables,
         drawables, transforms);
 
     ASSERT_TRUE(clickables[0].has_value());
@@ -197,7 +197,7 @@ TEST_F(ButtonClickSystemTest, ClickStateResetWhenMouseNotPressed) {
     clickables[0]->isClicked = true;
 
     // Run system with no mouse press
-    buttonClickSystem(reg, game_world, hit_boxes, clickables,
+    ButtonClickSystem(reg, game_world, hit_boxes, clickables,
         drawables, transforms);
 
     // Verify system processes without crash

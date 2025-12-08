@@ -9,6 +9,8 @@
 
 namespace Rtype::Client {
 
+const int FONT_SIZE_SCALE = 10;
+
 /**
  * @brief Initialize a text component with font loading.
  *
@@ -25,7 +27,7 @@ void InitializeText(Com::Text &text, const Com::Transform &transform) {
     } else {
         text.text.setFont(text.font);
         text.text.setString(text.content);
-        text.text.setCharacterSize(text.characterSize * 10);  // Scale size
+        text.text.setCharacterSize(text.characterSize * FONT_SIZE_SCALE);
         text.text.setFillColor(text.color);
 
         // Set origin based on transform's origin point
@@ -61,7 +63,8 @@ void RenderOneTextEntity(
 
     // Apply cumulative scale
     float world_scale = CalculateCumulativeScale(transform.value(), transforms);
-    text->text.setScale(sf::Vector2f(world_scale / 10, world_scale / 10));
+    text->text.setScale(sf::Vector2f(world_scale / FONT_SIZE_SCALE,
+                                    world_scale / FONT_SIZE_SCALE));
 
     // Apply rotation
     text->text.setRotation(transform->rotationDegrees);

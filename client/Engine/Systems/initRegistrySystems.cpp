@@ -14,7 +14,7 @@ namespace Com = Component;
  *
  * @param game_world The game world containing the registry.
  */
-void init_render_systems(Rtype::Client::GameWorld &game_world) {
+void InitRenderSystems(Rtype::Client::GameWorld &game_world) {
     // Initialize systems
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
         Eng::sparse_array<Com::Drawable>,
@@ -102,7 +102,7 @@ void init_movement_system(Rtype::Client::GameWorld &game_world) {
  *
  * @param game_world The game world containing the registry.
  */
-void init_controls_system(Rtype::Client::GameWorld &game_world) {
+void InitControlsSystem(Rtype::Client::GameWorld &game_world) {
     game_world.registry_.AddSystem<Eng::sparse_array<Com::HitBox>,
         Eng::sparse_array<Com::Clickable>, Eng::sparse_array<Com::Drawable>,
         Eng::sparse_array<Com::Transform>>(
@@ -111,7 +111,7 @@ void init_controls_system(Rtype::Client::GameWorld &game_world) {
             Eng::sparse_array<Com::Clickable> &clickables,
             Eng::sparse_array<Com::Drawable> &drawables,
             Eng::sparse_array<Com::Transform> &transforms) {
-            buttonClickSystem(r, game_world, hit_boxes,
+            ButtonClickSystem(r, game_world, hit_boxes,
                 clickables, drawables, transforms);
         });
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Inputs>>(InputSystem);
@@ -161,7 +161,7 @@ void init_controls_system(Rtype::Client::GameWorld &game_world) {
  *
  * @param game_world The game world containing the registry.
  */
-void init_scene_management_system(Rtype::Client::GameWorld &game_world) {
+void InitSceneManagementSystem(Rtype::Client::GameWorld &game_world) {
     game_world.registry_.AddSystem<Eng::sparse_array<Com::SceneManagement>>(
         [&game_world](Eng::registry &r,
             Eng::sparse_array<Com::SceneManagement> &sceneManagements) {
@@ -179,9 +179,9 @@ void init_scene_management_system(Rtype::Client::GameWorld &game_world) {
  */
 void InitRegistrySystems(Rtype::Client::GameWorld &game_world) {
     // Set up systems
-    init_scene_management_system(game_world);
-    init_controls_system(game_world);
+    InitSceneManagementSystem(game_world);
+    InitControlsSystem(game_world);
     init_movement_system(game_world);
-    init_render_systems(game_world);
+    InitRenderSystems(game_world);
 }
 }  // namespace Rtype::Client

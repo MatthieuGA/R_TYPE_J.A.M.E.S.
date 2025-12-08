@@ -17,7 +17,7 @@ namespace Rtype::Client {
  * @param drawables Sparse array of Drawable components.
  * @param transforms Sparse array of Transform components.
  */
-void buttonClickSystem(Eng::registry &reg, GameWorld &game_world,
+void ButtonClickSystem(Eng::registry &reg, GameWorld &game_world,
 Eng::sparse_array<Com::HitBox> &hit_boxes,
 Eng::sparse_array<Com::Clickable> &clickables,
 Eng::sparse_array<Com::Drawable> &drawables,
