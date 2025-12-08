@@ -1,24 +1,28 @@
 #pragma once
 #include <vector>
 
-#include "include/registry.hpp"
 #include "Engine/gameWorld.hpp"
+#include "include/registry.hpp"
 
 namespace Rtype::Client {
 class Scene_A {
  public:
     /**
-     * @brief Initializes the scene by creating entities and setting up the game world.
+     * @brief Initializes the scene by creating entities and setting up the
+     * game world.
      *
-     * @param reg Reference to the ECS registry used for entity/component management.
+     * @param reg Reference to the ECS registry used for entity/component
+     * management.
      * @param gameWorld Reference to the game world context for scene setup.
      */
     virtual void InitScene(Engine::registry &reg, GameWorld &gameWorld);
 
     /**
-     * @brief Cleans up the scene by destroying entities and releasing resources.
+     * @brief Cleans up the scene by destroying entities and releasing
+     * resources.
      *
-     * @param reg Reference to the ECS registry used for entity/component management.
+     * @param reg Reference to the ECS registry used for entity/component
+     * management.
      */
     virtual void DestroyScene(Engine::registry &reg);
 

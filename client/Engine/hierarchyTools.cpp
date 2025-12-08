@@ -1,11 +1,13 @@
+#include "Engine/hierarchyTools.hpp"
+
 #include <cmath>
 #include <numbers>
-#include "Engine/hierarchyTools.hpp"
 
 namespace Rtype::Client {
 
 /**
- * @brief Calculates the cumulative scale of a transform including parent scales.
+ * @brief Calculates the cumulative scale of a transform including parent
+ * scales.
  *
  * This function recursively multiplies the scale of the given transform
  * with the scales of its parent transforms up the hierarchy.
@@ -14,8 +16,7 @@ namespace Rtype::Client {
  * @param transforms The sparse array of all transforms (to access parent).
  * @return The cumulative scale factor.
  */
-float CalculateCumulativeScale(
-    const Com::Transform &transform,
+float CalculateCumulativeScale(const Com::Transform &transform,
     const Eng::sparse_array<Com::Transform> &transforms) {
     float cumulative_scale = transform.scale;
 
@@ -81,9 +82,9 @@ sf::Vector2f CalculateWorldPositionWithHierarchy(
 
     // Rotate local position by parent's rotation
     float rotated_x = local_x * std::cos(parent_rotation_rad) -
-        local_y * std::sin(parent_rotation_rad);
+                      local_y * std::sin(parent_rotation_rad);
     float rotated_y = local_x * std::sin(parent_rotation_rad) +
-        local_y * std::cos(parent_rotation_rad);
+                      local_y * std::cos(parent_rotation_rad);
 
     // Apply parent's position
     return sf::Vector2f(parent_pos.x + rotated_x, parent_pos.y + rotated_y);

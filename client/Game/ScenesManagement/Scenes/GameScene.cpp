@@ -1,35 +1,32 @@
+#include "Game/ScenesManagement/Scenes/GameScene.hpp"
+
 #include <string>
 #include <vector>
 
-#include "include/registry.hpp"
 #include "Game/ScenesManagement/initScenes.hpp"
 #include "include/Components/CoreComponents.hpp"
-#include "include/Components/RenderComponent.hpp"
 #include "include/Components/GameplayComponents.hpp"
+#include "include/Components/RenderComponent.hpp"
 #include "include/Components/ScenesComponents.hpp"
-#include "Game/ScenesManagement/Scenes/GameScene.hpp"
+#include "include/registry.hpp"
 
 namespace Rtype::Client {
-void GameScene::AddBackgroundEntity(Engine::registry &reg, background_info info,
-float initial_x) {
+void GameScene::AddBackgroundEntity(
+    Engine::registry &reg, background_info info, float initial_x) {
     auto background_entity = reg.SpawnEntity();
-    reg.AddComponent<Component::Transform>(background_entity,
-        Component::Transform{initial_x, info.initialY, 0.0f, info.scale,
-        Component::Transform::TOP_LEFT});
+    reg.AddComponent<Component::Transform>(
+        background_entity, Component::Transform{initial_x, info.initialY, 0.0f,
+                               info.scale, Component::Transform::TOP_LEFT});
     if (info.isWave) {
         reg.AddComponent<Component::Shader>(background_entity,
             Component::Shader{"wave.frag",
-            {
-                {"speed", info.wave_speed},
-                {"amplitude", info.amplitude},
-                {"frequency", info.frequency}
-            }
-            });
+                {{"speed", info.wave_speed}, {"amplitude", info.amplitude},
+                    {"frequency", info.frequency}}});
     }
     reg.AddComponent<Component::Drawable>(background_entity,
         Component::Drawable{info.path, info.z_index, info.opacity});
-    reg.AddComponent<Component::ParrallaxLayer>(background_entity,
-        Component::ParrallaxLayer{info.scroll_speed});
+    reg.AddComponent<Component::ParrallaxLayer>(
+        background_entity, Component::ParrallaxLayer{info.scroll_speed});
 }
 
 void GameScene::InitBackgrounds(Engine::registry &reg) {
@@ -42,12 +39,11 @@ void GameScene::InitBackgrounds(Engine::registry &reg) {
             0.8f},
         {"Background/Level1/5.png", -130.f, -200.f, 11, false, 0.f, 0.f, 0.f,
             0.6f},
-        {"Background/Level1/WaterEffect.jpg", -50.f, 0.f, 12, true, 10.f,
-            .01f, 2.0f, 0.1f, 3.84f}
-    };
+        {"Background/Level1/WaterEffect.jpg", -50.f, 0.f, 12, true, 10.f, .01f,
+            2.0f, 0.1f, 3.84f}};
 
     // Initialize background entity
-    for (const auto& background : background_list) {
+    for (const auto &background : background_list) {
         for (int i = 0; i < 2; i++)
             AddBackgroundEntity(reg, background, i * 1920.0f);
     }
@@ -55,34 +51,34 @@ void GameScene::InitBackgrounds(Engine::registry &reg) {
 
 void GameScene::InitPlayerLevel(Engine::registry &reg) {
     auto player_entity = reg.SpawnEntity();
-    reg.AddComponent<Component::Transform>(player_entity, {
-        100.0f, 300.0f, 0.0f, 4.0f, Component::Transform::CENTER});
-    reg.AddComponent<Component::Drawable>(player_entity,
-        Component::Drawable{"OriginalRtype/r-typesheet42.gif"});
-    reg.AddComponent<Component::AnimatedSprite>(player_entity,
-        Component::AnimatedSprite(33, 19, 2));
-    reg.AddComponent<Component::Controllable>(player_entity,
-        Component::Controllable{true});
+    reg.AddComponent<Component::Transform>(player_entity,
+        {100.0f, 300.0f, 0.0f, 4.0f, Component::Transform::CENTER});
+    reg.AddComponent<Component::Drawable>(
+        player_entity, Component::Drawable{"OriginalRtype/r-typesheet42.gif"});
+    reg.AddComponent<Component::AnimatedSprite>(
+        player_entity, Component::AnimatedSprite(33, 19, 2));
+    reg.AddComponent<Component::Controllable>(
+        player_entity, Component::Controllable{true});
     reg.AddComponent<Component::Inputs>(player_entity, Component::Inputs{});
-    reg.AddComponent<Component::Velocity>(player_entity,
-        Component::Velocity{0.0f, 0.0f, 0.0f, 0.0f});
-    reg.AddComponent<Component::PlayerTag>(player_entity,
-        Component::PlayerTag{400.0f, 0.2f, 0.5f});
+    reg.AddComponent<Component::Velocity>(
+        player_entity, Component::Velocity{0.0f, 0.0f, 0.0f, 0.0f});
+    reg.AddComponent<Component::PlayerTag>(
+        player_entity, Component::PlayerTag{400.0f, 0.2f, 0.5f});
 
     auto player_charging_entity = reg.SpawnEntity();
-    reg.AddComponent<Component::Transform>(player_charging_entity,
-        Component::Transform(100.0f, 0.0f, 0.0f, 1.0f,
-        Component::Transform::CENTER, {0.0f, 0.0f},
-        player_entity.GetId()));
+    reg.AddComponent<Component::Transform>(
+        player_charging_entity, Component::Transform(100.0f, 0.0f, 0.0f, 1.0f,
+                                    Component::Transform::CENTER, {0.0f, 0.0f},
+                                    player_entity.GetId()));
     reg.AddComponent<Component::Drawable>(player_charging_entity,
         Component::Drawable{"OriginalRtype/r-typesheet1.gif", -1, 1.0f});
-    reg.AddComponent<Component::AnimatedSprite>(player_charging_entity,
-        Component::AnimatedSprite(33, 33, 0.1f, true,
-        sf::Vector2f(0.0f, 50.0f), 8));
+    reg.AddComponent<Component::AnimatedSprite>(
+        player_charging_entity, Component::AnimatedSprite(33, 33, 0.1f, true,
+                                    sf::Vector2f(0.0f, 50.0f), 8));
 
     // Add the charging entity to the player's children list
-    reg.GetComponent<Component::Transform>(player_entity).children.push_back(
-        player_charging_entity.GetId());
+    reg.GetComponent<Component::Transform>(player_entity)
+        .children.push_back(player_charging_entity.GetId());
 }
 
 void GameScene::InitScene(Engine::registry &reg, GameWorld &gameWorld) {

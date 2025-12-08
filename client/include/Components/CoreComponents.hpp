@@ -1,12 +1,13 @@
 #pragma once
-#include <string>
+#include <cstdint>
+#include <functional>
 #include <map>
 #include <memory>
-#include <vector>
-#include <utility>
-#include <cstdint>
 #include <optional>
-#include <functional>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include <SFML/Graphics.hpp>
 
 namespace Rtype::Client::Component {
@@ -43,17 +44,24 @@ struct Transform {
     std::vector<std::size_t> children;
 
     Transform() = default;
+
     Transform(float x, float y, float rotationDegrees, float scale,
         OriginPoint origin = CENTER,
         sf::Vector2f customOrigin = sf::Vector2f(0.0f, 0.0f),
         std::optional<std::size_t> parent_entity = std::nullopt)
-    : x(x), y(y), rotationDegrees(rotationDegrees), scale(scale),
-        origin(origin), customOrigin(customOrigin),
-        parent_entity(parent_entity), children() {}
+        : x(x),
+          y(y),
+          rotationDegrees(rotationDegrees),
+          scale(scale),
+          origin(origin),
+          customOrigin(customOrigin),
+          parent_entity(parent_entity),
+          children() {}
 
     /**
      * @brief Gets the cumulative rotation including parent rotations.
-     * @note This only uses local rotation; parent rotations must be added by the render system.
+     * @note This only uses local rotation; parent rotations must be added by
+     * the render system.
      */
     float GetWorldRotation() const {
         return rotationDegrees;

@@ -1,8 +1,8 @@
 #pragma once
 #include <string>
 
-#include "include/registry.hpp"
 #include "Game/ScenesManagement/Scene_A.hpp"
+#include "include/registry.hpp"
 
 namespace Rtype::Client {
 using Engine::registry;
@@ -28,7 +28,7 @@ class GameScene : public Scene_A {
 
     void InitPlayerLevel(registry &reg);
     void InitBackgrounds(registry &reg);
-    void AddBackgroundEntity(registry &reg, struct background_info info,
-        float initial_x);
+    void AddBackgroundEntity(
+        registry &reg, struct background_info info, float initial_x);
 };
 }  // namespace Rtype::Client

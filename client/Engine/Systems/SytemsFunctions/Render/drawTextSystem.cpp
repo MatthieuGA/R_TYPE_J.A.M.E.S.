@@ -1,11 +1,11 @@
-#include <iostream>
-#include <vector>
 #include <algorithm>
 #include <cmath>
+#include <iostream>
+#include <vector>
 
 #include "Engine/Systems/initRegistrySystems.hpp"
-#include "Engine/originTool.hpp"
 #include "Engine/hierarchyTools.hpp"
+#include "Engine/originTool.hpp"
 
 namespace Rtype::Client {
 
@@ -22,8 +22,8 @@ const int FONT_SIZE_SCALE = 10;
  */
 void InitializeText(Com::Text &text, const Com::Transform &transform) {
     if (!text.font.loadFromFile(text.fontPath)) {
-        std::cerr << "ERROR: Failed to load font from "
-            << text.fontPath << "\n";
+        std::cerr << "ERROR: Failed to load font from " << text.fontPath
+                  << "\n";
     } else {
         text.text.setFont(text.font);
         text.text.setString(text.content);
@@ -32,8 +32,8 @@ void InitializeText(Com::Text &text, const Com::Transform &transform) {
 
         // Set origin based on transform's origin point
         sf::FloatRect bounds = text.text.getLocalBounds();
-        sf::Vector2f origin = GetOffsetFromTransform(transform,
-            sf::Vector2f(bounds.width, bounds.height));
+        sf::Vector2f origin = GetOffsetFromTransform(
+            transform, sf::Vector2f(bounds.width, bounds.height));
         text.text.setOrigin(-origin);
     }
     text.is_loaded = true;
@@ -47,10 +47,8 @@ void InitializeText(Com::Text &text, const Com::Transform &transform) {
  * @param game_world The game world containing the render window
  * @param i The entity index to render
  */
-void RenderOneTextEntity(
-    Eng::sparse_array<Com::Transform> const &transforms,
-    Eng::sparse_array<Com::Text> &texts,
-    GameWorld &game_world, int i) {
+void RenderOneTextEntity(Eng::sparse_array<Com::Transform> const &transforms,
+    Eng::sparse_array<Com::Text> &texts, GameWorld &game_world, int i) {
     auto &transform = transforms[i];
     auto &text = texts[i];
 
@@ -62,9 +60,10 @@ void RenderOneTextEntity(
     text->text.setPosition(world_position);
 
     // Apply cumulative scale
-    float world_scale = CalculateCumulativeScale(transform.value(), transforms);
-    text->text.setScale(sf::Vector2f(world_scale / FONT_SIZE_SCALE,
-                                    world_scale / FONT_SIZE_SCALE));
+    float world_scale =
+        CalculateCumulativeScale(transform.value(), transforms);
+    text->text.setScale(sf::Vector2f(
+        world_scale / FONT_SIZE_SCALE, world_scale / FONT_SIZE_SCALE));
 
     // Apply rotation
     text->text.setRotation(transform->rotationDegrees);
@@ -89,25 +88,23 @@ void RenderOneTextEntity(
  * @param transforms The sparse array of transform components
  * @param texts The sparse array of text components
  */
-void DrawTextRenderSystem(
-    Eng::registry &reg, GameWorld &game_world,
+void DrawTextRenderSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> const &transforms,
     Eng::sparse_array<Com::Text> &texts) {
     std::vector<int> draw_order;
 
     // Collect entities with Transform and Text components
     for (auto &&[i, transform, text] :
-         make_indexed_zipper(transforms, texts)) {
+        make_indexed_zipper(transforms, texts)) {
         if (!text.is_loaded)
             InitializeText(text, transform);
         draw_order.push_back(i);
     }
 
     // Sort by z_index
-    std::sort(draw_order.begin(), draw_order.end(),
-             [&texts](int a, int b) {
-                 return texts[a]->z_index < texts[b]->z_index;
-             });
+    std::sort(draw_order.begin(), draw_order.end(), [&texts](int a, int b) {
+        return texts[a]->z_index < texts[b]->z_index;
+    });
 
     // Render all texts in sorted order
     for (auto i : draw_order) {

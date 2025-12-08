@@ -2,10 +2,10 @@
 
 #include <filesystem>
 
-#include "../client/include/Components/CoreComponents.hpp"
-#include "../client/include/Components/RenderComponent.hpp"
 #include "../client/Engine/Systems/initRegistrySystems.hpp"
 #include "../client/Engine/gameWorld.hpp"
+#include "../client/include/Components/CoreComponents.hpp"
+#include "../client/include/Components/RenderComponent.hpp"
 
 namespace Com = Rtype::Client::Component;
 namespace Eng = Engine;
@@ -14,8 +14,8 @@ namespace {
 std::string GetFontAbsolutePath(const std::string &font_name) {
     auto source_path = std::filesystem::path(__FILE__);
     auto root = source_path.parent_path().parent_path();
-    auto font = (root / "client" / "Assets" / "Fonts" / font_name)
-        .lexically_normal();
+    auto font =
+        (root / "client" / "Assets" / "Fonts" / font_name).lexically_normal();
     return font.string();
 }
 }  // namespace
@@ -48,8 +48,8 @@ TEST(TextRenderSystem, LoadsAndAppliesTransform) {
     texts.insert_at(0, std::move(text));
 
     Rtype::Client::GameWorld game_world;
-    game_world.window_.create(sf::VideoMode({10u, 10u}), "text-test",
-        sf::Style::None);
+    game_world.window_.create(
+        sf::VideoMode({10u, 10u}), "text-test", sf::Style::None);
 
     DrawTextRenderSystem(reg, game_world, transforms, texts);
 

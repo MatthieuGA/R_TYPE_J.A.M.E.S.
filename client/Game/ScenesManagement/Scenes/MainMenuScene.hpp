@@ -1,6 +1,6 @@
 #pragma once
-#include "include/registry.hpp"
 #include "Game/ScenesManagement/Scene_A.hpp"
+#include "include/registry.hpp"
 
 namespace Rtype::Client {
 using Engine::registry;
