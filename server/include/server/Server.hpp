@@ -1,10 +1,12 @@
 #pragma once
 
 #include <memory>
+
 #include <boost/asio.hpp>
+
+#include "include/registry.hpp"
 #include "server/Config.hpp"
 #include "server/Network.hpp"
-#include "include/registry.hpp"
 
 namespace server {
 

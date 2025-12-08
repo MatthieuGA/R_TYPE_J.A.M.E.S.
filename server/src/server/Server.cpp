@@ -7,9 +7,12 @@
 namespace server {
 
 Server::Server(Config &config, boost::asio::io_context &io_context)
-: config_(config), io_context_(io_context),
+: config_(config),
+io_context_(io_context),
 network_(std::make_unique<Network>(config, io_context)),
-registry_(), tick_timer_(io_context), running_(false) {}
+registry_(),
+tick_timer_(io_context),
+running_(false) {}
 
 Server::~Server() {
     running_ = false;

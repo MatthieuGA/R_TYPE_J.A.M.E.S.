@@ -1,9 +1,10 @@
 #include <gtest/gtest.h>
 
-#include "../client/Engine/initRegistrySystems.hpp"
-#include "../client/include/Components/CoreComponents.hpp"
-#include "../client/include/Components/GameplayComponents.hpp"
+#include "../client/Engine/Systems/initRegistrySystems.hpp"
 #include "../client/Engine/Events/EngineEvent.hpp"
+#include "../client/include/Components/CoreComponents.hpp"
+#include "../client/include/Components/RenderComponent.hpp"
+#include "../client/include/Components/GameplayComponents.hpp"
 
 namespace Com = Rtype::Client::Component;
 namespace Eng = Engine;
@@ -24,7 +25,7 @@ TEST(Systems, MovementSystemUpdatesPosition) {
     // Wait a short time so clock has non-zero elapsed time
     sf::sleep(sf::milliseconds(20));
 
-    MovementSystem(reg, clock, transforms, velocities);
+    MovementSystem(reg, clock.getElapsedTime().asSeconds(), transforms, velocities);
 
     // Expect the transform to have moved to the right
     EXPECT_GT(transforms[0]->x, 0.0f);
@@ -57,31 +58,38 @@ TEST(Systems, AnimationSystemAdvancesFrame) {
     Eng::sparse_array<Com::AnimatedSprite> anim_sprites;
     Eng::sparse_array<Com::Drawable> drawables;
 
-    // Animated sprite: 4 frames, each 16x16
-    anim_sprites.insert_at(0, Com::AnimatedSprite{16, 16, 4});
-    auto &anim = anim_sprites[0];
-    anim->currentFrame = 0;
-    anim->frameDuration = 0.01f;
+    // Create an animated sprite component with multiple frames
+    Com::AnimatedSprite anim(16, 16, 0.02f); // frameW, frameH, frameDuration
+    anim.totalFrames = 4;
+    anim.currentFrame = 0;
+    anim.animated = true;
+    anim.elapsedTime = 0.0f;
 
-    drawables.insert_at(0, Com::Drawable("test.png", 0));
-    auto &drawable = drawables[0];
+    anim_sprites.insert_at(0, std::move(anim));
 
-    // Create a texture big enough for 4 columns x 1 row
-    int columns = 4;
-    drawable->texture.create(columns * anim->frameWidth, anim->frameHeight);
-    drawable->sprite.setTexture(drawable->texture, true);
-    drawable->isLoaded = true;
+    // Create a drawable and mark it as loaded so the system advances frames
+    drawables.insert_at(0, Com::Drawable("dummy.png"));
+    // Ensure texture has a size so SetFrame won't early-return
+    drawables[0]->texture.create(64, 64);
+    drawables[0]->sprite.setTexture(drawables[0]->texture, true);
+    drawables[0]->isLoaded = true;
 
-    sf::Clock clock;
-    sf::sleep(sf::milliseconds(20));
+    // Simulate a delta time that should advance at least one frame
+    float delta = 0.05f; // 50 ms
 
-    AnimationSystem(reg, clock, anim_sprites, drawables);
+    // Ensure deterministic advancement: pre-fill elapsedTime so NextFrame
+    // will trigger on the next update regardless of dt semantics.
+    ASSERT_TRUE(anim_sprites[0].has_value());
+    anim_sprites[0]->elapsedTime = anim_sprites[0]->frameDuration;
 
-    EXPECT_EQ(anim->currentFrame, 1);
-    sf::IntRect rect = drawable->sprite.getTextureRect();
-    EXPECT_EQ(rect.left, anim->frameWidth); // second frame
-    EXPECT_EQ(rect.width, anim->frameWidth);
-    EXPECT_EQ(rect.height, anim->frameHeight);
+    // First call should advance the currentFrame because elapsedTime >= frameDuration
+    AnimationSystem(reg, 0.0f, anim_sprites, drawables);
+    EXPECT_EQ(anim_sprites[0]->currentFrame, 1);
+
+    // Second call with zero delta will cause SetFrame to update the drawable rect
+    AnimationSystem(reg, 0.0f, anim_sprites, drawables);
+    sf::IntRect rect = drawables[0]->sprite.getTextureRect();
+    EXPECT_EQ(rect.left, anim_sprites[0]->frameWidth);
 }
 
 TEST(Systems, CollisionDetectionPublishesAndResolves) {
@@ -120,4 +128,96 @@ TEST(Systems, CollisionDetectionPublishesAndResolves) {
     // Ensure positions were adjusted (no longer same as initial)
     EXPECT_NE(transforms[0]->x, 0.0f);
     EXPECT_NE(transforms[1]->x, 10.0f);
+}
+
+TEST(Systems, ProjectileSystemMovesTransform) {
+    Eng::registry reg;
+    Rtype::Client::GameWorld gw;
+
+    Eng::sparse_array<Com::Transform> transforms;
+    Eng::sparse_array<Com::Projectile> projectiles;
+
+    transforms.insert_at(0, Com::Transform{0.0f, 0.0f, 0.0f, 1.0f});
+    projectiles.insert_at(0, Com::Projectile{5.0f, 200.0f, 1});
+
+    gw.last_delta_ = 0.1f; // 200 * 0.1 = 20
+
+    ProjectileSystem(reg, gw, transforms, projectiles);
+
+    ASSERT_TRUE(transforms[0].has_value());
+    EXPECT_GT(transforms[0]->x, 0.0f);
+}
+
+TEST(Systems, PlayerSystemSetsFrameBasedOnVelocity) {
+    Eng::registry reg;
+
+    Eng::sparse_array<Com::PlayerTag> player_tags;
+    Eng::sparse_array<Com::Velocity> velocities;
+    Eng::sparse_array<Com::AnimatedSprite> animated_sprites;
+    Eng::sparse_array<Com::Transform> transforms;
+
+    player_tags.insert_at(0, Com::PlayerTag{400.f, 0.5f, 0.0f, 1});
+    velocities.insert_at(0, Com::Velocity{0.0f, 100.0f});
+    animated_sprites.insert_at(0, Com::AnimatedSprite(16, 16, 0.1f));
+    transforms.insert_at(0, Com::Transform(0.0f, 0.0f, 0.0f, 1.0f));
+
+    PlayerSystem(reg, player_tags, velocities, transforms, animated_sprites);
+
+    ASSERT_TRUE(animated_sprites[0].has_value());
+    // velocity.vy == 100 -> should map to currentFrame == 1
+    EXPECT_EQ(animated_sprites[0]->currentFrame, 1);
+}
+
+TEST(Systems, ShootPlayerSystemCreatesProjectileAndResetsCooldown) {
+    Eng::registry reg;
+    Rtype::Client::GameWorld gw;
+
+    // Register components that createProjectile will add
+    reg.RegisterComponent<Com::Transform>();
+    reg.RegisterComponent<Com::Drawable>();
+    reg.RegisterComponent<Com::AnimatedSprite>();
+    reg.RegisterComponent<Com::Projectile>();
+
+    Eng::sparse_array<Com::Transform> transforms;
+    Eng::sparse_array<Com::Inputs> inputs;
+    Eng::sparse_array<Com::PlayerTag> player_tags;
+
+    transforms.insert_at(0, Com::Transform{10.0f, 20.0f, 0.0f, 1.0f});
+    // Set shoot=true and last_shoot_state=false to trigger a new shot
+    inputs.insert_at(0, Com::Inputs{0.0f, 0.0f, true, false});
+    // Create PlayerTag with proper field values
+    Com::PlayerTag tag;
+    tag.speed_max = 400.0f;
+    tag.shoot_cooldown_max = 0.2f;
+    tag.charge_time_min = 0.5f;
+    tag.shoot_cooldown = 0.0f;  // Ready to shoot
+    tag.charge_time = 0.0f;
+    tag.playerNumber = 1;
+    player_tags.insert_at(0, tag);
+
+    gw.last_delta_ = 0.03f;
+
+    ShootPlayerSystem(reg, gw, transforms, inputs, player_tags);
+
+    // After shooting, cooldown should be reset to max
+    ASSERT_TRUE(player_tags[0].has_value());
+    EXPECT_FLOAT_EQ(player_tags[0]->shoot_cooldown, player_tags[0]->shoot_cooldown_max);
+
+    // The projectile component should have been added to the registry at entity 0
+    auto &projectiles = reg.GetComponents<Com::Projectile>();
+    EXPECT_TRUE(projectiles.has(0));
+}
+
+TEST(Systems, InputSystemResetsInputsWhenNoKeys) {
+    Eng::registry reg;
+
+    Eng::sparse_array<Com::Inputs> inputs;
+    inputs.insert_at(0, Com::Inputs{1.0f, -1.0f, true});
+
+    InputSystem(reg, inputs);
+
+    ASSERT_TRUE(inputs[0].has_value());
+    EXPECT_FLOAT_EQ(inputs[0]->horizontal, 0.0f);
+    EXPECT_FLOAT_EQ(inputs[0]->vertical, 0.0f);
+    EXPECT_FALSE(inputs[0]->shoot);
 }

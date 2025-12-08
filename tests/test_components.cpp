@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "../client/include/Components/CoreComponents.hpp"
+#include "../client/include/Components/RenderComponent.hpp"
 #include "../client/include/Components/GameplayComponents.hpp"
 #include "../client/include/Components/NetworkingComponents.hpp"
 
@@ -20,7 +21,7 @@ TEST(ComponentsCore, TransformAndVelocity) {
 
 TEST(ComponentsCore, DrawableBasics) {
     Com::Drawable d("Logo.png", 5);
-    EXPECT_EQ(d.spritePath, std::string("Assets/Logo.png"));
+    EXPECT_EQ(d.spritePath, std::string("Assets/Images/Logo.png"));
     EXPECT_EQ(d.z_index, 5);
     EXPECT_FALSE(d.isLoaded);
 }
@@ -46,8 +47,18 @@ TEST(ComponentsCore, HitBox) {
 }
 
 TEST(ComponentsGameplay, TagsAndProjectile) {
-    Com::PlayerTag p{2};
+    Com::PlayerTag p;
+    p.speed_max = 400.f;
+    p.shoot_cooldown_max = 0.5f;
+    p.charge_time_min = 0.0f;
+    p.shoot_cooldown = 0.0f;
+    p.charge_time = 0.0f;
+    p.playerNumber = 2;
+    
     EXPECT_EQ(p.playerNumber, 2);
+    EXPECT_FLOAT_EQ(p.speed_max, 400.f);
+    EXPECT_FLOAT_EQ(p.shoot_cooldown_max, 0.5f);
+    EXPECT_FLOAT_EQ(p.shoot_cooldown, 0.0f);
 
     Com::EnemyTag e{Com::EnemyTag::EnemyType::ADVANCED};
     EXPECT_EQ(e.type, Com::EnemyTag::EnemyType::ADVANCED);

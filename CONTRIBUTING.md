@@ -99,7 +99,7 @@ If your message does not match the pattern, the commit will be rejected.
 
 ## 4. Protected Branch Rules
 
-### Branch protection:
+### Branch protection
 
 * `main` is **protected**
 * Direct push is **forbidden**
@@ -111,7 +111,7 @@ If your message does not match the pattern, the commit will be rejected.
 
 ## 5. Pull Request Process
 
-### Step-by-step:
+### Step-by-step
 
 1. **Create an issue**
 
