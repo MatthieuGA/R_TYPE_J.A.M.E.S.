@@ -9,6 +9,7 @@ When generating code for this repository:
 3. **Architectural Consistency**: Respect the Entity-Component-System (ECS) architecture and the Authoritative Server model.
 4. **Code Quality**: Prioritize **Maintainability**, **Testability**, **Performance**, and **Security** in all generated code.
 5. **Documentation**: Apply Doxygen-style documentation to all functions and classes.
+6. **Clarifying Questions**: If any requirement in the prompt/request is ambiguous or conflicts with another, ask for clarification before proceeding.
 
 ## Technology Version Detection
 
