@@ -1,6 +1,6 @@
 # Game State System
 
-**Fichier source:** `client/Engine/Systems/SytemsFunctions/GameStateSystem.cpp`
+**Fichier source:** `client/Engine/Systems/SystemsFunctions/GameStateSystem.cpp`
 
 **But:** Gérer les transitions de scène en appelant les hooks `DestroyScene` et `InitScene` quand le prochain état change.
 
