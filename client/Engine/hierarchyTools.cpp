@@ -1,4 +1,5 @@
 #pragma once
+#include <cmath>
 #include "Engine/hierarchyTools.hpp"
 
 namespace Rtype::Client {
