@@ -31,7 +31,8 @@ TEST(Systems, MovementSystemUpdatesPosition) {
     // Wait a short time so clock has non-zero elapsed time
     sf::sleep(sf::milliseconds(20));
 
-    MovementSystem(reg, clock.getElapsedTime().asSeconds(), transforms, velocities);
+    MovementSystem(
+        reg, clock.getElapsedTime().asSeconds(), transforms, velocities);
 
     // Expect the transform to have moved to the right
     EXPECT_GT(transforms[0]->x, 0.0f);
@@ -65,7 +66,7 @@ TEST(Systems, AnimationSystemAdvancesFrame) {
     Eng::sparse_array<Com::Drawable> drawables;
 
     // Create an animated sprite component with multiple frames
-    Com::AnimatedSprite anim(16, 16, 0.02f); // frameW, frameH, frameDuration
+    Com::AnimatedSprite anim(16, 16, 0.02f);  // frameW, frameH, frameDuration
     anim.totalFrames = 4;
     anim.currentFrame = 0;
     anim.animated = true;
@@ -81,18 +82,20 @@ TEST(Systems, AnimationSystemAdvancesFrame) {
     drawables[0]->isLoaded = true;
 
     // Simulate a delta time that should advance at least one frame
-    float delta = 0.05f; // 50 ms
+    float delta = 0.05f;  // 50 ms
 
     // Ensure deterministic advancement: pre-fill elapsedTime so NextFrame
     // will trigger on the next update regardless of dt semantics.
     ASSERT_TRUE(anim_sprites[0].has_value());
     anim_sprites[0]->elapsedTime = anim_sprites[0]->frameDuration;
 
-    // First call should advance the currentFrame because elapsedTime >= frameDuration
+    // First call should advance the currentFrame because elapsedTime >=
+    // frameDuration
     AnimationSystem(reg, 0.0f, anim_sprites, drawables);
     EXPECT_EQ(anim_sprites[0]->currentFrame, 1);
 
-    // Second call with zero delta will cause SetFrame to update the drawable rect
+    // Second call with zero delta will cause SetFrame to update the drawable
+    // rect
     AnimationSystem(reg, 0.0f, anim_sprites, drawables);
     sf::IntRect rect = drawables[0]->sprite.getTextureRect();
     EXPECT_EQ(rect.left, anim_sprites[0]->frameWidth);
@@ -146,7 +149,7 @@ TEST(Systems, ProjectileSystemMovesTransform) {
     transforms.insert_at(0, Com::Transform{0.0f, 0.0f, 0.0f, 1.0f});
     projectiles.insert_at(0, Com::Projectile{5.0f, 200.0f, 1});
 
-    gw.last_delta_ = 0.1f; // 200 * 0.1 = 20
+    gw.last_delta_ = 0.1f;  // 200 * 0.1 = 20
 
     ProjectileSystem(reg, gw, transforms, projectiles);
 
@@ -207,9 +210,11 @@ TEST(Systems, ShootPlayerSystemCreatesProjectileAndResetsCooldown) {
 
     // After shooting, cooldown should be reset to max
     ASSERT_TRUE(player_tags[0].has_value());
-    EXPECT_FLOAT_EQ(player_tags[0]->shoot_cooldown, player_tags[0]->shoot_cooldown_max);
+    EXPECT_FLOAT_EQ(
+        player_tags[0]->shoot_cooldown, player_tags[0]->shoot_cooldown_max);
 
-    // The projectile component should have been added to the registry at entity 0
+    // The projectile component should have been added to the registry at
+    // entity 0
     auto &projectiles = reg.GetComponents<Com::Projectile>();
     EXPECT_TRUE(projectiles.has(0));
 }
