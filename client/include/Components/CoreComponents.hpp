@@ -1,12 +1,12 @@
 #pragma once
-#include <cstdint>
+#include <string>
 #include <map>
 #include <memory>
-#include <optional>
-#include <string>
-#include <utility>
 #include <vector>
-
+#include <utility>
+#include <cstdint>
+#include <optional>
+#include <functional>
 #include <SFML/Graphics.hpp>
 
 namespace Rtype::Client::Component {
@@ -43,24 +43,17 @@ struct Transform {
     std::vector<std::size_t> children;
 
     Transform() = default;
-
     Transform(float x, float y, float rotationDegrees, float scale,
         OriginPoint origin = CENTER,
         sf::Vector2f customOrigin = sf::Vector2f(0.0f, 0.0f),
         std::optional<std::size_t> parent_entity = std::nullopt)
-        : x(x),
-          y(y),
-          rotationDegrees(rotationDegrees),
-          scale(scale),
-          origin(origin),
-          customOrigin(customOrigin),
-          parent_entity(parent_entity),
-          children() {}
+    : x(x), y(y), rotationDegrees(rotationDegrees), scale(scale),
+        origin(origin), customOrigin(customOrigin),
+        parent_entity(parent_entity), children() {}
 
     /**
      * @brief Gets the cumulative rotation including parent rotations.
-     * @note This only uses local rotation; parent rotations must be added by
-     * the render system.
+     * @note This only uses local rotation; parent rotations must be added by the render system.
      */
     float GetWorldRotation() const {
         return rotationDegrees;
@@ -89,8 +82,9 @@ struct InputState {
 struct HitBox {
     float width;
     float height;
-    float offsetX;
-    float offsetY;
+    bool scaleWithTransform = true;
+    float offsetX = 0.0f;
+    float offsetY = 0.0f;
 };
 
 struct Solid {
@@ -105,6 +99,16 @@ struct Inputs {
     // shoot states
     bool shoot = false;
     bool last_shoot_state = false;
+};
+
+struct Clickable {
+    std::function<void()> onClick;
+
+    sf::Color idleColor = sf::Color::White;
+    sf::Color hoverColor = sf::Color(200, 200, 200);
+    sf::Color clickColor = sf::Color(150, 150, 150);
+    bool isHovered = false;
+    bool isClicked = false;
 };
 
 }  // namespace Rtype::Client::Component
