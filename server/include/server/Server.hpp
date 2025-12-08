@@ -126,7 +126,7 @@ class Server {
     void setupGameTick();
 
     // ========================================================================
-    // TCP Connection Handlers (Issue #107)
+    // TCP Connection Handlers
     // ========================================================================
 
     /**
@@ -176,6 +176,16 @@ class Server {
      * @param player_id ID of client to remove
      */
     void removeClient(uint8_t player_id);
+
+    /**
+     * @brief Monitor client socket for disconnection
+     *
+     * Starts async read to detect when client closes connection.
+     * Automatically removes client from clients_ map on disconnect.
+     *
+     * @param player_id ID of client to monitor
+     */
+    void monitorClientDisconnect(uint8_t player_id);
 
     /**
      * @brief Check if username is already taken

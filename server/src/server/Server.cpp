@@ -109,10 +109,6 @@ Engine::registry &Server::getRegistry() {
 // ============================================================================
 
 void Server::handleTcpAccept(boost::asio::ip::tcp::socket socket) {
-    std::cout << "handleTcpAccept: New connection from "
-              << socket.remote_endpoint().address().to_string() << ":"
-              << socket.remote_endpoint().port() << std::endl;
-
     // Allocate buffer on heap (lambda must own it for async lifetime)
     auto buffer = std::make_shared<std::vector<uint8_t>>(44);  // 12 + 32 bytes
 
@@ -168,7 +164,7 @@ void Server::handleConnectReq(boost::asio::ip::tcp::socket &socket,
         network::ConnectReqPacket::deserialize(buffer);
     std::string username = req.get_username();
 
-    std::cout << "CONNECT_REQ from username: '" << username << "'"
+    std::cout << "CONNECT_REQ with username: '" << username << "'"
               << std::endl;
 
     // Validation: Empty username
@@ -211,6 +207,9 @@ void Server::handleConnectReq(boost::asio::ip::tcp::socket &socket,
 
     // Transfer ownership to clients_ map
     clients_.emplace(player_id, std::move(connection));
+
+    // Start monitoring for disconnect
+    monitorClientDisconnect(player_id);
 }
 
 void Server::sendConnectAck(boost::asio::ip::tcp::socket &socket,
@@ -282,6 +281,40 @@ bool Server::isUsernameTaken(const std::string &username) const {
     return std::any_of(
         clients_.begin(), clients_.end(), [&username](const auto &pair) {
             return pair.second.username == username;
+        });
+}
+
+void Server::monitorClientDisconnect(uint8_t player_id) {
+    auto it = clients_.find(player_id);
+    if (it == clients_.end()) {
+        return;  // Client already disconnected
+    }
+
+    // Allocate a small buffer for detecting socket closure
+    auto buffer = std::make_shared<std::vector<uint8_t>>(1);
+
+    // Start async read - any data or EOF will trigger the callback
+    it->second.tcp_socket.async_receive(boost::asio::buffer(*buffer),
+        [this, buffer, player_id](
+            boost::system::error_code ec, std::size_t bytes_read) {
+            if (ec) {
+                // Socket closed or error - remove client
+                std::cout << "Client " << static_cast<int>(player_id)
+                          << " disconnected: " << ec.message() << std::endl;
+                removeClient(player_id);
+            } else if (bytes_read > 0) {
+                // Received unexpected data - for now, just continue monitoring
+                // In a full implementation, this would handle ongoing messages
+                std::cout << "Received " << bytes_read << " bytes from client "
+                          << static_cast<int>(player_id)
+                          << " (unexpected during lobby)" << std::endl;
+                monitorClientDisconnect(player_id);  // Continue monitoring
+            } else {
+                // EOF without error - client disconnected gracefully
+                std::cout << "Client " << static_cast<int>(player_id)
+                          << " disconnected gracefully" << std::endl;
+                removeClient(player_id);
+            }
         });
 }
 
