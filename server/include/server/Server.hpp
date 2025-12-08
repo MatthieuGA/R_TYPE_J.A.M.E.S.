@@ -157,9 +157,12 @@ class Server {
      * @param player_id Assigned player ID (0 if rejected)
      * @param status Connection status code (0=OK, 1=UsernameTaken,
      * 2=ServerFull)
+     * @param socket_keeper Optional shared_ptr to keep socket alive for
+     * rejected connections
      */
     void sendConnectAck(boost::asio::ip::tcp::socket &socket,
-        uint8_t player_id, network::ConnectAckPacket::Status status);
+        uint8_t player_id, network::ConnectAckPacket::Status status,
+        std::shared_ptr<boost::asio::ip::tcp::socket> socket_keeper = nullptr);
 
     /**
      * @brief Assign unique PlayerId to new client

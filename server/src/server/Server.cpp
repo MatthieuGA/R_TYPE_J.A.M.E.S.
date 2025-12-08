@@ -171,7 +171,11 @@ void Server::handleConnectReq(boost::asio::ip::tcp::socket &socket,
     if (username.empty() ||
         username.find_first_not_of('\0') == std::string::npos) {
         std::cerr << "Rejected: Empty username" << std::endl;
-        sendConnectAck(socket, 0, network::ConnectAckPacket::BadUsername);
+        // Keep socket alive for async_send via shared_ptr
+        auto socket_ptr =
+            std::make_shared<boost::asio::ip::tcp::socket>(std::move(socket));
+        sendConnectAck(*socket_ptr, 0, network::ConnectAckPacket::BadUsername,
+            socket_ptr);
         return;
     }
 
@@ -179,7 +183,11 @@ void Server::handleConnectReq(boost::asio::ip::tcp::socket &socket,
     if (isUsernameTaken(username)) {
         std::cerr << "Rejected: Username '" << username << "' already taken"
                   << std::endl;
-        sendConnectAck(socket, 0, network::ConnectAckPacket::BadUsername);
+        // Keep socket alive for async_send via shared_ptr
+        auto socket_ptr =
+            std::make_shared<boost::asio::ip::tcp::socket>(std::move(socket));
+        sendConnectAck(*socket_ptr, 0, network::ConnectAckPacket::BadUsername,
+            socket_ptr);
         return;
     }
 
@@ -187,7 +195,11 @@ void Server::handleConnectReq(boost::asio::ip::tcp::socket &socket,
     if (clients_.size() >= MAX_CLIENTS) {
         std::cerr << "Rejected: Server full (" << clients_.size() << "/"
                   << static_cast<int>(MAX_CLIENTS) << " players)" << std::endl;
-        sendConnectAck(socket, 0, network::ConnectAckPacket::ServerFull);
+        // Keep socket alive for async_send via shared_ptr
+        auto socket_ptr =
+            std::make_shared<boost::asio::ip::tcp::socket>(std::move(socket));
+        sendConnectAck(
+            *socket_ptr, 0, network::ConnectAckPacket::ServerFull, socket_ptr);
         return;
     }
 
@@ -213,7 +225,8 @@ void Server::handleConnectReq(boost::asio::ip::tcp::socket &socket,
 }
 
 void Server::sendConnectAck(boost::asio::ip::tcp::socket &socket,
-    uint8_t player_id, network::ConnectAckPacket::Status status) {
+    uint8_t player_id, network::ConnectAckPacket::Status status,
+    std::shared_ptr<boost::asio::ip::tcp::socket> socket_keeper) {
     network::ConnectAckPacket ack;
     ack.player_id = network::PlayerId{player_id};
     ack.status = status;
@@ -228,7 +241,7 @@ void Server::sendConnectAck(boost::asio::ip::tcp::socket &socket,
     auto data_copy = std::make_shared<std::vector<uint8_t>>(data);
 
     socket.async_send(boost::asio::buffer(*data_copy),
-        [data_copy, player_id, status](
+        [data_copy, socket_keeper, player_id, status](
             boost::system::error_code ec, std::size_t) {
             if (ec) {
                 std::cerr << "Error sending CONNECT_ACK to player "
@@ -240,6 +253,8 @@ void Server::sendConnectAck(boost::asio::ip::tcp::socket &socket,
                           << ", Status=" << static_cast<int>(status)
                           << std::endl;
             }
+            // socket_keeper automatically cleans up socket when this lambda is
+            // destroyed
         });
 }
 
