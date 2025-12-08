@@ -1,6 +1,6 @@
 # Shoot System
 
-**Fichier source:** `client/Engine/Systems/SytemsFunctions/ShootPlayerSystem.cpp`
+**Fichier source:** `client/engine/systems/SystemsFunctions/ShootPlayerSystem.cpp`
 
 **But:** Gérer la mécanique de tir du joueur et créer des entités projectile.
 

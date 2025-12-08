@@ -1,6 +1,6 @@
 # Input System
 
-**Fichier source:** `client/Engine/Systems/SytemsFunctions/InputSystem.cpp`
+**Fichier source:** `client/engine/systems/SystemsFunctions/InputSystem.cpp`
 
 **But:** Lire l'état des touches du clavier et remplir le composant `Inputs`.
 

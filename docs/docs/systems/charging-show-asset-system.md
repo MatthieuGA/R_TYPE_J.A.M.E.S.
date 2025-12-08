@@ -6,8 +6,8 @@ Le système `ChargingShowAssetPlayerSystem` gère l'affichage visuel de l'asset 
 
 ## Fichier Source
 
-- **Path**: `client/Engine/Systems/SytemsFunctions/chargingShowAssetPlayerSystem.cpp`
-- **Header**: `client/Engine/Systems/initRegistrySystems.hpp`
+- **Path**: `client/engine/systems/SystemsFunctions/chargingShowAssetPlayerSystem.cpp`
+- **Header**: `client/engine/systems/initRegistrySystems.hpp`
 
 ## Composants Utilisés
 

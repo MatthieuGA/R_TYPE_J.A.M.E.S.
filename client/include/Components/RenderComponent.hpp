@@ -1,9 +1,10 @@
 #pragma once
-#include <string>
 #include <map>
 #include <memory>
-#include <vector>
+#include <string>
 #include <utility>
+#include <vector>
+
 #include <SFML/Graphics.hpp>
 
 namespace Rtype::Client::Component {
@@ -17,11 +18,15 @@ struct Drawable {
     sf::Texture texture;
     bool isLoaded = false;
 
-    explicit Drawable(const std::string& spritePath, int z_index = 0,
-        float opacity = 1.0f)
-        : spritePath("Assets/Images/" + spritePath), z_index(z_index),
-        texture(), opacity(opacity), sprite(texture), isLoaded(false),
-        color(sf::Color::White) {}
+    explicit Drawable(
+        const std::string &spritePath, int z_index = 0, float opacity = 1.0f)
+        : spritePath("assets/images/" + spritePath),
+          z_index(z_index),
+          texture(),
+          opacity(opacity),
+          sprite(texture),
+          isLoaded(false),
+          color(sf::Color::White) {}
 
     // Non-copyable to avoid accidental sprite/texture pointer mismatches
     Drawable(Drawable const &) = delete;
@@ -30,8 +35,11 @@ struct Drawable {
     // Move constructor: ensure sprite is rebound to the moved texture and
     // visual properties are preserved.
     Drawable(Drawable &&other) noexcept
-        : spritePath(std::move(other.spritePath)), z_index(other.z_index),
-          opacity(other.opacity), texture(std::move(other.texture)), sprite(),
+        : spritePath(std::move(other.spritePath)),
+          z_index(other.z_index),
+          opacity(other.opacity),
+          texture(std::move(other.texture)),
+          sprite(),
           isLoaded(other.isLoaded) {
         // Rebind sprite to the moved texture and copy visual state
         sprite.setTexture(texture, true);
@@ -72,11 +80,12 @@ struct Shader {
     bool isLoaded = false;
     std::map<std::string, float> uniforms_float = {};
 
-    explicit Shader(const std::string& path,
+    explicit Shader(const std::string &path,
         std::vector<std::pair<std::string, float>> uf = {})
-        : shaderPath("Assets/Shaders/" + path), shader(nullptr),
-        isLoaded(false) {
-        for (const auto& [name, value] : uf)
+        : shaderPath("assets/Shaders/" + path),
+          shader(nullptr),
+          isLoaded(false) {
+        for (const auto &[name, value] : uf)
             uniforms_float[name] = value;
     }
 };
@@ -95,14 +104,26 @@ struct AnimatedSprite {
     AnimatedSprite(int frameWidth, int frameHeight, float frameDuration,
         bool loop = true,
         sf::Vector2f first_frame_position = sf::Vector2f(0.0f, 0.0f),
-        int totalFrames = 0) : frameWidth(frameWidth), frameHeight(frameHeight),
-        totalFrames(totalFrames), currentFrame(0), frameDuration(frameDuration),
-        loop(loop), elapsedTime(0.0f), animated(true),
-        first_frame_position(first_frame_position) {}
+        int totalFrames = 0)
+        : frameWidth(frameWidth),
+          frameHeight(frameHeight),
+          totalFrames(totalFrames),
+          currentFrame(0),
+          frameDuration(frameDuration),
+          loop(loop),
+          elapsedTime(0.0f),
+          animated(true),
+          first_frame_position(first_frame_position) {}
+
     AnimatedSprite(int frameWidth, int frameHeight, int current_frame)
-        : frameWidth(frameWidth), frameHeight(frameHeight),
-        totalFrames(0), currentFrame(current_frame), frameDuration(0.1f),
-        loop(true), elapsedTime(0.0f), animated(false) {}
+        : frameWidth(frameWidth),
+          frameHeight(frameHeight),
+          totalFrames(0),
+          currentFrame(current_frame),
+          frameDuration(0.1f),
+          loop(true),
+          elapsedTime(0.0f),
+          animated(false) {}
 };
 
 /**
@@ -125,13 +146,18 @@ struct Text {
     sf::Font font;
     bool is_loaded = false;
 
-    explicit Text(const std::string& fontPath, const std::string& content = "",
+    explicit Text(const std::string &fontPath, const std::string &content = "",
         unsigned int characterSize = 30, int z_index = 0,
         sf::Color color = sf::Color::White,
         sf::Vector2f offset = sf::Vector2f(0.0f, 0.0f))
-            : content(content), fontPath("Assets/Fonts/" + fontPath),
-            characterSize(characterSize), color(color),
-            opacity(1.0f), z_index(z_index), is_loaded(false), offset(offset) {}
+        : content(content),
+          fontPath("assets/fonts/" + fontPath),
+          characterSize(characterSize),
+          color(color),
+          opacity(1.0f),
+          z_index(z_index),
+          is_loaded(false),
+          offset(offset) {}
 
     // Non-copyable to avoid accidental font pointer mismatches
     Text(Text const &) = delete;

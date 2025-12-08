@@ -1,6 +1,6 @@
 #pragma once
-#include "include/Components/CoreComponents.hpp"
-#include "include/Components/RenderComponent.hpp"
+#include "include/components/CoreComponents.hpp"
+#include "include/components/RenderComponent.hpp"
 #include "include/sparse_array.hpp"
 
 namespace Rtype::Client {

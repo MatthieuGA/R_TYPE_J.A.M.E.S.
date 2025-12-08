@@ -1,8 +1,8 @@
-#include "include/registry.hpp"
-#include "Game/initRegistry.hpp"
-#include "Engine/initRegistryComponent.hpp"
-#include "Engine/Systems/initRegistrySystems.hpp"
+#include "client/Game/initRegistry.hpp"
 
+#include "engine/initRegistryComponent.hpp"
+#include "engine/systems/initRegistrySystems.hpp"
+#include "include/registry.hpp"
 
 namespace Rtype::Client {
 void InitRegistry(Rtype::Client::GameWorld &game_world) {

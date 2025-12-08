@@ -1,16 +1,17 @@
 #pragma once
-#include <string>
+#include <cstdint>
 #include <map>
 #include <memory>
-#include <vector>
-#include <utility>
-#include <cstdint>
 #include <optional>
+#include <string>
 #include <unordered_map>
+#include <utility>
+#include <vector>
+
 #include <SFML/Graphics.hpp>
 
+#include "game/scenes_management/Scene_A.hpp"
 #include "include/registry.hpp"
-#include "Game/ScenesManagement/Scene_A.hpp"
 
 namespace Eng = Engine;
 

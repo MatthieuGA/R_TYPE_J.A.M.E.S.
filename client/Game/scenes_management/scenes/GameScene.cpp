@@ -1,19 +1,19 @@
-#include "Game/ScenesManagement/Scenes/GameScene.hpp"
+#include "client/Game/scenes_management/scenes/GameScene.hpp"
 
 #include <string>
 #include <vector>
 
-#include "Game/ScenesManagement/initScenes.hpp"
-#include "include/Components/CoreComponents.hpp"
-#include "include/Components/GameplayComponents.hpp"
-#include "include/Components/RenderComponent.hpp"
-#include "include/Components/ScenesComponents.hpp"
+#include "game/scenes_management/initScenes.hpp"
 #include "include/PlayerConst.hpp"
+#include "include/components/CoreComponents.hpp"
+#include "include/components/GameplayComponents.hpp"
+#include "include/components/RenderComponent.hpp"
+#include "include/components/ScenesComponents.hpp"
 #include "include/registry.hpp"
 
 namespace Rtype::Client {
 void GameScene::AddBackgroundEntity(
-    Engine::registry &reg, background_info info, float initial_x) {
+    Engine::registry &reg, BackgroundInfo info, float initial_x) {
     auto background_entity = reg.SpawnEntity();
     reg.AddComponent<Component::Transform>(
         background_entity, Component::Transform{initial_x, info.initialY, 0.0f,
@@ -31,14 +31,14 @@ void GameScene::AddBackgroundEntity(
 }
 
 void GameScene::InitBackgrounds(Engine::registry &reg) {
-    std::vector<background_info> background_list = {
-        {"Background/Level1/1.png", -5.f, 0.f, -10, true, 1.f, .0005f, 0.2f},
-        {"Background/Level1/2.png", -15.f, 0.f, -9, true, 6.f, .007f, 1.2f},
-        {"Background/Level1/3.png", -25.f, 0.f, -8, true, 6.f, .007f, 1.2f},
-        {"Background/Level1/4.png", -35.f, 0.f, -7, true, 4.f, .005f, 1.5f},
-        {"Background/Level1/5.png", -150.f, -20.f, 10, false, 0.f, 0.f, 0.f,
+    std::vector<BackgroundInfo> background_list = {
+        {"background/level_1/1.png", -5.f, 0.f, -10, true, 1.f, .0005f, 0.2f},
+        {"background/level_1/2.png", -15.f, 0.f, -9, true, 6.f, .007f, 1.2f},
+        {"background/level_1/3.png", -25.f, 0.f, -8, true, 6.f, .007f, 1.2f},
+        {"background/level_1/4.png", -35.f, 0.f, -7, true, 4.f, .005f, 1.5f},
+        {"background/level_1/5.png", -150.f, -20.f, 10, false, 0.f, 0.f, 0.f,
             0.8f},
-        {"Background/Level1/5.png", -130.f, -200.f, 11, false, 0.f, 0.f, 0.f,
+        {"background/level_1/5.png", -130.f, -200.f, 11, false, 0.f, 0.f, 0.f,
             0.6f}};
 
     // Initialize background entity

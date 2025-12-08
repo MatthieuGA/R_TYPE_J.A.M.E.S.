@@ -1,7 +1,7 @@
 #pragma once
-#include "Engine/gameWorld.hpp"
+#include "engine/gameWorld.hpp"
 
-#include "Engine/Events/Event.h"
+#include "engine/events/Event.h"
 
 // Lists of events
 struct CollisionEvent : public Event {

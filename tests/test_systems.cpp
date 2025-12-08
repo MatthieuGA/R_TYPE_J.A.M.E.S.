@@ -2,12 +2,12 @@
 
 #include <utility>
 
-#include "../client/Engine/Events/EngineEvent.hpp"
-#include "../client/Engine/Systems/initRegistrySystems.hpp"
-#include "../client/Engine/gameWorld.hpp"
-#include "../client/include/Components/CoreComponents.hpp"
-#include "../client/include/Components/GameplayComponents.hpp"
-#include "../client/include/Components/RenderComponent.hpp"
+#include "../client/engine/events/EngineEvent.hpp"
+#include "../client/engine/gameWorld.hpp"
+#include "../client/engine/systems/initRegistrySystems.hpp"
+#include "../client/include/components/CoreComponents.hpp"
+#include "../client/include/components/GameplayComponents.hpp"
+#include "../client/include/components/RenderComponent.hpp"
 
 namespace Com = Rtype::Client::Component;
 namespace Eng = Engine;

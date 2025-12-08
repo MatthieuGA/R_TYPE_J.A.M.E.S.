@@ -4,7 +4,7 @@
 #include "include/WindowConst.hpp"
 #include "include/registry.hpp"
 
-#include "Engine/Events/Event.h"
+#include "engine/events/Event.h"
 
 namespace Rtype::Client {
 struct GameWorld {

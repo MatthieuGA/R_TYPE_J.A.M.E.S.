@@ -1,6 +1,6 @@
 # Initialize Drawable Animated
 
-**Fichier source:** `client/Engine/Systems/SytemsFunctions/initializeAnimationSystem.cpp`
+**Fichier source:** `client/engine/systems/SystemsFunctions/initializeAnimationSystem.cpp`
 
 **But:** Initialiser les `Drawable` des entités qui ont des `AnimatedSprite` (charger la texture, définir l'origine et la région de la frame initiale).
 

@@ -1,8 +1,8 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 
-#include "include/Components/CoreComponents.hpp"
-#include "include/Components/RenderComponent.hpp"
+#include "include/components/CoreComponents.hpp"
+#include "include/components/RenderComponent.hpp"
 
 namespace Rtype::Client {
 namespace Com = Component;

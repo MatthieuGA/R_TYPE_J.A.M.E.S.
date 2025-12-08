@@ -4,9 +4,9 @@
 
 #include <SFML/Graphics.hpp>
 
-#include "Engine/gameWorld.hpp"
-#include "Game/initRegistry.hpp"
-#include "Game/ScenesManagement/initScenes.hpp"
+#include "engine/gameWorld.hpp"
+#include "game/initRegistry.hpp"
+#include "game/scenes_management/initScenes.hpp"
 
 using Engine::registry;
 namespace RC = Rtype::Client;

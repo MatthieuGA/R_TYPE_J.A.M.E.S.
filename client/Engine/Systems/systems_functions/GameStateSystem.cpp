@@ -1,18 +1,20 @@
 #include <algorithm>
 #include <cmath>
+
 #include <SFML/Graphics.hpp>
-#include "Engine/Systems/initRegistrySystems.hpp"
+
+#include "engine/systems/initRegistrySystems.hpp"
 
 namespace Rtype::Client {
 /**
  * @brief Handles scene transitions by invoking exit and enter hooks.
  *
  * @param reg ECS registry used to access entities and systems.
- * @param sceneManagements Sparse array of scene management components tracking current and next scenes.
+ * @param sceneManagements Sparse array of scene management components tracking
+ * current and next scenes.
  */
 void GameStateSystem(Eng::registry &reg, GameWorld &gameWorld,
     Eng::sparse_array<Component::SceneManagement> &sceneManagements) {
-
     for (auto &&[i, gs] : make_indexed_zipper(sceneManagements)) {
         if (gs.next.empty() || gs.next == gs.current)
             continue;

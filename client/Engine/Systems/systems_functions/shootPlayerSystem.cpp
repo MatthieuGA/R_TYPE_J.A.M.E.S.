@@ -1,6 +1,6 @@
 #include <SFML/Graphics.hpp>
 
-#include "Engine/Systems/initRegistrySystems.hpp"
+#include "engine/systems/initRegistrySystems.hpp"
 #include "include/PlayerConst.hpp"
 
 namespace Rtype::Client {

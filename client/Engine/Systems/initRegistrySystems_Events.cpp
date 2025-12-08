@@ -1,6 +1,6 @@
-#include "Engine/Systems/initRegistrySystems.hpp"
+#include "engine/events/EngineEvent.hpp"
+#include "engine/systems/initRegistrySystems.hpp"
 #include "include/indexed_zipper.hpp"
-#include "Engine/Events/EngineEvent.hpp"
 
 namespace Eng = Engine;
 

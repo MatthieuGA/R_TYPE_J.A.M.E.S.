@@ -1,4 +1,4 @@
-#include "Engine/Systems/initRegistrySystems.hpp"
+#include "engine/systems/initRegistrySystems.hpp"
 
 namespace Rtype::Client {
 /**
@@ -12,10 +12,13 @@ void SetFrame(Com::AnimatedSprite &anim_sprite, Com::Drawable &drawable) {
     if (drawable.texture.getSize().x == 0 || anim_sprite.frameWidth == 0)
         return;
     const int columns = drawable.texture.getSize().x / anim_sprite.frameWidth;
-    if (columns == 0) return;
-    const int left = anim_sprite.first_frame_position.x +
+    if (columns == 0)
+        return;
+    const int left =
+        anim_sprite.first_frame_position.x +
         (anim_sprite.currentFrame % columns) * anim_sprite.frameWidth;
-    const int top = anim_sprite.first_frame_position.y +
+    const int top =
+        anim_sprite.first_frame_position.y +
         (anim_sprite.currentFrame / columns) * anim_sprite.frameHeight;
     drawable.sprite.setTextureRect(sf::IntRect(
         left, top, anim_sprite.frameWidth, anim_sprite.frameHeight));
@@ -52,8 +55,8 @@ void NextFrame(Com::AnimatedSprite &anim_sprite, Com::Drawable &drawable) {
  * @param drawables Sparse array of Drawable components
  */
 void AnimationSystem(Eng::registry &reg, const float dt,
-Eng::sparse_array<Com::AnimatedSprite> &anim_sprites,
-Eng::sparse_array<Com::Drawable> &drawables) {
+    Eng::sparse_array<Com::AnimatedSprite> &anim_sprites,
+    Eng::sparse_array<Com::Drawable> &drawables) {
     for (auto &&[i, anim_sprite, drawable] :
         make_indexed_zipper(anim_sprites, drawables)) {
         if (!drawable.isLoaded || !anim_sprite.animated) {

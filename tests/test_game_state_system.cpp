@@ -4,8 +4,8 @@
 #include <string>
 #include <unordered_map>
 
-#include "../client/Engine/Systems/initRegistrySystems.hpp"
-#include "../client/include/Components/ScenesComponents.hpp"
+#include "../client/engine/systems/initRegistrySystems.hpp"
+#include "../client/include/components/ScenesComponents.hpp"
 
 namespace Com = Rtype::Client::Component;
 namespace Eng = Engine;
@@ -13,14 +13,18 @@ namespace Eng = Engine;
 namespace Rtype::Client {
 
 class TestScene : public Scene_A {
-public:
-    void InitScene(Eng::registry &, GameWorld &) override { ++init_called; }
-    void DestroyScene(Eng::registry &) override { ++destroy_called; }
+ public:
+    void InitScene(Eng::registry &, GameWorld &) override {
+        ++init_called;
+    }
+
+    void DestroyScene(Eng::registry &) override {
+        ++destroy_called;
+    }
 
     int init_called = 0;
     int destroy_called = 0;
 };
-
 
 TEST(GameStateSystem, NoTransitionWhenNextEmpty) {
     Eng::registry reg;

@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
 
-#include "../client/Engine/Systems/initRegistrySystems.hpp"
-#include "../client/include/Components/CoreComponents.hpp"
-#include "../client/include/Components/RenderComponent.hpp"
+#include "../client/engine/systems/initRegistrySystems.hpp"
+#include "../client/include/components/CoreComponents.hpp"
+#include "../client/include/components/RenderComponent.hpp"
 
 namespace Com = Rtype::Client::Component;
 namespace Eng = Engine;
@@ -14,7 +14,7 @@ TEST(ShaderSystem, LoadsShaderFromAssets) {
 
     Eng::sparse_array<Com::Shader> shaders;
 
-    // Use the existing test shader placed in client/Assets/Shaders/wave.frag
+    // Use the existing test shader placed in client/assets/Shaders/wave.frag
     Com::Shader shade("error.frag");
     shaders.insert_at(0, shade);
 

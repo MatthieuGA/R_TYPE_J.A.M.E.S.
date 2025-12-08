@@ -1,6 +1,6 @@
 # Controllable Player System
 
-**Fichier source:** `client/Engine/Systems/SytemsFunctions/ControllablePlayerSystem.cpp`
+**Fichier source:** `client/engine/systems/SystemsFunctions/ControllablePlayerSystem.cpp`
 
 **But:** Convertir les entrées du joueur en accélérations appliquées à la composante `Velocity`, en respectant un temps d'accélération pour atteindre la vitesse maximale.
 

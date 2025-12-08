@@ -1,7 +1,7 @@
 #include <iostream>
 
-#include "Engine/Systems/initRegistrySystems.hpp"
-#include "Engine/originTool.hpp"
+#include "engine/originTool.hpp"
+#include "engine/systems/initRegistrySystems.hpp"
 
 namespace Rtype::Client {
 /**

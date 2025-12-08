@@ -1,4 +1,4 @@
-#include "Engine/Systems/initRegistrySystems.hpp"
+#include "client/Engine/Systems/initRegistrySystems.hpp"
 
 #include "include/indexed_zipper.hpp"
 
@@ -58,7 +58,7 @@ void InitRenderSystems(Rtype::Client::GameWorld &game_world) {
  *
  * @param game_world The game world containing the registry.
  */
-void init_movement_system(Rtype::Client::GameWorld &game_world) {
+void InitMovementSystem(Rtype::Client::GameWorld &game_world) {
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
         Eng::sparse_array<Com::Velocity>>(
         [&game_world](Eng::registry &r,
@@ -182,7 +182,7 @@ void InitRegistrySystems(Rtype::Client::GameWorld &game_world) {
     // Set up systems
     InitSceneManagementSystem(game_world);
     InitControlsSystem(game_world);
-    init_movement_system(game_world);
+    InitMovementSystem(game_world);
     InitRenderSystems(game_world);
 }
 }  // namespace Rtype::Client

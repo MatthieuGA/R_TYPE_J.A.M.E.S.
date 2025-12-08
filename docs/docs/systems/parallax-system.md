@@ -1,6 +1,6 @@
 # Parallax System
 
-**Fichier source:** `client/Engine/Systems/SytemsFunctions/parallaxSystem.cpp`
+**Fichier source:** `client/engine/systems/SystemsFunctions/parallaxSystem.cpp`
 
 **But:** Gérer le défilement parallax des couches d'arrière-plan.
 

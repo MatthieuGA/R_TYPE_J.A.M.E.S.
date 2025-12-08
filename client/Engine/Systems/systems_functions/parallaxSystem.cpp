@@ -1,4 +1,4 @@
-#include "Engine/Systems/initRegistrySystems.hpp"
+#include "engine/systems/initRegistrySystems.hpp"
 
 namespace Rtype::Client {
 /**

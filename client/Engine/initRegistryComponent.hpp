@@ -1,9 +1,9 @@
 #pragma once
-#include "include/Components/CoreComponents.hpp"
-#include "include/Components/RenderComponent.hpp"
-#include "include/Components/GameplayComponents.hpp"
-#include "include/Components/NetworkingComponents.hpp"
-#include "include/Components/ScenesComponents.hpp"
+#include "include/components/CoreComponents.hpp"
+#include "include/components/GameplayComponents.hpp"
+#include "include/components/NetworkingComponents.hpp"
+#include "include/components/RenderComponent.hpp"
+#include "include/components/ScenesComponents.hpp"
 #include "include/registry.hpp"
 
 namespace Rtype::Client {
