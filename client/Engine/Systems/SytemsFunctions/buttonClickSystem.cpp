@@ -4,13 +4,18 @@
 
 namespace Rtype::Client {
 /**
- * @brief Poll keyboard state and populate the Inputs components.
+ * @brief Detects mouse hover and click events on clickable entities.
  *
- * This system resets each `Inputs` entry and then maps a fixed set of keys
- * to the input axes and shoot flag.
+ * This system iterates over entities with HitBox, Clickable, Drawable, and Transform components,
+ * determines if the mouse is hovering over or clicking them, updates their state accordingly,
+ * and triggers the onClick callback when a click is detected.
  *
- * @param reg Engine registry (unused)
- * @param inputs Sparse array of Inputs components to update
+ * @param reg Engine registry.
+ * @param game_world Reference to the game world, including the window.
+ * @param hit_boxes Sparse array of HitBox components.
+ * @param clickables Sparse array of Clickable components.
+ * @param drawables Sparse array of Drawable components.
+ * @param transforms Sparse array of Transform components.
  */
 void buttonClickSystem(Eng::registry &reg, GameWorld &game_world,
 Eng::sparse_array<Com::HitBox> &hit_boxes,
