@@ -16,6 +16,9 @@ using Rtype::Client::PlayfieldLimitSystem;
 using Rtype::Client::AnimationSystem;
 using Rtype::Client::PlayerSystem;
 using Rtype::Client::InputSystem;
+using Rtype::Client::CollisionDetectionSystem;
+using Rtype::Client::ProjectileSystem;
+using Rtype::Client::ShootPlayerSystem;
 
 TEST(Systems, MovementSystemUpdatesPosition) {
     Eng::registry reg;
