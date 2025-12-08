@@ -77,6 +77,12 @@ struct InputState {
     bool shoot;
 };
 
+struct Inputs {
+    float horizontal = 0.0f;
+    float vertical = 0.0f;
+    bool shoot = false;
+};
+
 struct HitBox {
     float width;
     float height;

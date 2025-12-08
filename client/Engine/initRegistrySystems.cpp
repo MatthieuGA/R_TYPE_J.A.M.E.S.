@@ -72,34 +72,4 @@ void InitRegistrySystems(Rtype::Client::GameWorld &game_world,
         game_world.delta_time_clock_.restart();
     });
 }
-}  // namespace Rtype::Client
-            MovementSystem(
-                r, game_world.delta_time_clock_, transforms, velocities);
-        });
-    game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
-        Eng::sparse_array<Com::PlayerTag>>(
-        [&game_world](Eng::registry &r,
-            Eng::sparse_array<Com::Transform> &transforms,
-            Eng::sparse_array<Com::PlayerTag> const &playerTag) {
-            PlayfieldLimitSystem(r, game_world.window_, transforms, playerTag);
-        });
-    game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
-        Eng::sparse_array<Com::HitBox>, Eng::sparse_array<Com::Solid>>(
-        [&game_world](Eng::registry &r,
-            Eng::sparse_array<Com::Transform> &transforms,
-            Eng::sparse_array<Com::HitBox> const &hitbox,
-            Eng::sparse_array<Com::Solid> const &solids) {
-            CollisionDetectionSystem(
-                r, game_world, transforms, hitbox, solids);
-        });
-}
-
-void InitRegistrySystems(Rtype::Client::GameWorld &game_world) {
-    // Set up systems
-    init_movement_system(game_world);
-    init_render_systems(game_world);
-    game_world.registry_.AddSystem<>([&game_world](Eng::registry &r) {
-        game_world.delta_time_clock_.restart();
-    });
-}
-}  // namespace Rtype::Client
+    }  // namespace Rtype::Client

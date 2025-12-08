@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include "Engine/initRegistrySystems.hpp"
-#include "indexed_zipper.hpp"
+#include "include/indexed_zipper.hpp"
 
 namespace Eng = Engine;
 
@@ -29,9 +29,10 @@ void initializeDrawable(Com::Drawable &drawable) {
     drawable.isLoaded = true;
 }
 
-void drawableSystem(Eng::registry &reg, sf::RenderWindow &window,
+void DrawableSystem(Eng::registry &reg, sf::RenderWindow &window,
     Eng::sparse_array<Com::Transform> const &transforms,
-    Eng::sparse_array<Com::Drawable> &drawables) {
+    Eng::sparse_array<Com::Drawable> &drawables,
+    Eng::sparse_array<Com::AnimatedSprite> const &animatedSprites) {
     for (auto &&[i, tranform, drawable] :
         make_indexed_zipper(transforms, drawables)) {
         if (!drawable.isLoaded)

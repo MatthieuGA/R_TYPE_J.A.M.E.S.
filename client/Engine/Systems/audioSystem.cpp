@@ -7,8 +7,8 @@
 
 #include "Engine/Audio/AudioManager.hpp"
 #include "include/Components/CoreComponents.hpp"
-#include "indexed_zipper.hpp"
-#include "registry.hpp"
+#include "include/indexed_zipper.hpp"
+#include "include/registry.hpp"
 
 namespace Rtype::Client {
 
@@ -43,8 +43,8 @@ void AudioSystem(Engine::registry &reg, Audio::AudioManager &audio_manager,
 
     // Remove all processed SoundRequest components
     for (const auto &entity_id : entities_to_clear) {
-        reg.remove_component<Component::SoundRequest>(
-            reg.entity_from_index(entity_id));
+        reg.RemoveComponent<Component::SoundRequest>(
+            reg.EntityFromIndex(entity_id));
     }
 
     // Update the audio backend
