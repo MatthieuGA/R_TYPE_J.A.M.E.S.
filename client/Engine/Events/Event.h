@@ -1,9 +1,9 @@
 #pragma once
-#include <iostream>
 #include <functional>
+#include <iostream>
+#include <typeindex>
 #include <unordered_map>
 #include <vector>
-#include <typeindex>
 
 class EventBus;
 
