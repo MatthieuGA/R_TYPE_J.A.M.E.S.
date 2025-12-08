@@ -4,7 +4,6 @@
 #include <vector>
 
 #include "game/scenes_management/initScenes.hpp"
-#include "game/scenes_management/scenes/MainMenuScene.hpp"
 #include "include/components/CoreComponents.hpp"
 #include "include/components/GameplayComponents.hpp"
 #include "include/components/RenderComponent.hpp"
