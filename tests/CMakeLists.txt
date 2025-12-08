@@ -26,6 +26,7 @@ target_link_libraries(engine_tests
 # Ensure test target can find client headers (client/include and client/Engine)
 target_include_directories(engine_tests PRIVATE
     ${CMAKE_SOURCE_DIR}/client
+    ${CMAKE_SOURCE_DIR}/client/include
     ${CMAKE_SOURCE_DIR}/client/Engine
 )
 
@@ -44,6 +45,14 @@ list(REMOVE_ITEM CLIENT_ENGINE_SOURCES
 if (CLIENT_ENGINE_SOURCES)
     target_sources(engine_tests PRIVATE ${CLIENT_ENGINE_SOURCES})
 endif()
+
+# Add client Network implementation for network tests
+target_sources(engine_tests PRIVATE
+    ${CMAKE_SOURCE_DIR}/client/src/Network.cpp
+)
+
+# Add Boost for network tests
+target_link_libraries(engine_tests PRIVATE Boost::system)
 
 # Discover tests for CTest
 gtest_discover_tests(engine_tests)

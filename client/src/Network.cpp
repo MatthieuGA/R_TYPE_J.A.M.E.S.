@@ -243,7 +243,7 @@ std::optional<client::SnapshotPacket> Network::PollSnapshot() {
 }
 
 void Network::Disconnect() {
-    // Best-effort DISCONNECT_REQ on TCP if connected
+    // DISCONNECT_REQ on TCP if connected
     try {
         if (tcp_socket_.is_open()) {
             std::array<uint8_t, kHeaderSize> pkt{};
