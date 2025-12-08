@@ -1,5 +1,5 @@
 #pragma once
-#include <vector>
+#include <utility>
 
 #include <boost/asio.hpp>
 #include <boost/lockfree/spsc_queue.hpp>
@@ -54,17 +54,42 @@ class Network {
 
     class TCP {
      public:
+        using AcceptCallback =
+            std::function<void(boost::asio::ip::tcp::socket)>;
+
         explicit TCP(Config &config, boost::asio::io_context &io);
         void accept();
         boost::asio::ip::port_type port() const;
 
+        /**
+         * @brief Set callback for new TCP connections
+         *
+         * When a new connection is accepted, socket ownership is transferred
+         * to the callback (typically Server::HandleTcpAccept).
+         *
+         * @param callback Function to invoke with new socket
+         */
+        void setAcceptCallback(AcceptCallback callback) {
+            on_accept_ = std::move(callback);
+        }
+
         boost::asio::ip::tcp::acceptor acceptor;
 
      private:
-        std::vector<boost::asio::ip::tcp::socket> sockets;
+        AcceptCallback on_accept_;
     };
 
     UDP _udp;
     TCP _tcp;
+
+ public:
+    /**
+     * @brief Get reference to TCP handler for callback registration
+     *
+     * @return TCP& Reference to internal TCP handler
+     */
+    TCP &getTcp() {
+        return _tcp;
+    }
 };
 }  // namespace server
