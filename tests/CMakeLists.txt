@@ -33,6 +33,14 @@ target_include_directories(engine_tests PRIVATE
 file(GLOB_RECURSE CLIENT_ENGINE_SOURCES CONFIGURE_DEPENDS
     "${CMAKE_SOURCE_DIR}/client/Engine/*.cpp"
 )
+## Exclude duplicate top-level system sources when Render/ implementations exist
+list(REMOVE_ITEM CLIENT_ENGINE_SOURCES
+    "${CMAKE_SOURCE_DIR}/client/Engine/Systems/SytemsFunctions/animationSystem.cpp"
+    "${CMAKE_SOURCE_DIR}/client/Engine/Systems/SytemsFunctions/drawableSystem.cpp"
+    "${CMAKE_SOURCE_DIR}/client/Engine/Systems/SytemsFunctions/initializeAnimationSystem.cpp"
+    "${CMAKE_SOURCE_DIR}/client/Engine/Systems/SytemsFunctions/initializeShaderSystem.cpp"
+)
+
 if (CLIENT_ENGINE_SOURCES)
     target_sources(engine_tests PRIVATE ${CLIENT_ENGINE_SOURCES})
 endif()
