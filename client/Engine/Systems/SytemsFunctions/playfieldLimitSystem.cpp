@@ -20,7 +20,7 @@ namespace Com = Component;
  * @param transforms Sparse array of Transform components to clamp
  * @param player_tags Sparse array of PlayerTag components (filter)
  */
-void PlayfieldLimitSystem(Eng::registry &reg, const sf::RenderWindow &window,
+void PlayfieldLimitSystem(Eng::registry &reg, const GameWorld &game_world,
     Eng::sparse_array<Com::Transform> &transforms,
     Eng::sparse_array<Com::PlayerTag> const &player_tags) {
     for (auto &&[i, transform, player_tag] :
@@ -30,10 +30,10 @@ void PlayfieldLimitSystem(Eng::registry &reg, const sf::RenderWindow &window,
             transform.x = 0;
         if (transform.y < 0)
             transform.y = 0;
-        if (transform.x > window.getSize().x)
-            transform.x = static_cast<float>(window.getSize().x);
-        if (transform.y > window.getSize().y)
-            transform.y = static_cast<float>(window.getSize().y);
+        if (transform.x > game_world.window_size_.x)
+            transform.x = static_cast<float>(game_world.window_size_.x);
+        if (transform.y > game_world.window_size_.y)
+            transform.y = static_cast<float>(game_world.window_size_.y);
     }
 }
 }  // namespace Rtype::Client

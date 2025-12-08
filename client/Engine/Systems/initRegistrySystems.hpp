@@ -57,7 +57,7 @@ void ParallaxSystem(Eng::registry &reg, const GameWorld &game_world,
     Eng::sparse_array<Com::ParrallaxLayer> const &parallax_layers,
     Eng::sparse_array<Com::Drawable> const &drawables);
 
-void PlayfieldLimitSystem(Eng::registry &reg, const sf::RenderWindow &window,
+void PlayfieldLimitSystem(Eng::registry &reg, const GameWorld &game_world,
     Eng::sparse_array<Com::Transform> &transforms,
     Eng::sparse_array<Com::PlayerTag> const &player_tags);
 
