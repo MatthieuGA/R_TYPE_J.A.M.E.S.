@@ -1,4 +1,5 @@
 #include "Engine/Systems/initRegistrySystems.hpp"
+
 #include "include/indexed_zipper.hpp"
 
 namespace Eng = Engine;
@@ -18,34 +19,32 @@ void InitRenderSystems(Rtype::Client::GameWorld &game_world) {
     // Initialize systems
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
         Eng::sparse_array<Com::Drawable>,
-        Eng::sparse_array<Com::AnimatedSprite>>
-        (InitializeDrawableAnimatedSystem);
-    game_world.registry_.AddSystem<Eng::sparse_array<Com::Shader>>
-        (InitializeShaderSystem);
-        // Main render system
+        Eng::sparse_array<Com::AnimatedSprite>>(
+        InitializeDrawableAnimatedSystem);
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::Shader>>(
+        InitializeShaderSystem);
+    // Main render system
     game_world.registry_.AddSystem<Eng::sparse_array<Com::AnimatedSprite>,
         Eng::sparse_array<Com::Drawable>>(
         [&game_world](Eng::registry &r,
-                Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
-                Eng::sparse_array<Com::Drawable> &drawables) {
-        AnimationSystem(r, game_world.last_delta_,
-            animated_sprites, drawables);
+            Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
+            Eng::sparse_array<Com::Drawable> &drawables) {
+            AnimationSystem(
+                r, game_world.last_delta_, animated_sprites, drawables);
         });
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
-        Eng::sparse_array<Com::Drawable>,
-        Eng::sparse_array<Com::Shader>>(
+        Eng::sparse_array<Com::Drawable>, Eng::sparse_array<Com::Shader>>(
         [&game_world](Eng::registry &r,
-                Eng::sparse_array<Com::Transform> const &transforms,
-                Eng::sparse_array<Com::Drawable> &drawables,
-                Eng::sparse_array<Com::Shader> &shaders) {
-            DrawableSystem(r, game_world, transforms,
-                drawables, shaders);
+            Eng::sparse_array<Com::Transform> const &transforms,
+            Eng::sparse_array<Com::Drawable> &drawables,
+            Eng::sparse_array<Com::Shader> &shaders) {
+            DrawableSystem(r, game_world, transforms, drawables, shaders);
         });
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
         Eng::sparse_array<Com::Text>>(
         [&game_world](Eng::registry &r,
-                Eng::sparse_array<Com::Transform> const &transforms,
-                Eng::sparse_array<Com::Text> &texts) {
+            Eng::sparse_array<Com::Transform> const &transforms,
+            Eng::sparse_array<Com::Text> &texts) {
             DrawTextRenderSystem(r, game_world, transforms, texts);
         });
 }
@@ -54,7 +53,8 @@ void InitRenderSystems(Rtype::Client::GameWorld &game_world) {
  * @brief Initialize movement-related systems in the registry.
  *
  * This function sets up the necessary systems for handling movement,
- * including velocity updates, parallax effects, playfield limits, and collision detection.
+ * including velocity updates, parallax effects, playfield limits, and
+ * collision detection.
  *
  * @param game_world The game world containing the registry.
  */
@@ -62,18 +62,19 @@ void init_movement_system(Rtype::Client::GameWorld &game_world) {
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
         Eng::sparse_array<Com::Velocity>>(
         [&game_world](Eng::registry &r,
-                Eng::sparse_array<Com::Transform> &transforms,
-                Eng::sparse_array<Com::Velocity> &velocities) {
-        MovementSystem(r, game_world.last_delta_, transforms, velocities);
+            Eng::sparse_array<Com::Transform> &transforms,
+            Eng::sparse_array<Com::Velocity> &velocities) {
+            MovementSystem(r, game_world.last_delta_, transforms, velocities);
         });
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
         Eng::sparse_array<Com::ParrallaxLayer>,
         Eng::sparse_array<Com::Drawable>>(
         [&game_world](Eng::registry &r,
-                Eng::sparse_array<Com::Transform> &transforms,
-                Eng::sparse_array<Com::ParrallaxLayer> &parallax_layers,
-                Eng::sparse_array<Com::Drawable> &drawables) {
-        ParallaxSystem(r, game_world, transforms, parallax_layers, drawables);
+            Eng::sparse_array<Com::Transform> &transforms,
+            Eng::sparse_array<Com::ParrallaxLayer> &parallax_layers,
+            Eng::sparse_array<Com::Drawable> &drawables) {
+            ParallaxSystem(
+                r, game_world, transforms, parallax_layers, drawables);
         });
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
         Eng::sparse_array<Com::PlayerTag>>(
@@ -111,21 +112,22 @@ void InitControlsSystem(Rtype::Client::GameWorld &game_world) {
             Eng::sparse_array<Com::Clickable> &clickables,
             Eng::sparse_array<Com::Drawable> &drawables,
             Eng::sparse_array<Com::Transform> &transforms) {
-            ButtonClickSystem(r, game_world, hit_boxes,
-                clickables, drawables, transforms);
+            ButtonClickSystem(
+                r, game_world, hit_boxes, clickables, drawables, transforms);
         });
-    game_world.registry_.AddSystem<Eng::sparse_array<Com::Inputs>>(InputSystem);
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::Inputs>>(
+        [&game_world](
+            Eng::registry &r, Eng::sparse_array<Com::Inputs> &inputs) {
+            InputSystem(r, game_world.window_.hasFocus(), inputs);
+        });
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Inputs>,
-        Eng::sparse_array<Com::Controllable>,
-        Eng::sparse_array<Com::Velocity>,
+        Eng::sparse_array<Com::Controllable>, Eng::sparse_array<Com::Velocity>,
         Eng::sparse_array<Com::PlayerTag>>(ControllablePlayerSystem);
     game_world.registry_.AddSystem<Eng::sparse_array<Com::PlayerTag>,
-        Eng::sparse_array<Com::Velocity>,
-        Eng::sparse_array<Com::Transform>,
+        Eng::sparse_array<Com::Velocity>, Eng::sparse_array<Com::Transform>,
         Eng::sparse_array<Com::AnimatedSprite>>(PlayerSystem);
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
-        Eng::sparse_array<Com::Inputs>,
-        Eng::sparse_array<Com::PlayerTag>>(
+        Eng::sparse_array<Com::Inputs>, Eng::sparse_array<Com::PlayerTag>>(
         [&game_world](Eng::registry &r,
             Eng::sparse_array<Com::Transform> &transforms,
             Eng::sparse_array<Com::Inputs> const &inputs,
@@ -136,13 +138,12 @@ void InitControlsSystem(Rtype::Client::GameWorld &game_world) {
         Eng::sparse_array<Com::Drawable>,
         Eng::sparse_array<Com::AnimatedSprite>,
         Eng::sparse_array<Com::Transform>>(
-        [](Eng::registry &r,
-            Eng::sparse_array<Com::PlayerTag> &player_tags,
+        [](Eng::registry &r, Eng::sparse_array<Com::PlayerTag> &player_tags,
             Eng::sparse_array<Com::Drawable> &drawables,
             Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
             Eng::sparse_array<Com::Transform> &transforms) {
-            ChargingShowAssetPlayerSystem(r, player_tags, drawables,
-                animated_sprites, transforms);
+            ChargingShowAssetPlayerSystem(
+                r, player_tags, drawables, animated_sprites, transforms);
         });
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
         Eng::sparse_array<Com::Projectile>>(

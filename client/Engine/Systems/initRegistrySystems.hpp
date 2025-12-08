@@ -13,7 +13,6 @@ namespace Com = Component;
 void InitRegistrySystems(Rtype::Client::GameWorld &game_world);
 void InitRegistrySystemsEvents(Rtype::Client::GameWorld &game_world);
 
-
 // System function declarations
 
 // SCENE MANAGEMENT SYSTEMS
@@ -33,11 +32,11 @@ void DrawTextRenderSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Text> &texts);
 
 void AnimationSystem(Eng::registry &reg, const float dt,
-        Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
-        Eng::sparse_array<Com::Drawable> &drawables);
+    Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
+    Eng::sparse_array<Com::Drawable> &drawables);
 
-void InitializeShaderSystem(Eng::registry &reg,
-    Eng::sparse_array<Com::Shader> &shaders);
+void InitializeShaderSystem(
+    Eng::registry &reg, Eng::sparse_array<Com::Shader> &shaders);
 
 void InitializeDrawableAnimatedSystem(Eng::registry &reg,
     Eng::sparse_array<Com::Transform> const &transforms,
@@ -46,7 +45,7 @@ void InitializeDrawableAnimatedSystem(Eng::registry &reg,
 
 // MOVEMENT SYSTEMS
 
-void InputSystem(Eng::registry &reg,
+void InputSystem(Eng::registry &reg, bool has_focus,
     Eng::sparse_array<Com::Inputs> &inputs);
 
 void MovementSystem(Eng::registry &reg, const float dt,
@@ -62,8 +61,7 @@ void PlayfieldLimitSystem(Eng::registry &reg, const sf::RenderWindow &window,
     Eng::sparse_array<Com::Transform> &transforms,
     Eng::sparse_array<Com::PlayerTag> const &player_tags);
 
-void CollisionDetectionSystem(Eng::registry &reg,
-    GameWorld &game_world,
+void CollisionDetectionSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> &transforms,
     Eng::sparse_array<Com::HitBox> const &hit_boxes,
     Eng::sparse_array<Com::Solid> const &solids);

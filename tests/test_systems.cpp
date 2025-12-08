@@ -11,12 +11,12 @@
 namespace Com = Rtype::Client::Component;
 namespace Eng = Engine;
 
-using Rtype::Client::MovementSystem;
-using Rtype::Client::PlayfieldLimitSystem;
 using Rtype::Client::AnimationSystem;
-using Rtype::Client::PlayerSystem;
-using Rtype::Client::InputSystem;
 using Rtype::Client::CollisionDetectionSystem;
+using Rtype::Client::InputSystem;
+using Rtype::Client::MovementSystem;
+using Rtype::Client::PlayerSystem;
+using Rtype::Client::PlayfieldLimitSystem;
 using Rtype::Client::ProjectileSystem;
 using Rtype::Client::ShootPlayerSystem;
 
@@ -228,7 +228,7 @@ TEST(Systems, InputSystemResetsInputsWhenNoKeys) {
     Eng::sparse_array<Com::Inputs> inputs;
     inputs.insert_at(0, Com::Inputs{1.0f, -1.0f, true});
 
-    InputSystem(reg, inputs);
+    InputSystem(reg, true, inputs);
 
     ASSERT_TRUE(inputs[0].has_value());
     EXPECT_FLOAT_EQ(inputs[0]->horizontal, 0.0f);
