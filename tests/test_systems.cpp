@@ -11,7 +11,11 @@
 namespace Com = Rtype::Client::Component;
 namespace Eng = Engine;
 
-using namespace Rtype::Client;
+using Rtype::Client::MovementSystem;
+using Rtype::Client::PlayfieldLimitSystem;
+using Rtype::Client::AnimationSystem;
+using Rtype::Client::PlayerSystem;
+using Rtype::Client::InputSystem;
 
 TEST(Systems, MovementSystemUpdatesPosition) {
     Eng::registry reg;
