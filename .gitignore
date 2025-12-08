@@ -99,5 +99,4 @@ build_log.txt
 
 *.pdf
 r-type.txt
-*.sh
 vcpkg_installed/
