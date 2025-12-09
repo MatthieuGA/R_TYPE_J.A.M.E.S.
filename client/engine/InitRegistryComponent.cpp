@@ -18,6 +18,7 @@ void InitRegistryComponents(Engine::registry &reg) {
     // Register gameplay components
     reg.RegisterComponent<Rtype::Client::Component::PlayerTag>();
     reg.RegisterComponent<Rtype::Client::Component::EnemyTag>();
+    reg.RegisterComponent<Rtype::Client::Component::EnemyShootTag>();
     reg.RegisterComponent<Rtype::Client::Component::Projectile>();
     reg.RegisterComponent<Rtype::Client::Component::Health>();
     reg.RegisterComponent<Rtype::Client::Component::StatsGame>();

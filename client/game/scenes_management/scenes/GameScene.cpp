@@ -121,8 +121,13 @@ void GameScene::AddEnemyLevel(Engine::registry &reg, sf::Vector2f position) {
     reg.AddComponent<Component::Health>(
         enemy_entity, Component::Health(Rtype::Client::MERMAID_HEALTH));
     reg.AddComponent<Component::EnemyTag>(
-        enemy_entity, Component::EnemyTag{Rtype::Client::MERMAID_SPEED,
-                          Rtype::Client::MERMAID_SHOOT_COOLDOWN});
+        enemy_entity, Component::EnemyTag{Rtype::Client::MERMAID_SPEED});
+    reg.AddComponent<Component::EnemyShootTag>(enemy_entity,
+        Component::EnemyShootTag(Rtype::Client::MERMAID_SHOOT_COOLDOWN,
+            Rtype::Client::MERMAID_PROJECTILE_SPEED,
+            Rtype::Client::MERMAID_PROJECTILE_DAMAGE,
+            Component::EnemyShootTag::STRAIGHT_LEFT,
+            sf::Vector2f(-3.0f, -15.0f)));
     reg.AddComponent<Component::HitBox>(
         enemy_entity, Component::HitBox{8.0f, 32.0f});
 }

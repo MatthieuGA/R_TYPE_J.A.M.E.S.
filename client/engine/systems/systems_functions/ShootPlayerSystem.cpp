@@ -28,9 +28,9 @@ void createProjectile(Eng::registry &reg, float x, float y, int ownerId) {
         sf::Vector2f(25.0f, 25.0f));
     reg.AddComponent<Component::AnimatedSprite>(
         projectile_entity, std::move(animSprite));
-    reg.AddComponent<Component::Projectile>(
-        projectile_entity, Component::Projectile{PLAYER_DAMAGE_PROJECTILE,
-                               PLAYER_SPEED_PROJECTILE, ownerId, false});
+    reg.AddComponent<Component::Projectile>(projectile_entity,
+        Component::Projectile{PLAYER_DAMAGE_PROJECTILE, {1.0f, 0},
+            PLAYER_SPEED_PROJECTILE, ownerId, false});
     reg.AddComponent<Component::HitBox>(
         projectile_entity, Component::HitBox{24.0f, 12.0f});
 }
@@ -57,7 +57,7 @@ void createChargedProjectile(
     reg.AddComponent<Component::AnimatedSprite>(
         projectile_entity, std::move(animSprite));
     reg.AddComponent<Component::Projectile>(projectile_entity,
-        Component::Projectile{PLAYER_DAMAGE_CHARGED_PROJECTILE,
+        Component::Projectile{PLAYER_DAMAGE_CHARGED_PROJECTILE, {1.0f, 0.0f},
             PLAYER_SPEED_CHARGED_PROJECTILE, ownerId});
     reg.AddComponent<Component::HitBox>(
         projectile_entity, Component::HitBox{29.0f, 22.0f});

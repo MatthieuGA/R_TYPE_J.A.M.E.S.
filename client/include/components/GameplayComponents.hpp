@@ -18,12 +18,34 @@ struct AnimationEnterPlayer {
 
 struct EnemyTag {
     float speed = 100.0f;
-    float shoot_cooldown_max = 2.0f;
+};
+
+struct EnemyShootTag {
+    float shoot_cooldown_max = 1.0f;
     float shoot_cooldown = 0.0f;
+    float speed_projectile = 200.0f;
+    int damage_projectile = 10;
+
+    enum ShootType {
+        STRAIGHT_LEFT,
+        AIMED
+    } shoot_type = STRAIGHT_LEFT;
+
+    sf::Vector2f offset_shoot_position = sf::Vector2f(0.0f, 0.0f);
+
+    explicit EnemyShootTag(float cooldown, float speed = 200.0f,
+        int damage = 10, ShootType type = STRAIGHT_LEFT,
+        sf::Vector2f offset = sf::Vector2f(0.0f, 0.0f))
+        : shoot_cooldown_max(cooldown),
+          speed_projectile(speed),
+          damage_projectile(damage),
+          shoot_type(type),
+          offset_shoot_position(offset) {}
 };
 
 struct Projectile {
     int damage;
+    sf::Vector2f direction;
     float speed;
     int ownerId;  // ID of the entity that fired the projectile
     bool isEnemyProjectile = false;
