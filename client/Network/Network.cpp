@@ -126,11 +126,10 @@ void Network::ConnectToServer(const std::string &username) {
 }
 
 void Network::AsyncReceiveTCP() {
-    auto self = this;
     // Read header
     boost::asio::async_read(tcp_socket_,
         boost::asio::buffer(tcp_buffer_.data(), kHeaderSize),
-        [this, self](const boost::system::error_code &ec, std::size_t /*n*/) {
+        [this](const boost::system::error_code &ec, std::size_t /*n*/) {
             if (ec) {
                 if (ec != boost::asio::error::eof)
                     std::cerr
@@ -225,10 +224,6 @@ void Network::AsyncReceiveUDP() {
                     std::cerr
                         << "[Network] UDP receive error: " << ec.message()
                         << std::endl;
-                // Do not reschedule if the socket was closed or operation
-                // aborted to avoid scheduling on a closed socket.
-                if (udp_socket_.is_open())
-                    AsyncReceiveUDP();
                 return;
             }
 
@@ -236,12 +231,27 @@ void Network::AsyncReceiveUDP() {
                 uint8_t opcode = udp_buffer_[0];
                 uint16_t payload_size = ReadLe16(udp_buffer_.data() + 1);
                 uint32_t tick_id = ReadLe32(udp_buffer_.data() + 4);
+                // Defensive check: Ensure payload_size doesn't exceed buffer
+                // capacity (should never happen with proper MTU, but good
+                // practice)
+                if (payload_size > udp_buffer_.size() - kHeaderSize) {
+                    std::cerr
+                        << "[Network] UDP payload_size too large: "
+                        << payload_size
+                        << " (max: " << (udp_buffer_.size() - kHeaderSize)
+                        << ")" << std::endl;
+                    // Continue listening for next packet
+                    if (udp_socket_.is_open())
+                        AsyncReceiveUDP();
+                    return;
+                }
                 if (opcode == kOpWorldSnapshot &&
                     bytes >= kHeaderSize + payload_size) {
                     client::SnapshotPacket snap;
                     snap.tick = tick_id;
-                    snap.payload.assign(udp_buffer_.data() + kHeaderSize,
-                        udp_buffer_.data() + kHeaderSize + payload_size);
+                    snap.payload_size = payload_size;
+                    std::memcpy(snap.payload.data(),
+                        udp_buffer_.data() + kHeaderSize, payload_size);
                     snapshot_queue_.push(snap);
                 }
             }

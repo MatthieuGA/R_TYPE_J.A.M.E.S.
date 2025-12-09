@@ -18,10 +18,15 @@ namespace client {
 
 /**
  * @brief Client-local snapshot packet.
+ *
+ * Uses fixed-size buffer to ensure trivial copyability for lock-free queue.
+ * Max payload size is MTU (1500) - IP header (20) - UDP header (8) -
+ * Our header (12) = 1460 bytes.
  */
 struct SnapshotPacket {
     uint32_t tick{0};
-    std::vector<uint8_t> payload;
+    std::array<uint8_t, 1460> payload;
+    uint16_t payload_size{0};
 };
 
 /**
