@@ -90,40 +90,40 @@ class Server {
     /**
      * @brief Initialize the server and register all components/systems
      */
-    void initialize();
+    void Initialize();
 
     /**
      * @brief Start the server game loop
      */
-    void start();
+    void Start();
 
     /**
      * @brief Update game state (called each tick)
      */
-    void update();
+    void Update();
 
     /**
      * @brief Get the ECS registry
      *
      * @return Engine::registry& Reference to the registry
      */
-    Engine::registry &getRegistry();
+    Engine::registry &GetRegistry();
 
  private:
     /**
      * @brief Register all ECS components
      */
-    void registerComponents();
+    void RegisterComponents();
 
     /**
      * @brief Register all ECS systems
      */
-    void registerSystems();
+    void RegisterSystems();
 
     /**
      * @brief Setup the game tick timer
      */
-    void setupGameTick();
+    void SetupGameTick();
 
     // ========================================================================
     // TCP Connection Handlers
@@ -137,7 +137,7 @@ class Server {
      *
      * @param socket Newly accepted TCP socket (ownership transferred)
      */
-    void handleTcpAccept(boost::asio::ip::tcp::socket socket);
+    void HandleTcpAccept(boost::asio::ip::tcp::socket socket);
 
     /**
      * @brief Process CONNECT_REQ packet and perform handshake
@@ -147,7 +147,7 @@ class Server {
      * @param socket TCP socket for this client
      * @param payload Deserialized CONNECT_REQ payload (32 bytes)
      */
-    void handleConnectReq(boost::asio::ip::tcp::socket &socket,
+    void HandleConnectReq(boost::asio::ip::tcp::socket &socket,
         const std::vector<uint8_t> &payload);
 
     /**
@@ -160,7 +160,7 @@ class Server {
      * @param socket_keeper Optional shared_ptr to keep socket alive for
      * rejected connections
      */
-    void sendConnectAck(boost::asio::ip::tcp::socket &socket,
+    void SendConnectAck(boost::asio::ip::tcp::socket &socket,
         uint8_t player_id, network::ConnectAckPacket::Status status,
         std::shared_ptr<boost::asio::ip::tcp::socket> socket_keeper = nullptr);
 
@@ -169,7 +169,7 @@ class Server {
      *
      * @return uint8_t PlayerId in range [1, 255]
      */
-    uint8_t assignPlayerId();
+    uint8_t AssignPlayerId();
 
     /**
      * @brief Remove client from active connections
@@ -178,7 +178,7 @@ class Server {
      *
      * @param player_id ID of client to remove
      */
-    void removeClient(uint8_t player_id);
+    void RemoveClient(uint8_t player_id);
 
     /**
      * @brief Monitor client socket for disconnection
@@ -188,7 +188,7 @@ class Server {
      *
      * @param player_id ID of client to monitor
      */
-    void monitorClientDisconnect(uint8_t player_id);
+    void MonitorClientDisconnect(uint8_t player_id);
 
     /**
      * @brief Check if username is already taken
@@ -196,7 +196,7 @@ class Server {
      * @param username Username to check
      * @return true if username exists in clients_
      */
-    bool isUsernameTaken(const std::string &username) const;
+    bool IsUsernameTaken(const std::string &username) const;
 
     // ========================================================================
     // Member Variables

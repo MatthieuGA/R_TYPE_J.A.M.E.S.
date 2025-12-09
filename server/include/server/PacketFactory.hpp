@@ -1,6 +1,5 @@
 #pragma once
 
-#include <optional>
 #include <stdexcept>
 #include <string>
 #include <variant>
@@ -51,7 +50,7 @@ struct PacketParseResult {
  * 3. Dispatches to appropriate deserialize function based on OpCode
  * 4. Returns a variant containing the strongly-typed packet
  */
-inline PacketParseResult deserialize_packet(const uint8_t *data, size_t size) {
+inline PacketParseResult DeserializePacket(const uint8_t *data, size_t size) {
     try {
         if (size < 12) {
             return PacketParseResult{false, ConnectReqPacket{}, CommonHeader{},
@@ -59,14 +58,14 @@ inline PacketParseResult deserialize_packet(const uint8_t *data, size_t size) {
         }
 
         PacketBuffer buffer(data, size);
-        CommonHeader header = buffer.read_header();
+        CommonHeader header = buffer.ReadHeader();
 
         // Validate payload size
-        if (buffer.remaining() < header.payload_size) {
+        if (buffer.Remaining() < header.payload_size) {
             return PacketParseResult{false, ConnectReqPacket{}, header,
                 "Payload size mismatch: header claims " +
                     std::to_string(header.payload_size) + " bytes but only " +
-                    std::to_string(buffer.remaining()) + " available"};
+                    std::to_string(buffer.Remaining()) + " available"};
         }
 
         PacketType packet_type = static_cast<PacketType>(header.op_code);
@@ -75,44 +74,44 @@ inline PacketParseResult deserialize_packet(const uint8_t *data, size_t size) {
             // TCP Session Management (0x01-0x07)
             case PacketType::ConnectReq:
                 return PacketParseResult{
-                    true, ConnectReqPacket::deserialize(buffer), header, ""};
+                    true, ConnectReqPacket::Deserialize(buffer), header, ""};
 
             case PacketType::ConnectAck:
                 return PacketParseResult{
-                    true, ConnectAckPacket::deserialize(buffer), header, ""};
+                    true, ConnectAckPacket::Deserialize(buffer), header, ""};
 
             case PacketType::DisconnectReq:
                 return PacketParseResult{true,
-                    DisconnectReqPacket::deserialize(buffer), header, ""};
+                    DisconnectReqPacket::Deserialize(buffer), header, ""};
 
             case PacketType::NotifyDisconnect:
                 return PacketParseResult{true,
-                    NotifyDisconnectPacket::deserialize(buffer), header, ""};
+                    NotifyDisconnectPacket::Deserialize(buffer), header, ""};
 
             case PacketType::GameStart:
                 return PacketParseResult{
-                    true, GameStartPacket::deserialize(buffer), header, ""};
+                    true, GameStartPacket::Deserialize(buffer), header, ""};
 
             case PacketType::GameEnd:
                 return PacketParseResult{
-                    true, GameEndPacket::deserialize(buffer), header, ""};
+                    true, GameEndPacket::Deserialize(buffer), header, ""};
 
             case PacketType::ReadyStatus:
                 return PacketParseResult{
-                    true, ReadyStatusPacket::deserialize(buffer), header, ""};
+                    true, ReadyStatusPacket::Deserialize(buffer), header, ""};
 
             // UDP Gameplay (0x10+)
             case PacketType::PlayerInput:
                 return PacketParseResult{
-                    true, PlayerInputPacket::deserialize(buffer), header, ""};
+                    true, PlayerInputPacket::Deserialize(buffer), header, ""};
 
             case PacketType::WorldSnapshot:
                 return PacketParseResult{true,
-                    WorldSnapshotPacket::deserialize(buffer), header, ""};
+                    WorldSnapshotPacket::Deserialize(buffer), header, ""};
 
             case PacketType::PlayerStats:
                 return PacketParseResult{
-                    true, PlayerStatsPacket::deserialize(buffer), header, ""};
+                    true, PlayerStatsPacket::Deserialize(buffer), header, ""};
 
             default:
                 return PacketParseResult{false, ConnectReqPacket{}, header,
@@ -131,8 +130,8 @@ inline PacketParseResult deserialize_packet(const uint8_t *data, size_t size) {
 /**
  * @brief Convenience overload for vector input
  */
-inline PacketParseResult deserialize_packet(const std::vector<uint8_t> &data) {
-    return deserialize_packet(data.data(), data.size());
+inline PacketParseResult DeserializePacket(const std::vector<uint8_t> &data) {
+    return DeserializePacket(data.data(), data.size());
 }
 
 /**
@@ -146,7 +145,7 @@ inline PacketParseResult deserialize_packet(const std::vector<uint8_t> &data) {
  *
  * Note: TCP packets ignore tick_id, packet_index, packet_count parameters
  */
-inline PacketBuffer serialize_packet(const PacketVariant &packet,
+inline PacketBuffer SerializePacket(const PacketVariant &packet,
     uint32_t tick_id = 0, uint8_t packet_index = 0, uint8_t packet_count = 1) {
     PacketBuffer buffer;
 
@@ -172,11 +171,11 @@ inline PacketBuffer serialize_packet(const PacketVariant &packet,
                 std::is_same_v<T, WorldSnapshotPacket>;
 
             if constexpr (is_tcp_packet) {
-                p.serialize(buffer);
+                p.Serialize(buffer);
             } else if constexpr (is_player_input_packet) {
-                p.serialize(buffer, tick_id);
+                p.Serialize(buffer, tick_id);
             } else if constexpr (is_world_snapshot_packet) {
-                p.serialize(buffer, tick_id, packet_index, packet_count);
+                p.Serialize(buffer, tick_id, packet_index, packet_count);
             }
         },
         packet);

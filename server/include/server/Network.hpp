@@ -25,9 +25,9 @@ class Network {
         uint8_t inputState;
     };
 
-    std::optional<PlayerInput> queuePop() {
+    std::optional<PlayerInput> QueuePop() {
         PlayerInput input;
-        if (_udp.queue.pop(input)) {
+        if (udp_.queue.pop(input)) {
             return input;
         }
         return std::nullopt;
@@ -37,10 +37,10 @@ class Network {
     class UDP {
      public:
         explicit UDP(Config &config, boost::asio::io_context &io);
-        void send(const std::array<uint8_t, MAX_UDP_PACKET_SIZE> &data,
+        void Send(const std::array<uint8_t, MAX_UDP_PACKET_SIZE> &data,
             std::size_t size, const boost::asio::ip::udp::endpoint &endpoint);
-        void receive();
-        boost::asio::ip::port_type port() const;
+        void Receive();
+        boost::asio::ip::port_type Port() const;
 
         boost::lockfree::spsc_queue<PlayerInput,
             boost::lockfree::capacity<QUEUE_SIZE>>
@@ -58,8 +58,8 @@ class Network {
             std::function<void(boost::asio::ip::tcp::socket)>;
 
         explicit TCP(Config &config, boost::asio::io_context &io);
-        void accept();
-        boost::asio::ip::port_type port() const;
+        void Accept();
+        boost::asio::ip::port_type Port() const;
 
         /**
          * @brief Set callback for new TCP connections
@@ -69,18 +69,18 @@ class Network {
          *
          * @param callback Function to invoke with new socket
          */
-        void setAcceptCallback(AcceptCallback callback) {
+        void SetAcceptCallback(AcceptCallback callback) {
             on_accept_ = std::move(callback);
         }
 
-        boost::asio::ip::tcp::acceptor acceptor;
+        boost::asio::ip::tcp::acceptor acceptor_;
 
      private:
         AcceptCallback on_accept_;
     };
 
-    UDP _udp;
-    TCP _tcp;
+    UDP udp_;
+    TCP tcp_;
 
  public:
     /**
@@ -88,8 +88,8 @@ class Network {
      *
      * @return TCP& Reference to internal TCP handler
      */
-    TCP &getTcp() {
-        return _tcp;
+    TCP &GetTcp() {
+        return tcp_;
     }
 };
 }  // namespace server
