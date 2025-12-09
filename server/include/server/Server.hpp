@@ -24,12 +24,12 @@ namespace server {
  * identification, and connection metadata.
  */
 struct ClientConnection {
-    uint8_t player_id;
-    boost::asio::ip::tcp::socket tcp_socket;
-    boost::asio::ip::udp::endpoint udp_endpoint;
-    std::chrono::steady_clock::time_point last_activity;
-    std::string username;
-    bool ready;  // For future lobby system
+    uint8_t player_id_;
+    boost::asio::ip::tcp::socket tcp_socket_;
+    boost::asio::ip::udp::endpoint udp_endpoint_;
+    std::chrono::steady_clock::time_point last_activity_;
+    std::string username_;
+    bool ready_;  // For future lobby system
 
     /**
      * @brief Construct a ClientConnection with moved socket
@@ -38,12 +38,12 @@ struct ClientConnection {
      * @param socket TCP socket (ownership transferred)
      */
     ClientConnection(uint8_t id, boost::asio::ip::tcp::socket socket)
-        : player_id(id),
-          tcp_socket(std::move(socket)),
-          udp_endpoint(boost::asio::ip::udp::endpoint()),
-          last_activity(std::chrono::steady_clock::now()),
-          ready(false) {
-        username.reserve(32);  // Match CONNECT_REQ username size
+        : player_id_(id),
+          tcp_socket_(std::move(socket)),
+          udp_endpoint_(boost::asio::ip::udp::endpoint()),
+          last_activity_(std::chrono::steady_clock::now()),
+          ready_(false) {
+        username_.reserve(32);  // Match CONNECT_REQ username size
     }
 
     // Disable copy (socket is not copyable)
