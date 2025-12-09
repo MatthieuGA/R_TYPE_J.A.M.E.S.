@@ -140,6 +140,7 @@ struct AnimatedSprite {
 
     std::map<std::string, Animation> animations;
     std::string currentAnimation;
+    std::vector<std::pair<std::string, int>> animationQueue;
 
     bool animated = true;
     float elapsedTime = 0.0f;
@@ -191,13 +192,25 @@ struct AnimatedSprite {
      * @param name The name of the animation to play
      * @param reset If true, reset the animation to frame 0 and elapsed time to
      * 0
+     * @param push_to_queue If true, store the currently playing animation to
+     * resume later when interrupted
      * @return true if the animation exists and was changed, false otherwise
      */
-    bool SetCurrentAnimation(const std::string &name, bool reset = true) {
+    bool SetCurrentAnimation(const std::string &name, bool reset = true,
+        bool push_to_queue = true) {
         auto it = animations.find(name);
         if (it == animations.end())
             return false;
 
+        const bool should_queue =
+            push_to_queue && currentAnimation != "Default" &&
+            name != "Default" && name != currentAnimation && name != "Death";
+        if (should_queue) {
+            animationQueue.push_back(
+                {currentAnimation, animations[currentAnimation].currentFrame});
+        }
+        if (name == "Death")
+            animationQueue.clear();
         currentAnimation = name;
         if (reset) {
             it->second.currentFrame = 0;

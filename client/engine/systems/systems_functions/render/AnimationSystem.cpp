@@ -130,7 +130,19 @@ void AnimationSystem(Eng::registry &reg, const float dt,
                 if (!animation->loop &&
                     animation->currentFrame == animation->totalFrames - 1) {
                     // Animation finished, switch back to default
-                    anim_sprite.SetCurrentAnimation("Default", true);
+                    if (anim_sprite.animationQueue.empty()) {
+                        anim_sprite.SetCurrentAnimation("Default", true);
+                    } else {
+                        auto [nextAnim, frame] =
+                            anim_sprite.animationQueue.back();
+                        anim_sprite.animationQueue.erase(
+                            anim_sprite.animationQueue.end() - 1);
+                        anim_sprite.SetCurrentAnimation(
+                            nextAnim, false, false);
+                        auto *newAnim = anim_sprite.GetCurrentAnimation();
+                        if (newAnim != nullptr)
+                            newAnim->currentFrame = frame;
+                    }
                     // Re-apply the default animation texture
                     auto *defaultAnim = anim_sprite.GetCurrentAnimation();
                     if (defaultAnim != nullptr) {

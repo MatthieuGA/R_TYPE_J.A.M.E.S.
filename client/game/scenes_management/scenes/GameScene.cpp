@@ -91,7 +91,7 @@ void GameScene::InitScene(Engine::registry &reg, GameWorld &gameWorld) {
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> dis_y(50, 600);
     std::uniform_int_distribution<> dis_x(0, 199);
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 1; i++) {
         const float randY = static_cast<float>(dis_y(gen));
         const float randX = 800 + (i * 300) + static_cast<float>(dis_x(gen));
         AddEnemyLevel(reg, sf::Vector2f(randX, randY));
