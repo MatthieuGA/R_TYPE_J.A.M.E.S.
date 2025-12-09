@@ -13,7 +13,7 @@
 // Helper function to create a config for testing
 server::Config &getTestConfig() {
     static const char *argv[] = {"test_server"};
-    return server::Config::fromCommandLine(1, const_cast<char **>(argv));
+    return server::Config::FromCommandLine(1, const_cast<char **>(argv));
 }
 
 // ============================================================================
@@ -32,7 +32,7 @@ TEST(ServerTest, ServerInitialize) {
     server::Config &config = getTestConfig();
     server::Server server(config, io);
 
-    EXPECT_NO_THROW(server.initialize());
+    EXPECT_NO_THROW(server.Initialize());
 }
 
 TEST(ServerTest, GetRegistryAfterInit) {
@@ -40,12 +40,12 @@ TEST(ServerTest, GetRegistryAfterInit) {
     server::Config &config = getTestConfig();
     server::Server server(config, io);
 
-    server.initialize();
-    Engine::registry &reg = server.getRegistry();
+    server.Initialize();
+    Engine::registry &reg = server.GetRegistry();
 
     // Registry should be accessible
     EXPECT_NO_THROW({
-        auto entity = reg.spawn_entity();
+        auto entity = reg.SpawnEntity();
         EXPECT_EQ(entity.getId(), 0);
     });
 }
@@ -59,8 +59,8 @@ TEST(ServerTest, ComponentsRegisteredAfterInit) {
     server::Config &config = getTestConfig();
     server::Server server(config, io);
 
-    server.initialize();
-    Engine::registry &reg = server.getRegistry();
+    server.Initialize();
+    Engine::registry &reg = server.GetRegistry();
 
     // All components should be registered and accessible
     EXPECT_NO_THROW({
@@ -81,13 +81,13 @@ TEST(ServerTest, SpawnEntityWithPosition) {
     boost::asio::io_context io;
     server::Config &config = getTestConfig();
     server::Server server(config, io);
-    server.initialize();
+    server.Initialize();
 
-    Engine::registry &reg = server.getRegistry();
-    auto entity = reg.spawn_entity();
+    Engine::registry &reg = server.GetRegistry();
+    auto entity = reg.SpawnEntity();
 
     auto &pos =
-        reg.add_component(entity, server::Component::Position{100.0f, 200.0f});
+        reg.AddComponent(entity, server::Component::Position{100.0f, 200.0f});
 
     EXPECT_TRUE(pos.has_value());
     EXPECT_EQ(pos->x, 100.0f);
@@ -98,16 +98,16 @@ TEST(ServerTest, SpawnPlayerEntity) {
     boost::asio::io_context io;
     server::Config &config = getTestConfig();
     server::Server server(config, io);
-    server.initialize();
+    server.Initialize();
 
-    Engine::registry &reg = server.getRegistry();
-    auto player = reg.spawn_entity();
+    Engine::registry &reg = server.GetRegistry();
+    auto player = reg.SpawnEntity();
 
-    reg.add_component(player, server::Component::Position{0.0f, 0.0f});
-    reg.add_component(player, server::Component::Velocity{0.0f, 0.0f});
-    reg.add_component(player, server::Component::Health{100, 100});
-    reg.add_component(player, server::Component::NetworkId{1});
-    reg.add_component(player, server::Component::Player{1, "TestPlayer"});
+    reg.AddComponent(player, server::Component::Position{0.0f, 0.0f});
+    reg.AddComponent(player, server::Component::Velocity{0.0f, 0.0f});
+    reg.AddComponent(player, server::Component::Health{100, 100});
+    reg.AddComponent(player, server::Component::NetworkId{1});
+    reg.AddComponent(player, server::Component::Player{1, "TestPlayer"});
 
     auto &positions = reg.GetComponents<server::Component::Position>();
     auto &players = reg.GetComponents<server::Component::Player>();
@@ -122,15 +122,15 @@ TEST(ServerTest, SpawnEnemyEntity) {
     boost::asio::io_context io;
     server::Config &config = getTestConfig();
     server::Server server(config, io);
-    server.initialize();
+    server.Initialize();
 
-    Engine::registry &reg = server.getRegistry();
-    auto enemy = reg.spawn_entity();
+    Engine::registry &reg = server.GetRegistry();
+    auto enemy = reg.SpawnEntity();
 
-    reg.add_component(enemy, server::Component::Position{500.0f, 300.0f});
-    reg.add_component(enemy, server::Component::Velocity{-2.0f, 0.0f});
-    reg.add_component(enemy, server::Component::Health{50, 50});
-    reg.add_component(enemy, server::Component::Enemy{10, 100});
+    reg.AddComponent(enemy, server::Component::Position{500.0f, 300.0f});
+    reg.AddComponent(enemy, server::Component::Velocity{-2.0f, 0.0f});
+    reg.AddComponent(enemy, server::Component::Health{50, 50});
+    reg.AddComponent(enemy, server::Component::Enemy{10, 100});
 
     auto &positions = reg.GetComponents<server::Component::Position>();
     auto &enemies = reg.GetComponents<server::Component::Enemy>();
@@ -145,26 +145,26 @@ TEST(ServerTest, MultipleEntitiesWithDifferentComponents) {
     boost::asio::io_context io;
     server::Config &config = getTestConfig();
     server::Server server(config, io);
-    server.initialize();
+    server.Initialize();
 
-    Engine::registry &reg = server.getRegistry();
+    Engine::registry &reg = server.GetRegistry();
 
     // Create player
-    auto player = reg.spawn_entity();
-    reg.add_component(player, server::Component::Position{0.0f, 0.0f});
-    reg.add_component(player, server::Component::Player{1, "Player1"});
-    reg.add_component(player, server::Component::Health{100, 100});
+    auto player = reg.SpawnEntity();
+    reg.AddComponent(player, server::Component::Position{0.0f, 0.0f});
+    reg.AddComponent(player, server::Component::Player{1, "Player1"});
+    reg.AddComponent(player, server::Component::Health{100, 100});
 
     // Create enemy
-    auto enemy = reg.spawn_entity();
-    reg.add_component(enemy, server::Component::Position{100.0f, 100.0f});
-    reg.add_component(enemy, server::Component::Enemy{15, 50});
-    reg.add_component(enemy, server::Component::Velocity{-1.0f, 0.0f});
+    auto enemy = reg.SpawnEntity();
+    reg.AddComponent(enemy, server::Component::Position{100.0f, 100.0f});
+    reg.AddComponent(enemy, server::Component::Enemy{15, 50});
+    reg.AddComponent(enemy, server::Component::Velocity{-1.0f, 0.0f});
 
     // Create projectile
-    auto projectile = reg.spawn_entity();
-    reg.add_component(projectile, server::Component::Position{50.0f, 50.0f});
-    reg.add_component(projectile, server::Component::Velocity{5.0f, 0.0f});
+    auto projectile = reg.SpawnEntity();
+    reg.AddComponent(projectile, server::Component::Position{50.0f, 50.0f});
+    reg.AddComponent(projectile, server::Component::Velocity{5.0f, 0.0f});
 
     auto &positions = reg.GetComponents<server::Component::Position>();
     auto &players = reg.GetComponents<server::Component::Player>();
@@ -189,13 +189,13 @@ TEST(ServerTest, MovementSystemUpdatesPosition) {
     boost::asio::io_context io;
     server::Config &config = getTestConfig();
     server::Server server(config, io);
-    server.initialize();
+    server.Initialize();
 
-    Engine::registry &reg = server.getRegistry();
-    auto entity = reg.spawn_entity();
+    Engine::registry &reg = server.GetRegistry();
+    auto entity = reg.SpawnEntity();
 
-    reg.add_component(entity, server::Component::Position{0.0f, 0.0f});
-    reg.add_component(entity, server::Component::Velocity{1.0f, 2.0f});
+    reg.AddComponent(entity, server::Component::Position{0.0f, 0.0f});
+    reg.AddComponent(entity, server::Component::Velocity{1.0f, 2.0f});
 
     auto &positions = reg.GetComponents<server::Component::Position>();
 
@@ -203,13 +203,13 @@ TEST(ServerTest, MovementSystemUpdatesPosition) {
     EXPECT_EQ(positions[entity.getId()]->y, 0.0f);
 
     // Run one update cycle
-    server.update();
+    server.Update();
 
     EXPECT_EQ(positions[entity.getId()]->x, 1.0f);
     EXPECT_EQ(positions[entity.getId()]->y, 2.0f);
 
     // Run another update cycle
-    server.update();
+    server.Update();
 
     EXPECT_EQ(positions[entity.getId()]->x, 2.0f);
     EXPECT_EQ(positions[entity.getId()]->y, 4.0f);
@@ -219,25 +219,25 @@ TEST(ServerTest, MovementSystemMultipleEntities) {
     boost::asio::io_context io;
     server::Config &config = getTestConfig();
     server::Server server(config, io);
-    server.initialize();
+    server.Initialize();
 
-    Engine::registry &reg = server.getRegistry();
+    Engine::registry &reg = server.GetRegistry();
 
-    auto e1 = reg.spawn_entity();
-    reg.add_component(e1, server::Component::Position{0.0f, 0.0f});
-    reg.add_component(e1, server::Component::Velocity{1.0f, 0.0f});
+    auto e1 = reg.SpawnEntity();
+    reg.AddComponent(e1, server::Component::Position{0.0f, 0.0f});
+    reg.AddComponent(e1, server::Component::Velocity{1.0f, 0.0f});
 
-    auto e2 = reg.spawn_entity();
-    reg.add_component(e2, server::Component::Position{10.0f, 10.0f});
-    reg.add_component(e2, server::Component::Velocity{-2.0f, 3.0f});
+    auto e2 = reg.SpawnEntity();
+    reg.AddComponent(e2, server::Component::Position{10.0f, 10.0f});
+    reg.AddComponent(e2, server::Component::Velocity{-2.0f, 3.0f});
 
-    auto e3 = reg.spawn_entity();
-    reg.add_component(e3, server::Component::Position{50.0f, 50.0f});
-    reg.add_component(e3, server::Component::Velocity{0.5f, -1.0f});
+    auto e3 = reg.SpawnEntity();
+    reg.AddComponent(e3, server::Component::Position{50.0f, 50.0f});
+    reg.AddComponent(e3, server::Component::Velocity{0.5f, -1.0f});
 
     auto &positions = reg.GetComponents<server::Component::Position>();
 
-    server.update();
+    server.Update();
 
     EXPECT_EQ(positions[e1.getId()]->x, 1.0f);
     EXPECT_EQ(positions[e1.getId()]->y, 0.0f);
@@ -253,22 +253,22 @@ TEST(ServerTest, MovementSystemIgnoresEntitiesWithoutVelocity) {
     boost::asio::io_context io;
     server::Config &config = getTestConfig();
     server::Server server(config, io);
-    server.initialize();
+    server.Initialize();
 
-    Engine::registry &reg = server.getRegistry();
+    Engine::registry &reg = server.GetRegistry();
 
     // Entity with position and velocity
-    auto moving = reg.spawn_entity();
-    reg.add_component(moving, server::Component::Position{0.0f, 0.0f});
-    reg.add_component(moving, server::Component::Velocity{1.0f, 1.0f});
+    auto moving = reg.SpawnEntity();
+    reg.AddComponent(moving, server::Component::Position{0.0f, 0.0f});
+    reg.AddComponent(moving, server::Component::Velocity{1.0f, 1.0f});
 
     // Entity with only position (no velocity)
-    auto stationary = reg.spawn_entity();
-    reg.add_component(stationary, server::Component::Position{10.0f, 10.0f});
+    auto stationary = reg.SpawnEntity();
+    reg.AddComponent(stationary, server::Component::Position{10.0f, 10.0f});
 
     auto &positions = reg.GetComponents<server::Component::Position>();
 
-    server.update();
+    server.Update();
 
     // Moving entity should have moved
     EXPECT_EQ(positions[moving.getId()]->x, 1.0f);
@@ -287,12 +287,12 @@ TEST(ServerTest, HealthComponentInitialization) {
     boost::asio::io_context io;
     server::Config &config = getTestConfig();
     server::Server server(config, io);
-    server.initialize();
+    server.Initialize();
 
-    Engine::registry &reg = server.getRegistry();
-    auto entity = reg.spawn_entity();
+    Engine::registry &reg = server.GetRegistry();
+    auto entity = reg.SpawnEntity();
 
-    reg.add_component(entity, server::Component::Health{75, 100});
+    reg.AddComponent(entity, server::Component::Health{75, 100});
 
     auto &healths = reg.GetComponents<server::Component::Health>();
 
@@ -304,12 +304,12 @@ TEST(ServerTest, HealthComponentModification) {
     boost::asio::io_context io;
     server::Config &config = getTestConfig();
     server::Server server(config, io);
-    server.initialize();
+    server.Initialize();
 
-    Engine::registry &reg = server.getRegistry();
-    auto entity = reg.spawn_entity();
+    Engine::registry &reg = server.GetRegistry();
+    auto entity = reg.SpawnEntity();
 
-    reg.add_component(entity, server::Component::Health{100, 100});
+    reg.AddComponent(entity, server::Component::Health{100, 100});
 
     auto &healths = reg.GetComponents<server::Component::Health>();
 
@@ -334,17 +334,17 @@ TEST(ServerTest, NetworkIdComponent) {
     boost::asio::io_context io;
     server::Config &config = getTestConfig();
     server::Server server(config, io);
-    server.initialize();
+    server.Initialize();
 
-    Engine::registry &reg = server.getRegistry();
+    Engine::registry &reg = server.GetRegistry();
 
-    auto e1 = reg.spawn_entity();
-    auto e2 = reg.spawn_entity();
-    auto e3 = reg.spawn_entity();
+    auto e1 = reg.SpawnEntity();
+    auto e2 = reg.SpawnEntity();
+    auto e3 = reg.SpawnEntity();
 
-    reg.add_component(e1, server::Component::NetworkId{1001});
-    reg.add_component(e2, server::Component::NetworkId{1002});
-    reg.add_component(e3, server::Component::NetworkId{1003});
+    reg.AddComponent(e1, server::Component::NetworkId{1001});
+    reg.AddComponent(e2, server::Component::NetworkId{1002});
+    reg.AddComponent(e3, server::Component::NetworkId{1003});
 
     auto &network_ids = reg.GetComponents<server::Component::NetworkId>();
 
@@ -361,29 +361,29 @@ TEST(ServerTest, SimpleGameScenario) {
     boost::asio::io_context io;
     server::Config &config = getTestConfig();
     server::Server server(config, io);
-    server.initialize();
+    server.Initialize();
 
-    Engine::registry &reg = server.getRegistry();
+    Engine::registry &reg = server.GetRegistry();
 
     // Spawn player at spawn point
-    auto player = reg.spawn_entity();
-    reg.add_component(player, server::Component::Position{50.0f, 400.0f});
-    reg.add_component(player, server::Component::Velocity{0.0f, 0.0f});
-    reg.add_component(player, server::Component::Health{100, 100});
-    reg.add_component(player, server::Component::Player{1, "TestPlayer"});
+    auto player = reg.SpawnEntity();
+    reg.AddComponent(player, server::Component::Position{50.0f, 400.0f});
+    reg.AddComponent(player, server::Component::Velocity{0.0f, 0.0f});
+    reg.AddComponent(player, server::Component::Health{100, 100});
+    reg.AddComponent(player, server::Component::Player{1, "TestPlayer"});
 
     // Spawn enemy moving towards player
-    auto enemy = reg.spawn_entity();
-    reg.add_component(enemy, server::Component::Position{800.0f, 400.0f});
-    reg.add_component(enemy, server::Component::Velocity{-3.0f, 0.0f});
-    reg.add_component(enemy, server::Component::Health{30, 30});
-    reg.add_component(enemy, server::Component::Enemy{20, 50});
+    auto enemy = reg.SpawnEntity();
+    reg.AddComponent(enemy, server::Component::Position{800.0f, 400.0f});
+    reg.AddComponent(enemy, server::Component::Velocity{-3.0f, 0.0f});
+    reg.AddComponent(enemy, server::Component::Health{30, 30});
+    reg.AddComponent(enemy, server::Component::Enemy{20, 50});
 
     auto &positions = reg.GetComponents<server::Component::Position>();
 
     // Run 10 game ticks
     for (int i = 0; i < 10; i++) {
-        server.update();
+        server.Update();
     }
 
     // Enemy should have moved 30 pixels left
@@ -399,15 +399,15 @@ TEST(ServerTest, EntityCleanup) {
     boost::asio::io_context io;
     server::Config &config = getTestConfig();
     server::Server server(config, io);
-    server.initialize();
+    server.Initialize();
 
-    Engine::registry &reg = server.getRegistry();
+    Engine::registry &reg = server.GetRegistry();
 
     // Spawn multiple entities
     std::vector<Engine::entity> entities;
     for (int i = 0; i < 5; i++) {
-        auto e = reg.spawn_entity();
-        reg.add_component(e,
+        auto e = reg.SpawnEntity();
+        reg.AddComponent(e,
             server::Component::Position{static_cast<float>(i * 10.0f), 0.0f});
         entities.push_back(e);
     }
@@ -420,8 +420,8 @@ TEST(ServerTest, EntityCleanup) {
     }
 
     // Kill some entities
-    reg.kill_entity(entities[1]);
-    reg.kill_entity(entities[3]);
+    reg.KillEntity(entities[1]);
+    reg.KillEntity(entities[3]);
 
     // Verify correct ones are gone
     EXPECT_TRUE(positions.has(entities[0].getId()));
@@ -439,23 +439,23 @@ TEST(ServerTest, StressManyEntities) {
     boost::asio::io_context io;
     server::Config &config = getTestConfig();
     server::Server server(config, io);
-    server.initialize();
+    server.Initialize();
 
-    Engine::registry &reg = server.getRegistry();
+    Engine::registry &reg = server.GetRegistry();
 
     std::vector<Engine::entity> entities;
 
     for (int i = 0; i < 100; i++) {
-        auto e = reg.spawn_entity();
-        reg.add_component(e, server::Component::Position{static_cast<float>(i),
+        auto e = reg.SpawnEntity();
+        reg.AddComponent(e, server::Component::Position{static_cast<float>(i),
                                  static_cast<float>(i)});
-        reg.add_component(e, server::Component::Velocity{1.0f, 1.0f});
+        reg.AddComponent(e, server::Component::Velocity{1.0f, 1.0f});
         entities.push_back(e);
     }
 
     auto &positions = reg.GetComponents<server::Component::Position>();
 
-    server.update();
+    server.Update();
 
     for (int i = 0; i < 100; i++) {
         EXPECT_EQ(
@@ -469,20 +469,20 @@ TEST(ServerTest, StressMultipleUpdates) {
     boost::asio::io_context io;
     server::Config &config = getTestConfig();
     server::Server server(config, io);
-    server.initialize();
+    server.Initialize();
 
-    Engine::registry &reg = server.getRegistry();
+    Engine::registry &reg = server.GetRegistry();
 
-    auto entity = reg.spawn_entity();
-    reg.add_component(entity, server::Component::Position{0.0f, 0.0f});
-    reg.add_component(entity, server::Component::Velocity{0.1f, 0.1f});
+    auto entity = reg.SpawnEntity();
+    reg.AddComponent(entity, server::Component::Position{0.0f, 0.0f});
+    reg.AddComponent(entity, server::Component::Velocity{0.1f, 0.1f});
 
     auto &positions = reg.GetComponents<server::Component::Position>();
 
     // Run many updates
     const int NUM_UPDATES = 1000;
     for (int i = 0; i < NUM_UPDATES; i++) {
-        server.update();
+        server.Update();
     }
 
     // Position should be NUM_UPDATES * velocity (with tolerance for FP errors)
