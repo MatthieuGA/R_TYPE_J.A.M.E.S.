@@ -142,7 +142,9 @@ void Network::AsyncReceiveTCP() {
             uint16_t payload_size = ReadLe16(tcp_buffer_.data() + 1);
             if (payload_size > tcp_buffer_.size() - kHeaderSize) {
                 std::cerr << "[Network] TCP payload too large: "
-                          << payload_size << std::endl;
+                          << payload_size << " bytes (max: "
+                          << (tcp_buffer_.size() - kHeaderSize) << ")"
+                          << std::endl;
                 return;
             }
             // Read payload
@@ -179,10 +181,10 @@ void Network::HandleConnectAck(const std::vector<uint8_t> &data) {
     uint8_t pid = data[0];     // PlayerId is first
     uint8_t status = data[1];  // Status is second
     if (status == 0x00) {
-        connected_ = true;
-        player_id_ = pid;
-        std::cout << "[Network] Connected. PlayerId="
-                  << static_cast<int>(player_id_) << std::endl;
+        player_id_.store(pid);
+        connected_.store(true);
+        std::cout << "[Network] Connected. PlayerId=" << static_cast<int>(pid)
+                  << std::endl;
     } else {
         std::cerr << "[Network] CONNECT_ACK failed. Status="
                   << static_cast<int>(status) << std::endl;
@@ -191,7 +193,7 @@ void Network::HandleConnectAck(const std::vector<uint8_t> &data) {
 }
 
 void Network::SendInput(uint8_t input_flags) {
-    if (!connected_)
+    if (!connected_.load())
         return;
     // PLAYER_INPUT payload: 4 bytes (input_flags + 3 reserved bytes)
     std::array<uint8_t, kHeaderSize + 4> pkt{};
@@ -282,7 +284,7 @@ void Network::Disconnect() {
     if (tcp_socket_.is_open()) {
         tcp_socket_.close(ec);
     }
-    connected_ = false;
+    connected_.store(false);
 }
 
 }  // namespace client

@@ -5,6 +5,7 @@
  * Provides connection management, input sending, and snapshot reception.
  */
 #include <array>
+#include <atomic>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -55,17 +56,19 @@ class Network {
     void Disconnect();
 
     /**
-     * @brief Connection state.
+     * @brief Connection state accessor.
+     * @return true if connected to server, false otherwise.
      */
-    bool IsConnected() const {
-        return connected_;
+    bool is_connected() const {
+        return connected_.load();
     }
 
     /**
-     * @brief Player identifier assigned by server.
+     * @brief Player identifier accessor.
+     * @return Player ID assigned by server, or 0 if not connected.
      */
-    uint8_t GetPlayerId() const {
-        return player_id_;
+    uint8_t player_id() const {
+        return player_id_.load();
     }
 
     /**
@@ -91,9 +94,9 @@ class Network {
     boost::asio::ip::tcp::socket tcp_socket_;
     boost::asio::ip::udp::endpoint server_udp_endpoint_;
 
-    // State
-    bool connected_;
-    uint8_t player_id_;
+    // State (atomic for thread-safe access from async handlers)
+    std::atomic<bool> connected_;
+    std::atomic<uint8_t> player_id_;
     uint32_t current_tick_;
 
     // Buffers

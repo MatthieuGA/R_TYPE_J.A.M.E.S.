@@ -37,6 +37,10 @@ file(GLOB_RECURSE CLIENT_ENGINE_SOURCES CONFIGURE_DEPENDS
     "${CMAKE_SOURCE_DIR}/client/Game/*.cpp"
 )
 ## Exclude duplicate top-level system sources when Render/ implementations exist
+# Exclude specific system sources to prevent multiple definition linker errors.
+# These systems were refactored into client/Engine/Render/ subfolder but the
+# old top-level sources in SytemsFunctions/ remain. When both are present,
+# we must exclude the duplicates to avoid redefinition conflicts.
 list(REMOVE_ITEM CLIENT_ENGINE_SOURCES
     "${CMAKE_SOURCE_DIR}/client/Engine/Systems/SytemsFunctions/animationSystem.cpp"
     "${CMAKE_SOURCE_DIR}/client/Engine/Systems/SytemsFunctions/drawableSystem.cpp"

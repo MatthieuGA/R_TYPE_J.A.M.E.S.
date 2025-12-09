@@ -157,8 +157,8 @@ TEST(NetworkTest, ConstructorInitializesCorrectly) {
     boost::asio::io_context io;
     EXPECT_NO_THROW({
         client::Network net(io, "127.0.0.1", 4242, 4243);
-        EXPECT_FALSE(net.IsConnected());
-        EXPECT_EQ(net.GetPlayerId(), 0);
+        EXPECT_FALSE(net.is_connected());
+        EXPECT_EQ(net.player_id(), 0);
     });
 }
 
@@ -178,7 +178,7 @@ TEST(NetworkTest, DestructorClosesSocketsSafely) {
 TEST(NetworkTest, InitialConnectionStateIsFalse) {
     boost::asio::io_context io;
     client::Network net(io, "127.0.0.1", 4242, 4243);
-    EXPECT_FALSE(net.IsConnected());
+    EXPECT_FALSE(net.is_connected());
 }
 
 TEST(NetworkTest, DisconnectBeforeConnectDoesNotThrow) {
@@ -251,8 +251,8 @@ TEST(NetworkTest, ConnectAckWithStatusOkSetsConnected) {
     io.run_for(200ms);
 
     EXPECT_TRUE(connection_complete);
-    EXPECT_TRUE(net.IsConnected());
-    EXPECT_EQ(net.GetPlayerId(), 5);
+    EXPECT_TRUE(net.is_connected());
+    EXPECT_EQ(net.player_id(), 5);
 }
 
 TEST(NetworkTest, ConnectAckWithStatusFailureDisconnects) {
@@ -273,7 +273,7 @@ TEST(NetworkTest, ConnectAckWithStatusFailureDisconnects) {
 
     io.run_for(200ms);
 
-    EXPECT_FALSE(net.IsConnected());
+    EXPECT_FALSE(net.is_connected());
 }
 
 // ============================================================================
@@ -426,7 +426,7 @@ TEST(NetworkTest, DISABLED_DisconnectSendsDisconnectReqPacket) {
     net.Disconnect();
     io.run_for(100ms);
 
-    EXPECT_FALSE(net.IsConnected());
+    EXPECT_FALSE(net.is_connected());
     // Note: disconnect_received may be false if socket closes before read
     // completes
 }
@@ -448,13 +448,13 @@ TEST(NetworkTest, DisconnectClearsConnectionState) {
 
     io.run_for(100ms);
 
-    EXPECT_TRUE(net.IsConnected());
-    EXPECT_EQ(net.GetPlayerId(), 10);
+    EXPECT_TRUE(net.is_connected());
+    EXPECT_EQ(net.player_id(), 10);
 
     net.Disconnect();
     io.run_for(50ms);
 
-    EXPECT_FALSE(net.IsConnected());
+    EXPECT_FALSE(net.is_connected());
 }
 
 // ============================================================================
@@ -468,7 +468,7 @@ TEST(NetworkTest, ConnectionToInvalidHostDoesNotCrash) {
     EXPECT_NO_THROW(net.ConnectToServer("User"));
     io.run_for(100ms);
 
-    EXPECT_FALSE(net.IsConnected());
+    EXPECT_FALSE(net.is_connected());
 }
 
 TEST(NetworkTest, MalformedConnectAckIsHandledGracefully) {
@@ -489,7 +489,7 @@ TEST(NetworkTest, MalformedConnectAckIsHandledGracefully) {
 
     io.run_for(200ms);
 
-    EXPECT_FALSE(net.IsConnected());
+    EXPECT_FALSE(net.is_connected());
 }
 
 // ============================================================================
