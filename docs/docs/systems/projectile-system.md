@@ -1,6 +1,6 @@
 # Projectile System
 
-**Fichier source:** `client/engine/systems/SystemsFunctions/projectileSystem.cpp`
+**Fichier source:** `client/engine/systems/SystemsFunctions/ProjectileSystem.cpp`
 
 **But:** Mettre à jour la position des projectiles et supprimer ceux qui sortent de la zone de jeu.
 

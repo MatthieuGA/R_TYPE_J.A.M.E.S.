@@ -1,8 +1,8 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 
-#include "engine/gameWorld.hpp"
-#include "engine/initRegistryComponent.hpp"
+#include "engine/GameWorld.hpp"
+#include "engine/InitRegistryComponent.hpp"
 #include "include/indexed_zipper.hpp"
 #include "include/registry.hpp"
 

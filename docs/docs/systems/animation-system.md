@@ -1,6 +1,6 @@
 # Animation System
 
-**Fichier source:** `client/engine/systems/SystemsFunctions/animationSystem.cpp`
+**Fichier source:** `client/engine/systems/SystemsFunctions/AnimationSystem.cpp`
 
 **But:** Mettre à jour les sprites animés en fonction du temps et faire avancer les frames.
 

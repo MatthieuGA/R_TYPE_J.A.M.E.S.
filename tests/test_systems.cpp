@@ -2,9 +2,9 @@
 
 #include <utility>
 
+#include "engine/GameWorld.hpp"
 #include "engine/events/EngineEvent.hpp"
-#include "engine/gameWorld.hpp"
-#include "engine/systems/initRegistrySystems.hpp"
+#include "engine/systems/InitRegistrySystems.hpp"
 #include "include/components/CoreComponents.hpp"
 #include "include/components/GameplayComponents.hpp"
 #include "include/components/RenderComponent.hpp"

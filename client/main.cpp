@@ -2,9 +2,9 @@
 
 #include <SFML/Graphics.hpp>
 
-#include "engine/gameWorld.hpp"
-#include "game/initRegistry.hpp"
-#include "game/scenes_management/initScenes.hpp"
+#include "engine/GameWorld.hpp"
+#include "game/InitRegistry.hpp"
+#include "game/scenes_management/InitScenes.hpp"
 
 namespace RC = Rtype::Client;
 

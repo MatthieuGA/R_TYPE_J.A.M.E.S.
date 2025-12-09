@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 
-#include "engine/gameWorld.hpp"
+#include "engine/GameWorld.hpp"
 #include "include/registry.hpp"
 
 namespace Rtype::Client {

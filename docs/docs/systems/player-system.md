@@ -1,6 +1,6 @@
 # Player System
 
-**Fichier source:** `client/engine/systems/SystemsFunctions/playerSystem.cpp`
+**Fichier source:** `client/engine/systems/SystemsFunctions/PlayerSystem.cpp`
 
 **But:** Mettre à jour l'état d'animation du joueur en fonction de sa vélocité verticale et synchroniser la rotation du joueur et de ses enfants en fonction de la vélocité horizontale.
 

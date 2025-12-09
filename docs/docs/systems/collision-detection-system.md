@@ -1,6 +1,6 @@
 # Collision Detection System
 
-**Fichier source:** `client/engine/systems/SystemsFunctions/collisionDetectionSystem.cpp`
+**Fichier source:** `client/engine/systems/SystemsFunctions/CollisionDetectionSystem.cpp`
 
 **But:** Détecter les collisions entre hitboxes et résoudre les pénétrations (séparation) pour les entités solides.
 

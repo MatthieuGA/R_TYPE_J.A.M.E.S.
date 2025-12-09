@@ -4,7 +4,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "engine/systems/initRegistrySystems.hpp"
+#include "engine/systems/InitRegistrySystems.hpp"
 #include "include/components/ScenesComponents.hpp"
 
 namespace Com = Rtype::Client::Component;

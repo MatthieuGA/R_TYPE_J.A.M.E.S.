@@ -248,44 +248,44 @@ Below is the complete list used by the client.
 
 All systems listed here run every frame and operate on specific component combinations.
 
-### ✔ movementSystem
+### ✔ MovementSystem
 Updates entity positions using `Velocity` and `Transform`.
 
-### ✔ animationSystem
+### ✔ AnimationSystem
 Advances frames for all `AnimatedSprite` components.
 
-### ✔ collisionDetectionSystem
-Detects collisions using AABB checks  
+### ✔ CollisionDetectionSystem
+Detects collisions using AABB checks
 → Sends `CollisionEvent` via EventBus.
 
-### ✔ drawableSystem
+### ✔ DrawableSystem
 Loads textures, updates sprite properties, sorts by z-index, and draws them.
 
-### ✔ playfieldLimitSystem
+### ✔ PlayfieldLimitSystem
 Prevents the player from leaving the visible screen area.
 
-### ✔ deltaTimeSystem
+### ✔ DeltaTimeSystem
 Updates delta time each frame via the `GameWorld` timing utility.
 
-### ✔ audioSystem *(planned)*
+### ✔ AudioSystem *(planned)*
 Plays sounds on events (shooting, impact, explosion).
 
-### ✔ lifetimeSystem *(planned)*
+### ✔ LifetimeSystem *(planned)*
 Destroys entities whose `Lifetime` counters reach zero.
 
-### ✔ despawnOffscreenSystem *(planned)*
+### ✔ DespawnOffscreenSystem *(planned)*
 Removes projectiles and enemies that leave the playfield.
 
-### ✔ stateMachineSystem *(planned)*
+### ✔ StateMachineSystem *(planned)*
 Executes AI logic for enemies and boss patterns.
 
-### ✔ weaponSystem *(planned)*
+### ✔ WeaponSystem *(planned)*
 Handles fire rate, cooldown, and projectile spawning.
 
-### ✔ parallaxSystem *(planned)*
+### ✔ ParallaxSystem *(planned)*
 Scrolls background layers at different speeds for depth effect.
 
-### ✔ healthSystem *(planned)*
+### ✔ HealthSystem *(planned)*
 Applies damage, handles enemy/player death events.
 
 ---

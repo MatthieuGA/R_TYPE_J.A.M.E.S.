@@ -1,4 +1,4 @@
-#include "engine/initRegistryComponent.hpp"
+#include "engine/InitRegistryComponent.hpp"
 
 namespace Rtype::Client {
 void InitRegistryComponents(Engine::registry &reg) {

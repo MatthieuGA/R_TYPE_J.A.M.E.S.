@@ -1,5 +1,5 @@
 #pragma once
-#include "engine/gameWorld.hpp"
+#include "engine/GameWorld.hpp"
 
 #include "engine/events/Event.h"
 

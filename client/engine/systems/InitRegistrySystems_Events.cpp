@@ -1,5 +1,5 @@
 #include "engine/events/EngineEvent.hpp"
-#include "engine/systems/initRegistrySystems.hpp"
+#include "engine/systems/InitRegistrySystems.hpp"
 
 namespace Rtype::Client {
 namespace Com = Component;

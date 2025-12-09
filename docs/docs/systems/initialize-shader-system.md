@@ -1,6 +1,6 @@
 # Initialize Shader System
 
-**Fichier source:** `client/engine/systems/SystemsFunctions/initializeShaderSystem.cpp`
+**Fichier source:** `client/engine/systems/SystemsFunctions/InitializeShaderSystem.cpp`
 
 **But:** Charger et initialiser les shaders (fragment shaders) pour les composants `Shader`.
 

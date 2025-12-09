@@ -2,7 +2,7 @@
 #include <memory>
 #include <vector>
 
-#include "engine/systems/initRegistrySystems.hpp"
+#include "engine/systems/InitRegistrySystems.hpp"
 
 namespace Rtype::Client {
 /**

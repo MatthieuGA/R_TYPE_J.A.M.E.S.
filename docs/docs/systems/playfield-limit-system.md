@@ -1,6 +1,6 @@
 # Playfield Limit System
 
-**Fichier source:** `client/engine/systems/SystemsFunctions/playfieldLimitSystem.cpp`
+**Fichier source:** `client/engine/systems/SystemsFunctions/PlayfieldLimitSystem.cpp`
 
 **But:** Empêcher les entités (typiquement le joueur) de sortir de la fenêtre de jeu.
 

@@ -1,4 +1,4 @@
-#include "engine/systems/initRegistrySystems.hpp"
+#include "engine/systems/InitRegistrySystems.hpp"
 
 #include "include/indexed_zipper.hpp"
 

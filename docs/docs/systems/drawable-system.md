@@ -1,6 +1,6 @@
 # Drawable System
 
-**Fichier source:** `client/engine/systems/SystemsFunctions/drawableSystem.cpp`
+**Fichier source:** `client/engine/systems/SystemsFunctions/DrawableSystem.cpp`
 
 **But:** Gérer le rendu des entités avec un `Drawable` : charger les textures, positionner et dessiner les sprites.
 

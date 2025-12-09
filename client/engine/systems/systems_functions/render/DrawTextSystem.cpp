@@ -3,9 +3,9 @@
 #include <iostream>
 #include <vector>
 
-#include "engine/hierarchyTools.hpp"
-#include "engine/originTool.hpp"
-#include "engine/systems/initRegistrySystems.hpp"
+#include "engine/HierarchyTools.hpp"
+#include "engine/OriginTool.hpp"
+#include "engine/systems/InitRegistrySystems.hpp"
 
 namespace Rtype::Client {
 

@@ -2,8 +2,8 @@
 
 #include <utility>
 
-#include "engine/gameWorld.hpp"
-#include "engine/systems/initRegistrySystems.hpp"
+#include "engine/GameWorld.hpp"
+#include "engine/systems/InitRegistrySystems.hpp"
 #include "include/components/CoreComponents.hpp"
 #include "include/components/RenderComponent.hpp"
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "engine/gameWorld.hpp"
+#include "engine/GameWorld.hpp"
 
 namespace Rtype::Client {
 namespace RC = Rtype::Client;

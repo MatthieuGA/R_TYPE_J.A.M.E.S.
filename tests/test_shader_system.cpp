@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "engine/systems/initRegistrySystems.hpp"
+#include "engine/systems/InitRegistrySystems.hpp"
 #include "include/components/RenderComponent.hpp"
 
 namespace Com = Rtype::Client::Component;
