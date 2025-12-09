@@ -2,12 +2,23 @@
 
 #include <array>
 #include <bit>
-#include <concepts>
 #include <cstdint>
 #include <cstring>
 #include <stdexcept>
 #include <utility>
 #include <vector>
+
+// C++20 alternative for std::byteswap
+template <typename T>
+constexpr T byteswap(T value) {
+    if constexpr (sizeof(T) == 2) {
+        return __builtin_bswap16(value);
+    } else if constexpr (sizeof(T) == 4) {
+        return __builtin_bswap32(value);
+    } else if constexpr (sizeof(T) == 8) {
+        return __builtin_bswap64(value);
+    }
+}
 
 namespace server::network {
 
@@ -17,7 +28,7 @@ inline T to_little_endian(T value) {
     if constexpr (std::endian::native == std::endian::little) {
         return value;
     } else if constexpr (std::endian::native == std::endian::big) {
-        return std::byteswap(value);
+        return byteswap(value);
     } else {
         static_assert(std::endian::native == std::endian::little ||
                           std::endian::native == std::endian::big,
