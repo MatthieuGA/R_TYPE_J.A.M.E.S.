@@ -1,8 +1,11 @@
-#include "Network.hpp"
+#include "include/Network.hpp"
 
+#include <algorithm>
 #include <cstring>
 #include <iomanip>
 #include <iostream>
+#include <string>
+#include <vector>
 
 namespace client {
 

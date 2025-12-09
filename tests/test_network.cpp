@@ -15,14 +15,15 @@
 #include <array>
 #include <chrono>
 #include <cstring>
+#include <string>
 #include <thread>
 #include <vector>
 
 #include <boost/asio.hpp>
 
-#include "Network.hpp"
+#include "include/Network.hpp"
 
-using namespace std::chrono_literals;
+using std::chrono_literals::operator""ms;
 
 namespace {
 
