@@ -21,8 +21,8 @@ Network::UDP::UDP(Config &config, boost::asio::io_context &io)
 
 Network::TCP::TCP(Config &config, boost::asio::io_context &io)
     : acceptor_(io, boost::asio::ip::tcp::endpoint(
-                       boost::asio::ip::make_address(config.GetTcpAddress()),
-                       config.GetTcpPort())) {}
+                        boost::asio::ip::make_address(config.GetTcpAddress()),
+                        config.GetTcpPort())) {}
 
 boost::asio::ip::port_type Network::UDP::Port() const {
     return socket.local_endpoint().port();
@@ -35,7 +35,7 @@ boost::asio::ip::port_type Network::TCP::Port() const {
 void Network::TCP::Accept() {
     try {
         acceptor_.async_accept([this](boost::system::error_code ec,
-                                  boost::asio::ip::tcp::socket socket) {
+                                   boost::asio::ip::tcp::socket socket) {
             if (!ec) {
                 std::cout << "New TCP connection from "
                           << socket.remote_endpoint().address().to_string()

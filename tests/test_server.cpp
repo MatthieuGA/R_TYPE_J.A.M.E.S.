@@ -447,8 +447,8 @@ TEST(ServerTest, StressManyEntities) {
 
     for (int i = 0; i < 100; i++) {
         auto e = reg.SpawnEntity();
-        reg.AddComponent(e, server::Component::Position{static_cast<float>(i),
-                                 static_cast<float>(i)});
+        reg.AddComponent(e, server::Component::Position{
+                                static_cast<float>(i), static_cast<float>(i)});
         reg.AddComponent(e, server::Component::Velocity{1.0f, 1.0f});
         entities.push_back(e);
     }
