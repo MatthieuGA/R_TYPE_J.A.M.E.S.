@@ -20,11 +20,7 @@ struct Drawable {
 
     explicit Drawable(
         const std::string &spritePath, int z_index = 0, float opacity = 1.0f)
-<<<<<<< HEAD:client/include/Components/RenderComponent.hpp
-        : spritePath("Assets/Images/" + spritePath),
-=======
         : spritePath("assets/images/" + spritePath),
->>>>>>> 3349563e8187828e85f2715d5f173b8deb965efc:client/include/components/RenderComponent.hpp
           z_index(z_index),
           texture(),
           opacity(opacity),
@@ -86,11 +82,7 @@ struct Shader {
 
     explicit Shader(const std::string &path,
         std::vector<std::pair<std::string, float>> uf = {})
-<<<<<<< HEAD:client/include/Components/RenderComponent.hpp
-        : shaderPath("Assets/Shaders/" + path),
-=======
         : shaderPath("assets/shaders/" + path),
->>>>>>> 3349563e8187828e85f2715d5f173b8deb965efc:client/include/components/RenderComponent.hpp
           shader(nullptr),
           isLoaded(false) {
         for (const auto &[name, value] : uf)

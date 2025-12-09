@@ -114,18 +114,12 @@ void InitControlsSystem(Rtype::Client::GameWorld &game_world) {
             Eng::sparse_array<Com::Transform> &transforms) {
             ButtonClickSystem(
                 r, game_world, hit_boxes, clickables, drawables, transforms);
-<<<<<<< HEAD:client/Engine/Systems/initRegistrySystems.cpp
-        });
-    game_world.registry_.AddSystem<Eng::sparse_array<Com::Inputs>>(
-        InputSystem);
-=======
         });
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Inputs>>(
         [&game_world](
             Eng::registry &r, Eng::sparse_array<Com::Inputs> &inputs) {
             InputSystem(r, game_world.window_.hasFocus(), inputs);
         });
->>>>>>> 3349563e8187828e85f2715d5f173b8deb965efc:client/engine/systems/InitRegistrySystems.cpp
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Inputs>,
         Eng::sparse_array<Com::Controllable>, Eng::sparse_array<Com::Velocity>,
         Eng::sparse_array<Com::PlayerTag>>(ControllablePlayerSystem);
