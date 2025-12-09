@@ -52,6 +52,7 @@ void SetOpacityChildren(
 **Rôle**: Configure l'opacité et l'état d'animation d'une entité enfant spécifique.
 
 **Paramètres**:
+
 - `drawables`: Tableau sparse des composants Drawable
 - `animated_sprites`: Tableau sparse des composants AnimatedSprite
 - `player_tag`: Tag du joueur parent contenant le temps de charge
@@ -59,6 +60,7 @@ void SetOpacityChildren(
 - `child_id`: ID de l'entité enfant à modifier
 
 **Logique**:
+
 1. Si l'opacité actuelle est 0, réinitialise `currentFrame` à 0
 2. Met à jour l'opacité selon la condition `charge_time > charge_time_min`
 
@@ -109,6 +111,7 @@ reg.GetComponent<Component::Transform>(player_entity)
 ## Performance
 
 **Complexité**: O(n × m) où:
+
 - n = nombre d'entités avec `PlayerTag` et `Transform`
 - m = nombre moyen d'enfants par joueur (généralement 1)
 

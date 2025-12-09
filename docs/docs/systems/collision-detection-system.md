@@ -5,6 +5,7 @@
 **But:** Détecter les collisions entre hitboxes et résoudre les pénétrations (séparation) pour les entités solides.
 
 **Composants utilisés:**
+
 - `Transform`
 - `HitBox`
 - `Solid`
@@ -28,6 +29,7 @@ void CollisionDetectionSystem(Eng::registry &reg,
 ```
 
 ## Notes
+
 - La résolution de collision prend en compte l'échelle (`trans.scale`) et les offsets calculés.
 - Si les deux entités sont `isLocked`, la collision n'est pas résolue (aucun mouvement).
 - Si les deux entités sont solides et mobiles, la séparation peut être partagée (implémentation selon la logique interne).

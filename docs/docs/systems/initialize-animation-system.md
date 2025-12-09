@@ -5,6 +5,7 @@
 **But:** Initialiser les `Drawable` des entités qui ont des `AnimatedSprite` (charger la texture, définir l'origine et la région de la frame initiale).
 
 **Composants utilisés:**
+
 - `AnimatedSprite`
 - `Drawable`
 - `Transform`
@@ -25,4 +26,5 @@ void InitializeDrawableAnimatedSystem(Eng::registry &reg,
 ```
 
 ## Notes
+
 - Affiche un message d'erreur sur `std::cerr` si le chargement échoue.

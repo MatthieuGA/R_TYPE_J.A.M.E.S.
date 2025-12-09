@@ -5,6 +5,7 @@
 **But:** Convertir les entrées du joueur en accélérations appliquées à la composante `Velocity`, en respectant un temps d'accélération pour atteindre la vitesse maximale.
 
 **Composants utilisés:**
+
 - `Inputs`
 - `Controllable` (indique si l'entité est contrôlable)
 - `Velocity`
@@ -27,5 +28,6 @@ void ControllablePlayerSystem(Eng::registry &reg,
 ```
 
 ## Notes
+
 - `time_to_max` est fixé à `0.15f` dans l'implémentation actuelle.
 - Le système ne met à jour que les accélérations; la vélocité effective est appliquée par le `MovementSystem`.

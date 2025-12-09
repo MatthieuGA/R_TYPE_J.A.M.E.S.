@@ -5,6 +5,7 @@
 **But:** Charger et initialiser les shaders (fragment shaders) pour les composants `Shader`.
 
 **Composants utilisés:**
+
 - `Shader` (contient `shaderPath`, `uniforms_float`, `isLoaded`, `shader` shared_ptr)
 
 ## Comportement
@@ -21,5 +22,6 @@ void InitializeShaderSystem(Eng::registry &reg,
 ```
 
 ## Notes
+
 - Les shaders sont des `std::shared_ptr<sf::Shader>`.
 - Le système est idempotent : il n'essaiera pas de recharger un shader déjà marqué `isLoaded`.

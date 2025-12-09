@@ -5,6 +5,7 @@
 **But:** Gérer le défilement parallax des couches d'arrière-plan.
 
 **Composants utilisés:**
+
 - `ParrallaxLayer` (scroll_speed)
 - `Transform`
 - `Drawable` (pour la taille de la texture)
@@ -24,5 +25,6 @@ void ParallaxSystem(Eng::registry &reg, const GameWorld &game_world,
 ```
 
 ## Notes
+
 - Le système s'appuie sur `game_world.window_size_` et `game_world.last_delta_`.
 - On vérifie `drawable.isLoaded` avant d'utiliser la taille de la texture.

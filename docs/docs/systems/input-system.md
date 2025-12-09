@@ -5,6 +5,7 @@
 **But:** Lire l'état des touches du clavier et remplir le composant `Inputs`.
 
 **Composants utilisés:**
+
 - `Inputs` (horizontal, vertical, shoot)
 
 ## Comportement
@@ -25,5 +26,6 @@ void InputSystem(Eng::registry &reg,
 ```
 
 ## Notes
+
 - Le système utilise `sf::Keyboard::isKeyPressed` et fonctionne côté client.
 - Remapper les touches doit se faire dans le code si nécessaire.

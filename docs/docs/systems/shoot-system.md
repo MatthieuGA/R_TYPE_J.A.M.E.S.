@@ -5,6 +5,7 @@
 **But:** Gérer la mécanique de tir du joueur et créer des entités projectile.
 
 **Composants utilisés:**
+
 - `Transform`
 - `Inputs`
 - `PlayerTag`
@@ -25,5 +26,6 @@ void ShootPlayerSystem(Eng::registry &reg, GameWorld &game_world,
 ```
 
 ## Notes
+
 - Le projectile est initialisé avec des valeurs par défaut (vitesse, sprite, etc.) codées en dur dans `createProjectile`.
 - La fonction `createProjectile` utilise `reg.SpawnEntity()` puis `reg.AddComponent<...>`.
