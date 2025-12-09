@@ -210,7 +210,7 @@ def test_server_full(host: str, port: int):
             if status == 0 and sock:
                 sockets.append(sock)
         except:
-            pass
+            pass # Ignore errors here
         time.sleep(0.1)
 
     print(f"Pre-filled server with {len(sockets)} clients")
