@@ -1,13 +1,14 @@
 #include <gtest/gtest.h>
 
-#include <chrono>
-#include <thread>
+#include <string>
 #include <vector>
 
 #include <boost/asio.hpp>
 
 #include "server/Components.hpp"
 #include "server/Config.hpp"
+#include "server/PacketBuffer.hpp"
+#include "server/Packets.hpp"
 #include "server/Server.hpp"
 
 // Helper function to create a config for testing
@@ -488,4 +489,281 @@ TEST(ServerTest, StressMultipleUpdates) {
     // Position should be NUM_UPDATES * velocity (with tolerance for FP errors)
     EXPECT_NEAR(positions[entity.getId()]->x, 100.0f, 0.01f);
     EXPECT_NEAR(positions[entity.getId()]->y, 100.0f, 0.01f);
+}
+
+// ============================================================================
+// TCP PACKET SERIALIZATION AND DESERIALIZATION TESTS
+// ============================================================================
+
+TEST(ServerTcpTest, ConnectReqPacketSetUsername) {
+    server::network::ConnectReqPacket req;
+    req.SetUsername("TestPlayer");
+
+    std::string username = req.GetUsername();
+    EXPECT_EQ(username, "TestPlayer");
+}
+
+TEST(ServerTcpTest, ConnectReqPacketEmptyUsername) {
+    server::network::ConnectReqPacket req;
+    req.SetUsername("");
+
+    std::string username = req.GetUsername();
+    EXPECT_TRUE(username.empty() ||
+                username.find_first_not_of('\0') == std::string::npos);
+}
+
+TEST(ServerTcpTest, ConnectReqPacketMaxLengthUsername) {
+    server::network::ConnectReqPacket req;
+
+    // 31 characters (max for null-terminated 32-byte array)
+    std::string long_name(31, 'X');
+    req.SetUsername(long_name);
+
+    std::string retrieved = req.GetUsername();
+    EXPECT_EQ(retrieved.size(), 31);
+    EXPECT_EQ(retrieved, long_name);
+}
+
+TEST(ServerTcpTest, ConnectReqPacketTruncateLongUsername) {
+    server::network::ConnectReqPacket req;
+
+    // 40 characters (exceeds 31-char limit)
+    std::string too_long(40, 'Y');
+    req.SetUsername(too_long);
+
+    std::string retrieved = req.GetUsername();
+    // Should be truncated to 31 chars
+    EXPECT_EQ(retrieved.size(), 31);
+    EXPECT_EQ(retrieved, std::string(31, 'Y'));
+}
+
+TEST(ServerTcpTest, ConnectReqPacketSerializeDeserialize) {
+    server::network::ConnectReqPacket original;
+    original.SetUsername("Alice");
+
+    // Serialize
+    server::network::PacketBuffer write_buffer;
+    original.Serialize(write_buffer);
+
+    const auto &data = write_buffer.Data();
+
+    // Header (12 bytes) + Payload (32 bytes) = 44 bytes
+    EXPECT_EQ(data.size(), 44);
+
+    // Verify opcode
+    EXPECT_EQ(data[0],
+        static_cast<uint8_t>(server::network::PacketType::ConnectReq));
+
+    // Deserialize payload only
+    server::network::PacketBuffer read_buffer(data);
+    read_buffer.ReadHeader();  // Skip 12-byte header
+    server::network::ConnectReqPacket deserialized =
+        server::network::ConnectReqPacket::Deserialize(read_buffer);
+
+    EXPECT_EQ(deserialized.GetUsername(), "Alice");
+}
+
+TEST(ServerTcpTest, ConnectAckPacketSerializeOK) {
+    server::network::ConnectAckPacket ack;
+    ack.player_id = server::network::PlayerId{42};
+    ack.status = server::network::ConnectAckPacket::OK;
+    ack.reserved = {0, 0};
+
+    server::network::PacketBuffer buffer;
+    ack.Serialize(buffer);
+
+    const auto &data = buffer.Data();
+
+    // Header: 12 bytes, Payload: 4 bytes
+    EXPECT_EQ(data.size(), 16);
+
+    // Verify opcode (byte 0)
+    EXPECT_EQ(data[0],
+        static_cast<uint8_t>(server::network::PacketType::ConnectAck));
+
+    // Verify player_id (byte 12)
+    EXPECT_EQ(data[12], 42);
+
+    // Verify status (byte 13)
+    EXPECT_EQ(data[13], server::network::ConnectAckPacket::OK);
+}
+
+TEST(ServerTcpTest, ConnectAckPacketSerializeServerFull) {
+    server::network::ConnectAckPacket ack;
+    ack.player_id = server::network::PlayerId{0};  // No ID assigned
+    ack.status = server::network::ConnectAckPacket::ServerFull;
+    ack.reserved = {0, 0};
+
+    server::network::PacketBuffer buffer;
+    ack.Serialize(buffer);
+
+    const auto &data = buffer.Data();
+
+    EXPECT_EQ(data.size(), 16);
+    EXPECT_EQ(data[12], 0);  // Player ID = 0
+    EXPECT_EQ(data[13], server::network::ConnectAckPacket::ServerFull);
+}
+
+TEST(ServerTcpTest, ConnectAckPacketSerializeBadUsername) {
+    server::network::ConnectAckPacket ack;
+    ack.player_id = server::network::PlayerId{0};
+    ack.status = server::network::ConnectAckPacket::BadUsername;
+    ack.reserved = {0, 0};
+
+    server::network::PacketBuffer buffer;
+    ack.Serialize(buffer);
+
+    const auto &data = buffer.Data();
+
+    EXPECT_EQ(data.size(), 16);
+    EXPECT_EQ(data[12], 0);
+    EXPECT_EQ(data[13], server::network::ConnectAckPacket::BadUsername);
+}
+
+TEST(ServerTcpTest, ConnectAckPacketSerializeInGame) {
+    server::network::ConnectAckPacket ack;
+    ack.player_id = server::network::PlayerId{0};
+    ack.status = server::network::ConnectAckPacket::InGame;
+    ack.reserved = {0, 0};
+
+    server::network::PacketBuffer buffer;
+    ack.Serialize(buffer);
+
+    const auto &data = buffer.Data();
+
+    EXPECT_EQ(data.size(), 16);
+    EXPECT_EQ(data[12], 0);
+    EXPECT_EQ(data[13], server::network::ConnectAckPacket::InGame);
+}
+
+TEST(ServerTcpTest, ConnectAckPacketDeserialize) {
+    // Create a packet with known values
+    server::network::ConnectAckPacket original;
+    original.player_id = server::network::PlayerId{7};
+    original.status = server::network::ConnectAckPacket::OK;
+    original.reserved = {0, 0};
+
+    // Serialize
+    server::network::PacketBuffer write_buffer;
+    original.Serialize(write_buffer);
+
+    // Deserialize (skip header, read only payload)
+    server::network::PacketBuffer read_buffer(write_buffer.Data());
+    read_buffer.ReadHeader();  // Skip 12-byte header
+    server::network::ConnectAckPacket deserialized =
+        server::network::ConnectAckPacket::Deserialize(read_buffer);
+
+    EXPECT_EQ(deserialized.player_id.value, 7);
+    EXPECT_EQ(deserialized.status, server::network::ConnectAckPacket::OK);
+}
+
+TEST(ServerTcpTest, ConnectAckPacketRoundTrip) {
+    for (uint8_t status_val = 0; status_val <= 3; ++status_val) {
+        server::network::ConnectAckPacket original;
+        original.player_id =
+            server::network::PlayerId{static_cast<uint8_t>(status_val + 1)};
+        original.status = status_val;
+        original.reserved = {0, 0};
+
+        server::network::PacketBuffer write_buffer;
+        original.Serialize(write_buffer);
+
+        server::network::PacketBuffer read_buffer(write_buffer.Data());
+        read_buffer.ReadHeader();
+        server::network::ConnectAckPacket deserialized =
+            server::network::ConnectAckPacket::Deserialize(read_buffer);
+
+        EXPECT_EQ(deserialized.player_id.value, status_val + 1);
+        EXPECT_EQ(deserialized.status, status_val);
+    }
+}
+
+// ============================================================================
+// PACKET HEADER TESTS
+// ============================================================================
+
+TEST(ServerTcpTest, ConnectReqPacketHeader) {
+    server::network::ConnectReqPacket req;
+    auto header = req.MakeHeader();
+
+    EXPECT_EQ(header.op_code,
+        static_cast<uint8_t>(server::network::PacketType::ConnectReq));
+    EXPECT_EQ(header.payload_size, 32);
+}
+
+TEST(ServerTcpTest, ConnectAckPacketHeader) {
+    server::network::ConnectAckPacket ack;
+    auto header = ack.MakeHeader();
+
+    EXPECT_EQ(header.op_code,
+        static_cast<uint8_t>(server::network::PacketType::ConnectAck));
+    EXPECT_EQ(header.payload_size, 4);
+}
+
+// ============================================================================
+// USERNAME VALIDATION TESTS (Using Packet Interface)
+// ============================================================================
+
+TEST(ServerTcpTest, UsernameNullPadding) {
+    server::network::ConnectReqPacket req;
+    req.SetUsername("Test");
+
+    // Verify the array is null-padded
+    bool has_null = false;
+    for (size_t i = 4; i < 32; ++i) {
+        if (req.username[i] == '\0') {
+            has_null = true;
+            break;
+        }
+    }
+    EXPECT_TRUE(has_null);
+}
+
+TEST(ServerTcpTest, UsernameSpecialCharacters) {
+    server::network::ConnectReqPacket req;
+    req.SetUsername("User_123-ABC");
+
+    EXPECT_EQ(req.GetUsername(), "User_123-ABC");
+}
+
+TEST(ServerTcpTest, UsernameUnicodeHandling) {
+    server::network::ConnectReqPacket req;
+    // ASCII-compatible characters
+    req.SetUsername("Player1");
+
+    EXPECT_EQ(req.GetUsername(), "Player1");
+}
+
+// ============================================================================
+// INTEGRATION TEST HELPERS
+// ============================================================================
+
+TEST(ServerTcpTest, ServerInitializationWithNetworking) {
+    boost::asio::io_context io;
+    server::Config &config = getTestConfig();
+    server::Server server(config, io);
+
+    EXPECT_NO_THROW(server.Initialize());
+}
+
+TEST(ServerTcpTest, MultipleConnectAckStatuses) {
+    std::vector<server::network::ConnectAckPacket::Status> statuses = {
+        server::network::ConnectAckPacket::OK,
+        server::network::ConnectAckPacket::ServerFull,
+        server::network::ConnectAckPacket::BadUsername,
+        server::network::ConnectAckPacket::InGame};
+
+    for (auto status : statuses) {
+        server::network::ConnectAckPacket ack;
+        ack.player_id = server::network::PlayerId{1};
+        ack.status = status;
+        ack.reserved = {0, 0};
+
+        server::network::PacketBuffer buffer;
+        EXPECT_NO_THROW(ack.Serialize(buffer));
+
+        const auto &data = buffer.Data();
+        EXPECT_EQ(data.size(), 16);
+        EXPECT_EQ(data[13], status);
+    }
 }
