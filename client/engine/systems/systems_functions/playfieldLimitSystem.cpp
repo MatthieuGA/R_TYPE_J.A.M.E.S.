@@ -1,7 +1,4 @@
-#include <iostream>
-
 #include "engine/systems/initRegistrySystems.hpp"
-#include "include/indexed_zipper.hpp"
 
 namespace Eng = Engine;
 

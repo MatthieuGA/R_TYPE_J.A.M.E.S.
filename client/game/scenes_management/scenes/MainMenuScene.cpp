@@ -1,11 +1,6 @@
 #include "game/scenes_management/scenes/MainMenuScene.hpp"
 
-#include <string>
-#include <vector>
-
-#include "game/scenes_management/initScenes.hpp"
 #include "include/components/CoreComponents.hpp"
-#include "include/components/GameplayComponents.hpp"
 #include "include/components/RenderComponent.hpp"
 #include "include/components/ScenesComponents.hpp"
 #include "include/indexed_zipper.hpp"

@@ -1,6 +1,4 @@
-#include <cstdio>
 #include <iostream>
-#include <vector>
 
 #include <SFML/Graphics.hpp>
 
@@ -8,7 +6,6 @@
 #include "game/initRegistry.hpp"
 #include "game/scenes_management/initScenes.hpp"
 
-using Engine::registry;
 namespace RC = Rtype::Client;
 
 int main() {

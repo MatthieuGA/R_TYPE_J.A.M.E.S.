@@ -1,11 +1,6 @@
 #pragma once
-#include <cstdint>
 #include <functional>
-#include <map>
-#include <memory>
 #include <optional>
-#include <string>
-#include <utility>
 #include <vector>
 
 #include <SFML/Graphics.hpp>

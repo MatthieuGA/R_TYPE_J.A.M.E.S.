@@ -1,9 +1,7 @@
-#include <algorithm>
 #include <iostream>
 #include <memory>
 #include <vector>
 
-#include "engine/originTool.hpp"
 #include "engine/systems/initRegistrySystems.hpp"
 
 namespace Rtype::Client {

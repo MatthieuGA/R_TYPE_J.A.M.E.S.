@@ -1,19 +1,11 @@
 #pragma once
-#include <cstdint>
-#include <map>
 #include <memory>
-#include <optional>
 #include <string>
 #include <unordered_map>
-#include <utility>
-#include <vector>
 
 #include <SFML/Graphics.hpp>
 
 #include "game/scenes_management/Scene_A.hpp"
-#include "include/registry.hpp"
-
-namespace Eng = Engine;
 
 namespace Rtype::Client::Component {
 struct SceneManagement {

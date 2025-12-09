@@ -3,12 +3,10 @@
 #include <string>
 #include <vector>
 
-#include "game/scenes_management/initScenes.hpp"
 #include "include/PlayerConst.hpp"
 #include "include/components/CoreComponents.hpp"
 #include "include/components/GameplayComponents.hpp"
 #include "include/components/RenderComponent.hpp"
-#include "include/components/ScenesComponents.hpp"
 #include "include/registry.hpp"
 
 namespace Rtype::Client {
@@ -52,8 +50,8 @@ void GameScene::InitPlayerLevel(Engine::registry &reg) {
     auto player_entity = reg.SpawnEntity();
     reg.AddComponent<Component::Transform>(player_entity,
         {100.0f, 300.0f, 0.0f, 4.0f, Component::Transform::CENTER});
-    reg.AddComponent<Component::Drawable>(
-        player_entity, Component::Drawable{"original_rtype/r-typesheet42.gif"});
+    reg.AddComponent<Component::Drawable>(player_entity,
+        Component::Drawable{"original_rtype/r-typesheet42.gif"});
     reg.AddComponent<Component::AnimatedSprite>(
         player_entity, Component::AnimatedSprite(33, 19, 2));
     reg.AddComponent<Component::Controllable>(

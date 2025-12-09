@@ -1,8 +1,5 @@
 #include "engine/events/EngineEvent.hpp"
 #include "engine/systems/initRegistrySystems.hpp"
-#include "include/indexed_zipper.hpp"
-
-namespace Eng = Engine;
 
 namespace Rtype::Client {
 namespace Com = Component;
