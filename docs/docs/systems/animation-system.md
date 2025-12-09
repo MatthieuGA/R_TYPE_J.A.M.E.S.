@@ -1,10 +1,11 @@
 # Animation System
 
-**Fichier source:** `client/Engine/Systems/SytemsFunctions/animationSystem.cpp`
+**Fichier source:** `client/engine/systems/SystemsFunctions/AnimationSystem.cpp`
 
 **But:** Mettre à jour les sprites animés en fonction du temps et faire avancer les frames.
 
 **Composants utilisés:**
+
 - `AnimatedSprite` (animation state, frames, durée)
 - `Drawable` (sprite, texture)
 
@@ -24,5 +25,6 @@ void AnimationSystem(Eng::registry &reg, const float dt,
 ```
 
 ## Notes
+
 - Le système utilise `dt` (delta time) pour accumuler `elapsedTime`.
 - Prend en charge plusieurs frames par sprite-sheet (colonnes/rows).

@@ -1,10 +1,11 @@
 # Player System
 
-**Fichier source:** `client/Engine/Systems/SytemsFunctions/playerSystem.cpp`
+**Fichier source:** `client/engine/systems/SystemsFunctions/PlayerSystem.cpp`
 
 **But:** Mettre à jour l'état d'animation du joueur en fonction de sa vélocité verticale et synchroniser la rotation du joueur et de ses enfants en fonction de la vélocité horizontale.
 
 **Composants utilisés:**
+
 - `PlayerTag` (contient `speed_max` et autres propriétés de joueur)
 - `Velocity` (lecture de `vx` et `vy`)
 - `AnimatedSprite` (mise à jour de `currentFrame`)

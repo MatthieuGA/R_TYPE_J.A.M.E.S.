@@ -2,21 +2,22 @@
 
 #include <utility>
 
-#include "../client/Engine/Events/EngineEvent.hpp"
-#include "../client/Engine/Systems/initRegistrySystems.hpp"
-#include "../client/include/Components/CoreComponents.hpp"
-#include "../client/include/Components/GameplayComponents.hpp"
-#include "../client/include/Components/RenderComponent.hpp"
+#include "engine/GameWorld.hpp"
+#include "engine/events/EngineEvent.hpp"
+#include "engine/systems/InitRegistrySystems.hpp"
+#include "include/components/CoreComponents.hpp"
+#include "include/components/GameplayComponents.hpp"
+#include "include/components/RenderComponent.hpp"
 
 namespace Com = Rtype::Client::Component;
 namespace Eng = Engine;
 
-using Rtype::Client::MovementSystem;
-using Rtype::Client::PlayfieldLimitSystem;
 using Rtype::Client::AnimationSystem;
-using Rtype::Client::PlayerSystem;
-using Rtype::Client::InputSystem;
 using Rtype::Client::CollisionDetectionSystem;
+using Rtype::Client::InputSystem;
+using Rtype::Client::MovementSystem;
+using Rtype::Client::PlayerSystem;
+using Rtype::Client::PlayfieldLimitSystem;
 using Rtype::Client::ProjectileSystem;
 using Rtype::Client::ShootPlayerSystem;
 
@@ -52,9 +53,13 @@ TEST(Systems, PlayfieldLimitClampsPosition) {
     player_tags.insert_at(0, Com::PlayerTag{1});
 
     // Create a small window (headless CI may still support creation)
+    Rtype::Client::GameWorld game_world;
     sf::RenderWindow window(sf::VideoMode(200, 150), "test", sf::Style::None);
+    game_world.window_size_ =
+        sf::Vector2f(static_cast<float>(window.getSize().x),
+            static_cast<float>(window.getSize().y));
 
-    PlayfieldLimitSystem(reg, window, transforms, player_tags);
+    PlayfieldLimitSystem(reg, game_world, transforms, player_tags);
 
     EXPECT_LE(transforms[0]->x, static_cast<float>(window.getSize().x));
     EXPECT_LE(transforms[0]->y, static_cast<float>(window.getSize().y));
@@ -228,7 +233,7 @@ TEST(Systems, InputSystemResetsInputsWhenNoKeys) {
     Eng::sparse_array<Com::Inputs> inputs;
     inputs.insert_at(0, Com::Inputs{1.0f, -1.0f, true});
 
-    InputSystem(reg, inputs);
+    InputSystem(reg, true, inputs);
 
     ASSERT_TRUE(inputs[0].has_value());
     EXPECT_FLOAT_EQ(inputs[0]->horizontal, 0.0f);

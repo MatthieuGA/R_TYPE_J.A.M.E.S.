@@ -1,10 +1,11 @@
 # Movement System
 
-**Fichier source:** `client/Engine/Systems/SytemsFunctions/movementSystem.cpp`
+**Fichier source:** `client/engine/systems/SystemsFunctions/MovementSystem.cpp`
 
 **But:** Appliquer la vélocité et l'accélération aux `Transform` des entités.
 
 **Composants utilisés:**
+
 - `Transform` (x, y, rotation, scale)
 - `Velocity` (vx, vy, accelerationX, accelerationY)
 
@@ -22,5 +23,6 @@ void MovementSystem(Eng::registry &reg, const float dt,
 ```
 
 ## Notes
+
 - `dt` provient typiquement du `game_world.last_delta_`.
 - Ce système ne gère pas de collision/limit; il applique juste la physique kinematique simple.
