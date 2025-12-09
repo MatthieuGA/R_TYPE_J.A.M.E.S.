@@ -1,14 +1,11 @@
-#include <cstdio>
 #include <iostream>
-#include <vector>
 
 #include <SFML/Graphics.hpp>
 
-#include "Engine/gameWorld.hpp"
-#include "Game/ScenesManagement/initScenes.hpp"
-#include "Game/initRegistry.hpp"
+#include "engine/GameWorld.hpp"
+#include "game/InitRegistry.hpp"
+#include "game/scenes_management/InitScenes.hpp"
 
-using Engine::registry;
 namespace RC = Rtype::Client;
 
 int main() {

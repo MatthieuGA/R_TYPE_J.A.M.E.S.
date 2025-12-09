@@ -133,7 +133,7 @@ Husky and lint-staged automatically format code and check commit messages.
 - **Output Directories:**
   - Client Binary: `build/client/r-type_client` (Linux) / `r-type_client.exe` (Windows)
   - Server Binary: `build/server/r-type_server` (Linux) / `r-type_server.exe` (Windows)
-  - Assets: Copied to `Assets/` next to the binary.
+  - Assets: Copied to `assets/` next to the binary.
 
 - **Documentation Build:**
 

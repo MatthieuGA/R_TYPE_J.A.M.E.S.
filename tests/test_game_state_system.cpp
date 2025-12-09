@@ -4,8 +4,8 @@
 #include <string>
 #include <unordered_map>
 
-#include "../client/Engine/Systems/initRegistrySystems.hpp"
-#include "../client/include/Components/ScenesComponents.hpp"
+#include "engine/systems/InitRegistrySystems.hpp"
+#include "include/components/ScenesComponents.hpp"
 
 namespace Com = Rtype::Client::Component;
 namespace Eng = Engine;
