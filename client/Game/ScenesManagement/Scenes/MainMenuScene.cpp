@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 
+#include "Engine/Audio/AudioManager.hpp"
 #include "Game/ScenesManagement/initScenes.hpp"
 #include "include/Components/CoreComponents.hpp"
 #include "include/Components/GameplayComponents.hpp"
@@ -13,6 +14,13 @@
 
 namespace Rtype::Client {
 void MainMenuScene::InitScene(Engine::registry &reg, GameWorld &gameWorld) {
+    // Register and play menu music
+    if (gameWorld.audio_manager_) {
+        gameWorld.audio_manager_->RegisterAsset(
+            "menu_music", "Assets/Sounds/menu_music.ogg", true);
+        gameWorld.audio_manager_->PlayMusic("menu_music", true);
+    }
+
     auto play_button_entity = CreateEntityInScene(reg);
     reg.AddComponent<Component::Transform>(
         play_button_entity, Component::Transform{960.0f, 500.0f, 0.0f, 5.0f,
@@ -23,8 +31,11 @@ void MainMenuScene::InitScene(Engine::registry &reg, GameWorld &gameWorld) {
         play_button_entity, Component::HitBox{64.0f * 5, 16.0f * 5, false});
     reg.AddComponent<Component::Clickable>(play_button_entity,
         Component::Clickable{
-            [&reg]() {
+            [&reg, &gameWorld]() {
                 // OnClick: Transition to GameLevel scene
+                if (gameWorld.audio_manager_) {
+                    gameWorld.audio_manager_->StopMusic();
+                }
                 for (auto &&[i, gs] : make_indexed_zipper(
                          reg.GetComponents<Component::SceneManagement>())) {
                     gs.next = "GameLevel";

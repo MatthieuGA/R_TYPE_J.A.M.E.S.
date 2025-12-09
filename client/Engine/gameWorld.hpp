@@ -5,6 +5,10 @@
 
 #include "Engine/Events/Event.h"
 
+namespace Rtype::Client::Audio {
+class AudioManager;
+}
+
 namespace Rtype::Client {
 struct GameWorld {
     Engine::registry registry_;
@@ -14,6 +18,7 @@ struct GameWorld {
     sf::Clock total_time_clock_;
     float last_delta_ = 0.0f;
     EventBus event_bus_;
+    Audio::AudioManager *audio_manager_ = nullptr;
 
     GameWorld() : window_(sf::VideoMode({1920, 1080}), "Rtype") {
         registry_ = Engine::registry();

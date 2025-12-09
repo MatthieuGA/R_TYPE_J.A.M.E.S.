@@ -23,6 +23,7 @@ int main() {
         // Initialize audio subsystem
         auto audio_backend = std::make_unique<Audio::SFMLAudioBackend>();
         Audio::AudioManager audio_manager(std::move(audio_backend));
+        game_world.audio_manager_ = &audio_manager;
 
         RC::InitRegistry(game_world, audio_manager);
         RC::InitSceneLevel(game_world.registry_);
