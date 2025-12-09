@@ -11,6 +11,18 @@
 #include "server/PacketBuffer.hpp"
 #include "server/Packets.hpp"
 
+static std::string trim(
+    const std::string &str, const std::string &whitespace = " \t") {
+    const auto strBegin = str.find_first_not_of(whitespace);
+    if (strBegin == std::string::npos)
+        return "";  // no content
+
+    const auto strEnd = str.find_last_not_of(whitespace);
+    const auto strRange = strEnd - strBegin + 1;
+
+    return str.substr(strBegin, strRange);
+}
+
 namespace server {
 
 Server::Server(Config &config, boost::asio::io_context &io_context)
@@ -162,7 +174,7 @@ void Server::HandleConnectReq(boost::asio::ip::tcp::socket &socket,
     network::PacketBuffer buffer(payload);
     network::ConnectReqPacket req =
         network::ConnectReqPacket::Deserialize(buffer);
-    std::string username = req.GetUsername();
+    std::string username = trim(req.GetUsername());
 
     std::cout << "CONNECT_REQ with username: '" << username << "'"
               << std::endl;
