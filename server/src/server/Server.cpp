@@ -280,7 +280,7 @@ uint8_t Server::AssignPlayerId() {
 void Server::RemoveClient(uint8_t player_id) {
     auto it = clients_.find(player_id);
     if (it == clients_.end()) {
-        std::cerr << "removeClient: Player " << static_cast<int>(player_id)
+        std::cerr << "RemoveClient: Player " << static_cast<int>(player_id)
                   << " not found" << std::endl;
         return;
     }
