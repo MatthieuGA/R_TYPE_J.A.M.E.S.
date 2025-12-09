@@ -25,7 +25,8 @@ void GameStateSystem(Eng::registry &reg, GameWorld &gameWorld,
 void DrawableSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> const &transforms,
     Eng::sparse_array<Com::Drawable> &drawables,
-    Eng::sparse_array<Com::Shader> &shaders);
+    Eng::sparse_array<Com::Shader> &shaders,
+    Eng::sparse_array<Com::AnimatedSprite> const &animated_sprites);
 
 void DrawTextRenderSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> const &transforms,

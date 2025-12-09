@@ -72,7 +72,9 @@ void DrawSprite(GameWorld &game_world, sf::Sprite &sprite,
 
 void RenderOneEntity(Eng::sparse_array<Com::Transform> const &transforms,
     Eng::sparse_array<Com::Drawable> &drawables,
-    Eng::sparse_array<Com::Shader> &shaders, GameWorld &game_world, int i) {
+    Eng::sparse_array<Com::Shader> &shaders,
+    Eng::sparse_array<Com::AnimatedSprite> const &animated_sprites,
+    GameWorld &game_world, int i) {
     auto &transform = transforms[i];
     auto &drawable = drawables[i];
 
@@ -83,6 +85,16 @@ void RenderOneEntity(Eng::sparse_array<Com::Transform> const &transforms,
     // Calculate world position with hierarchical rotation
     sf::Vector2f world_position =
         CalculateWorldPositionWithHierarchy(transform.value(), transforms);
+
+    // Apply animation offset if this entity has an AnimatedSprite component
+    if (animated_sprites.has(i)) {
+        auto *animation = animated_sprites[i]->GetCurrentAnimation();
+        if (animation != nullptr) {
+            world_position.x += animation->offset.x;
+            world_position.y += animation->offset.y;
+        }
+    }
+
     drawable->sprite.setPosition(world_position);
     sf::Vector2f world_scale =
         CalculateCumulativeScale(transform.value(), transforms);
@@ -98,7 +110,8 @@ void RenderOneEntity(Eng::sparse_array<Com::Transform> const &transforms,
 void DrawableSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> const &transforms,
     Eng::sparse_array<Com::Drawable> &drawables,
-    Eng::sparse_array<Com::Shader> &shaders) {
+    Eng::sparse_array<Com::Shader> &shaders,
+    Eng::sparse_array<Com::AnimatedSprite> const &animated_sprites) {
     std::vector<int> draw_order;
 
     // Else draw entities with Transform and Drawable components
@@ -116,7 +129,8 @@ void DrawableSystem(Eng::registry &reg, GameWorld &game_world,
         });
 
     for (auto i : draw_order) {
-        RenderOneEntity(transforms, drawables, shaders, game_world, i);
+        RenderOneEntity(
+            transforms, drawables, shaders, animated_sprites, game_world, i);
     }
 }
 }  // namespace Rtype::Client

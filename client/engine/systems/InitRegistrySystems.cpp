@@ -35,12 +35,15 @@ void InitRenderSystems(Rtype::Client::GameWorld &game_world) {
     game_world.registry_.AddSystem<Eng::sparse_array<Com::AnimatedSprite>,
         Eng::sparse_array<Com::AnimationDeath>>(DeathAnimationSystem);
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
-        Eng::sparse_array<Com::Drawable>, Eng::sparse_array<Com::Shader>>(
+        Eng::sparse_array<Com::Drawable>, Eng::sparse_array<Com::Shader>,
+        Eng::sparse_array<Com::AnimatedSprite>>(
         [&game_world](Eng::registry &r,
             Eng::sparse_array<Com::Transform> const &transforms,
             Eng::sparse_array<Com::Drawable> &drawables,
-            Eng::sparse_array<Com::Shader> &shaders) {
-            DrawableSystem(r, game_world, transforms, drawables, shaders);
+            Eng::sparse_array<Com::Shader> &shaders,
+            Eng::sparse_array<Com::AnimatedSprite> const &animated_sprites) {
+            DrawableSystem(r, game_world, transforms, drawables, shaders,
+                animated_sprites);
         });
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
         Eng::sparse_array<Com::Text>>(

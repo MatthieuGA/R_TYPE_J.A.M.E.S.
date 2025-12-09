@@ -23,12 +23,15 @@ void DeathHandling(Eng::registry &reg,
     if (animated_sprites.has(i)) {
         auto &animSprite = animated_sprites[i];
         animSprite->SetCurrentAnimation("Death", true);
+    } else {
+        // No animated sprite, remove entity immediately
+        reg.KillEntity(entity);
     }
 }
 
 void HandleCollision(Eng::registry &reg, Component::Health &health,
     Eng::sparse_array<Component::AnimatedSprite> &animated_sprites,
-    std::size_t i, Engine::entity projEntity,
+    std::size_t i, Engine::entity projEntity, std::size_t j,
     const Component::Projectile &projectile) {
     health.currentHealth -= projectile.damage;
     if (animated_sprites.has(i)) {
@@ -37,8 +40,16 @@ void HandleCollision(Eng::registry &reg, Component::Health &health,
         animSprite->GetCurrentAnimation()->currentFrame = 1;
     }
 
-    // Remove projectile after hit
-    reg.KillEntity(projEntity);
+    reg.RemoveComponent<Component::Projectile>(projEntity);
+    if (animated_sprites.has(j)) {
+        auto &projAnimSprite = animated_sprites[j];
+        projAnimSprite->SetCurrentAnimation("Death", false);
+        projAnimSprite->animated = true;
+        reg.AddComponent<Component::AnimationDeath>(
+            projEntity, Component::AnimationDeath{true});
+    } else {
+        reg.KillEntity(projEntity);
+    }
 }
 
 /**
@@ -81,8 +92,8 @@ void HealthDeductionSystem(Eng::registry &reg,
             // Simple AABB collision detection
             if (IsColliding(transform, hitBox, projTransform, projHitBox)) {
                 // Collision detected, deduct health
-                HandleCollision(
-                    reg, health, animated_sprites, i, projEntity, projectile);
+                HandleCollision(reg, health, animated_sprites, i, projEntity,
+                    j, projectile);
             }
         }
 

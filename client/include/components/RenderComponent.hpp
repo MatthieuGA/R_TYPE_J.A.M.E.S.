@@ -100,6 +100,7 @@ struct AnimatedSprite {
         float frameDuration;
         bool loop;
         sf::Vector2f first_frame_position = sf::Vector2f(0.0f, 0.0f);
+        sf::Vector2f offset = sf::Vector2f(0.0f, 0.0f);
         sf::Texture texture;
         sf::Sprite sprite;
 
@@ -114,13 +115,15 @@ struct AnimatedSprite {
               frameDuration(0.0f),
               loop(false),
               first_frame_position(0.0f, 0.0f),
+              offset(0.0f, 0.0f),
               texture(),
               sprite(),
               isLoaded(false) {}
 
         Animation(const std::string &path, int frameWidth, int frameHeight,
             int totalFrames, float frameDuration, bool loop,
-            sf::Vector2f first_frame_position = sf::Vector2f(0.0f, 0.0f))
+            sf::Vector2f first_frame_position = sf::Vector2f(0.0f, 0.0f),
+            sf::Vector2f offset = sf::Vector2f(0.0f, 0.0f))
             : path(path.empty() ? "" : "assets/images/" + path),
               frameWidth(frameWidth),
               frameHeight(frameHeight),
@@ -129,6 +132,7 @@ struct AnimatedSprite {
               frameDuration(frameDuration),
               loop(loop),
               first_frame_position(first_frame_position),
+              offset(offset),
               texture(),
               sprite(),
               isLoaded(false) {}
@@ -170,13 +174,15 @@ struct AnimatedSprite {
      * @param loop Whether the animation should loop
      * @param first_frame_position Position of the first frame in the
      * spritesheet
+     * @param offset Offset to apply to the sprite position when rendering
      */
     void AddAnimation(const std::string &name, const std::string &path,
         int frameWidth, int frameHeight, int totalFrames, float frameDuration,
         bool loop = true,
-        sf::Vector2f first_frame_position = sf::Vector2f(0.0f, 0.0f)) {
+        sf::Vector2f first_frame_position = sf::Vector2f(0.0f, 0.0f),
+        sf::Vector2f offset = sf::Vector2f(0.0f, 0.0f)) {
         animations[name] = Animation(path, frameWidth, frameHeight,
-            totalFrames, frameDuration, loop, first_frame_position);
+            totalFrames, frameDuration, loop, first_frame_position, offset);
     }
 
     /**

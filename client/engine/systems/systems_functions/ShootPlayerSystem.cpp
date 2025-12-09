@@ -1,3 +1,5 @@
+#include <utility>
+
 #include <SFML/Graphics.hpp>
 
 #include "engine/systems/InitRegistrySystems.hpp"
@@ -20,8 +22,12 @@ void createProjectile(Eng::registry &reg, float x, float y, int ownerId) {
         Component::Transform{x, y, 0.0f, 3.0f, Com::Transform::CENTER});
     reg.AddComponent<Component::Drawable>(projectile_entity,
         Component::Drawable("original_rtype/r-typesheet2.gif", -1));
+    Component::AnimatedSprite animSprite(24, 32, 10);
+    animSprite.AddAnimation("Death", "original_rtype/r-typesheet1.gif", 15, 15,
+        2, 0.08f, false, sf::Vector2f(288.0f, 86.0f),
+        sf::Vector2f(25.0f, 25.0f));
     reg.AddComponent<Component::AnimatedSprite>(
-        projectile_entity, Component::AnimatedSprite{24, 32, 10});
+        projectile_entity, std::move(animSprite));
     reg.AddComponent<Component::Projectile>(
         projectile_entity, Component::Projectile{PLAYER_DAMAGE_PROJECTILE,
                                PLAYER_SPEED_PROJECTILE, ownerId, false});
@@ -45,8 +51,11 @@ void createChargedProjectile(
         Component::Transform{x, y, 0.0f, 3.0f, Com::Transform::CENTER});
     reg.AddComponent<Component::Drawable>(projectile_entity,
         Component::Drawable("original_rtype/r-typesheet1.gif", -1));
+    Component::AnimatedSprite animSprite(29, 22, 25);
+    animSprite.AddAnimation("Death", "original_rtype/r-typesheet1.gif", 33, 31,
+        6, 0.03f, false, sf::Vector2f(68.0f, 342.0f));
     reg.AddComponent<Component::AnimatedSprite>(
-        projectile_entity, Component::AnimatedSprite{29, 22, 25});
+        projectile_entity, std::move(animSprite));
     reg.AddComponent<Component::Projectile>(projectile_entity,
         Component::Projectile{PLAYER_DAMAGE_CHARGED_PROJECTILE,
             PLAYER_SPEED_CHARGED_PROJECTILE, ownerId});
