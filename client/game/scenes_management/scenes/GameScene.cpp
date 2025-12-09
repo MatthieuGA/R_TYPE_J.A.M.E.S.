@@ -49,20 +49,22 @@ void GameScene::InitBackgrounds(Engine::registry &reg) {
 void GameScene::InitPlayerLevel(Engine::registry &reg) {
     auto player_entity = CreateEntityInScene(reg);
     reg.AddComponent<Component::Transform>(player_entity,
-        {100.0f, 300.0f, 0.0f, 4.0f, Component::Transform::CENTER});
+        {-100.0f, 300.0f, 0.0f, 4.0f, Component::Transform::CENTER});
     reg.AddComponent<Component::Drawable>(player_entity,
         Component::Drawable{"original_rtype/r-typesheet42.gif"});
     reg.AddComponent<Component::AnimatedSprite>(
         player_entity, Component::AnimatedSprite(33, 19, 2));
-    reg.AddComponent<Component::Controllable>(
-        player_entity, Component::Controllable{});
     reg.AddComponent<Component::Inputs>(player_entity, Component::Inputs{});
     reg.AddComponent<Component::Velocity>(
         player_entity, Component::Velocity{});
     reg.AddComponent<Component::PlayerTag>(
         player_entity, Component::PlayerTag{Rtype::Client::PLAYER_SPEED_MAX,
                            Rtype::Client::PLAYER_SHOOT_COOLDOWN,
-                           Rtype::Client::PLAYER_CHARGE_TIME});
+                           Rtype::Client::PLAYER_CHARGE_TIME, false});
+    reg.AddComponent<Component::Health>(
+        player_entity, Component::Health{3, 3});
+    reg.AddComponent<Component::AnimationEnterPlayer>(
+        player_entity, Component::AnimationEnterPlayer{true});
 
     auto player_charging_entity = CreateEntityInScene(reg);
     reg.AddComponent<Component::Transform>(
@@ -70,7 +72,7 @@ void GameScene::InitPlayerLevel(Engine::registry &reg) {
                                     Component::Transform::CENTER, {0.0f, 0.0f},
                                     player_entity.GetId()));
     reg.AddComponent<Component::Drawable>(player_charging_entity,
-        Component::Drawable{"original_rtype/r-typesheet1.gif", -1, 1.0f});
+        Component::Drawable{"original_rtype/r-typesheet1.gif", -1, 0.0f});
     reg.AddComponent<Component::AnimatedSprite>(
         player_charging_entity, Component::AnimatedSprite(33, 33, 0.1f, true,
                                     sf::Vector2f(0.0f, 50.0f), 8));

@@ -6,9 +6,14 @@ struct PlayerTag {
     float speed_max = 300.0f;
     float shoot_cooldown_max = 0.3f;
     float charge_time_min = 0.5f;
+    bool isInPlay = true;
     float shoot_cooldown = 0.0f;
     float charge_time = 0.0f;
     int playerNumber = 0;
+};
+
+struct AnimationEnterPlayer {
+    bool isEntering = true;
 };
 
 struct EnemyTag {

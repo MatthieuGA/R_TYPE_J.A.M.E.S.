@@ -72,6 +72,12 @@ void ControllablePlayerSystem(Eng::registry &reg,
     Eng::sparse_array<Com::Velocity> &velocities,
     Eng::sparse_array<Com::PlayerTag> const &playerTags);
 
+void AnimationEnterPlayerSystem(Eng::registry &reg, GameWorld &game_world,
+    Eng::sparse_array<Com::Velocity> &velocities,
+    Eng::sparse_array<Com::Transform> &transforms,
+    Eng::sparse_array<Com::PlayerTag> &player_tags,
+    Eng::sparse_array<Com::AnimationEnterPlayer> &animation_enter_players);
+
 // GAMEPLAY SYSTEMS
 
 void ChargingShowAssetPlayerSystem(Eng::registry &reg,

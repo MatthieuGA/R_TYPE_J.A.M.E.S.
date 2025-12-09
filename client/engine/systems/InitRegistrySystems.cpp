@@ -76,6 +76,18 @@ void InitMovementSystem(Rtype::Client::GameWorld &game_world) {
             ParallaxSystem(
                 r, game_world, transforms, parallax_layers, drawables);
         });
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::Velocity>,
+        Eng::sparse_array<Com::Transform>, Eng::sparse_array<Com::PlayerTag>,
+        Eng::sparse_array<Com::AnimationEnterPlayer>>(
+        [&game_world](Eng::registry &r,
+            Eng::sparse_array<Com::Velocity> &velocities,
+            Eng::sparse_array<Com::Transform> &transforms,
+            Eng::sparse_array<Com::PlayerTag> &player_tags,
+            Eng::sparse_array<Com::AnimationEnterPlayer>
+                &animation_enter_players) {
+            AnimationEnterPlayerSystem(r, game_world, velocities, transforms,
+                player_tags, animation_enter_players);
+        });
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
         Eng::sparse_array<Com::PlayerTag>>(
         [&game_world](Eng::registry &r,
