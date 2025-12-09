@@ -99,7 +99,7 @@ If your message does not match the pattern, the commit will be rejected.
 
 ## 4. Protected Branch Rules
 
-### Branch protection:
+### Branch protection
 
 * `main` is **protected**
 * Direct push is **forbidden**
@@ -111,7 +111,7 @@ If your message does not match the pattern, the commit will be rejected.
 
 ## 5. Pull Request Process
 
-### Step-by-step:
+### Step-by-step
 
 1. **Create an issue**
 
@@ -171,7 +171,7 @@ You must have the following tools installed on your machine:
 
 * **Node.js & npm** (to run the hooks)
 * **Clang-Format** (to format C++ code)
-* **Clang++** (to check C++ syntax)
+* **Cpplint** (to check C++ syntax)
 
 ### Installation
 

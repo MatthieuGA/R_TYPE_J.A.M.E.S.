@@ -8,15 +8,15 @@
 namespace Engine {
 
 // Forward declaration
-template<class... Containers> class indexed_zipper;
+template <class... Containers>
+class indexed_zipper;
 
 // indexed_zipper_iterator: same as zipper_iterator but also returns the index
-template<class... Containers>
+template <class... Containers>
 class indexed_zipper_iterator {
  public:
     using base_iterator = zipper_iterator<Containers...>;
-    using value_type = decltype(std::tuple_cat(
-        std::tuple<std::size_t>{},
+    using value_type = decltype(std::tuple_cat(std::tuple<std::size_t>{},
         std::declval<typename base_iterator::value_type>()));
 
     using reference = value_type;
@@ -32,17 +32,17 @@ class indexed_zipper_iterator {
     explicit indexed_zipper_iterator(base_iterator it);
 
  public:
-    indexed_zipper_iterator& operator++();
+    indexed_zipper_iterator &operator++();
     indexed_zipper_iterator operator++(int);
     value_type operator*() const;
 
-    friend bool operator==(indexed_zipper_iterator const& a,
-                           indexed_zipper_iterator const& b) {
+    friend bool operator==(
+        indexed_zipper_iterator const &a, indexed_zipper_iterator const &b) {
         return a._it == b._it;
     }
 
-    friend bool operator!=(indexed_zipper_iterator const& a,
-                           indexed_zipper_iterator const& b) {
+    friend bool operator!=(
+        indexed_zipper_iterator const &a, indexed_zipper_iterator const &b) {
         return !(a == b);
     }
 
@@ -56,7 +56,7 @@ class indexed_zipper {
  public:
     using iterator = indexed_zipper_iterator<Containers...>;
 
-    explicit indexed_zipper(Containers&... cs);
+    explicit indexed_zipper(Containers &...cs);
 
     iterator begin() const;
     iterator end() const;
@@ -67,7 +67,7 @@ class indexed_zipper {
 
 // Factory helper for easier deduction
 template <class... Containers>
-indexed_zipper<Containers...> make_indexed_zipper(Containers&... cs);
+indexed_zipper<Containers...> make_indexed_zipper(Containers &...cs);
 
 }  // namespace Engine
 

@@ -1,8 +1,11 @@
 #include <gtest/gtest.h>
 
+#include <string>
+
 #include "../client/include/Components/CoreComponents.hpp"
 #include "../client/include/Components/GameplayComponents.hpp"
 #include "../client/include/Components/NetworkingComponents.hpp"
+#include "../client/include/Components/RenderComponent.hpp"
 
 namespace Com = Rtype::Client::Component;
 
@@ -20,7 +23,7 @@ TEST(ComponentsCore, TransformAndVelocity) {
 
 TEST(ComponentsCore, DrawableBasics) {
     Com::Drawable d("Logo.png", 5);
-    EXPECT_EQ(d.spritePath, std::string("Assets/Logo.png"));
+    EXPECT_EQ(d.spritePath, std::string("Assets/Images/Logo.png"));
     EXPECT_EQ(d.z_index, 5);
     EXPECT_FALSE(d.isLoaded);
 }
@@ -38,7 +41,7 @@ TEST(ComponentsCore, ControllableAndInput) {
 }
 
 TEST(ComponentsCore, HitBox) {
-    Com::HitBox hb{16.0f, 8.0f, 1.0f, 2.0f};
+    Com::HitBox hb{16.0f, 8.0f, true, 1.0f, 2.0f};
     EXPECT_FLOAT_EQ(hb.width, 16.0f);
     EXPECT_FLOAT_EQ(hb.height, 8.0f);
     EXPECT_FLOAT_EQ(hb.offsetX, 1.0f);
@@ -46,8 +49,18 @@ TEST(ComponentsCore, HitBox) {
 }
 
 TEST(ComponentsGameplay, TagsAndProjectile) {
-    Com::PlayerTag p{2};
+    Com::PlayerTag p;
+    p.speed_max = 400.f;
+    p.shoot_cooldown_max = 0.5f;
+    p.charge_time_min = 0.0f;
+    p.shoot_cooldown = 0.0f;
+    p.charge_time = 0.0f;
+    p.playerNumber = 2;
+
     EXPECT_EQ(p.playerNumber, 2);
+    EXPECT_FLOAT_EQ(p.speed_max, 400.f);
+    EXPECT_FLOAT_EQ(p.shoot_cooldown_max, 0.5f);
+    EXPECT_FLOAT_EQ(p.shoot_cooldown, 0.0f);
 
     Com::EnemyTag e{Com::EnemyTag::EnemyType::ADVANCED};
     EXPECT_EQ(e.type, Com::EnemyTag::EnemyType::ADVANCED);

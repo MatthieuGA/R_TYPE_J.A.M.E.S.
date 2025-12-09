@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-**R-Type J.A.M.E.S.** is a modern C++23 recreation of the classic R-Type arcade game. It features a custom Entity-Component-System (ECS) engine, a multithreaded authoritative server, and an SFML-based client.
+**R-Type J.A.M.E.S.** is a modern C++23 recreation of the classic R-Type arcade game. It features a custom Entity-Component-System (ECS) engine, a single-threaded ASIO-based authoritative server, and an SFML-based client.
 
 **Project Phases:**
 
@@ -31,7 +31,7 @@
 - **Protocol:** MUST be Binary. UDP for gameplay (entities, movements, events). TCP allowed only with justification.
 - **Game Loop:** MUST use timers/deltas. NOT tied to CPU speed.
 - **Engine:** NO existing game engines (Unity, Unreal, Godot, etc.).
-- **Server:** MUST be authoritative and multithreaded. MUST handle client crashes gracefully.
+- **Server:** MUST be authoritative and single-threaded with ASIO async I/O. MUST handle client crashes gracefully.
 - **Client:** MUST be graphical (SFML/SDL/Raylib).
 
 ## Setup Commands
