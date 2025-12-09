@@ -260,14 +260,16 @@ void Server::SendConnectAck(boost::asio::ip::tcp::socket &socket,
 
 uint8_t Server::AssignPlayerId() {
     uint8_t id = next_player_id_++;
-
-    // Handle wraparound (skip 0, which is reserved for "no player")
     if (next_player_id_ == 0) {
         next_player_id_ = 1;
     }
 
-    // Ensure uniqueness (in case of wraparound collision)
+    // Prevent infinite loop if all IDs exhausted
+    uint8_t attempts = 0;
     while (clients_.find(id) != clients_.end()) {
+        if (++attempts >= 255) {
+            throw std::runtime_error("All player IDs exhausted");
+        }
         id = next_player_id_++;
         if (next_player_id_ == 0) {
             next_player_id_ = 1;
