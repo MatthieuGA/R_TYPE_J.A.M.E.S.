@@ -1,10 +1,11 @@
 # Game State System
 
-**Fichier source:** `client/Engine/Systems/SystemsFunctions/GameStateSystem.cpp`
+**Fichier source:** `client/engine/systems/SystemsFunctions/GameStateSystem.cpp`
 
 **But:** Gérer les transitions de scène en appelant les hooks `DestroyScene` et `InitScene` quand le prochain état change.
 
 **Composants utilisés:**
+
 - `SceneManagement` (current, next, scenes: `std::unordered_map<std::string, std::shared_ptr<Scene_A>>`)
 
 ## Comportement
@@ -22,6 +23,7 @@ void GameStateSystem(Eng::registry &reg,
 ```
 
 ## Notes
+
 - `Scene_A` définit les hooks `InitScene` et `DestroyScene` invoqués par ce système.
 - Le champ `scenes` doit être pré-rempli avec les scènes disponibles et leurs noms-clés.
 - `next` doit être positionné par d'autres logiques (UI, réseau, scripts) avant d'exécuter ce système afin que le changement soit effectif lors de la passe.

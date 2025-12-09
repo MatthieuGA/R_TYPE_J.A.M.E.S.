@@ -2,10 +2,10 @@
 
 #include <string>
 
-#include "../client/include/Components/CoreComponents.hpp"
-#include "../client/include/Components/GameplayComponents.hpp"
-#include "../client/include/Components/NetworkingComponents.hpp"
-#include "../client/include/Components/RenderComponent.hpp"
+#include "include/components/CoreComponents.hpp"
+#include "include/components/GameplayComponents.hpp"
+#include "include/components/NetworkingComponents.hpp"
+#include "include/components/RenderComponent.hpp"
 
 namespace Com = Rtype::Client::Component;
 
@@ -23,7 +23,7 @@ TEST(ComponentsCore, TransformAndVelocity) {
 
 TEST(ComponentsCore, DrawableBasics) {
     Com::Drawable d("Logo.png", 5);
-    EXPECT_EQ(d.spritePath, std::string("Assets/Images/Logo.png"));
+    EXPECT_EQ(d.spritePath, std::string("assets/images/Logo.png"));
     EXPECT_EQ(d.z_index, 5);
     EXPECT_FALSE(d.isLoaded);
 }

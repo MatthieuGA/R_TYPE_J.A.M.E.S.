@@ -16,6 +16,6 @@ target_link_libraries(r-type_client PRIVATE r-type_engine
 # Post build copy assets
 add_custom_command(TARGET r-type_client POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-    "${CMAKE_CURRENT_SOURCE_DIR}/Assets"
-    $<TARGET_FILE_DIR:r-type_client>/Assets
+    "${CMAKE_CURRENT_SOURCE_DIR}/assets"
+    $<TARGET_FILE_DIR:r-type_client>/assets
 )

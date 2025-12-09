@@ -14,8 +14,8 @@
 #include <utility>
 #include <vector>
 
-#include "include/Audio/AudioTypes.hpp"
-#include "include/Audio/IAudioBackend.hpp"
+#include "include/audio/AudioTypes.hpp"
+#include "include/audio/IAudioBackend.hpp"
 
 namespace Rtype::Client::Audio {
 

@@ -1,18 +1,16 @@
-#include <cstdio>
 #include <iostream>
 #include <memory>
 #include <utility>
 
 #include <SFML/Graphics.hpp>
 
-#include "Engine/Audio/AudioManager.hpp"
-#include "Engine/Audio/SFMLAudioBackend.hpp"
-#include "Engine/gameWorld.hpp"
-#include "Game/ScenesManagement/initScenes.hpp"
-#include "Game/initRegistry.hpp"
+#include "engine/GameWorld.hpp"
+#include "engine/audio/AudioManager.hpp"
+#include "engine/audio/SFMLAudioBackend.hpp"
+#include "game/InitRegistry.hpp"
+#include "game/scenes_management/InitScenes.hpp"
 #include "include/registry.hpp"
 
-using Engine::registry;
 namespace RC = Rtype::Client;
 namespace Audio = Rtype::Client::Audio;
 

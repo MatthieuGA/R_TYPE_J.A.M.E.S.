@@ -2,10 +2,10 @@
 
 #include <utility>
 
-#include "../client/Engine/Systems/initRegistrySystems.hpp"
-#include "../client/Engine/gameWorld.hpp"
-#include "../client/include/Components/CoreComponents.hpp"
-#include "../client/include/Components/RenderComponent.hpp"
+#include "engine/GameWorld.hpp"
+#include "engine/systems/InitRegistrySystems.hpp"
+#include "include/components/CoreComponents.hpp"
+#include "include/components/RenderComponent.hpp"
 
 namespace Com = Rtype::Client::Component;
 namespace Eng = Engine;

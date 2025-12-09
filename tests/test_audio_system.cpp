@@ -10,11 +10,11 @@
 #include <utility>
 #include <vector>
 
-#include "Engine/Audio/AudioManager.hpp"
-#include "Engine/Systems/initRegistrySystems.hpp"
-#include "include/Audio/AudioTypes.hpp"
-#include "include/Audio/IAudioBackend.hpp"
-#include "include/Components/CoreComponents.hpp"
+#include "engine/audio/AudioManager.hpp"
+#include "engine/systems/InitRegistrySystems.hpp"
+#include "include/audio/AudioTypes.hpp"
+#include "include/audio/IAudioBackend.hpp"
+#include "include/components/CoreComponents.hpp"
 #include "include/registry.hpp"
 
 namespace Rtype::Client::Audio {
