@@ -1,4 +1,7 @@
 #pragma once
+#include <string>
+#include <vector>
+
 #include <SFML/Graphics.hpp>
 
 namespace Rtype::Client::Component {
@@ -33,6 +36,29 @@ struct EnemyShootTag {
 
     sf::Vector2f offset_shoot_position = sf::Vector2f(0.0f, 0.0f);
 
+    /**
+     * @brief Event to trigger at specific animation frames.
+     */
+    struct FrameEvent {
+        enum EventType {
+            SHOOT_PROJECTILE
+        };
+
+        std::string animation_name;  // Name of the animation (e.g., "Attack")
+        int trigger_frame;           // Frame number to trigger the event
+        EventType event_type;        // Type of event to trigger
+        bool triggered = false;      // Track if event was triggered this cycle
+
+        FrameEvent(const std::string &anim_name, int frame,
+            EventType type = SHOOT_PROJECTILE)
+            : animation_name(anim_name),
+              trigger_frame(frame),
+              event_type(type),
+              triggered(false) {}
+    };
+
+    std::vector<FrameEvent> frame_events;  ///< List of frame events
+
     explicit EnemyShootTag(float cooldown, float speed = 200.0f,
         int damage = 10, ShootType type = STRAIGHT_LEFT,
         sf::Vector2f offset = sf::Vector2f(0.0f, 0.0f))
@@ -41,6 +67,11 @@ struct EnemyShootTag {
           damage_projectile(damage),
           shoot_type(type),
           offset_shoot_position(offset) {}
+
+    void AddFrameEvent(const std::string &animation_name, int frame,
+        FrameEvent::EventType event_type = FrameEvent::SHOOT_PROJECTILE) {
+        frame_events.emplace_back(animation_name, frame, event_type);
+    }
 };
 
 struct Projectile {
