@@ -8,7 +8,7 @@ project(RTypeProject LANGUAGES CXX)
 option(ENABLE_COVERAGE "Enable code coverage" OFF)
 
 # Set C++ standard
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
 # Export compile commands for clang-tidy and other tools
