@@ -53,10 +53,13 @@ void GameScene::InitPlayerLevel(Engine::registry &reg) {
     auto player_entity = CreateEntityInScene(reg);
     reg.AddComponent<Component::Transform>(player_entity,
         {-100.0f, 300.0f, 0.0f, 4.0f, Component::Transform::CENTER});
-    reg.AddComponent<Component::Drawable>(player_entity,
-        Component::Drawable{"original_rtype/r-typesheet42.gif"});
+    reg.AddComponent<Component::Drawable>(
+        player_entity, Component::Drawable{"original_rtype/players.png"});
+    Component::AnimatedSprite animated_sprite(34, 18, 2);
+    animated_sprite.AddAnimation(
+        "Hit", "original_rtype/players_hit.png", 34, 18, 2, 0.15f, false);
     reg.AddComponent<Component::AnimatedSprite>(
-        player_entity, Component::AnimatedSprite(33, 19, 2));
+        player_entity, std::move(animated_sprite));
     reg.AddComponent<Component::Inputs>(player_entity, Component::Inputs{});
     reg.AddComponent<Component::Velocity>(
         player_entity, Component::Velocity{});
@@ -67,6 +70,8 @@ void GameScene::InitPlayerLevel(Engine::registry &reg) {
     reg.AddComponent<Component::Health>(player_entity, Component::Health(100));
     reg.AddComponent<Component::AnimationEnterPlayer>(
         player_entity, Component::AnimationEnterPlayer{true});
+    reg.AddComponent<Component::HitBox>(
+        player_entity, Component::HitBox{30.0f, 16.0f});
 
     auto player_charging_entity = CreateEntityInScene(reg);
     reg.AddComponent<Component::Transform>(

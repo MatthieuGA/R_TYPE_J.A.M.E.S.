@@ -130,4 +130,7 @@ void ShootEnemySystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::EnemyShootTag> &enemy_shoot_tags,
     Eng::sparse_array<Com::EnemyTag> const &enemy_tags);
 
+void PlayerHitSystem(Eng::registry &reg, GameWorld &game_world,
+    Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
+    Eng::sparse_array<Com::PlayerTag> &player_hits);
 }  // namespace Rtype::Client
