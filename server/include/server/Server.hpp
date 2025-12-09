@@ -156,8 +156,7 @@ class Server {
      *
      * @param socket TCP socket to write to
      * @param player_id Assigned player ID (0 if rejected)
-     * @param status Connection status code (0=OK, 1=UsernameTaken,
-     * 2=ServerFull)
+     * @param status Connection status code (see ConnectAckPacket::Status)
      * @param socket_keeper Optional shared_ptr to keep socket alive for
      * rejected connections
      */
