@@ -22,16 +22,26 @@ void PlayerSystem(Eng::registry &reg,
     for (auto &&[i, player_tag, velocity, animated_sprite, transform] :
         make_indexed_zipper(
             player_tags, velocities, animated_sprites, transforms)) {
+        // Get current animation
+        auto it =
+            animated_sprite.animations.find(animated_sprite.currentAnimation);
+        if (it == animated_sprite.animations.end()) {
+            it = animated_sprite.animations.find("default");
+            if (it == animated_sprite.animations.end())
+                continue;
+        }
+        auto &animation = it->second;
+
         if (velocity.vy > 200.f)
-            animated_sprite.currentFrame = 0;
+            animation.currentFrame = 0;
         else if (velocity.vy >= 75)
-            animated_sprite.currentFrame = 1;
+            animation.currentFrame = 1;
         else if (velocity.vy < -200.f)
-            animated_sprite.currentFrame = 4;
+            animation.currentFrame = 4;
         else if (velocity.vy <= -75)
-            animated_sprite.currentFrame = 3;
+            animation.currentFrame = 3;
         else
-            animated_sprite.currentFrame = 2;
+            animation.currentFrame = 2;
 
         float rotation = velocity.vx / player_tag.speed_max * 5.f;
         transform.rotationDegrees = rotation;

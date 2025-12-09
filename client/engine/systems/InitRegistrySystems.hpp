@@ -35,6 +35,9 @@ void AnimationSystem(Eng::registry &reg, const float dt,
     Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
     Eng::sparse_array<Com::Drawable> &drawables);
 
+void LoadAnimationSystem(Eng::registry &reg,
+    Eng::sparse_array<Com::AnimatedSprite> &animated_sprites);
+
 void InitializeShaderSystem(
     Eng::registry &reg, Eng::sparse_array<Com::Shader> &shaders);
 
@@ -111,6 +114,7 @@ void HealthDeductionSystem(Eng::registry &reg,
     Eng::sparse_array<Com::Health> &healths,
     Eng::sparse_array<Com::EnemyTag> const &enemyTags,
     Eng::sparse_array<Com::PlayerTag> const &playerTags,
+    Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
     Eng::sparse_array<Com::HitBox> const &hitBoxes,
     Eng::sparse_array<Com::Transform> const &transforms,
     Eng::sparse_array<Com::Projectile> const &projectiles);

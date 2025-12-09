@@ -91,39 +91,144 @@ struct Shader {
 };
 
 struct AnimatedSprite {
+    struct Animation {
+        std::string path;
+        int frameWidth;
+        int frameHeight;
+        int totalFrames;
+        int currentFrame;
+        float frameDuration;
+        bool loop;
+        sf::Vector2f first_frame_position = sf::Vector2f(0.0f, 0.0f);
+        sf::Texture texture;
+        sf::Sprite sprite;
+
+        bool isLoaded = false;
+
+        Animation()
+            : path(""),
+              frameWidth(0),
+              frameHeight(0),
+              totalFrames(0),
+              currentFrame(0),
+              frameDuration(0.0f),
+              loop(false),
+              first_frame_position(0.0f, 0.0f),
+              texture(),
+              sprite(),
+              isLoaded(false) {}
+
+        Animation(const std::string &path, int frameWidth, int frameHeight,
+            int totalFrames, float frameDuration, bool loop,
+            sf::Vector2f first_frame_position = sf::Vector2f(0.0f, 0.0f))
+            : path(path.empty() ? "" : "assets/images/" + path),
+              frameWidth(frameWidth),
+              frameHeight(frameHeight),
+              totalFrames(totalFrames),
+              currentFrame(0),
+              frameDuration(frameDuration),
+              loop(loop),
+              first_frame_position(first_frame_position),
+              texture(),
+              sprite(),
+              isLoaded(false) {}
+    };
+
+    std::map<std::string, Animation> animations;
+    std::string currentAnimation;
+
     bool animated = true;
-    int frameWidth;
-    int frameHeight;
-    int totalFrames;
-    int currentFrame = 0;
-    float frameDuration = 0.1f;
-    bool loop = true;
-    sf::Vector2f first_frame_position = sf::Vector2f(0.0f, 0.0f);
     float elapsedTime = 0.0f;
 
     AnimatedSprite(int frameWidth, int frameHeight, float frameDuration,
         bool loop = true,
         sf::Vector2f first_frame_position = sf::Vector2f(0.0f, 0.0f),
         int totalFrames = 0)
-        : frameWidth(frameWidth),
-          frameHeight(frameHeight),
-          totalFrames(totalFrames),
-          currentFrame(0),
-          frameDuration(frameDuration),
-          loop(loop),
-          elapsedTime(0.0f),
-          animated(true),
-          first_frame_position(first_frame_position) {}
+        : currentAnimation("default"), animated(true), elapsedTime(0.0f) {
+        Animation defaultAnimation("", frameWidth, frameHeight, totalFrames,
+            frameDuration, loop, first_frame_position);
+        animations["default"] = defaultAnimation;
+    }
 
     AnimatedSprite(int frameWidth, int frameHeight, int current_frame)
-        : frameWidth(frameWidth),
-          frameHeight(frameHeight),
-          totalFrames(0),
-          currentFrame(current_frame),
-          frameDuration(0.1f),
-          loop(true),
-          elapsedTime(0.0f),
-          animated(false) {}
+        : currentAnimation("default"), animated(false), elapsedTime(0.0f) {
+        Animation defaultAnimation(
+            "", frameWidth, frameHeight, 1, 0.0f, false);
+        defaultAnimation.currentFrame = current_frame;
+        animations["default"] = defaultAnimation;
+    }
+
+    /**
+     * @brief Add a new animation to the animation map.
+     *
+     * @param name The name/key for this animation
+     * @param path The path to the texture file (relative to assets/images/)
+     * @param frameWidth Width of a single frame
+     * @param frameHeight Height of a single frame
+     * @param totalFrames Total number of frames in the animation
+     * @param frameDuration Duration of each frame in seconds
+     * @param loop Whether the animation should loop
+     * @param first_frame_position Position of the first frame in the
+     * spritesheet
+     */
+    void AddAnimation(const std::string &name, const std::string &path,
+        int frameWidth, int frameHeight, int totalFrames, float frameDuration,
+        bool loop = true,
+        sf::Vector2f first_frame_position = sf::Vector2f(0.0f, 0.0f)) {
+        animations[name] = Animation(path, frameWidth, frameHeight,
+            totalFrames, frameDuration, loop, first_frame_position);
+    }
+
+    /**
+     * @brief Change the current playing animation.
+     *
+     * @param name The name of the animation to play
+     * @param reset If true, reset the animation to frame 0 and elapsed time to
+     * 0
+     * @return true if the animation exists and was changed, false otherwise
+     */
+    bool SetCurrentAnimation(const std::string &name, bool reset = true) {
+        auto it = animations.find(name);
+        if (it == animations.end())
+            return false;
+
+        currentAnimation = name;
+        if (reset) {
+            it->second.currentFrame = 0;
+            elapsedTime = 0.0f;
+        }
+        return true;
+    }
+
+    /**
+     * @brief Get the current animation object.
+     *
+     * @return Pointer to the current Animation, or nullptr if not found
+     */
+    Animation *GetCurrentAnimation() {
+        auto it = animations.find(currentAnimation);
+        if (it == animations.end()) {
+            it = animations.find("default");
+            if (it == animations.end())
+                return nullptr;
+        }
+        return &(it->second);
+    }
+
+    /**
+     * @brief Get the current animation object (const version).
+     *
+     * @return Const pointer to the current Animation, or nullptr if not found
+     */
+    const Animation *GetCurrentAnimation() const {
+        auto it = animations.find(currentAnimation);
+        if (it == animations.end()) {
+            it = animations.find("default");
+            if (it == animations.end())
+                return nullptr;
+        }
+        return &(it->second);
+    }
 };
 
 /**

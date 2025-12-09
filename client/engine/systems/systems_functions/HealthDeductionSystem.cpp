@@ -25,6 +25,7 @@ void HealthDeductionSystem(Eng::registry &reg,
     Eng::sparse_array<Component::Health> &healths,
     Eng::sparse_array<Component::EnemyTag> const &enemyTags,
     Eng::sparse_array<Component::PlayerTag> const &playerTags,
+    Eng::sparse_array<Component::AnimatedSprite> &animated_sprites,
     Eng::sparse_array<Component::HitBox> const &hitBoxes,
     Eng::sparse_array<Component::Transform> const &transforms,
     Eng::sparse_array<Component::Projectile> const &projectiles) {
@@ -45,6 +46,10 @@ void HealthDeductionSystem(Eng::registry &reg,
             if (IsColliding(transform, hitBox, projTransform, projHitBox)) {
                 // Collision detected, deduct health
                 health.currentHealth -= projectile.damage;
+                if (animated_sprites.has(i)) {
+                    auto &animSprite = animated_sprites[i];
+                    animSprite->SetCurrentAnimation("Hit", true);
+                }
 
                 // Remove projectile after hit
                 reg.KillEntity(projEntity);

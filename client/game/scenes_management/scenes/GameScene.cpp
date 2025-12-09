@@ -2,6 +2,7 @@
 
 #include <random>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "include/EnemiesConst.hpp"
@@ -104,9 +105,19 @@ void GameScene::AddEnemyLevel(Engine::registry &reg, sf::Vector2f position) {
                           Component::Transform::CENTER});
     reg.AddComponent<Component::Drawable>(
         enemy_entity, Component::Drawable{"ennemies/4/Idle.png"});
+    Component::AnimatedSprite animated_sprite(
+        48, 48, 0.2f, true, sf::Vector2f(0.0f, 0.0f), 4);
+    animated_sprite.AddAnimation(
+        "Hit", "ennemies/4/Hurt.png", 48, 48, 2, 0.1f, false);
+    animated_sprite.AddAnimation(
+        "Death", "ennemies/4/Death.png", 48, 48, 6, 0.2f, false);
+    animated_sprite.AddAnimation(
+        "Attack", "ennemies/4/Attack.png", 48, 48, 6, 0.15f, false);
+    animated_sprite.AddAnimation(
+        "Moving", "ennemies/4/Walk.png", 48, 48, 6, 0.15f, true);
+    animated_sprite.currentAnimation = "default";
     reg.AddComponent<Component::AnimatedSprite>(
-        enemy_entity, Component::AnimatedSprite(
-                          48, 48, 0.2f, true, sf::Vector2f(0.0f, 0.0f), 4));
+        enemy_entity, std::move(animated_sprite));
     reg.AddComponent<Component::Health>(
         enemy_entity, Component::Health(Rtype::Client::MERMAID_HEALTH));
     reg.AddComponent<Component::EnemyTag>(

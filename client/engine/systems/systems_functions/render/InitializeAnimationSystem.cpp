@@ -17,6 +17,10 @@ namespace Rtype::Client {
 void SetDrawableAnimationOrigin(Com::Drawable &drawable,
     const Com::AnimatedSprite &animatedSprite,
     const Com::Transform &transform) {
+    auto it = animatedSprite.animations.find(animatedSprite.currentAnimation);
+    if (it == animatedSprite.animations.end())
+        return;
+
     sf::Vector2f origin =
         GetOffsetFromAnimatedTransform(transform, animatedSprite);
     drawable.sprite.setOrigin(-origin);
@@ -35,6 +39,12 @@ void SetDrawableAnimationOrigin(Com::Drawable &drawable,
 void InitializeDrawableAnimated(Com::Drawable &drawable,
     const Com::AnimatedSprite &animatedSprite,
     const Com::Transform &transform) {
+    auto it = animatedSprite.animations.find(animatedSprite.currentAnimation);
+    if (it == animatedSprite.animations.end())
+        return;
+
+    const auto &animation = it->second;
+
     if (!drawable.texture.loadFromFile(drawable.spritePath)) {
         std::cerr << "ERROR: Failed to load sprite from "
                   << drawable.spritePath << "\n";
@@ -43,8 +53,8 @@ void InitializeDrawableAnimated(Com::Drawable &drawable,
     }
     SetDrawableAnimationOrigin(drawable, animatedSprite, transform);
     drawable.sprite.setTextureRect(
-        sf::IntRect(animatedSprite.currentFrame * animatedSprite.frameWidth, 0,
-            animatedSprite.frameWidth, animatedSprite.frameHeight));
+        sf::IntRect(animation.currentFrame * animation.frameWidth, 0,
+            animation.frameWidth, animation.frameHeight));
     drawable.isLoaded = true;
 }
 
