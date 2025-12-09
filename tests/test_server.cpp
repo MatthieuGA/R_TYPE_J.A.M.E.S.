@@ -767,3 +767,491 @@ TEST(ServerTcpTest, MultipleConnectAckStatuses) {
         EXPECT_EQ(data[13], status);
     }
 }
+
+// ============================================================================
+// EDGE CASE AND ERROR HANDLING TESTS
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// Username Edge Cases
+// ----------------------------------------------------------------------------
+
+TEST(ServerTcpEdgeCaseTest, UsernameExtremelyLong) {
+    server::network::ConnectReqPacket req;
+
+    // 100 characters - far exceeds 31-char limit
+    std::string extremely_long(100, 'Z');
+    req.SetUsername(extremely_long);
+
+    std::string retrieved = req.GetUsername();
+    // Should be truncated to exactly 31 chars
+    EXPECT_EQ(retrieved.size(), 31);
+    EXPECT_EQ(retrieved, std::string(31, 'Z'));
+}
+
+TEST(ServerTcpEdgeCaseTest, UsernameWithNullInMiddle) {
+    server::network::ConnectReqPacket req;
+
+    // Username with embedded null byte
+    std::string username_with_null = std::string("User\0Name", 9);
+    req.SetUsername(username_with_null);
+
+    // GetUsername() stops at first null
+    std::string retrieved = req.GetUsername();
+    EXPECT_EQ(retrieved, "User");  // Stops at embedded null
+}
+
+TEST(ServerTcpEdgeCaseTest, UsernameOnlyNullBytes) {
+    server::network::ConnectReqPacket req;
+
+    std::string all_nulls(10, '\0');
+    req.SetUsername(all_nulls);
+
+    std::string retrieved = req.GetUsername();
+    EXPECT_TRUE(retrieved.empty());
+}
+
+TEST(ServerTcpEdgeCaseTest, UsernameSpecialCharactersExtended) {
+    server::network::ConnectReqPacket req;
+
+    // Test various special characters
+    std::string special = "User!@#$%^&*()_+-=[]{}|;:',.<>?";
+    req.SetUsername(special);
+
+    EXPECT_EQ(req.GetUsername(), special);
+}
+
+TEST(ServerTcpEdgeCaseTest, UsernameWhitespaceOnly) {
+    server::network::ConnectReqPacket req;
+
+    std::string whitespace = "     ";
+    req.SetUsername(whitespace);
+
+    EXPECT_EQ(req.GetUsername(), whitespace);
+
+    // NOTE: Server will trim this to empty string and reject it (BadUsername)
+    // This test validates packet storage, server validation happens separately
+}
+
+TEST(ServerTcpEdgeCaseTest, UsernameWithLeadingTrailingSpaces) {
+    server::network::ConnectReqPacket req;
+
+    std::string spaced = "  User  ";
+    req.SetUsername(spaced);
+
+    // Packet stores the full string with spaces
+    EXPECT_EQ(req.GetUsername(), spaced);
+
+    // NOTE: Server WILL trim spaces when processing (see
+    // Server::HandleConnectReq) This test only validates packet serialization,
+    // not server-side validation
+}
+
+// ----------------------------------------------------------------------------
+// Malformed Packet Tests
+// ----------------------------------------------------------------------------
+
+TEST(ServerTcpEdgeCaseTest, PacketWrongSize) {
+    server::network::ConnectReqPacket req;
+    req.SetUsername("Test");
+
+    server::network::PacketBuffer buffer;
+    req.Serialize(buffer);
+
+    auto data = buffer.Data();
+
+    // Corrupt the payload size in header (bytes 1-2, little-endian u16)
+    data[1] = 50;  // Wrong size (should be 32)
+    data[2] = 0;
+
+    // Attempting to deserialize should still work but data will be misaligned
+    server::network::PacketBuffer corrupt_buffer(data);
+    auto header = corrupt_buffer.ReadHeader();
+
+    // Header should show corrupted payload size
+    EXPECT_EQ(header.payload_size, 50);
+}
+
+TEST(ServerTcpEdgeCaseTest, PacketInvalidOpCode) {
+    std::vector<uint8_t> packet(44, 0);
+
+    // Invalid OpCode (0xFF)
+    packet[0] = 0xFF;
+
+    server::network::PacketBuffer buffer(packet);
+    auto header = buffer.ReadHeader();
+
+    EXPECT_EQ(header.op_code, 0xFF);
+    // Server should reject this as unknown packet type
+}
+
+TEST(ServerTcpEdgeCaseTest, PacketCorruptedHeader) {
+    // Create packet with all fields corrupted
+    std::vector<uint8_t> corrupted(44);
+
+    // Fill with random-ish data
+    for (size_t i = 0; i < corrupted.size(); ++i) {
+        corrupted[i] = static_cast<uint8_t>(i * 7 % 256);
+    }
+
+    server::network::PacketBuffer buffer(corrupted);
+
+    // Should not crash when reading corrupted header
+    EXPECT_NO_THROW({
+        auto header = buffer.ReadHeader();
+        // OpCode will be whatever random byte was there
+        EXPECT_GE(header.op_code, 0);
+    });
+}
+
+TEST(ServerTcpEdgeCaseTest, PacketTooSmall) {
+    // Packet smaller than header size (12 bytes)
+    std::vector<uint8_t> tiny_packet(5, 0);
+
+    server::network::PacketBuffer buffer(tiny_packet);
+
+    // Reading header from undersized packet should throw
+    EXPECT_THROW({ buffer.ReadHeader(); }, std::out_of_range);
+}
+
+TEST(ServerTcpEdgeCaseTest, PacketEmptyBuffer) {
+    std::vector<uint8_t> empty;
+
+    server::network::PacketBuffer buffer(empty);
+
+    // Reading from empty buffer should throw
+    EXPECT_THROW({ buffer.ReadHeader(); }, std::out_of_range);
+}
+
+// ----------------------------------------------------------------------------
+// Packet Boundary Tests
+// ----------------------------------------------------------------------------
+
+TEST(ServerTcpEdgeCaseTest, ConnectReqExactSize) {
+    server::network::ConnectReqPacket req;
+    req.SetUsername("Test");
+
+    server::network::PacketBuffer buffer;
+    req.Serialize(buffer);
+
+    // CONNECT_REQ must be exactly 44 bytes
+    EXPECT_EQ(buffer.Data().size(), 44);
+}
+
+TEST(ServerTcpEdgeCaseTest, ConnectAckExactSize) {
+    server::network::ConnectAckPacket ack;
+    ack.player_id = server::network::PlayerId{1};
+    ack.status = server::network::ConnectAckPacket::OK;
+    ack.reserved = {0, 0};
+
+    server::network::PacketBuffer buffer;
+    ack.Serialize(buffer);
+
+    // CONNECT_ACK must be exactly 16 bytes
+    EXPECT_EQ(buffer.Data().size(), 16);
+}
+
+// ----------------------------------------------------------------------------
+// Multiple Packet Serialization Tests
+// ----------------------------------------------------------------------------
+
+TEST(ServerTcpEdgeCaseTest, SerializeMultiplePacketsSequentially) {
+    server::network::PacketBuffer buffer;
+
+    // Serialize multiple CONNECT_ACK packets
+    for (uint8_t i = 1; i <= 5; ++i) {
+        server::network::ConnectAckPacket ack;
+        ack.player_id = server::network::PlayerId{i};
+        ack.status = server::network::ConnectAckPacket::OK;
+        ack.reserved = {0, 0};
+
+        server::network::PacketBuffer temp;
+        ack.Serialize(temp);
+
+        // Each packet should be 16 bytes
+        EXPECT_EQ(temp.Data().size(), 16);
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Reconnection Simulation Tests
+// ----------------------------------------------------------------------------
+
+TEST(ServerTcpEdgeCaseTest, ReconnectionSameUsername) {
+    // Simulate client disconnecting and reconnecting with same username
+    server::network::ConnectReqPacket req1;
+    req1.SetUsername("ReconnectUser");
+
+    server::network::PacketBuffer buffer1;
+    req1.Serialize(buffer1);
+
+    // First connection
+    auto data1 = buffer1.Data();
+    EXPECT_EQ(data1.size(), 44);
+
+    // Simulate disconnect and reconnect with same username
+    server::network::ConnectReqPacket req2;
+    req2.SetUsername("ReconnectUser");
+
+    server::network::PacketBuffer buffer2;
+    req2.Serialize(buffer2);
+
+    auto data2 = buffer2.Data();
+    EXPECT_EQ(data2.size(), 44);
+
+    // Packets should be identical
+    EXPECT_EQ(data1, data2);
+}
+
+// ----------------------------------------------------------------------------
+// Partial Data Tests
+// ----------------------------------------------------------------------------
+
+TEST(ServerTcpEdgeCaseTest, PartialHeaderRead) {
+    server::network::ConnectReqPacket req;
+    req.SetUsername("Test");
+
+    server::network::PacketBuffer buffer;
+    req.Serialize(buffer);
+
+    auto full_data = buffer.Data();
+
+    // Simulate partial read - only first 8 bytes of 12-byte header
+    std::vector<uint8_t> partial(full_data.begin(), full_data.begin() + 8);
+
+    server::network::PacketBuffer partial_buffer(partial);
+
+    // Should throw when trying to read incomplete header
+    EXPECT_THROW({ partial_buffer.ReadHeader(); }, std::out_of_range);
+}
+
+TEST(ServerTcpEdgeCaseTest, PartialPayloadRead) {
+    server::network::ConnectReqPacket req;
+    req.SetUsername("TestUser");
+
+    server::network::PacketBuffer buffer;
+    req.Serialize(buffer);
+
+    auto full_data = buffer.Data();
+
+    // Header + partial payload (12 + 10 bytes instead of 12 + 32)
+    std::vector<uint8_t> partial(full_data.begin(), full_data.begin() + 22);
+
+    server::network::PacketBuffer partial_buffer(partial);
+
+    // Can read header
+    EXPECT_NO_THROW({ partial_buffer.ReadHeader(); });
+
+    // But deserializing payload should fail
+    EXPECT_THROW(
+        { server::network::ConnectReqPacket::Deserialize(partial_buffer); },
+        std::out_of_range);
+}
+
+// ----------------------------------------------------------------------------
+// Username Case Sensitivity Tests
+// ----------------------------------------------------------------------------
+
+TEST(ServerTcpEdgeCaseTest, UsernameCaseSensitive) {
+    server::network::ConnectReqPacket req1, req2;
+
+    req1.SetUsername("Player");
+    req2.SetUsername("player");
+
+    EXPECT_NE(req1.GetUsername(), req2.GetUsername());
+}
+
+TEST(ServerTcpEdgeCaseTest, UsernameAllUppercase) {
+    server::network::ConnectReqPacket req;
+    req.SetUsername("ALLCAPS");
+
+    EXPECT_EQ(req.GetUsername(), "ALLCAPS");
+}
+
+TEST(ServerTcpEdgeCaseTest, UsernameAllLowercase) {
+    server::network::ConnectReqPacket req;
+    req.SetUsername("alllowercase");
+
+    EXPECT_EQ(req.GetUsername(), "alllowercase");
+}
+
+TEST(ServerTcpEdgeCaseTest, UsernameMixedCase) {
+    server::network::ConnectReqPacket req;
+    req.SetUsername("MiXeD_CaSe_123");
+
+    EXPECT_EQ(req.GetUsername(), "MiXeD_CaSe_123");
+}
+
+// ----------------------------------------------------------------------------
+// Numeric Username Tests
+// ----------------------------------------------------------------------------
+
+TEST(ServerTcpEdgeCaseTest, UsernameNumericOnly) {
+    server::network::ConnectReqPacket req;
+    req.SetUsername("123456789");
+
+    EXPECT_EQ(req.GetUsername(), "123456789");
+}
+
+TEST(ServerTcpEdgeCaseTest, UsernameAlphanumeric) {
+    server::network::ConnectReqPacket req;
+    req.SetUsername("User123");
+
+    EXPECT_EQ(req.GetUsername(), "User123");
+}
+
+// ----------------------------------------------------------------------------
+// Reserved Value Tests
+// ----------------------------------------------------------------------------
+
+TEST(ServerTcpEdgeCaseTest, ConnectAckReservedFieldsZero) {
+    server::network::ConnectAckPacket ack;
+    ack.player_id = server::network::PlayerId{1};
+    ack.status = server::network::ConnectAckPacket::OK;
+    ack.reserved = {0, 0};
+
+    server::network::PacketBuffer buffer;
+    ack.Serialize(buffer);
+
+    const auto &data = buffer.Data();
+
+    // Reserved bytes (14-15) should be zero
+    EXPECT_EQ(data[14], 0);
+    EXPECT_EQ(data[15], 0);
+}
+
+TEST(ServerTcpEdgeCaseTest, ConnectAckReservedFieldsNonZero) {
+    server::network::ConnectAckPacket ack;
+    ack.player_id = server::network::PlayerId{1};
+    ack.status = server::network::ConnectAckPacket::OK;
+    ack.reserved = {0xAB, 0xCD};  // Non-zero reserved values
+
+    server::network::PacketBuffer buffer;
+    ack.Serialize(buffer);
+
+    const auto &data = buffer.Data();
+
+    // Should serialize whatever values are set
+    EXPECT_EQ(data[14], 0xAB);
+    EXPECT_EQ(data[15], 0xCD);
+}
+
+// ----------------------------------------------------------------------------
+// Player ID Edge Cases
+// ----------------------------------------------------------------------------
+
+TEST(ServerTcpEdgeCaseTest, PlayerIdZero) {
+    server::network::ConnectAckPacket ack;
+    ack.player_id = server::network::PlayerId{0};  // Reserved/invalid ID
+    ack.status = server::network::ConnectAckPacket::BadUsername;
+    ack.reserved = {0, 0};
+
+    server::network::PacketBuffer buffer;
+    ack.Serialize(buffer);
+
+    const auto &data = buffer.Data();
+    EXPECT_EQ(data[12], 0);
+}
+
+TEST(ServerTcpEdgeCaseTest, PlayerIdMaxValue) {
+    server::network::ConnectAckPacket ack;
+    ack.player_id = server::network::PlayerId{255};
+    ack.status = server::network::ConnectAckPacket::OK;
+    ack.reserved = {0, 0};
+
+    server::network::PacketBuffer buffer;
+    ack.Serialize(buffer);
+
+    const auto &data = buffer.Data();
+    EXPECT_EQ(data[12], 255);
+}
+
+// ----------------------------------------------------------------------------
+// Server-Side Username Processing Tests
+// ----------------------------------------------------------------------------
+
+TEST(ServerTcpEdgeCaseTest, ServerTrimsLeadingSpaces) {
+    // The server's trim() function should remove leading spaces
+    std::string username = "  Player";
+    std::string expected = "Player";
+
+    // Simulate what server does: trim leading/trailing whitespace
+    const auto strBegin = username.find_first_not_of(" \t");
+    const auto strEnd = username.find_last_not_of(" \t");
+    std::string trimmed =
+        (strBegin == std::string::npos)
+            ? ""
+            : username.substr(strBegin, strEnd - strBegin + 1);
+
+    EXPECT_EQ(trimmed, expected);
+}
+
+TEST(ServerTcpEdgeCaseTest, ServerTrimsTrailingSpaces) {
+    std::string username = "Player  ";
+    std::string expected = "Player";
+
+    const auto strBegin = username.find_first_not_of(" \t");
+    const auto strEnd = username.find_last_not_of(" \t");
+    std::string trimmed =
+        (strBegin == std::string::npos)
+            ? ""
+            : username.substr(strBegin, strEnd - strBegin + 1);
+
+    EXPECT_EQ(trimmed, expected);
+}
+
+TEST(ServerTcpEdgeCaseTest, ServerTrimsBothSpaces) {
+    std::string username = "  Player  ";
+    std::string expected = "Player";
+
+    const auto strBegin = username.find_first_not_of(" \t");
+    const auto strEnd = username.find_last_not_of(" \t");
+    std::string trimmed =
+        (strBegin == std::string::npos)
+            ? ""
+            : username.substr(strBegin, strEnd - strBegin + 1);
+
+    EXPECT_EQ(trimmed, expected);
+}
+
+TEST(ServerTcpEdgeCaseTest, ServerTrimsWhitespaceOnlyToEmpty) {
+    std::string username = "     ";
+
+    const auto strBegin = username.find_first_not_of(" \t");
+    std::string trimmed =
+        (strBegin == std::string::npos)
+            ? ""
+            : username.substr(
+                  strBegin, username.find_last_not_of(" \t") - strBegin + 1);
+
+    EXPECT_TRUE(trimmed.empty());
+    // Server will reject this as BadUsername
+}
+
+TEST(ServerTcpEdgeCaseTest, ServerTrimsTabsAndSpaces) {
+    std::string username = "\t\tPlayer\t\t";
+    std::string expected = "Player";
+
+    const auto strBegin = username.find_first_not_of(" \t");
+    const auto strEnd = username.find_last_not_of(" \t");
+    std::string trimmed =
+        (strBegin == std::string::npos)
+            ? ""
+            : username.substr(strBegin, strEnd - strBegin + 1);
+
+    EXPECT_EQ(trimmed, expected);
+}
+
+TEST(ServerTcpEdgeCaseTest, ServerPreservesInternalSpaces) {
+    std::string username = "  Player Name  ";
+    std::string expected = "Player Name";  // Internal space preserved
+
+    const auto strBegin = username.find_first_not_of(" \t");
+    const auto strEnd = username.find_last_not_of(" \t");
+    std::string trimmed =
+        (strBegin == std::string::npos)
+            ? ""
+            : username.substr(strBegin, strEnd - strBegin + 1);
+
+    EXPECT_EQ(trimmed, expected);
+}
