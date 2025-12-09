@@ -23,7 +23,7 @@ struct EnemyTag {
 };
 
 struct Projectile {
-    float damage;
+    int damage;
     float speed;
     int ownerId;  // ID of the entity that fired the projectile
     bool isEnemyProjectile = false;
@@ -49,6 +49,17 @@ struct StatsGame {
 
 struct ParrallaxLayer {
     float scroll_speed;
+};
+
+/**
+ * @brief Component to track entities that are playing a death animation.
+ *
+ * When an entity dies, it is marked with this component to play the death
+ * animation. Once the animation finishes, the entity is removed from the
+ * registry by the DeathAnimationSystem.
+ */
+struct AnimationDeath {
+    bool is_dead = true;
 };
 
 }  // namespace Rtype::Client::Component

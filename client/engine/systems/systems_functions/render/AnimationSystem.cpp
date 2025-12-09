@@ -120,9 +120,8 @@ void AnimationSystem(Eng::registry &reg, const float dt,
         // Always set the frame to ensure correct texture rect
         SetFrame(*animation, drawable);
 
-        if (!drawable.isLoaded || !anim_sprite.animated) {
+        if (!drawable.isLoaded || !anim_sprite.animated)
             continue;
-        }
 
         anim_sprite.elapsedTime += dt;
         if (animation->frameDuration > 0.0f) {

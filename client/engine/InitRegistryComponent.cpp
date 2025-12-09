@@ -23,6 +23,7 @@ void InitRegistryComponents(Engine::registry &reg) {
     reg.RegisterComponent<Rtype::Client::Component::StatsGame>();
     reg.RegisterComponent<Rtype::Client::Component::ParrallaxLayer>();
     reg.RegisterComponent<Rtype::Client::Component::AnimationEnterPlayer>();
+    reg.RegisterComponent<Rtype::Client::Component::AnimationDeath>();
     // Register networking components
     reg.RegisterComponent<Rtype::Client::Component::NetworkId>();
     reg.RegisterComponent<Rtype::Client::Component::InterpolatedPosition>();

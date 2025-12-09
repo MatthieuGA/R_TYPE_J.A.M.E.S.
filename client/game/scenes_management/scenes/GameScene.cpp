@@ -110,7 +110,7 @@ void GameScene::AddEnemyLevel(Engine::registry &reg, sf::Vector2f position) {
     animated_sprite.AddAnimation(
         "Hit", "ennemies/4/Hurt.png", 48, 48, 2, 0.1f, false);
     animated_sprite.AddAnimation(
-        "Death", "ennemies/4/Death.png", 48, 48, 6, 0.2f, false);
+        "Death", "ennemies/4/Death.png", 48, 48, 6, 0.1f, false);
     animated_sprite.AddAnimation(
         "Attack", "ennemies/4/Attack.png", 48, 48, 6, 0.15f, false);
     animated_sprite.AddAnimation(

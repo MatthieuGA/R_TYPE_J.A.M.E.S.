@@ -5,6 +5,42 @@
 #include "engine/systems/InitRegistrySystems.hpp"
 
 namespace Rtype::Client {
+
+void DeathHandling(Eng::registry &reg,
+    Eng::sparse_array<Component::AnimatedSprite> &animated_sprites,
+    Engine::entity entity, std::size_t i) {
+    // Mark entity with AnimationDeath component to trigger death anim
+    reg.AddComponent<Component::AnimationDeath>(
+        entity, Component::AnimationDeath{true});
+    reg.RemoveComponent<Component::Health>(entity);
+    reg.RemoveComponent<Component::HitBox>(entity);
+    if (reg.GetComponents<Component::PlayerTag>().has(i))
+        reg.RemoveComponent<Component::PlayerTag>(entity);
+    if (reg.GetComponents<Component::EnemyTag>().has(i))
+        reg.RemoveComponent<Component::EnemyTag>(entity);
+
+    // Play death animation
+    if (animated_sprites.has(i)) {
+        auto &animSprite = animated_sprites[i];
+        animSprite->SetCurrentAnimation("Death", true);
+    }
+}
+
+void HandleCollision(Eng::registry &reg, Component::Health &health,
+    Eng::sparse_array<Component::AnimatedSprite> &animated_sprites,
+    std::size_t i, Engine::entity projEntity,
+    const Component::Projectile &projectile) {
+    health.currentHealth -= projectile.damage;
+    if (animated_sprites.has(i)) {
+        auto &animSprite = animated_sprites[i];
+        animSprite->SetCurrentAnimation("Hit", true);
+        animSprite->GetCurrentAnimation()->currentFrame = 1;
+    }
+
+    // Remove projectile after hit
+    reg.KillEntity(projEntity);
+}
+
 /**
  * @brief System to handle health deduction upon projectile collisions.
  *
@@ -45,21 +81,13 @@ void HealthDeductionSystem(Eng::registry &reg,
             // Simple AABB collision detection
             if (IsColliding(transform, hitBox, projTransform, projHitBox)) {
                 // Collision detected, deduct health
-                health.currentHealth -= projectile.damage;
-                if (animated_sprites.has(i)) {
-                    auto &animSprite = animated_sprites[i];
-                    animSprite->SetCurrentAnimation("Hit", true);
-                    animSprite->GetCurrentAnimation()->currentFrame = 1;
-                }
-
-                // Remove projectile after hit
-                reg.KillEntity(projEntity);
+                HandleCollision(
+                    reg, health, animated_sprites, i, projEntity, projectile);
             }
         }
 
-        // Handle entity death
         if (health.currentHealth <= 0)
-            reg.KillEntity(entity);
+            DeathHandling(reg, animated_sprites, entity, i);
     }
 }
 

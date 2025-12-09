@@ -119,4 +119,22 @@ void HealthDeductionSystem(Eng::registry &reg,
     Eng::sparse_array<Com::Transform> const &transforms,
     Eng::sparse_array<Com::Projectile> const &projectiles);
 
+/**
+ * @brief System to handle entity removal after death animation completes.
+ *
+ * This system checks entities marked with AnimationDeath component and
+ * monitors their death animation. Once the animation finishes playing,
+ * the entity is removed from the registry.
+ *
+ * @param reg ECS registry used to access entities and components.
+ * @param animated_sprites Sparse array of AnimatedSprite components.
+ * @param animation_deaths Sparse array of AnimationDeath components.
+ * @param healths Sparse array of Health components.
+ * @param player_tags Sparse array of PlayerTag components.
+ * @param enemy_tags Sparse array of EnemyTag components.
+ */
+void DeathAnimationSystem(Eng::registry &reg,
+    Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
+    Eng::sparse_array<Com::AnimationDeath> &animation_deaths);
+
 }  // namespace Rtype::Client

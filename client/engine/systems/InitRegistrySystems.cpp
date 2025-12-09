@@ -32,6 +32,8 @@ void InitRenderSystems(Rtype::Client::GameWorld &game_world) {
             AnimationSystem(
                 r, game_world.last_delta_, animated_sprites, drawables);
         });
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::AnimatedSprite>,
+        Eng::sparse_array<Com::AnimationDeath>>(DeathAnimationSystem);
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
         Eng::sparse_array<Com::Drawable>, Eng::sparse_array<Com::Shader>>(
         [&game_world](Eng::registry &r,
