@@ -85,6 +85,23 @@ void GameScene::InitPlayerLevel(Engine::registry &reg) {
 void GameScene::InitScene(Engine::registry &reg, GameWorld &gameWorld) {
     InitBackgrounds(reg);
     InitPlayerLevel(reg);
+    AddEnemyLevel(reg, sf::Vector2f(1500.0f, 300.0f));
+}
+
+void GameScene::AddEnemyLevel(Engine::registry &reg, sf::Vector2f position) {
+    auto enemy_entity = CreateEntityInScene(reg);
+    reg.AddComponent<Component::Transform>(
+        enemy_entity, {position.x, position.y, 0.0f, {-3.0f, 3.0f},
+                          Component::Transform::CENTER});
+    reg.AddComponent<Component::Drawable>(
+        enemy_entity, Component::Drawable{"ennemies/4/Idle.png"});
+    reg.AddComponent<Component::AnimatedSprite>(
+        enemy_entity, Component::AnimatedSprite(
+                          48, 48, 0.2f, true, sf::Vector2f(0.0f, 0.0f), 4));
+    reg.AddComponent<Component::Health>(enemy_entity, Component::Health(50));
+    reg.AddComponent<Component::EnemyTag>(enemy_entity, Component::EnemyTag{});
+    reg.AddComponent<Component::HitBox>(
+        enemy_entity, Component::HitBox{48.0f, 48.0f});
 }
 
 }  // namespace Rtype::Client

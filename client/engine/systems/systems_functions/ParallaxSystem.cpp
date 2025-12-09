@@ -24,9 +24,8 @@ void ParallaxSystem(Eng::registry &reg, const GameWorld &game_world,
         float dt = game_world.last_delta_;
         // Update position based on parallax scroll speed
         transform.x += parallax_layers.scroll_speed * dt;
-        if (transform.x <= -(drawable.texture.getSize().x * transform.scale)) {
+        if (transform.x <= -(drawable.texture.getSize().x * transform.scale.x))
             transform.x = game_world.window_size_.x - 2.f;
-        }
     }
 }
 }  // namespace Rtype::Client

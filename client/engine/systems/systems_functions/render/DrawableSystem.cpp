@@ -84,9 +84,9 @@ void RenderOneEntity(Eng::sparse_array<Com::Transform> const &transforms,
     sf::Vector2f world_position =
         CalculateWorldPositionWithHierarchy(transform.value(), transforms);
     drawable->sprite.setPosition(world_position);
-    float world_scale =
+    sf::Vector2f world_scale =
         CalculateCumulativeScale(transform.value(), transforms);
-    drawable->sprite.setScale(sf::Vector2f(world_scale, world_scale));
+    drawable->sprite.setScale(world_scale);
     // Child rotation only: apply the entity's own rotation
     drawable->sprite.setRotation(transform->rotationDegrees);
     sf::Color color = drawable->color;

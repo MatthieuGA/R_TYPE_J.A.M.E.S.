@@ -16,13 +16,7 @@ struct AnimationEnterPlayer {
     bool isEntering = true;
 };
 
-struct EnemyTag {
-    enum class EnemyType {
-        BASIC,
-        ADVANCED,
-        BOSS
-    } type;
-};
+struct EnemyTag {};
 
 struct Projectile {
     float damage;
@@ -35,6 +29,12 @@ struct Health {
     int maxHealth;
     bool invincible;
     float invincibilityDuration;
+
+    explicit Health(int maxHealth = 100)
+        : currentHealth(maxHealth),
+          maxHealth(maxHealth),
+          invincible(false),
+          invincibilityDuration(0.0f) {}
 };
 
 struct StatsGame {
