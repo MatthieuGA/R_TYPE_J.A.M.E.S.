@@ -325,7 +325,10 @@ void Server::MonitorClientDisconnect(uint8_t player_id) {
                 std::cout << "Received " << bytes_read << " bytes from client "
                           << static_cast<int>(player_id)
                           << " (unexpected during lobby)" << std::endl;
-                MonitorClientDisconnect(player_id);  // Continue monitoring
+                // Check if client still exists before continuing monitoring
+                if (clients_.find(player_id) != clients_.end()) {
+                    MonitorClientDisconnect(player_id);
+                }
             } else {
                 // EOF without error - client disconnected gracefully
                 std::cout << "Client " << static_cast<int>(player_id)
