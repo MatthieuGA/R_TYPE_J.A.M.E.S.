@@ -34,7 +34,8 @@ struct ClientConnection {
     /**
      * @brief Construct a ClientConnection with moved socket
      *
-     * @param id Assigned player ID (1-4)
+     * @param id Assigned player ID (1-255, with MAX_CLIENTS=4 concurrent
+     * limit)
      * @param socket TCP socket (ownership transferred)
      */
     ClientConnection(uint8_t id, boost::asio::ip::tcp::socket socket)
