@@ -29,10 +29,6 @@ class GameScene : public Scene_A {
     void InitPlayerLevel(registry &reg);
     void InitBackgrounds(registry &reg);
     void AddBackgroundEntity(
-<<<<<<< HEAD:client/Game/ScenesManagement/Scenes/GameScene.hpp
-        registry &reg, struct background_info info, float initial_x);
-=======
         registry &reg, struct BackgroundInfo info, float initial_x);
->>>>>>> 3349563e8187828e85f2715d5f173b8deb965efc:client/game/scenes_management/scenes/GameScene.hpp
 };
 }  // namespace Rtype::Client
