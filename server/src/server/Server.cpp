@@ -128,8 +128,8 @@ void Server::HandleTcpAccept(boost::asio::ip::tcp::socket socket) {
             }
 
             // CONNECT_REQ must be exactly 44 bytes (12 header + 32 username)
-            if (bytes_read < 44) {
-                std::cerr << "Incomplete CONNECT_REQ: expected 44 bytes, got "
+            if (bytes_read != 44) {
+                std::cerr << "Incorrect CONNECT_REQ: expected 44 bytes, got "
                           << bytes_read << std::endl;
                 return;
             }
