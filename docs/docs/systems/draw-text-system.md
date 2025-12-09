@@ -1,6 +1,6 @@
 # Draw Text System
 
-**Fichier source:** `client/Engine/Systems/SystemsFunctions/Render/drawTextSystem.cpp`
+**Fichier source:** `client/engine/systems/SystemsFunctions/Render/DrawTextSystem.cpp`
 
 **But:** Gerer le rendu des entites possedant un composant `Text` en appliquant les transformations hierarchiques (position, rotation, echelle) et en respectant l'ordre de dessin via `z_index`.
 

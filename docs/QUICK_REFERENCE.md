@@ -13,26 +13,30 @@ npm install
 npm start
 ```
 
-Visit: http://localhost:3000/R_TYPE_J.A.M.E.S/
+Visit: <http://localhost:3000/R_TYPE_J.A.M.E.S/>
 
 ## 📝 Common Tasks
 
 ### View Documentation Locally
+
 ```bash
 cd docs && npm start
 ```
 
 ### Build for Production
+
 ```bash
 cd docs && npm run build
 ```
 
 ### Test Production Build
+
 ```bash
 cd docs && npm run build && npm run serve
 ```
 
 ### Clear Cache (if having issues)
+
 ```bash
 cd docs && npm run clear
 ```
@@ -42,11 +46,13 @@ cd docs && npm run clear
 ### Create a New Page
 
 1. Create a new `.md` file in `docs/docs/`:
+
 ```bash
 touch docs/docs/my-new-page.md
 ```
 
 2. Add front matter:
+
 ```markdown
 ---
 sidebar_position: 4
@@ -61,7 +67,7 @@ Content here...
 
 ### Organizing Pages in Folders
 
-```
+```txt
 docs/docs/
 ├── intro.md
 ├── architecture.md
@@ -73,6 +79,7 @@ docs/docs/
 ```
 
 Create `_category_.json`:
+
 ```json
 {
   "label": "Guides",
@@ -152,14 +159,18 @@ import TabItem from '@theme/TabItem';
 ## 🔧 Configuration
 
 ### Update Site Metadata
+
 Edit `docs/docusaurus.config.ts`:
+
 - `title`: Site title
 - `tagline`: Subtitle
 - `url`: Production URL
 - `baseUrl`: Base path
 
 ### Customize Theme
+
 Edit `docs/src/css/custom.css`:
+
 ```css
 :root {
   --ifm-color-primary: #2e8555;
@@ -171,19 +182,22 @@ Edit `docs/src/css/custom.css`:
 ## 🚢 Deployment
 
 ### Manual Deploy
+
 ```bash
 cd docs
 GIT_USER=<your-github-username> npm run deploy
 ```
 
 ### Automatic (GitHub Actions)
+
 Just push to `main` branch. The workflow at `.github/workflows/deploy-docs.yml` will:
+
 1. Build the documentation
 2. Deploy to GitHub Pages
 
 ## 📊 File Structure Reference
 
-```
+```txt
 docs/
 ├── docs/               # Documentation pages (.md files)
 ├── src/
@@ -199,6 +213,7 @@ docs/
 ## 🐛 Troubleshooting
 
 ### Clear cache and reinstall
+
 ```bash
 cd docs
 rm -rf node_modules package-lock.json .docusaurus
@@ -207,11 +222,13 @@ npm start
 ```
 
 ### Port already in use
+
 ```bash
 npm start -- --port 3001
 ```
 
 ### Build fails
+
 ```bash
 npm run clear
 npm run build

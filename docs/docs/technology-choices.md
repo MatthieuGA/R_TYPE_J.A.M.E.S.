@@ -1,37 +1,7 @@
 # Technology Choices and Comparative Study
 
-**Document Version:** 1.0
-**Date:** November 25, 2025
-**Team:** J.A.M.E.S. (Jocelyn, Arthuryan, Matthieu, Enoal, Samuel)
-
----
-
-## Table of Contents
-
-1. [Introduction](#introduction)
-2. [Graphics Library: SFML](#graphics-library-sfml)
-3. [Networking Library: Boost.Asio](#networking-library-boostasio)
-4. [Dependency Manager: vcpkg](#dependency-manager-vcpkg)
-5. [Conclusion](#conclusion)
-6. [References](#references)
-
----
-
-## Introduction
-
-This document justifies the key technology choices for the R-Type project. Each selection is evaluated based on:
-
-- **Project Requirements:** Binary UDP protocol, multithreaded server, cross-platform (Linux/Windows)
-- **Performance:** Real-time 60 FPS rendering and low-latency networking
-- **Team Expertise:** Leveraging existing knowledge to maximize productivity
-- **Integration:** Seamless compatibility with our toolchain (CMake, C++23)
-
----
-````markdown
-# Technology Choices and Comparative Study
-
-**Document Version:** 1.0
-**Date:** November 25, 2025
+**Document Version:** 1.0.1
+**Date:** December 9, 2025
 **Team:** J.A.M.E.S. (Jocelyn, Arthuryan, Matthieu, Enoal, Samuel)
 
 ---
