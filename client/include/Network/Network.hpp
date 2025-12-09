@@ -13,13 +13,6 @@
 #include <boost/asio.hpp>
 #include <boost/lockfree/spsc_queue.hpp>
 
-// Server packet headers are available but we use a client-local type
-// to avoid template instantiation issues with incomplete types.
-#if __has_include(<server/Packets.hpp>) && __has_include(<server/PacketBuffer.hpp>)
-#include <server/PacketBuffer.hpp>
-#include <server/Packets.hpp>
-#endif
-
 namespace client {
 
 /**

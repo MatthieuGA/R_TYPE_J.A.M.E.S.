@@ -50,7 +50,7 @@ endif()
 
 # Add client Network implementation for network tests
 target_sources(engine_tests PRIVATE
-    ${CMAKE_SOURCE_DIR}/client/src/Network.cpp
+    ${CMAKE_SOURCE_DIR}/client/Network/Network.cpp
 )
 
 # Add Boost for network tests

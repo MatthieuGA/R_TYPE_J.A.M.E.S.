@@ -21,7 +21,7 @@
 
 #include <boost/asio.hpp>
 
-#include "include/Network.hpp"
+#include "Network/Network.hpp"
 
 using std::chrono_literals::operator""ms;
 
