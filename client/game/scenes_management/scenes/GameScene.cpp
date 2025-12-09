@@ -128,12 +128,51 @@ void GameScene::AddEnemyLevel(Engine::registry &reg, sf::Vector2f position) {
         Rtype::Client::MERMAID_PROJECTILE_SPEED,
         Rtype::Client::MERMAID_PROJECTILE_DAMAGE,
         Component::EnemyShootTag::STRAIGHT_LEFT, sf::Vector2f(-3.0f, -15.0f));
-    enemy_shoot_tag.AddFrameEvent("Attack", 5);
 
+    // Add frame event with custom action
+    enemy_shoot_tag.AddFrameEvent("Attack", 5, [this, &reg](int entity_id) {
+        // Custom action executed at frame 5 of Attack animation
+        auto &transform = reg.GetComponent<Component::Transform>(
+            reg.EntityFromIndex(entity_id));
+        auto &enemy_shoot = reg.GetComponent<Component::EnemyShootTag>(
+            reg.EntityFromIndex(entity_id));
+
+        sf::Vector2f shoot_direction = sf::Vector2f(-1.0f, 0.0f);
+        CreateEnemyProjectile(
+            reg, shoot_direction, enemy_shoot, entity_id, transform);
+    });
+    enemy_shoot_tag.cooldown_action = [this, &reg](int entity_id) {
+        // Default cooldown action: trigger Attack animation
+        auto &animSprite = reg.GetComponent<Component::AnimatedSprite>(
+            reg.EntityFromIndex(entity_id));
+        animSprite.SetCurrentAnimation("Attack");
+    };
     reg.AddComponent<Component::EnemyShootTag>(
         enemy_entity, std::move(enemy_shoot_tag));
     reg.AddComponent<Component::HitBox>(
         enemy_entity, Component::HitBox{8.0f, 32.0f});
 }
 
+void GameScene::CreateEnemyProjectile(Engine::registry &reg,
+    sf::Vector2f direction, Component::EnemyShootTag &enemy_shoot, int ownerId,
+    Component::Transform const &transform) {
+    auto projectile_entity = reg.SpawnEntity();
+    // Add components to projectile entity
+    reg.AddComponent<Component::Transform>(projectile_entity,
+        Component::Transform{
+            transform.x + (enemy_shoot.offset_shoot_position.x *
+                              std::abs(transform.scale.x)),
+            transform.y + (enemy_shoot.offset_shoot_position.y *
+                              std::abs(transform.scale.y)),
+            0.0f, 3.0f, Component::Transform::CENTER});
+    reg.AddComponent<Component::Drawable>(projectile_entity,
+        Component::Drawable("ennemies/4/Projectile.png", -1));
+    reg.AddComponent<Component::Projectile>(projectile_entity,
+        Component::Projectile{enemy_shoot.damage_projectile, direction,
+            enemy_shoot.speed_projectile, ownerId, true});
+    reg.AddComponent<Component::HitBox>(
+        projectile_entity, Component::HitBox{6.0f, 6.0f});
+    reg.AddComponent<Component::Velocity>(
+        projectile_entity, Component::Velocity{direction.x, direction.y});
+}
 }  // namespace Rtype::Client

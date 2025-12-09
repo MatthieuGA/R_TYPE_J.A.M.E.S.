@@ -1,5 +1,8 @@
 #pragma once
+#include <functional>
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <SFML/Graphics.hpp>
@@ -38,26 +41,33 @@ struct EnemyShootTag {
 
     /**
      * @brief Event to trigger at specific animation frames.
+     *
+     * Allows executing a custom action callback at a specific frame of an anim
      */
     struct FrameEvent {
-        enum EventType {
-            SHOOT_PROJECTILE
-        };
+        std::string animation_name;
+        int trigger_frame;
+        std::function<void(int entity_id)> action;
+        bool triggered = false;
 
-        std::string animation_name;  // Name of the animation (e.g., "Attack")
-        int trigger_frame;           // Frame number to trigger the event
-        EventType event_type;        // Type of event to trigger
-        bool triggered = false;      // Track if event was triggered this cycle
-
+        /**
+         * @brief Constructor for FrameEvent.
+         *
+         * @param anim_name Name of the animation
+         * @param frame Frame number to trigger at
+         * @param act Action callback function to execute (receives entity_id)
+         */
         FrameEvent(const std::string &anim_name, int frame,
-            EventType type = SHOOT_PROJECTILE)
+            std::function<void(int)> act)
             : animation_name(anim_name),
               trigger_frame(frame),
-              event_type(type),
+              action(std::move(act)),
               triggered(false) {}
     };
 
-    std::vector<FrameEvent> frame_events;  ///< List of frame events
+    std::vector<FrameEvent> frame_events;
+
+    std::function<void(int entity_id)> cooldown_action = nullptr;
 
     explicit EnemyShootTag(float cooldown, float speed = 200.0f,
         int damage = 10, ShootType type = STRAIGHT_LEFT,
@@ -66,11 +76,48 @@ struct EnemyShootTag {
           speed_projectile(speed),
           damage_projectile(damage),
           shoot_type(type),
-          offset_shoot_position(offset) {}
+          offset_shoot_position(offset),
+          cooldown_action(nullptr) {}
 
+    /**
+     * @brief Add a frame event with a custom action callback.
+     *
+     * @param animation_name Name of the animation (e.g., "Attack")
+     * @param frame Frame number to trigger the action
+     * @param action Callback function that receives the entity_id
+     *
+     * @example
+     * enemy_shoot_tag.AddFrameEvent("Attack", 5,
+     *     [&reg, &enemy_shoot](int entity_id) {
+     *         // Custom action - e.g., create projectile
+     *         CreateEnemyProjectile(reg, direction, enemy_shoot, entity_id,
+     * transform);
+     *     });
+     */
     void AddFrameEvent(const std::string &animation_name, int frame,
-        FrameEvent::EventType event_type = FrameEvent::SHOOT_PROJECTILE) {
-        frame_events.emplace_back(animation_name, frame, event_type);
+        std::function<void(int)> action) {
+        frame_events.emplace_back(animation_name, frame, std::move(action));
+    }
+
+    /**
+     * @brief Set the cooldown action callback.
+     *
+     * When the cooldown expires, this action is executed instead of the
+     * default behavior. Useful for customizing cooldown-based shooting
+     * (without frame events).
+     *
+     * @param action Callback function that receives the entity_id
+     *
+     * @example
+     * enemy_shoot_tag.SetCooldownAction([&reg](int entity_id) {
+     *     // Custom cooldown action
+     *     auto &transform = reg.GetComponent<Component::Transform>(entity_id);
+     *     CreateEnemyProjectile(reg, direction, enemy_shoot, entity_id,
+     * transform);
+     * });
+     */
+    void SetCooldownAction(std::function<void(int)> action) {
+        cooldown_action = std::move(action);
     }
 };
 
