@@ -40,6 +40,7 @@ struct ClientConnection {
     ClientConnection(uint8_t id, boost::asio::ip::tcp::socket socket)
         : player_id(id),
           tcp_socket(std::move(socket)),
+          udp_endpoint(boost::asio::ip::udp::endpoint()),
           last_activity(std::chrono::steady_clock::now()),
           ready(false) {
         username.reserve(32);  // Match CONNECT_REQ username size
