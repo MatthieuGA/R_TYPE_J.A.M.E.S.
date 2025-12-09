@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 
+#include "Engine/Audio/AudioManager.hpp"
 #include "Game/ScenesManagement/initScenes.hpp"
 #include "include/Components/CoreComponents.hpp"
 #include "include/Components/GameplayComponents.hpp"
@@ -82,6 +83,13 @@ void GameScene::InitPlayerLevel(Engine::registry &reg) {
 }
 
 void GameScene::InitScene(Engine::registry &reg, GameWorld &gameWorld) {
+    // Register and play game music
+    if (gameWorld.audio_manager_) {
+        gameWorld.audio_manager_->RegisterAsset(
+            "main_theme", "Assets/Sounds/main_theme.ogg", true);
+        gameWorld.audio_manager_->PlayMusic("main_theme", true);
+    }
+
     InitBackgrounds(reg);
     InitPlayerLevel(reg);
 }
