@@ -24,7 +24,7 @@ TEST(RenderComponents, DrawableBasicsAndMove) {
 TEST(RenderComponents, ShaderPathAndUniforms) {
     Com::Shader shader{
         "wave.frag", {{"timeScale", 1.5f}, {"amplitude", 0.7f}}};
-    EXPECT_EQ(shader.shaderPath, std::string("assets/Shaders/wave.frag"));
+    EXPECT_EQ(shader.shaderPath, std::string("assets/shaders/wave.frag"));
     EXPECT_FALSE(shader.isLoaded);
     ASSERT_EQ(shader.uniforms_float.size(), 2u);
     EXPECT_FLOAT_EQ(shader.uniforms_float.at("timeScale"), 1.5f);

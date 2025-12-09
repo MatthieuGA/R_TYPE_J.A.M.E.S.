@@ -17,7 +17,7 @@ std::string GetFontAbsolutePath(const std::string &font_name) {
     auto source_path = std::filesystem::path(__FILE__);
     auto root = source_path.parent_path().parent_path();
     auto font =
-        (root / "client" / "Assets" / "Fonts" / font_name).lexically_normal();
+        (root / "client" / "assets" / "fonts" / font_name).lexically_normal();
     return font.string();
 }
 }  // namespace

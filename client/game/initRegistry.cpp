@@ -1,4 +1,4 @@
-#include "client/Game/initRegistry.hpp"
+#include "game/initRegistry.hpp"
 
 #include "engine/initRegistryComponent.hpp"
 #include "engine/systems/initRegistrySystems.hpp"

@@ -1,4 +1,4 @@
-#include "client/Game/scenes_management/Scene_A.hpp"
+#include "game/scenes_management/Scene_A.hpp"
 
 namespace Rtype::Client {
 void Scene_A::InitScene(Engine::registry &reg, GameWorld &gameWorld) {

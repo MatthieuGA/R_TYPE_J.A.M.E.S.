@@ -11,7 +11,7 @@ void createProjectile(Eng::registry &reg, float x, float y, int ownerId) {
     reg.AddComponent<Component::Transform>(projectile_entity,
         Component::Transform{x, y, 0.0f, 3.0f, Com::Transform::CENTER});
     reg.AddComponent<Component::Drawable>(projectile_entity,
-        Component::Drawable("OriginalRtype/r-typesheet2.gif", -1));
+        Component::Drawable("original_rtype/r-typesheet2.gif", -1));
     reg.AddComponent<Component::AnimatedSprite>(
         projectile_entity, Component::AnimatedSprite{24, 32, 10});
     reg.AddComponent<Component::Projectile>(
@@ -26,7 +26,7 @@ void createChargedProjectile(
     reg.AddComponent<Component::Transform>(projectile_entity,
         Component::Transform{x, y, 0.0f, 3.0f, Com::Transform::CENTER});
     reg.AddComponent<Component::Drawable>(projectile_entity,
-        Component::Drawable("OriginalRtype/r-typesheet1.gif", -1));
+        Component::Drawable("original_rtype/r-typesheet1.gif", -1));
     reg.AddComponent<Component::AnimatedSprite>(
         projectile_entity, Component::AnimatedSprite{29, 22, 25});
     reg.AddComponent<Component::Projectile>(projectile_entity,

@@ -82,7 +82,7 @@ struct Shader {
 
     explicit Shader(const std::string &path,
         std::vector<std::pair<std::string, float>> uf = {})
-        : shaderPath("assets/Shaders/" + path),
+        : shaderPath("assets/shaders/" + path),
           shader(nullptr),
           isLoaded(false) {
         for (const auto &[name, value] : uf)

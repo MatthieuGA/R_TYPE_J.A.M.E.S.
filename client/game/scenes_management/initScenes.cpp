@@ -1,4 +1,4 @@
-#include "client/Game/scenes_management/initScenes.hpp"
+#include "game/scenes_management/initScenes.hpp"
 
 #include <memory>
 

@@ -1,4 +1,4 @@
-#include "client/Game/scenes_management/scenes/GameScene.hpp"
+#include "game/scenes_management/scenes/GameScene.hpp"
 
 #include <string>
 #include <vector>
@@ -53,7 +53,7 @@ void GameScene::InitPlayerLevel(Engine::registry &reg) {
     reg.AddComponent<Component::Transform>(player_entity,
         {100.0f, 300.0f, 0.0f, 4.0f, Component::Transform::CENTER});
     reg.AddComponent<Component::Drawable>(
-        player_entity, Component::Drawable{"OriginalRtype/r-typesheet42.gif"});
+        player_entity, Component::Drawable{"original_rtype/r-typesheet42.gif"});
     reg.AddComponent<Component::AnimatedSprite>(
         player_entity, Component::AnimatedSprite(33, 19, 2));
     reg.AddComponent<Component::Controllable>(
@@ -72,7 +72,7 @@ void GameScene::InitPlayerLevel(Engine::registry &reg) {
                                     Component::Transform::CENTER, {0.0f, 0.0f},
                                     player_entity.GetId()));
     reg.AddComponent<Component::Drawable>(player_charging_entity,
-        Component::Drawable{"OriginalRtype/r-typesheet1.gif", -1, 1.0f});
+        Component::Drawable{"original_rtype/r-typesheet1.gif", -1, 1.0f});
     reg.AddComponent<Component::AnimatedSprite>(
         player_charging_entity, Component::AnimatedSprite(33, 33, 0.1f, true,
                                     sf::Vector2f(0.0f, 50.0f), 8));

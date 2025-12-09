@@ -14,7 +14,7 @@ TEST(ShaderSystem, LoadsShaderFromAssets) {
 
     Eng::sparse_array<Com::Shader> shaders;
 
-    // Use the existing test shader placed in client/assets/Shaders/wave.frag
+    // Use the existing test shader placed in client/assets/shaders/wave.frag
     Com::Shader shade("error.frag");
     shaders.insert_at(0, shade);
 
