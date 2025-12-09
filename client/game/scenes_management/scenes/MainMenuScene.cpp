@@ -1,5 +1,8 @@
 #include "game/scenes_management/scenes/MainMenuScene.hpp"
 
+#include <string>
+#include <vector>
+
 #include "include/components/CoreComponents.hpp"
 #include "include/components/RenderComponent.hpp"
 #include "include/components/ScenesComponents.hpp"
@@ -7,7 +10,39 @@
 #include "include/registry.hpp"
 
 namespace Rtype::Client {
+
 void MainMenuScene::InitScene(Engine::registry &reg, GameWorld &gameWorld) {
+    InitBackground(reg);
+    InitUI(reg, gameWorld);
+}
+
+void MainMenuScene::InitBackground(Engine::registry &reg) {
+    std::vector<BackgroundInfo> background_list = {
+        {"background/level_1/1.png", 0.f, -10, true, 1.f, .0005f, 0.2f},
+        {"background/level_1/2.png", 0.f, -9, true, 6.f, .007f, 1.2f},
+        {"background/level_1/3.png", 0.f, -8, true, 6.f, .007f, 1.2f},
+        {"background/level_1/4.png", 0.f, -7, true, 4.f, .005f, 1.5f},
+        {"background/level_1/5.png", -20.f, 10, false, 0.f, 0.f, 0.f, 0.8f},
+        {"background/level_1/5.png", -200.f, 11, false, 0.f, 0.f, 0.f, 0.6f}};
+
+    // Initialize background entity
+    for (const auto &info : background_list) {
+        auto background_entity = CreateEntityInScene(reg);
+        reg.AddComponent<Component::Transform>(background_entity,
+            Component::Transform{0, info.initialY, 0.0f, info.scale,
+                Component::Transform::TOP_LEFT});
+        if (info.isWave) {
+            reg.AddComponent<Component::Shader>(background_entity,
+                Component::Shader{"wave.frag",
+                    {{"speed", info.wave_speed}, {"amplitude", info.amplitude},
+                        {"frequency", info.frequency}}});
+        }
+        reg.AddComponent<Component::Drawable>(background_entity,
+            Component::Drawable{info.path, info.z_index, info.opacity});
+    }
+}
+
+void MainMenuScene::InitUI(Engine::registry &reg, GameWorld &gameWorld) {
     auto play_button_entity = CreateEntityInScene(reg);
     reg.AddComponent<Component::Transform>(
         play_button_entity, Component::Transform{960.0f, 500.0f, 0.0f, 5.0f,

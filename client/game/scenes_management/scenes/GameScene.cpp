@@ -12,7 +12,7 @@
 namespace Rtype::Client {
 void GameScene::AddBackgroundEntity(
     Engine::registry &reg, BackgroundInfo info, float initial_x) {
-    auto background_entity = reg.SpawnEntity();
+    auto background_entity = CreateEntityInScene(reg);
     reg.AddComponent<Component::Transform>(
         background_entity, Component::Transform{initial_x, info.initialY, 0.0f,
                                info.scale, Component::Transform::TOP_LEFT});
@@ -47,7 +47,7 @@ void GameScene::InitBackgrounds(Engine::registry &reg) {
 }
 
 void GameScene::InitPlayerLevel(Engine::registry &reg) {
-    auto player_entity = reg.SpawnEntity();
+    auto player_entity = CreateEntityInScene(reg);
     reg.AddComponent<Component::Transform>(player_entity,
         {100.0f, 300.0f, 0.0f, 4.0f, Component::Transform::CENTER});
     reg.AddComponent<Component::Drawable>(player_entity,
@@ -64,7 +64,7 @@ void GameScene::InitPlayerLevel(Engine::registry &reg) {
                            Rtype::Client::PLAYER_SHOOT_COOLDOWN,
                            Rtype::Client::PLAYER_CHARGE_TIME});
 
-    auto player_charging_entity = reg.SpawnEntity();
+    auto player_charging_entity = CreateEntityInScene(reg);
     reg.AddComponent<Component::Transform>(
         player_charging_entity, Component::Transform(100.0f, 0.0f, 0.0f, 1.0f,
                                     Component::Transform::CENTER, {0.0f, 0.0f},
