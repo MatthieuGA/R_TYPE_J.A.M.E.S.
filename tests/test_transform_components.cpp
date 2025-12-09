@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "../client/include/components/CoreComponents.hpp"
+#include "include/components/CoreComponents.hpp"
 
 namespace Com = Rtype::Client::Component;
 

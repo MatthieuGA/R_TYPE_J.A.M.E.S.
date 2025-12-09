@@ -3,7 +3,7 @@
 #include <string>
 #include <utility>
 
-#include "../client/include/components/RenderComponent.hpp"
+#include "include/components/RenderComponent.hpp"
 
 namespace Com = Rtype::Client::Component;
 

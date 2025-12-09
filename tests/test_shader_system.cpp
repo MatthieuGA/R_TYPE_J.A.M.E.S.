@@ -1,8 +1,7 @@
 #include <gtest/gtest.h>
 
-#include "../client/engine/systems/initRegistrySystems.hpp"
-#include "../client/include/components/CoreComponents.hpp"
-#include "../client/include/components/RenderComponent.hpp"
+#include "engine/systems/initRegistrySystems.hpp"
+#include "include/components/RenderComponent.hpp"
 
 namespace Com = Rtype::Client::Component;
 namespace Eng = Engine;

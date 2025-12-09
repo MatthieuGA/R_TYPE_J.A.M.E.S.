@@ -2,10 +2,10 @@
 
 #include <string>
 
-#include "../client/include/components/CoreComponents.hpp"
-#include "../client/include/components/GameplayComponents.hpp"
-#include "../client/include/components/NetworkingComponents.hpp"
-#include "../client/include/components/RenderComponent.hpp"
+#include "include/components/CoreComponents.hpp"
+#include "include/components/GameplayComponents.hpp"
+#include "include/components/NetworkingComponents.hpp"
+#include "include/components/RenderComponent.hpp"
 
 namespace Com = Rtype::Client::Component;
 
