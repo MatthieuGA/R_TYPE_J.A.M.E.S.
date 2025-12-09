@@ -208,14 +208,14 @@ void Server::HandleConnectReq(boost::asio::ip::tcp::socket &socket,
 
     // Create ClientConnection and move socket ownership
     ClientConnection connection(player_id, std::move(socket));
-    connection.username = username;
+    connection.username_ = username;
 
     std::cout << "Player connected: '" << username << "' assigned ID "
               << static_cast<int>(player_id) << std::endl;
 
     // Send CONNECT_ACK (must send before moving connection into map)
     SendConnectAck(
-        connection.tcp_socket, player_id, network::ConnectAckPacket::OK);
+        connection.tcp_socket_, player_id, network::ConnectAckPacket::OK);
 
     // Transfer ownership to clients_ map
     clients_.emplace(player_id, std::move(connection));
@@ -286,7 +286,7 @@ void Server::RemoveClient(uint8_t player_id) {
     }
 
     std::cout << "Player " << static_cast<int>(player_id) << " ('"
-              << it->second.username << "') disconnected" << std::endl;
+              << it->second.username_ << "') disconnected" << std::endl;
 
     // TCP socket closes automatically (object is destroyed)
     clients_.erase(it);
@@ -295,7 +295,7 @@ void Server::RemoveClient(uint8_t player_id) {
 bool Server::IsUsernameTaken(const std::string &username) const {
     return std::any_of(
         clients_.begin(), clients_.end(), [&username](const auto &pair) {
-            return pair.second.username == username;
+            return pair.second.username_ == username;
         });
 }
 
@@ -309,7 +309,7 @@ void Server::MonitorClientDisconnect(uint8_t player_id) {
     auto buffer = std::make_shared<std::vector<uint8_t>>(1);
 
     // Start async read - any data or EOF will trigger the callback
-    it->second.tcp_socket.async_receive(boost::asio::buffer(*buffer),
+    it->second.tcp_socket_.async_receive(boost::asio::buffer(*buffer),
         [this, buffer, player_id](
             boost::system::error_code ec, std::size_t bytes_read) {
             if (ec) {
