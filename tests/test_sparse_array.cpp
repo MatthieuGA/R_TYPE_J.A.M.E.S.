@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 
+#include <algorithm>
 #include <string>
+#include <utility>
 
 #include "include/sparse_array.hpp"
 

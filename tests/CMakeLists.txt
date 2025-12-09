@@ -10,10 +10,6 @@ file(GLOB_RECURSE R_TYPE_TEST_SOURCES CONFIGURE_DEPENDS
 list(REMOVE_ITEM R_TYPE_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/test_server.cpp")
 list(REMOVE_ITEM R_TYPE_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/test_packets.cpp")
 
-# Exclude audio tests (compiled separately as standalone target)
-list(REMOVE_ITEM R_TYPE_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/test_audio_mock.cpp")
-list(REMOVE_ITEM R_TYPE_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/test_audio_system.cpp")
-
 if (R_TYPE_TEST_SOURCES)
     add_executable(engine_tests ${R_TYPE_TEST_SOURCES})
 else()
@@ -37,6 +33,7 @@ target_include_directories(engine_tests PRIVATE
 # Compile client engine sources into the test executable so systems are available
 file(GLOB_RECURSE CLIENT_ENGINE_SOURCES CONFIGURE_DEPENDS
     "${CMAKE_SOURCE_DIR}/client/Engine/*.cpp"
+    "${CMAKE_SOURCE_DIR}/client/Game/*.cpp"
 )
 if (CLIENT_ENGINE_SOURCES)
     target_sources(engine_tests PRIVATE ${CLIENT_ENGINE_SOURCES})
@@ -71,25 +68,3 @@ target_link_libraries(server_tests
 
 # Discover server tests for CTest
 gtest_discover_tests(server_tests)
-
-# Create standalone audio tests (no SFML/OpenAL linking required)
-add_executable(audio_tests
-    test_audio_mock.cpp
-)
-
-# Include directories for audio tests
-target_include_directories(audio_tests
-    PRIVATE
-        ${CMAKE_SOURCE_DIR}/client
-        ${CMAKE_SOURCE_DIR}/engine/include
-)
-
-# Link only with Google Test and engine (no SFML/OpenAL)
-target_link_libraries(audio_tests
-    PRIVATE
-        GTest::gtest_main
-        r-type_engine
-)
-
-# Discover audio tests for CTest
-gtest_discover_tests(audio_tests)

@@ -94,9 +94,9 @@ node_modules/
 package-lock.json
 
 build_log.txt
-docs/
 .vscode/
 .cache
 
 *.pdf
 r-type.txt
+vcpkg_installed/

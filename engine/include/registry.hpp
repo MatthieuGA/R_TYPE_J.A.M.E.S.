@@ -33,6 +33,9 @@ class registry {
     template <class Component>
     sparse_array<Component> const &GetComponents() const;
 
+    template <class Component>
+    Component &GetComponent(entity_t const &e);
+
     // Entity management
     entity_t SpawnEntity();
     entity_t EntityFromIndex(std::size_t idx);

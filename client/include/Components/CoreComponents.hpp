@@ -1,9 +1,22 @@
 #pragma once
+#include <cstdint>
+#include <functional>
+#include <map>
+#include <memory>
+#include <optional>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include <SFML/Graphics.hpp>
 
 namespace Rtype::Client::Component {
+/**
+ * @brief Transform component for hierarchical positioning and rotation.
+ *
+ * Uses Entity IDs for parent-child relationships instead of raw pointers
+ * to avoid dangling pointer issues when the sparse_array reallocates.
+ */
 struct Transform {
     float x;
     float y;
@@ -23,39 +36,36 @@ struct Transform {
     } origin = CENTER;
 
     sf::Vector2f customOrigin = sf::Vector2f(0.0f, 0.0f);
-};
 
-struct Drawable {
-    std::string spritePath;
-    int z_index = 0;
-    sf::Sprite sprite;
-    sf::Texture texture;
+    // Parent entity ID (std::nullopt if no parent)
+    std::optional<std::size_t> parent_entity = std::nullopt;
 
-    enum OriginPoint {
-        TOP_LEFT,
-        CENTER
-    } origin = TOP_LEFT;
+    // List of child entity IDs for hierarchical relationships
+    std::vector<std::size_t> children;
 
-    bool isLoaded = false;
+    Transform() = default;
 
-    Drawable(const std::string &spritePath, int zIndex,
-        OriginPoint originPoint = TOP_LEFT)
-        : spritePath("Assets/" + spritePath),
-          z_index(zIndex),
-          texture(),
-          sprite(texture),
-          origin(originPoint),
-          isLoaded(false) {}
-};
+    Transform(float x, float y, float rotationDegrees, float scale,
+        OriginPoint origin = CENTER,
+        sf::Vector2f customOrigin = sf::Vector2f(0.0f, 0.0f),
+        std::optional<std::size_t> parent_entity = std::nullopt)
+        : x(x),
+          y(y),
+          rotationDegrees(rotationDegrees),
+          scale(scale),
+          origin(origin),
+          customOrigin(customOrigin),
+          parent_entity(parent_entity),
+          children() {}
 
-struct AnimatedSprite {
-    int frameWidth;
-    int frameHeight;
-    int totalFrames;
-    int currentFrame = 0;
-    float frameDuration = 0.1f;
-    bool loop = true;
-    float elapsedTime = 0.0f;
+    /**
+     * @brief Gets the cumulative rotation including parent rotations.
+     * @note This only uses local rotation; parent rotations must be added by
+     * the render system.
+     */
+    float GetWorldRotation() const {
+        return rotationDegrees;
+    }
 };
 
 struct Velocity {
@@ -77,17 +87,12 @@ struct InputState {
     bool shoot;
 };
 
-struct Inputs {
-    float horizontal = 0.0f;
-    float vertical = 0.0f;
-    bool shoot = false;
-};
-
 struct HitBox {
     float width;
     float height;
-    float offsetX;
-    float offsetY;
+    bool scaleWithTransform = true;
+    float offsetX = 0.0f;
+    float offsetY = 0.0f;
 };
 
 struct Solid {
@@ -95,9 +100,29 @@ struct Solid {
     bool isLocked = false;
 };
 
+struct Inputs {
+    // movement states
+    float horizontal = 0.0f;
+    float vertical = 0.0f;
+    // shoot states
+    bool shoot = false;
+    bool last_shoot_state = false;
+};
+
+struct Clickable {
+    std::function<void()> onClick;
+
+    sf::Color idleColor = sf::Color::White;
+    sf::Color hoverColor = sf::Color(200, 200, 200);
+    sf::Color clickColor = sf::Color(150, 150, 150);
+    bool isHovered = false;
+    bool isClicked = false;
+};
+
 struct SoundRequest {
     std::string sound_id;
     float volume = 1.0f;
     bool loop = false;
 };
+
 }  // namespace Rtype::Client::Component

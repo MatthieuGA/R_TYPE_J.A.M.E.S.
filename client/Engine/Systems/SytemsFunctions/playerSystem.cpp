@@ -1,39 +1,27 @@
-/**
- * @file playerSystem.cpp
- * @brief System for managing player animation states based on movement.
- *
- * This system updates the player's animation frame based on their current
- * vertical velocity to provide visual feedback for upward/downward movement.
- */
-
 #include <SFML/Graphics.hpp>
 
-#include "Engine/initRegistrySystems.hpp"
+#include "Engine/Systems/initRegistrySystems.hpp"
 
 namespace Rtype::Client {
-
 /**
- * @brief Updates player animation frame based on vertical velocity.
+ * @brief Update player animated sprite frame selection based on vertical
+ * velocity.
  *
- * Animation frames:
- * - Frame 0: Moving very fast downward (vy > 200)
- * - Frame 1: Moving downward (vy >= 75)
- * - Frame 2: Neutral/horizontal movement
- * - Frame 3: Moving upward (vy <= -75)
- * - Frame 4: Moving very fast upward (vy < -200)
+ * Chooses a frame index representing up/down/neutral movement states.
  *
- * @param reg The ECS registry
- * @param player_tags Player tag component array
- * @param velocities Velocity component array
- * @param animated_sprites Animated sprite component array
+ * @param reg Engine registry (unused)
+ * @param player_tags Sparse array of PlayerTag components
+ * @param velocities Sparse array of Velocity components
+ * @param animated_sprites Sparse array of AnimatedSprite components to update
  */
 void PlayerSystem(Eng::registry &reg,
     Eng::sparse_array<Com::PlayerTag> const &player_tags,
     Eng::sparse_array<Com::Velocity> const &velocities,
+    Eng::sparse_array<Com::Transform> &transforms,
     Eng::sparse_array<Com::AnimatedSprite> &animated_sprites) {
-    for (auto &&[i, player_tag, velocity, animated_sprite] :
-        make_indexed_zipper(player_tags, velocities, animated_sprites)) {
-        // Update animation frame based on vertical velocity
+    for (auto &&[i, player_tag, velocity, animated_sprite, transform] :
+        make_indexed_zipper(
+            player_tags, velocities, animated_sprites, transforms)) {
         if (velocity.vy > 200.f)
             animated_sprite.currentFrame = 0;
         else if (velocity.vy >= 75)
@@ -44,7 +32,16 @@ void PlayerSystem(Eng::registry &reg,
             animated_sprite.currentFrame = 3;
         else
             animated_sprite.currentFrame = 2;
+
+        float rotation = velocity.vx / player_tag.speed_max * 5.f;
+        transform.rotationDegrees = rotation;
+
+        for (auto &&[j, child_transform] : make_indexed_zipper(transforms)) {
+            if (child_transform.parent_entity.has_value() &&
+                child_transform.parent_entity.value() == i) {
+                child_transform.rotationDegrees = rotation;
+            }
+        }
     }
 }
-
 }  // namespace Rtype::Client

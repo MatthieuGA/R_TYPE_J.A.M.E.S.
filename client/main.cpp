@@ -5,23 +5,16 @@
 
 #include <SFML/Graphics.hpp>
 
-#include "include/registry.hpp"
 #include "Engine/Audio/AudioManager.hpp"
 #include "Engine/Audio/SFMLAudioBackend.hpp"
 #include "Engine/gameWorld.hpp"
-#include "Engine/initRegistryComponent.hpp"
-#include "Engine/initRegistrySystems.hpp"
+#include "Game/ScenesManagement/initScenes.hpp"
+#include "Game/initRegistry.hpp"
+#include "include/registry.hpp"
 
 using Engine::registry;
 namespace RC = Rtype::Client;
-namespace Component = Rtype::Client::Component;
 namespace Audio = Rtype::Client::Audio;
-
-void init_registry(RC::GameWorld &game_world,
-    Audio::AudioManager &audio_manager) {
-    RC::InitRegistryComponents(game_world.registry_);
-    RC::InitRegistrySystems(game_world, audio_manager);
-}
 
 int main() {
     try {
@@ -31,23 +24,18 @@ int main() {
         auto audio_backend = std::make_unique<Audio::SFMLAudioBackend>();
         Audio::AudioManager audio_manager(std::move(audio_backend));
 
-        init_registry(game_world, audio_manager);
-        
-        // Create some entities (simplified from base branch example)
-        for (int i = 0; i < 4; ++i) {
-            auto entity = game_world.registry_.SpawnEntity();
-            game_world.registry_.EmplaceComponent<Component::Transform>(entity,
-                Component::Transform{(i + 1) * 150.0f, 100.0f, i * 10.f, 0.2f});
-            game_world.registry_.EmplaceComponent<Component::Drawable>(entity,
-                Component::Drawable("Logo.png", 0, Component::Drawable::CENTER));
-        }
-
+        RC::InitRegistry(game_world, audio_manager);
+        RC::InitSceneLevel(game_world.registry_);
         while (game_world.window_.isOpen()) {
             sf::Event event;
             while (game_world.window_.pollEvent(event)) {
                 if (event.type == sf::Event::Closed)
                     game_world.window_.close();
             }
+            // Calculate delta time at the beginning of the frame
+            game_world.last_delta_ =
+                game_world.delta_time_clock_.restart().asSeconds();
+
             game_world.window_.clear(sf::Color::Black);
             game_world.registry_.RunSystems();
             game_world.window_.display();

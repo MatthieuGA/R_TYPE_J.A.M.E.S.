@@ -1,0 +1,25 @@
+#pragma once
+#include <cstdint>
+#include <map>
+#include <memory>
+#include <optional>
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
+#include <SFML/Graphics.hpp>
+
+#include "Game/ScenesManagement/Scene_A.hpp"
+#include "include/registry.hpp"
+
+namespace Eng = Engine;
+
+namespace Rtype::Client::Component {
+struct SceneManagement {
+    std::string current = "";
+    std::string next = "";
+    std::unordered_map<std::string, std::shared_ptr<Scene_A>> scenes;
+};
+
+}  // namespace Rtype::Client::Component

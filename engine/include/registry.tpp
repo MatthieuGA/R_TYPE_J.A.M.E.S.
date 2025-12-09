@@ -38,6 +38,7 @@ inline sparse_array<Component> &registry::GetComponents() {
     return static_cast<components_holder<Component> *>(it->second.get())->arr;
 }
 
+
 template <class Component>
 inline sparse_array<Component> const &registry::GetComponents() const {
     auto type_idx = std::type_index(typeid(Component));
@@ -47,6 +48,15 @@ inline sparse_array<Component> const &registry::GetComponents() const {
     }
     return static_cast<components_holder<Component> const *>(it->second.get())
         ->arr;
+}
+
+template <class Component>
+inline Component &registry::GetComponent(entity_t const &e) {
+    auto &components = GetComponents<Component>();
+    if (!components.has(e.GetId())) {
+        throw std::runtime_error("Entity does not have the requested component");
+    }
+    return components[e.GetId()].value();
 }
 
 template <typename Component>

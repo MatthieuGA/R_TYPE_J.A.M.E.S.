@@ -1,5 +1,5 @@
 #include "Engine/Events/EngineEvent.hpp"
-#include "Engine/initRegistrySystems.hpp"
+#include "Engine/Systems/initRegistrySystems.hpp"
 #include "include/indexed_zipper.hpp"
 
 namespace Eng = Engine;
@@ -7,6 +7,14 @@ namespace Eng = Engine;
 namespace Rtype::Client {
 namespace Com = Component;
 
+/**
+ * @brief Initialize event-related systems in the registry.
+ *
+ * This function sets up the necessary event subscriptions
+ * within the provided game world's event bus.
+ *
+ * @param game_world The game world containing the registry.
+ */
 void InitRegistrySystemsEvents(Rtype::Client::GameWorld &game_world) {
     game_world.event_bus_.Subscribe<CollisionEvent>(
         [](const CollisionEvent &event, int) {

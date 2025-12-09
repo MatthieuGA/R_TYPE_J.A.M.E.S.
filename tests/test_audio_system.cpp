@@ -4,22 +4,24 @@
  */
 
 #include <gtest/gtest.h>
+
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
-#include "include/registry.hpp"
-#include "include/Components/CoreComponents.hpp"
-#include "include/Audio/IAudioBackend.hpp"
-#include "include/Audio/AudioTypes.hpp"
 #include "Engine/Audio/AudioManager.hpp"
-#include "Engine/initRegistrySystems.hpp"
+#include "Engine/Systems/initRegistrySystems.hpp"
+#include "include/Audio/AudioTypes.hpp"
+#include "include/Audio/IAudioBackend.hpp"
+#include "include/Components/CoreComponents.hpp"
+#include "include/registry.hpp"
 
 namespace Rtype::Client::Audio {
 
 /**
  * @brief Mock audio backend for testing.
- * 
+ *
  * Records all operations without actually playing audio.
  */
 class MockAudioBackend : public IAudioBackend {
@@ -29,12 +31,12 @@ class MockAudioBackend : public IAudioBackend {
         std::string id;
         std::string path;
     };
-    
+
     struct LoadMusicCall {
         std::string id;
         std::string path;
     };
-    
+
     struct PlayCall {
         std::string id;
         float volume;
@@ -71,12 +73,8 @@ class MockAudioBackend : public IAudioBackend {
     }
 
     void Play(const PlaybackRequest &request) override {
-        play_calls_.push_back({
-            request.id,
-            request.volume,
-            request.loop,
-            request.category
-        });
+        play_calls_.push_back(
+            {request.id, request.volume, request.loop, request.category});
     }
 
     void StopMusic() override {
@@ -123,7 +121,8 @@ class MockAudioBackend : public IAudioBackend {
 class AudioManagerTest : public ::testing::Test {
  protected:
     void SetUp() override {
-        auto backend = std::make_unique<Rtype::Client::Audio::MockAudioBackend>();
+        auto backend =
+            std::make_unique<Rtype::Client::Audio::MockAudioBackend>();
         mock_backend_ = backend.get();
         audio_manager_ = std::make_unique<Rtype::Client::Audio::AudioManager>(
             std::move(backend));
@@ -134,7 +133,7 @@ class AudioManagerTest : public ::testing::Test {
         mock_backend_ = nullptr;
     }
 
-    Rtype::Client::Audio::MockAudioBackend* mock_backend_;
+    Rtype::Client::Audio::MockAudioBackend *mock_backend_;
     std::unique_ptr<Rtype::Client::Audio::AudioManager> audio_manager_;
 };
 
@@ -142,8 +141,9 @@ class AudioSystemTest : public ::testing::Test {
  protected:
     void SetUp() override {
         registry_.RegisterComponent<Rtype::Client::Component::SoundRequest>();
-        
-        auto backend = std::make_unique<Rtype::Client::Audio::MockAudioBackend>();
+
+        auto backend =
+            std::make_unique<Rtype::Client::Audio::MockAudioBackend>();
         mock_backend_ = backend.get();
         audio_manager_ = std::make_unique<Rtype::Client::Audio::AudioManager>(
             std::move(backend));
@@ -155,7 +155,7 @@ class AudioSystemTest : public ::testing::Test {
     }
 
     Engine::registry registry_;
-    Rtype::Client::Audio::MockAudioBackend* mock_backend_;
+    Rtype::Client::Audio::MockAudioBackend *mock_backend_;
     std::unique_ptr<Rtype::Client::Audio::AudioManager> audio_manager_;
 };
 
@@ -164,8 +164,9 @@ class AudioSystemTest : public ::testing::Test {
 // ============================================================================
 
 TEST_F(AudioManagerTest, RegisterSoundAsset) {
-    bool result = audio_manager_->RegisterAsset("test_sound", "test.wav", false);
-    
+    bool result =
+        audio_manager_->RegisterAsset("test_sound", "test.wav", false);
+
     EXPECT_TRUE(result);
     ASSERT_EQ(mock_backend_->load_sound_calls_.size(), 1);
     EXPECT_EQ(mock_backend_->load_sound_calls_[0].id, "test_sound");
@@ -174,8 +175,9 @@ TEST_F(AudioManagerTest, RegisterSoundAsset) {
 }
 
 TEST_F(AudioManagerTest, RegisterMusicAsset) {
-    bool result = audio_manager_->RegisterAsset("test_music", "music.ogg", true);
-    
+    bool result =
+        audio_manager_->RegisterAsset("test_music", "music.ogg", true);
+
     EXPECT_TRUE(result);
     ASSERT_EQ(mock_backend_->load_music_calls_.size(), 1);
     EXPECT_EQ(mock_backend_->load_music_calls_[0].id, "test_music");
@@ -185,94 +187,94 @@ TEST_F(AudioManagerTest, RegisterMusicAsset) {
 
 TEST_F(AudioManagerTest, PlaySoundWithDefaultVolume) {
     audio_manager_->PlaySound("explosion");
-    
+
     ASSERT_EQ(mock_backend_->play_calls_.size(), 1);
     EXPECT_EQ(mock_backend_->play_calls_[0].id, "explosion");
     EXPECT_FLOAT_EQ(mock_backend_->play_calls_[0].volume, 1.0f);
     EXPECT_FALSE(mock_backend_->play_calls_[0].loop);
-    EXPECT_EQ(mock_backend_->play_calls_[0].category, 
-              Rtype::Client::Audio::SoundCategory::SFX);
+    EXPECT_EQ(mock_backend_->play_calls_[0].category,
+        Rtype::Client::Audio::SoundCategory::SFX);
 }
 
 TEST_F(AudioManagerTest, PlaySoundWithCustomVolume) {
     audio_manager_->PlaySound("laser", 0.5f);
-    
+
     ASSERT_EQ(mock_backend_->play_calls_.size(), 1);
     EXPECT_EQ(mock_backend_->play_calls_[0].id, "laser");
     EXPECT_FLOAT_EQ(mock_backend_->play_calls_[0].volume, 0.5f);
     EXPECT_FALSE(mock_backend_->play_calls_[0].loop);
-    EXPECT_EQ(mock_backend_->play_calls_[0].category, 
-              Rtype::Client::Audio::SoundCategory::SFX);
+    EXPECT_EQ(mock_backend_->play_calls_[0].category,
+        Rtype::Client::Audio::SoundCategory::SFX);
 }
 
 TEST_F(AudioManagerTest, PlayMusicWithLoop) {
     audio_manager_->PlayMusic("bgm", true);
-    
+
     ASSERT_EQ(mock_backend_->play_calls_.size(), 1);
     EXPECT_EQ(mock_backend_->play_calls_[0].id, "bgm");
     EXPECT_FLOAT_EQ(mock_backend_->play_calls_[0].volume, 1.0f);
     EXPECT_TRUE(mock_backend_->play_calls_[0].loop);
-    EXPECT_EQ(mock_backend_->play_calls_[0].category, 
-              Rtype::Client::Audio::SoundCategory::MUSIC);
+    EXPECT_EQ(mock_backend_->play_calls_[0].category,
+        Rtype::Client::Audio::SoundCategory::MUSIC);
 }
 
 TEST_F(AudioManagerTest, PlayMusicWithoutLoop) {
     audio_manager_->PlayMusic("jingle", false);
-    
+
     ASSERT_EQ(mock_backend_->play_calls_.size(), 1);
     EXPECT_EQ(mock_backend_->play_calls_[0].id, "jingle");
     EXPECT_FALSE(mock_backend_->play_calls_[0].loop);
-    EXPECT_EQ(mock_backend_->play_calls_[0].category, 
-              Rtype::Client::Audio::SoundCategory::MUSIC);
+    EXPECT_EQ(mock_backend_->play_calls_[0].category,
+        Rtype::Client::Audio::SoundCategory::MUSIC);
 }
 
 TEST_F(AudioManagerTest, StopMusic) {
     audio_manager_->StopMusic();
-    
+
     EXPECT_EQ(mock_backend_->stop_music_calls_, 1);
 }
 
 TEST_F(AudioManagerTest, SetSfxVolume) {
     audio_manager_->SetSfxVolume(0.7f);
-    
+
     EXPECT_FLOAT_EQ(mock_backend_->sfx_volume_, 0.7f);
 }
 
 TEST_F(AudioManagerTest, SetMusicVolume) {
     audio_manager_->SetMusicVolume(0.4f);
-    
+
     EXPECT_FLOAT_EQ(mock_backend_->music_volume_, 0.4f);
 }
 
 TEST_F(AudioManagerTest, MuteSfx) {
     audio_manager_->MuteSfx(true);
-    
+
     EXPECT_TRUE(mock_backend_->sfx_muted_);
 }
 
 TEST_F(AudioManagerTest, UnmuteSfx) {
     audio_manager_->MuteSfx(true);
     audio_manager_->MuteSfx(false);
-    
+
     EXPECT_FALSE(mock_backend_->sfx_muted_);
 }
 
 TEST_F(AudioManagerTest, MuteMusic) {
     audio_manager_->MuteMusic(true);
-    
+
     EXPECT_TRUE(mock_backend_->music_muted_);
 }
 
 TEST_F(AudioManagerTest, UnmuteMusic) {
     audio_manager_->MuteMusic(true);
     audio_manager_->MuteMusic(false);
-    
+
     EXPECT_FALSE(mock_backend_->music_muted_);
 }
 
 TEST_F(AudioManagerTest, Update) {
     audio_manager_->Update();
-    
+
     EXPECT_EQ(mock_backend_->update_calls_, 1);
 }
 
@@ -280,15 +282,15 @@ TEST_F(AudioManagerTest, MultipleOperations) {
     // Register assets
     audio_manager_->RegisterAsset("sound1", "s1.wav", false);
     audio_manager_->RegisterAsset("music1", "m1.ogg", true);
-    
+
     // Play multiple sounds
     audio_manager_->PlaySound("sound1", 0.8f);
     audio_manager_->PlaySound("sound1", 0.6f);
     audio_manager_->PlayMusic("music1", true);
-    
+
     // Update
     audio_manager_->Update();
-    
+
     EXPECT_EQ(mock_backend_->load_sound_calls_.size(), 1);
     EXPECT_EQ(mock_backend_->load_music_calls_.size(), 1);
     EXPECT_EQ(mock_backend_->play_calls_.size(), 3);
@@ -303,30 +305,26 @@ TEST_F(AudioSystemTest, ProcessSingleSoundRequest) {
     // Create entity with SoundRequest
     auto entity = registry_.SpawnEntity();
     registry_.EmplaceComponent<Rtype::Client::Component::SoundRequest>(
-        entity,
-        Rtype::Client::Component::SoundRequest{
-            .sound_id = "test_sound",
-            .volume = 0.9f,
-            .loop = false
-        }
-    );
-    
+        entity, Rtype::Client::Component::SoundRequest{
+                    .sound_id = "test_sound", .volume = 0.9f, .loop = false});
+
     // Verify component exists
-    auto& sound_requests = registry_.GetComponents<Rtype::Client::Component::SoundRequest>();
+    auto &sound_requests =
+        registry_.GetComponents<Rtype::Client::Component::SoundRequest>();
     size_t entity_index = entity.GetId();
     ASSERT_TRUE(sound_requests[entity_index].has_value());
-    
+
     // Run audio system
     Rtype::Client::AudioSystem(registry_, *audio_manager_, sound_requests);
-    
+
     // Verify sound was played
     ASSERT_EQ(mock_backend_->play_calls_.size(), 1);
     EXPECT_EQ(mock_backend_->play_calls_[0].id, "test_sound");
     EXPECT_FLOAT_EQ(mock_backend_->play_calls_[0].volume, 0.9f);
-    
+
     // Verify component was removed
     EXPECT_FALSE(sound_requests[entity_index].has_value());
-    
+
     // Verify Update was called
     EXPECT_EQ(mock_backend_->update_calls_, 1);
 }
@@ -336,29 +334,24 @@ TEST_F(AudioSystemTest, ProcessMultipleSoundRequests) {
     auto entity1 = registry_.SpawnEntity();
     auto entity2 = registry_.SpawnEntity();
     auto entity3 = registry_.SpawnEntity();
-    
+
+    registry_.EmplaceComponent<Rtype::Client::Component::SoundRequest>(entity1,
+        Rtype::Client::Component::SoundRequest{"sound1", 1.0f, false});
+
+    registry_.EmplaceComponent<Rtype::Client::Component::SoundRequest>(entity2,
+        Rtype::Client::Component::SoundRequest{"sound2", 0.5f, false});
+
     registry_.EmplaceComponent<Rtype::Client::Component::SoundRequest>(
-        entity1,
-        Rtype::Client::Component::SoundRequest{"sound1", 1.0f, false}
-    );
-    
-    registry_.EmplaceComponent<Rtype::Client::Component::SoundRequest>(
-        entity2,
-        Rtype::Client::Component::SoundRequest{"sound2", 0.5f, false}
-    );
-    
-    registry_.EmplaceComponent<Rtype::Client::Component::SoundRequest>(
-        entity3,
-        Rtype::Client::Component::SoundRequest{"sound3", 0.7f, true}
-    );
-    
+        entity3, Rtype::Client::Component::SoundRequest{"sound3", 0.7f, true});
+
     // Run audio system
-    auto& sound_requests = registry_.GetComponents<Rtype::Client::Component::SoundRequest>();
+    auto &sound_requests =
+        registry_.GetComponents<Rtype::Client::Component::SoundRequest>();
     Rtype::Client::AudioSystem(registry_, *audio_manager_, sound_requests);
-    
+
     // Verify all sounds were played
     ASSERT_EQ(mock_backend_->play_calls_.size(), 3);
-    
+
     // Verify all components were removed
     size_t idx1 = entity1.GetId();
     size_t idx2 = entity2.GetId();
@@ -370,12 +363,13 @@ TEST_F(AudioSystemTest, ProcessMultipleSoundRequests) {
 
 TEST_F(AudioSystemTest, ProcessNoSoundRequests) {
     // Run audio system with no entities
-    auto& sound_requests = registry_.GetComponents<Rtype::Client::Component::SoundRequest>();
+    auto &sound_requests =
+        registry_.GetComponents<Rtype::Client::Component::SoundRequest>();
     Rtype::Client::AudioSystem(registry_, *audio_manager_, sound_requests);
-    
+
     // Verify no sounds were played
     EXPECT_EQ(mock_backend_->play_calls_.size(), 0);
-    
+
     // Verify Update was still called
     EXPECT_EQ(mock_backend_->update_calls_, 1);
 }
@@ -383,21 +377,20 @@ TEST_F(AudioSystemTest, ProcessNoSoundRequests) {
 TEST_F(AudioSystemTest, EntityWithoutSoundRequestNotAffected) {
     // Create entity without SoundRequest
     auto entity1 = registry_.SpawnEntity();
-    
+
     // Create entity with SoundRequest
     auto entity2 = registry_.SpawnEntity();
     registry_.EmplaceComponent<Rtype::Client::Component::SoundRequest>(
-        entity2,
-        Rtype::Client::Component::SoundRequest{"sound", 1.0f, false}
-    );
-    
+        entity2, Rtype::Client::Component::SoundRequest{"sound", 1.0f, false});
+
     // Run audio system
-    auto& sound_requests = registry_.GetComponents<Rtype::Client::Component::SoundRequest>();
+    auto &sound_requests =
+        registry_.GetComponents<Rtype::Client::Component::SoundRequest>();
     Rtype::Client::AudioSystem(registry_, *audio_manager_, sound_requests);
-    
+
     // Verify only one sound played
     EXPECT_EQ(mock_backend_->play_calls_.size(), 1);
-    
+
     // Verify entity1 still exists (not killed)
     // Note: In the actual implementation, entities themselves are not killed,
     // only the SoundRequest component is removed
@@ -406,29 +399,26 @@ TEST_F(AudioSystemTest, EntityWithoutSoundRequestNotAffected) {
 TEST_F(AudioSystemTest, SoundRequestWithDifferentVolumes) {
     auto entity1 = registry_.SpawnEntity();
     auto entity2 = registry_.SpawnEntity();
-    
+
     registry_.EmplaceComponent<Rtype::Client::Component::SoundRequest>(
-        entity1,
-        Rtype::Client::Component::SoundRequest{"quiet", 0.1f, false}
-    );
-    
+        entity1, Rtype::Client::Component::SoundRequest{"quiet", 0.1f, false});
+
     registry_.EmplaceComponent<Rtype::Client::Component::SoundRequest>(
-        entity2,
-        Rtype::Client::Component::SoundRequest{"loud", 1.0f, false}
-    );
-    
+        entity2, Rtype::Client::Component::SoundRequest{"loud", 1.0f, false});
+
     // Run audio system
-    auto& sound_requests = registry_.GetComponents<Rtype::Client::Component::SoundRequest>();
+    auto &sound_requests =
+        registry_.GetComponents<Rtype::Client::Component::SoundRequest>();
     Rtype::Client::AudioSystem(registry_, *audio_manager_, sound_requests);
-    
+
     // Verify both sounds played with correct volumes
     ASSERT_EQ(mock_backend_->play_calls_.size(), 2);
-    
+
     // Find the calls (order may vary)
     bool found_quiet = false;
     bool found_loud = false;
-    
-    for (const auto& call : mock_backend_->play_calls_) {
+
+    for (const auto &call : mock_backend_->play_calls_) {
         if (call.id == "quiet" && std::abs(call.volume - 0.1f) < 0.001f) {
             found_quiet = true;
         }
@@ -436,7 +426,7 @@ TEST_F(AudioSystemTest, SoundRequestWithDifferentVolumes) {
             found_loud = true;
         }
     }
-    
+
     EXPECT_TRUE(found_quiet);
     EXPECT_TRUE(found_loud);
 }
@@ -447,9 +437,10 @@ TEST_F(AudioSystemTest, SoundRequestWithDifferentVolumes) {
 
 TEST_F(AudioManagerTest, RegisterAssetFailure) {
     mock_backend_->load_sound_return_ = false;
-    
-    bool result = audio_manager_->RegisterAsset("bad_sound", "missing.wav", false);
-    
+
+    bool result =
+        audio_manager_->RegisterAsset("bad_sound", "missing.wav", false);
+
     EXPECT_FALSE(result);
 }
 
@@ -457,7 +448,7 @@ TEST_F(AudioManagerTest, VolumeClampingEdgeCases) {
     // Test minimum volume
     audio_manager_->SetSfxVolume(0.0f);
     EXPECT_FLOAT_EQ(mock_backend_->sfx_volume_, 0.0f);
-    
+
     // Test maximum volume
     audio_manager_->SetMusicVolume(1.0f);
     EXPECT_FLOAT_EQ(mock_backend_->music_volume_, 1.0f);
@@ -466,17 +457,15 @@ TEST_F(AudioManagerTest, VolumeClampingEdgeCases) {
 TEST_F(AudioSystemTest, EmptyStringId) {
     auto entity = registry_.SpawnEntity();
     registry_.EmplaceComponent<Rtype::Client::Component::SoundRequest>(
-        entity,
-        Rtype::Client::Component::SoundRequest{"", 1.0f, false}
-    );
-    
-    auto& sound_requests = registry_.GetComponents<Rtype::Client::Component::SoundRequest>();
-    
+        entity, Rtype::Client::Component::SoundRequest{"", 1.0f, false});
+
+    auto &sound_requests =
+        registry_.GetComponents<Rtype::Client::Component::SoundRequest>();
+
     // Should not crash
-    EXPECT_NO_THROW(
-        Rtype::Client::AudioSystem(registry_, *audio_manager_, sound_requests)
-    );
-    
+    EXPECT_NO_THROW(Rtype::Client::AudioSystem(
+        registry_, *audio_manager_, sound_requests));
+
     // Should still attempt to play
     EXPECT_EQ(mock_backend_->play_calls_.size(), 1);
 }
@@ -484,13 +473,12 @@ TEST_F(AudioSystemTest, EmptyStringId) {
 TEST_F(AudioSystemTest, ZeroVolume) {
     auto entity = registry_.SpawnEntity();
     registry_.EmplaceComponent<Rtype::Client::Component::SoundRequest>(
-        entity,
-        Rtype::Client::Component::SoundRequest{"silent", 0.0f, false}
-    );
-    
-    auto& sound_requests = registry_.GetComponents<Rtype::Client::Component::SoundRequest>();
+        entity, Rtype::Client::Component::SoundRequest{"silent", 0.0f, false});
+
+    auto &sound_requests =
+        registry_.GetComponents<Rtype::Client::Component::SoundRequest>();
     Rtype::Client::AudioSystem(registry_, *audio_manager_, sound_requests);
-    
+
     ASSERT_EQ(mock_backend_->play_calls_.size(), 1);
     EXPECT_FLOAT_EQ(mock_backend_->play_calls_[0].volume, 0.0f);
 }
@@ -501,7 +489,7 @@ TEST_F(AudioSystemTest, ZeroVolume) {
 
 TEST(AudioTypesTest, PlaybackRequestDefaultValues) {
     Rtype::Client::Audio::PlaybackRequest request;
-    
+
     EXPECT_EQ(request.id, "");
     EXPECT_FLOAT_EQ(request.volume, 1.0f);
     EXPECT_FALSE(request.loop);
@@ -510,10 +498,10 @@ TEST(AudioTypesTest, PlaybackRequestDefaultValues) {
 
 TEST(AudioTypesTest, SoundCategoryEnum) {
     using Rtype::Client::Audio::SoundCategory;
-    
+
     SoundCategory sfx = SoundCategory::SFX;
     SoundCategory music = SoundCategory::MUSIC;
-    
+
     EXPECT_NE(sfx, music);
 }
 
@@ -523,7 +511,7 @@ TEST(AudioTypesTest, SoundCategoryEnum) {
 
 TEST(SoundRequestComponentTest, DefaultValues) {
     Rtype::Client::Component::SoundRequest request;
-    
+
     EXPECT_EQ(request.sound_id, "");
     EXPECT_FLOAT_EQ(request.volume, 1.0f);
     EXPECT_FALSE(request.loop);
@@ -531,22 +519,19 @@ TEST(SoundRequestComponentTest, DefaultValues) {
 
 TEST(SoundRequestComponentTest, CustomValues) {
     Rtype::Client::Component::SoundRequest request{
-        .sound_id = "custom",
-        .volume = 0.5f,
-        .loop = true
-    };
-    
+        .sound_id = "custom", .volume = 0.5f, .loop = true};
+
     EXPECT_EQ(request.sound_id, "custom");
     EXPECT_FLOAT_EQ(request.volume, 0.5f);
     EXPECT_TRUE(request.loop);
 }
 
 TEST(SoundRequestComponentTest, IsPOD) {
-    // SoundRequest should be a POD-like struct (though std::string makes it non-trivial)
-    // We can verify it's movable and copyable
+    // SoundRequest should be a POD-like struct (though std::string makes it
+    // non-trivial) We can verify it's movable and copyable
     Rtype::Client::Component::SoundRequest req1{"test", 1.0f, false};
     Rtype::Client::Component::SoundRequest req2 = req1;
-    
+
     EXPECT_EQ(req2.sound_id, "test");
     EXPECT_FLOAT_EQ(req2.volume, 1.0f);
     EXPECT_FALSE(req2.loop);

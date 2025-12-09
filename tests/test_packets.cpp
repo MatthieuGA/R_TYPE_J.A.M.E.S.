@@ -1,11 +1,31 @@
 #include <gtest/gtest.h>
 
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "server/PacketBuffer.hpp"
 #include "server/PacketFactory.hpp"
 #include "server/PacketTypes.hpp"
 #include "server/Packets.hpp"
 
-using namespace server::network;
+using server::network::CommonHeader;
+using server::network::ConnectAckPacket;
+using server::network::ConnectReqPacket;
+using server::network::deserialize_packet;
+using server::network::DisconnectReqPacket;
+using server::network::EntityId;
+using server::network::EntityState;
+using server::network::GameEndPacket;
+using server::network::InputFlags;
+using server::network::PacketBuffer;
+using server::network::PacketType;
+using server::network::PacketVariant;
+using server::network::PlayerId;
+using server::network::PlayerInputPacket;
+using server::network::PlayerStatsPacket;
+using server::network::serialize_packet;
+using server::network::WorldSnapshotPacket;
 
 // ============================================================================
 // RFC COMPLIANCE VERIFICATION TESTS
