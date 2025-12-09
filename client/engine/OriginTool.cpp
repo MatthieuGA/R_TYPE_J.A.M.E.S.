@@ -45,7 +45,7 @@ sf::Vector2f GetOffsetFromAnimatedTransform(const Com::Transform &transform,
         animated_sprite.animations.find(animated_sprite.currentAnimation);
     if (it == animated_sprite.animations.end()) {
         // Fallback to default animation
-        it = animated_sprite.animations.find("default");
+        it = animated_sprite.animations.find("Default");
         if (it == animated_sprite.animations.end())
             return sf::Vector2f(0.0f, 0.0f);
     }

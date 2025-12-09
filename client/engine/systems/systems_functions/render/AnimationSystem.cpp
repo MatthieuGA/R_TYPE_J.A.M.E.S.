@@ -131,7 +131,7 @@ void AnimationSystem(Eng::registry &reg, const float dt,
                 if (!animation->loop &&
                     animation->currentFrame == animation->totalFrames - 1) {
                     // Animation finished, switch back to default
-                    anim_sprite.SetCurrentAnimation("default", true);
+                    anim_sprite.SetCurrentAnimation("Default", true);
                     // Re-apply the default animation texture
                     auto *defaultAnim = anim_sprite.GetCurrentAnimation();
                     if (defaultAnim != nullptr) {

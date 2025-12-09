@@ -75,8 +75,8 @@ TEST(Systems, AnimationSystemAdvancesFrame) {
 
     // Create an animated sprite component with multiple frames
     Com::AnimatedSprite anim(16, 16, 0.02f);  // frameW, frameH, frameDuration
-    anim.totalFrames = 4;
-    anim.currentFrame = 0;
+    anim.animations["Default"].totalFrames = 4;
+    anim.currentAnimation = "Default";
     anim.animated = true;
     anim.elapsedTime = 0.0f;
 
@@ -95,18 +95,19 @@ TEST(Systems, AnimationSystemAdvancesFrame) {
     // Ensure deterministic advancement: pre-fill elapsedTime so NextFrame
     // will trigger on the next update regardless of dt semantics.
     ASSERT_TRUE(anim_sprites[0].has_value());
-    anim_sprites[0]->elapsedTime = anim_sprites[0]->frameDuration;
+    anim_sprites[0]->elapsedTime =
+        anim_sprites[0]->GetCurrentAnimation()->frameDuration;
 
     // First call should advance the currentFrame because elapsedTime >=
     // frameDuration
     AnimationSystem(reg, 0.0f, anim_sprites, drawables);
-    EXPECT_EQ(anim_sprites[0]->currentFrame, 1);
+    EXPECT_EQ(anim_sprites[0]->GetCurrentAnimation()->currentFrame, 1);
 
     // Second call with zero delta will cause SetFrame to update the drawable
     // rect
     AnimationSystem(reg, 0.0f, anim_sprites, drawables);
     sf::IntRect rect = drawables[0]->sprite.getTextureRect();
-    EXPECT_EQ(rect.left, anim_sprites[0]->frameWidth);
+    EXPECT_EQ(rect.left, anim_sprites[0]->GetCurrentAnimation()->frameWidth);
 }
 
 TEST(Systems, CollisionDetectionPublishesAndResolves) {
@@ -182,7 +183,7 @@ TEST(Systems, PlayerSystemSetsFrameBasedOnVelocity) {
 
     ASSERT_TRUE(animated_sprites[0].has_value());
     // velocity.vy == 100 -> should map to currentFrame == 1
-    EXPECT_EQ(animated_sprites[0]->currentFrame, 1);
+    EXPECT_EQ(animated_sprites[0]->GetCurrentAnimation()->currentFrame, 1);
 }
 
 TEST(Systems, ShootPlayerSystemCreatesProjectileAndResetsCooldown) {

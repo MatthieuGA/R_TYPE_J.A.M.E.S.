@@ -151,4 +151,4 @@ void PlayerCombatSystem(Eng::registry &reg,
 - Les animations sont chargées automatiquement la première fois qu'elles sont utilisées
 - `SetCurrentAnimation()` retourne `false` si l'animation n'existe pas
 - Par défaut, changer d'animation réinitialise la frame à 0
-- L'animation "default" sert de fallback si l'animation courante n'existe pas
+- L'animation "Default" sert de fallback si l'animation courante n'existe pas

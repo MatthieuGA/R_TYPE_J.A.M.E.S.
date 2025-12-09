@@ -49,6 +49,7 @@ void HealthDeductionSystem(Eng::registry &reg,
                 if (animated_sprites.has(i)) {
                     auto &animSprite = animated_sprites[i];
                     animSprite->SetCurrentAnimation("Hit", true);
+                    animSprite->GetCurrentAnimation()->currentFrame = 1;
                 }
 
                 // Remove projectile after hit

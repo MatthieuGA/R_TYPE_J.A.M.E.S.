@@ -104,7 +104,7 @@ if (anim && !anim->loop && anim->currentFrame == anim->totalFrames - 1) {
 
 ## Notes importantes
 
-- L'animation "default" sert toujours de fallback
+- L'animation "Default" sert toujours de fallback
 - Les animations sont stockées dans une `std::map<std::string, Animation>`
 - Le chargement est automatique via `LoadAnimationSystem`
 - `SetCurrentAnimation()` retourne `false` si l'animation n'existe pas

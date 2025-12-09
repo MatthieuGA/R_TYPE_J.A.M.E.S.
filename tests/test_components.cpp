@@ -70,8 +70,8 @@ TEST(ComponentsGameplay, TagsAndProjectile) {
     EXPECT_FLOAT_EQ(proj.speed, 250.0f);
     EXPECT_EQ(proj.ownerId, 1);
 
-    Com::Health h{75, 100};
-    EXPECT_EQ(h.currentHealth, 75);
+    Com::Health h(100);
+    EXPECT_EQ(h.currentHealth, 100);
     EXPECT_EQ(h.maxHealth, 100);
 
     Com::StatsGame stats{9000};

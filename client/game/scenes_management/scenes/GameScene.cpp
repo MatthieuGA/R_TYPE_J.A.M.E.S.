@@ -115,7 +115,7 @@ void GameScene::AddEnemyLevel(Engine::registry &reg, sf::Vector2f position) {
         "Attack", "ennemies/4/Attack.png", 48, 48, 6, 0.15f, false);
     animated_sprite.AddAnimation(
         "Moving", "ennemies/4/Walk.png", 48, 48, 6, 0.15f, true);
-    animated_sprite.currentAnimation = "default";
+    animated_sprite.currentAnimation = "Default";
     reg.AddComponent<Component::AnimatedSprite>(
         enemy_entity, std::move(animated_sprite));
     reg.AddComponent<Component::Health>(

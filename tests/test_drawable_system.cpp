@@ -34,8 +34,8 @@ TEST(DrawableSystem, LoadsAndAppliesTransform) {
     EXPECT_TRUE(rendered.isLoaded);
     EXPECT_FLOAT_EQ(rendered.sprite.getPosition().x, transform.x);
     EXPECT_FLOAT_EQ(rendered.sprite.getPosition().y, transform.y);
-    EXPECT_FLOAT_EQ(rendered.sprite.getScale().x, transform.scale);
-    EXPECT_FLOAT_EQ(rendered.sprite.getScale().y, transform.scale);
+    EXPECT_FLOAT_EQ(rendered.sprite.getScale().x, transform.scale.x);
+    EXPECT_FLOAT_EQ(rendered.sprite.getScale().y, transform.scale.y);
     EXPECT_FLOAT_EQ(rendered.sprite.getRotation(), transform.rotationDegrees);
     EXPECT_EQ(rendered.sprite.getColor().a,
         static_cast<sf::Uint8>(rendered.opacity * 255));

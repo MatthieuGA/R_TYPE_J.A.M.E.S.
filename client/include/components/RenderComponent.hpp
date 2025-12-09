@@ -144,18 +144,18 @@ struct AnimatedSprite {
         bool loop = true,
         sf::Vector2f first_frame_position = sf::Vector2f(0.0f, 0.0f),
         int totalFrames = 0)
-        : currentAnimation("default"), animated(true), elapsedTime(0.0f) {
+        : currentAnimation("Default"), animated(true), elapsedTime(0.0f) {
         Animation defaultAnimation("", frameWidth, frameHeight, totalFrames,
             frameDuration, loop, first_frame_position);
-        animations["default"] = defaultAnimation;
+        animations["Default"] = defaultAnimation;
     }
 
     AnimatedSprite(int frameWidth, int frameHeight, int current_frame)
-        : currentAnimation("default"), animated(false), elapsedTime(0.0f) {
+        : currentAnimation("Default"), animated(false), elapsedTime(0.0f) {
         Animation defaultAnimation(
             "", frameWidth, frameHeight, 1, 0.0f, false);
         defaultAnimation.currentFrame = current_frame;
-        animations["default"] = defaultAnimation;
+        animations["Default"] = defaultAnimation;
     }
 
     /**
@@ -208,7 +208,7 @@ struct AnimatedSprite {
     Animation *GetCurrentAnimation() {
         auto it = animations.find(currentAnimation);
         if (it == animations.end()) {
-            it = animations.find("default");
+            it = animations.find("Default");
             if (it == animations.end())
                 return nullptr;
         }
@@ -223,7 +223,7 @@ struct AnimatedSprite {
     const Animation *GetCurrentAnimation() const {
         auto it = animations.find(currentAnimation);
         if (it == animations.end()) {
-            it = animations.find("default");
+            it = animations.find("Default");
             if (it == animations.end())
                 return nullptr;
         }
