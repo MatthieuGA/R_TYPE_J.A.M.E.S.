@@ -5,6 +5,21 @@ namespace Eng = Engine;
 namespace Rtype::Client {
 namespace Com = Component;
 
+/**
+ * @brief System to handle player entry animation.
+ *
+ * This system moves players into the play area when they are entering.
+ * Once they reach the target position, it marks them as in play and
+ * adds the Controllable component.
+ *
+ * @param reg ECS registry used to access entities and components.
+ * @param game_world The game world context.
+ * @param velocities Sparse array of Velocity components.
+ * @param transforms Sparse array of Transform components.
+ * @param player_tags Sparse array of PlayerTag components.
+ * @param animation_enter_players Sparse array of AnimationEnterPlayer
+ * components.
+ */
 void AnimationEnterPlayerSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Velocity> &velocities,
     Eng::sparse_array<Com::Transform> &transforms,

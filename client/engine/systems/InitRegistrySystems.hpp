@@ -107,4 +107,12 @@ void ButtonClickSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Drawable> &drawables,
     Eng::sparse_array<Com::Transform> &transforms);
 
+void HealthDeductionSystem(Eng::registry &reg,
+    Eng::sparse_array<Com::Health> &healths,
+    Eng::sparse_array<Com::EnemyTag> const &enemyTags,
+    Eng::sparse_array<Com::PlayerTag> const &playerTags,
+    Eng::sparse_array<Com::HitBox> const &hitBoxes,
+    Eng::sparse_array<Com::Transform> const &transforms,
+    Eng::sparse_array<Com::Projectile> const &projectiles);
+
 }  // namespace Rtype::Client

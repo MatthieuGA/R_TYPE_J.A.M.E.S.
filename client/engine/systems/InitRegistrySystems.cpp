@@ -164,6 +164,10 @@ void InitControlsSystem(Rtype::Client::GameWorld &game_world) {
             Eng::sparse_array<Com::Projectile> &projectiles) {
             ProjectileSystem(r, game_world, transforms, projectiles);
         });
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::Health>,
+        Eng::sparse_array<Com::EnemyTag>, Eng::sparse_array<Com::PlayerTag>,
+        Eng::sparse_array<Com::HitBox>, Eng::sparse_array<Com::Transform>,
+        Eng::sparse_array<Com::Projectile>>(HealthDeductionSystem);
 }
 
 /**

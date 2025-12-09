@@ -11,6 +11,6 @@ constexpr const float PLAYER_SPEED_PROJECTILE = 800.0f;
 constexpr const float PLAYER_DAMAGE_PROJECTILE = 10.0f;
 
 constexpr const float PLAYER_SPEED_CHARGED_PROJECTILE = 500.0f;
-constexpr const float PLAYER_DAMAGE_CHARGED_PROJECTILE = 40.0f;
+constexpr const float PLAYER_DAMAGE_CHARGED_PROJECTILE = 50.0f;
 
 }  // namespace Rtype::Client

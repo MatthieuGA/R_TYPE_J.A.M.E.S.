@@ -5,6 +5,14 @@
 
 namespace Rtype::Client {
 
+/**
+ * @brief Creates a normal projectile entity.
+ *
+ * @param reg The registry to add the projectile to.
+ * @param x The x position of the projectile.
+ * @param y The y position of the projectile.
+ * @param ownerId The ID of the entity that fired the projectile.
+ */
 void createProjectile(Eng::registry &reg, float x, float y, int ownerId) {
     auto projectile_entity = reg.SpawnEntity();
     // Add components to projectile entity
@@ -16,9 +24,19 @@ void createProjectile(Eng::registry &reg, float x, float y, int ownerId) {
         projectile_entity, Component::AnimatedSprite{24, 32, 10});
     reg.AddComponent<Component::Projectile>(
         projectile_entity, Component::Projectile{PLAYER_DAMAGE_PROJECTILE,
-                               PLAYER_SPEED_PROJECTILE, ownerId});
+                               PLAYER_SPEED_PROJECTILE, ownerId, false});
+    reg.AddComponent<Component::HitBox>(
+        projectile_entity, Component::HitBox{24.0f, 12.0f});
 }
 
+/**
+ * @brief Creates a charged projectile entity.
+ *
+ * @param reg The registry to add the projectile to.
+ * @param x The x position of the projectile.
+ * @param y The y position of the projectile.
+ * @param ownerId The ID of the entity that fired the projectile.
+ */
 void createChargedProjectile(
     Eng::registry &reg, float x, float y, int ownerId) {
     auto projectile_entity = reg.SpawnEntity();
@@ -32,6 +50,8 @@ void createChargedProjectile(
     reg.AddComponent<Component::Projectile>(projectile_entity,
         Component::Projectile{PLAYER_DAMAGE_CHARGED_PROJECTILE,
             PLAYER_SPEED_CHARGED_PROJECTILE, ownerId});
+    reg.AddComponent<Component::HitBox>(
+        projectile_entity, Component::HitBox{29.0f, 22.0f});
 }
 
 /**

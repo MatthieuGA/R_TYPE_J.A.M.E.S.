@@ -1,8 +1,10 @@
 #include "game/scenes_management/scenes/GameScene.hpp"
 
+#include <random>
 #include <string>
 #include <vector>
 
+#include "include/EnemiesConst.hpp"
 #include "include/PlayerConst.hpp"
 #include "include/components/CoreComponents.hpp"
 #include "include/components/GameplayComponents.hpp"
@@ -61,8 +63,7 @@ void GameScene::InitPlayerLevel(Engine::registry &reg) {
         player_entity, Component::PlayerTag{Rtype::Client::PLAYER_SPEED_MAX,
                            Rtype::Client::PLAYER_SHOOT_COOLDOWN,
                            Rtype::Client::PLAYER_CHARGE_TIME, false});
-    reg.AddComponent<Component::Health>(
-        player_entity, Component::Health{3, 3});
+    reg.AddComponent<Component::Health>(player_entity, Component::Health(100));
     reg.AddComponent<Component::AnimationEnterPlayer>(
         player_entity, Component::AnimationEnterPlayer{true});
 
@@ -85,7 +86,15 @@ void GameScene::InitPlayerLevel(Engine::registry &reg) {
 void GameScene::InitScene(Engine::registry &reg, GameWorld &gameWorld) {
     InitBackgrounds(reg);
     InitPlayerLevel(reg);
-    AddEnemyLevel(reg, sf::Vector2f(1500.0f, 300.0f));
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis_y(50, 600);
+    std::uniform_int_distribution<> dis_x(0, 199);
+    for (int i = 0; i < 5; i++) {
+        const float randY = static_cast<float>(dis_y(gen));
+        const float randX = 800 + (i * 300) + static_cast<float>(dis_x(gen));
+        AddEnemyLevel(reg, sf::Vector2f(randX, randY));
+    }
 }
 
 void GameScene::AddEnemyLevel(Engine::registry &reg, sf::Vector2f position) {
@@ -98,10 +107,13 @@ void GameScene::AddEnemyLevel(Engine::registry &reg, sf::Vector2f position) {
     reg.AddComponent<Component::AnimatedSprite>(
         enemy_entity, Component::AnimatedSprite(
                           48, 48, 0.2f, true, sf::Vector2f(0.0f, 0.0f), 4));
-    reg.AddComponent<Component::Health>(enemy_entity, Component::Health(50));
-    reg.AddComponent<Component::EnemyTag>(enemy_entity, Component::EnemyTag{});
+    reg.AddComponent<Component::Health>(
+        enemy_entity, Component::Health(Rtype::Client::MERMAID_HEALTH));
+    reg.AddComponent<Component::EnemyTag>(
+        enemy_entity, Component::EnemyTag{Rtype::Client::MERMAID_SPEED,
+                          Rtype::Client::MERMAID_SHOOT_COOLDOWN});
     reg.AddComponent<Component::HitBox>(
-        enemy_entity, Component::HitBox{48.0f, 48.0f});
+        enemy_entity, Component::HitBox{8.0f, 32.0f});
 }
 
 }  // namespace Rtype::Client

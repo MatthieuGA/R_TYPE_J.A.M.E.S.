@@ -16,19 +16,25 @@ struct AnimationEnterPlayer {
     bool isEntering = true;
 };
 
-struct EnemyTag {};
+struct EnemyTag {
+    float speed = 100.0f;
+    float shoot_cooldown_max = 2.0f;
+    float shoot_cooldown = 0.0f;
+};
 
 struct Projectile {
     float damage;
     float speed;
     int ownerId;  // ID of the entity that fired the projectile
+    bool isEnemyProjectile = false;
 };
 
 struct Health {
     int currentHealth;
     int maxHealth;
     bool invincible;
-    float invincibilityDuration;
+    float invincibilityDuration = 1.0f;
+    float invincibilityTimer = 0.0f;
 
     explicit Health(int maxHealth = 100)
         : currentHealth(maxHealth),
