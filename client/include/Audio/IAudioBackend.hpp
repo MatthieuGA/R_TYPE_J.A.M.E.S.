@@ -6,7 +6,7 @@
 #pragma once
 #include <string>
 
-#include "AudioTypes.hpp"
+#include "include/Audio/AudioTypes.hpp"
 
 namespace Rtype::Client::Audio {
 
