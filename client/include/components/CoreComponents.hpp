@@ -71,9 +71,7 @@ struct Transform {
      * @note This only uses local rotation; parent rotations must be added by
      * the render system.
      */
-    float GetWorldRotation() const {
-        return rotationDegrees;
-    }
+    float GetWorldRotation() const;
 };
 
 struct Velocity {

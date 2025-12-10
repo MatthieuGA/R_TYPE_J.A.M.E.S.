@@ -27,13 +27,6 @@ struct EnemyTag {
 };
 
 struct EnemyShootTag {
-    float shoot_cooldown_max = 1.0f;
-    float shoot_cooldown = 0.0f;
-    float speed_projectile = 200.0f;
-    int damage_projectile = 10;
-
-    sf::Vector2f offset_shoot_position = sf::Vector2f(0.0f, 0.0f);
-
     /**
      * @brief Event to trigger at specific animation frames.
      *
@@ -53,65 +46,45 @@ struct EnemyShootTag {
          * @param act Action callback function to execute (receives entity_id)
          */
         FrameEvent(const std::string &anim_name, int frame,
-            std::function<void(int)> act)
-            : animation_name(anim_name),
-              trigger_frame(frame),
-              action(std::move(act)),
-              triggered(false) {}
+            std::function<void(int)> act);
     };
 
+    float shoot_cooldown_max = 1.0f;
+    float shoot_cooldown = 0.0f;
+    float speed_projectile = 200.0f;
+    int damage_projectile = 10;
     std::vector<FrameEvent> frame_events;
-
     std::function<void(int entity_id)> cooldown_action = nullptr;
-
-    explicit EnemyShootTag(float cooldown, float speed = 200.0f,
-        int damage = 10, sf::Vector2f offset = sf::Vector2f(0.0f, 0.0f))
-        : shoot_cooldown_max(cooldown),
-          speed_projectile(speed),
-          damage_projectile(damage),
-          offset_shoot_position(offset),
-          cooldown_action(nullptr) {}
+    sf::Vector2f offset_shoot_position = sf::Vector2f(0.0f, 0.0f);
 
     /**
-     * @brief Add a frame event with a custom action callback.
+     * @brief Constructor for EnemyShootTag.
      *
-     * @param animation_name Name of the animation (e.g., "Attack")
-     * @param frame Frame number to trigger the action
-     * @param action Callback function that receives the entity_id
+     * @param cooldown Maximum cooldown time between shots
+     * @param speed Speed of the projectile
+     * @param damage Damage of the projectile
+     * @param offset Offset position for shooting
+     */
+    EnemyShootTag(float cooldown, float speed = 200.0f, int damage = 10,
+        sf::Vector2f offset = sf::Vector2f(0.0f, 0.0f));
+
+    /**
+     * @brief Adds a frame event to trigger an action at a specific animation
+     * frame.
      *
-     * @example
-     * enemy_shoot_tag.AddFrameEvent("Attack", 5,
-     *     [&reg, &enemy_shoot](int entity_id) {
-     *         // Custom action - e.g., create projectile
-     *         CreateEnemyProjectile(reg, direction, enemy_shoot, entity_id,
-     * transform);
-     *     });
+     * @param animation_name Name of the animation
+     * @param frame Frame number to trigger at
+     * @param action Action callback function to execute (receives entity_id)
      */
     void AddFrameEvent(const std::string &animation_name, int frame,
-        std::function<void(int)> action) {
-        frame_events.emplace_back(animation_name, frame, std::move(action));
-    }
+        std::function<void(int)> action);
 
     /**
-     * @brief Set the cooldown action callback.
+     * @brief Sets the cooldown action to be executed when cooldown elapses.
      *
-     * When the cooldown expires, this action is executed instead of the
-     * default behavior. Useful for customizing cooldown-based shooting
-     * (without frame events).
-     *
-     * @param action Callback function that receives the entity_id
-     *
-     * @example
-     * enemy_shoot_tag.SetCooldownAction([&reg](int entity_id) {
-     *     // Custom cooldown action
-     *     auto &transform = reg.GetComponent<Component::Transform>(entity_id);
-     *     CreateEnemyProjectile(reg, direction, enemy_shoot, entity_id,
-     * transform);
-     * });
+     * @param action Action callback function to execute (receives entity_id)
      */
-    void SetCooldownAction(std::function<void(int)> action) {
-        cooldown_action = std::move(action);
-    }
+    void SetCooldownAction(std::function<void(int)> action);
 };
 
 struct Projectile {
