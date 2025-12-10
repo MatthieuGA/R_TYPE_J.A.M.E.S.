@@ -90,7 +90,7 @@ void Server::Close() {
     std::cout << "Closing server..." << std::endl;
     Stop();
     // Client sockets will be closed automatically when connection_manager_ is
-    // destroyed
+    // destroyed (when the Server object is destroyed)
     std::cout << "Server closed" << std::endl;
 }
 
