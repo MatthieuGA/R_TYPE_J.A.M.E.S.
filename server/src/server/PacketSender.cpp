@@ -43,9 +43,9 @@ void PacketSender::SendGameStart() {
     // Note: We need non-const access to use tcp_socket_.async_send()
     const auto &clients = connection_manager_.GetClients();
     for (const auto &[client_id, client_ref] : clients) {
-        if (client_ref.player_id_ == 0)
+        if (client_ref.player_id_ == 0) {
             continue;  // Skip unauthenticated clients
-
+        }
         // Get non-const reference to the client for socket operations
         ClientConnection &client = connection_manager_.GetClient(client_id);
 
