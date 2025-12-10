@@ -8,6 +8,27 @@
 #include <utility>
 #include <vector>
 
+namespace server::network {
+
+namespace detail {
+template <typename T>
+inline T ToLittleEndian(T value) {
+    if constexpr (std::endian::native == std::endian::little) {
+        return value;
+    } else if constexpr (std::endian::native == std::endian::big) {
+        return ByteSwap(value);
+    } else {
+        static_assert(std::endian::native == std::endian::little ||
+                          std::endian::native == std::endian::big,
+            "Mixed endianness not supported");
+    }
+}
+
+template <typename T>
+inline T FromLittleEndian(T value) {
+    return ToLittleEndian(value);
+}
+
 /**
  * @brief Swaps the byte order of an integral value.
  *
@@ -58,27 +79,6 @@ static constexpr T ByteSwap(T value) {
     static_assert(
         sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8,
         "ByteSwap only supports 1, 2, 4, or 8 byte integral types");
-}
-
-namespace server::network {
-
-namespace detail {
-template <typename T>
-inline T ToLittleEndian(T value) {
-    if constexpr (std::endian::native == std::endian::little) {
-        return value;
-    } else if constexpr (std::endian::native == std::endian::big) {
-        return ByteSwap(value);
-    } else {
-        static_assert(std::endian::native == std::endian::little ||
-                          std::endian::native == std::endian::big,
-            "Mixed endianness not supported");
-    }
-}
-
-template <typename T>
-inline T FromLittleEndian(T value) {
-    return ToLittleEndian(value);
 }
 }  // namespace detail
 
