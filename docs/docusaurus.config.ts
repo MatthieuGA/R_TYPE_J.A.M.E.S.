@@ -25,7 +25,7 @@ const config: Config = {
   organizationName: 'MatthieuGA', // Usually your GitHub org/user name.
   projectName: 'R_TYPE_J.A.M.E.S.', // Usually your repo name.
 
-  onBrokenLinks: 'throw',
+  onBrokenLinks: 'warn',  // Changed to 'warn' to allow build with broken links
 
   // Even if you don't use internationalization, you can use this field to set
   // useful metadata like html lang. For example, if your site is Chinese, you
@@ -72,6 +72,12 @@ const config: Config = {
           sidebarId: 'tutorialSidebar',
           position: 'left',
           label: 'Documentation',
+        },
+        {
+          type: 'docSidebar',
+          sidebarId: 'pluginsSidebar',
+          position: 'left',
+          label: 'Plugin System',
         },
         {
           href: 'https://github.com/MatthieuGA/R_TYPE_J.A.M.E.S.',

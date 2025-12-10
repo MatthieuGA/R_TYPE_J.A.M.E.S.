@@ -27,6 +27,21 @@ const sidebars: SidebarsConfig = {
     },
   ],
 
+  // Plugin System sidebar: comprehensive plugin documentation
+  pluginsSidebar: [
+    {
+      type: 'category',
+      label: 'Plugin System',
+      items: [
+        'plugins/index',
+        'plugins/audio-plugin-guide',
+        'plugins/architecture',
+        'plugins/api-reference',
+        'plugins/troubleshooting',
+      ],
+    },
+  ],
+
   // But you can create a sidebar manually
   /*
   tutorialSidebar: [
