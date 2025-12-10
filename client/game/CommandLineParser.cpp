@@ -101,8 +101,13 @@ ClientConfig CommandLineParser::Parse(int argc, char *argv[]) {
                 PrintUsageAndExit(argv[0], e.what());
             }
             ++i;  // Skip the port value in next iteration
-        } else {
+        } else if (arg[0] == '-') {
+            // Starts with dash but not a known flag
             std::string error = "Unknown argument: " + arg;
+            PrintUsageAndExit(argv[0], error.c_str());
+        } else {
+            // Unexpected positional argument
+            std::string error = "Unexpected argument: " + arg;
             PrintUsageAndExit(argv[0], error.c_str());
         }
     }
