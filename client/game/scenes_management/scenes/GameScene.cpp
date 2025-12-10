@@ -115,16 +115,15 @@ void GameScene::InitScene(Engine::registry &reg, GameWorld &gameWorld) {
     InitPlayerLevel(reg);
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis_y(50, 1000);
-    std::uniform_int_distribution<> dis_x(0, 1400);
-    for (int i = 0; i < 5; i++) {
-        const float randY = static_cast<float>(dis_y(gen));
-        const float randX = 400 + static_cast<float>(dis_x(gen));
-        AddEnemyLevel(reg, sf::Vector2f(randX, randY));
+    for (int i = 0; i < 4; i++) {
+        std::vector<sf::Vector2f> enemy_positions = {{1400.f, 700.f},
+            {1100.f, 700.f}, {1100.f, 400.f}, {1400.f, 400.f}};
+        AddEnemyLevel(reg, enemy_positions[i], i);
     }
 }
 
-void GameScene::AddEnemyLevel(Engine::registry &reg, sf::Vector2f position) {
+void GameScene::AddEnemyLevel(
+    Engine::registry &reg, sf::Vector2f position, int i) {
     auto enemy_entity = CreateEntityInScene(reg);
     reg.AddComponent<Component::Transform>(
         enemy_entity, {position.x, position.y, 0.0f, {-3.0f, 3.0f},
@@ -151,9 +150,11 @@ void GameScene::AddEnemyLevel(Engine::registry &reg, sf::Vector2f position) {
     reg.AddComponent<Component::Velocity>(enemy_entity, Component::Velocity{});
     reg.AddComponent<Component::PatternMovement>(enemy_entity,
         Component::PatternMovement(
-            Component::PatternMovement::PatternType::ZigZagHorizontal,
-            sf::Vector2f(0.f, 50.f), sf::Vector2f(0.f, 1.f),
-            sf::Vector2f(-1.f, 0.f), Rtype::Client::MERMAID_SPEED));
+            std::vector<sf::Vector2f>{sf::Vector2f{1400.f, 700.f},
+                sf::Vector2f{1100.f, 700.f}, sf::Vector2f{1100.f, 400.f},
+                sf::Vector2f{1400.f, 400.f}},
+            sf::Vector2f(-1.0f, 0.0f), Rtype::Client::MERMAID_SPEED, i % 4,
+            true));
 
     Component::EnemyShootTag enemy_shoot_tag(
         Rtype::Client::MERMAID_PROJECTILE_SPEED,

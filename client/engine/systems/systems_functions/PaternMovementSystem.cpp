@@ -124,6 +124,30 @@ void WaypointsMovementFunction(Eng::registry &reg, std::size_t entityId,
     Com::Transform &transform, Com::Velocity &velocity,
     Com::PatternMovement &patternMovement, float dt) {
     // Waypoints movement logic
+    if (patternMovement.waypoints.empty())
+        return;
+    if (patternMovement.currentWaypoint >= patternMovement.waypoints.size())
+        patternMovement.currentWaypoint = 0;
+    sf::Vector2f targetWaypoint =
+        patternMovement.waypoints[patternMovement.currentWaypoint];
+    sf::Vector2f direction = {
+        targetWaypoint.x - transform.x, targetWaypoint.y - transform.y};
+    float distance =
+        std::sqrt(direction.x * direction.x + direction.y * direction.y);
+    if (distance < patternMovement.waypointThreshold) {
+        patternMovement.currentWaypoint =
+            (patternMovement.currentWaypoint + 1) %
+            patternMovement.waypoints.size();
+        WaypointsMovementFunction(
+            reg, entityId, transform, velocity, patternMovement, dt);
+        return;
+    }
+    if (distance > 0.0f) {
+        direction.x /= distance;
+        direction.y /= distance;
+        velocity.vx = direction.x * patternMovement.baseSpeed;
+        velocity.vy = direction.y * patternMovement.baseSpeed;
+    }
 }
 
 void FollowPlayerMovementFunction(Eng::registry &reg, std::size_t entityId,

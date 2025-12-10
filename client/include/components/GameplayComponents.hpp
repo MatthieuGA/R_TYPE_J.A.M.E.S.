@@ -195,10 +195,9 @@ struct PatternMovement {
           targetEntityId(0) {}
 
     // Constructor for Waypoints movement
-    PatternMovement(std::vector<sf::Vector2f> waypoints, float waypointSpeed,
-        sf::Vector2f baseDir, float baseSpeed, bool loop = true)
-        : currentWaypoint(0),
-          type(PatternType::Waypoints),
+    PatternMovement(std::vector<sf::Vector2f> waypoints, sf::Vector2f baseDir,
+        float baseSpeed, std::size_t currentWaypoint = 0, bool loop = true)
+        : type(PatternType::Waypoints),
           elapsed(0.f),
           spawnPos({0.f, 0.f}),
           baseDir(baseDir),
@@ -206,7 +205,7 @@ struct PatternMovement {
           amplitude({0.f, 0.f}),
           frequency({0.f, 0.f}),
           waypoints(std::move(waypoints)),
-          waypointSpeed(waypointSpeed),
+          currentWaypoint(currentWaypoint),
           waypointThreshold(4.f),
           targetEntityId(0) {}
 

@@ -29,7 +29,7 @@ class GameScene : public Scene_A {
     };
 
     void InitPlayerLevel(registry &reg);
-    void AddEnemyLevel(registry &reg, sf::Vector2f position);
+    void AddEnemyLevel(registry &reg, sf::Vector2f position, int i = 0);
     void InitBackgrounds(registry &reg);
     void AddBackgroundEntity(
         registry &reg, struct BackgroundInfo info, float initial_x);
