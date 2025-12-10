@@ -13,8 +13,8 @@ int Config::StringToPort(const char *str) {
     }
 }
 
-void Config::PrintUsage(const char *programName) {
-    std::cout << "Usage: " << programName
+void Config::PrintUsage(const char *program_name) {
+    std::cout << "Usage: " << program_name
               << " [TCP_PORT] [UDP_PORT] [-p MAX_PLAYERS]" << std::endl;
     std::cout << "  TCP_PORT: Port for TCP connections (default: "
               << DEFAULT_TCP_PORT << ")" << std::endl;
