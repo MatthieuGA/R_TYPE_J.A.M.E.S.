@@ -4,16 +4,6 @@ file(GLOB_RECURSE R_TYPE_CLIENT_SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
 )
 
-# Avoid compiling duplicate/refactored files present in both the root
-# systems folder and the `Render/` subfolder which would cause
-# multiple-definition link errors. Prefer the `Render/` implementations.
-list(REMOVE_ITEM R_TYPE_CLIENT_SOURCES
-    "${CMAKE_CURRENT_SOURCE_DIR}/Engine/Systems/SytemsFunctions/animationSystem.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/Engine/Systems/SytemsFunctions/drawableSystem.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/Engine/Systems/SytemsFunctions/initializeAnimationSystem.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/Engine/Systems/SytemsFunctions/initializeShaderSystem.cpp"
-)
-
 # Find threading library for portability
 find_package(Threads REQUIRED)
 
