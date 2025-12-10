@@ -40,6 +40,24 @@ void SineHorizontalMovementFunction(Eng::registry &reg, std::size_t entityId,
     }
 }
 
+void ZigZagHorizontalMovementFunction(Eng::registry &reg, std::size_t entityId,
+    Com::Transform &transform, Com::Velocity &velocity,
+    Com::PatternMovement &patternMovement, float dt) {
+    // Zig-zag horizontal movement logic
+    float sineOffset =
+        patternMovement.amplitude.y *
+        std::sin(patternMovement.frequency.y * patternMovement.elapsed);
+    velocity.vx = patternMovement.baseDir.x * patternMovement.baseSpeed;
+    velocity.vy = sineOffset > 0 ? patternMovement.amplitude.y
+                                 : -patternMovement.amplitude.y;
+
+    if (velocity.vx < 0 && transform.x < -100.f) {
+        reg.KillEntity(reg.EntityFromIndex(entityId));
+    } else if (velocity.vx > 0 && transform.x > 2000.f) {
+        reg.KillEntity(reg.EntityFromIndex(entityId));
+    }
+}
+
 void SineVerticalMovementFunction(Eng::registry &reg, std::size_t entityId,
     Com::Transform &transform, Com::Velocity &velocity,
     Com::PatternMovement &patternMovement, float dt) {
@@ -48,6 +66,24 @@ void SineVerticalMovementFunction(Eng::registry &reg, std::size_t entityId,
         patternMovement.amplitude.x *
         std::sin(patternMovement.frequency.x * patternMovement.elapsed);
     velocity.vx = sineOffset;
+    velocity.vy = patternMovement.baseDir.y * patternMovement.baseSpeed;
+
+    if (velocity.vy < 0 && transform.y < -100.f) {
+        reg.KillEntity(reg.EntityFromIndex(entityId));
+    } else if (velocity.vy > 0 && transform.y > 1200.f) {
+        reg.KillEntity(reg.EntityFromIndex(entityId));
+    }
+}
+
+void ZigZagVerticalMovementFunction(Eng::registry &reg, std::size_t entityId,
+    Com::Transform &transform, Com::Velocity &velocity,
+    Com::PatternMovement &patternMovement, float dt) {
+    // Zig-zag vertical movement logic
+    float sineOffset =
+        patternMovement.amplitude.x *
+        std::sin(patternMovement.frequency.x * patternMovement.elapsed);
+    velocity.vx = sineOffset > 0 ? patternMovement.amplitude.x
+                                 : -patternMovement.amplitude.x;
     velocity.vy = patternMovement.baseDir.y * patternMovement.baseSpeed;
 
     if (velocity.vy < 0 && transform.y < -100.f) {
@@ -125,6 +161,10 @@ GetNextMovementFunction(Com::PatternMovement::PatternType type) {
             {Com::PatternMovement::PatternType::SineVertical,
                 SineVerticalMovementFunction},
             {Com::PatternMovement::PatternType::Wave, WaveMovementFunction},
+            {Com::PatternMovement::PatternType::ZigZagHorizontal,
+                ZigZagHorizontalMovementFunction},
+            {Com::PatternMovement::PatternType::ZigZagVertical,
+                ZigZagVerticalMovementFunction},
             {Com::PatternMovement::PatternType::Waypoints,
                 WaypointsMovementFunction},
             {Com::PatternMovement::PatternType::FollowPlayer,

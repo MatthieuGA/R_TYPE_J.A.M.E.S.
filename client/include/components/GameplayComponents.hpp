@@ -151,13 +151,15 @@ struct AnimationDeath {
  */
 struct PatternMovement {
     enum class PatternType {
-        Straight,        // Straight line
-        SineHorizontal,  // Vertical oscillation
-        SineVertical,    // Horizontal oscillation
-        Wave,            // Wavy movement
-        Waypoints,       // Follow predefined waypoints
-        FollowPlayer,    // Follow the player
-        Circular,        // Circular motion
+        Straight,          // Straight line
+        SineHorizontal,    // Vertical oscillation
+        SineVertical,      // Horizontal oscillation
+        ZigZagHorizontal,  // Horizontal zig-zag
+        ZigZagVertical,    // Vertical zig-zag
+        Wave,              // Wavy movement
+        Waypoints,         // Follow predefined waypoints
+        FollowPlayer,      // Follow the player
+        Circular,          // Circular motion
     };
 
     // Constructor for Straight movement
