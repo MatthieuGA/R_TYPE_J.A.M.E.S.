@@ -10,10 +10,10 @@ namespace RC = Rtype::Client;
 // Helper to convert vector of strings to argc/argv format
 class ArgvHelper {
  public:
-    explicit ArgvHelper(const std::vector<std::string> &args) {
-        argv_.reserve(args.size());
-        for (const auto &arg : args) {
-            argv_.push_back(const_cast<char *>(arg.c_str()));
+    explicit ArgvHelper(const std::vector<std::string> &args) : args_(args) {
+        argv_.reserve(args_.size());
+        for (auto &arg : args_) {
+            argv_.push_back(arg.data());
         }
     }
 
@@ -26,7 +26,8 @@ class ArgvHelper {
     }
 
  private:
-    std::vector<char *> argv_;
+    std::vector<std::string> args_;  // Owns the strings
+    std::vector<char *> argv_;       // Points into args_
 };
 
 TEST(CommandLineParser, ParsesMinimalValidArguments) {
