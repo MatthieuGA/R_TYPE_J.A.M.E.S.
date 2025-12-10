@@ -7,6 +7,9 @@
 #include <stdexcept>
 #include <utility>
 #include <vector>
+#if defined(_MSC_VER)
+#include <stdlib.h>
+#endif
 
 namespace server::network {
 
