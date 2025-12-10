@@ -51,18 +51,17 @@ void PacketSender::SendGameStart() {
     game_start.Serialize(buffer);
     const auto &data = buffer.Data();
 
-    const auto &clients = connection_manager_.GetClients();
-    for (const auto &[client_id, client_ref] : clients) {
+    auto &clients = connection_manager_.GetClients();
+    for (auto &[client_id, client_ref] : clients) {
         if (client_ref.player_id_ == 0) {
             continue;  // Skip unauthenticated clients
         }
-        // Get non-const reference to the client for socket operations
-        ClientConnection &client = connection_manager_.GetClient(client_id);
+        // Use non-const reference to the client for socket operations
 
         auto data_copy = std::make_shared<std::vector<uint8_t>>(data);
 
-        client.tcp_socket_.async_send(boost::asio::buffer(*data_copy),
-            [data_copy, client_id, player_id = client.player_id_](
+        client_ref.tcp_socket_.async_send(boost::asio::buffer(*data_copy),
+            [data_copy, client_id, player_id = client_ref.player_id_](
                 boost::system::error_code ec, std::size_t) {
                 if (ec) {
                     std::cerr << "Error sending GAME_START to client "
