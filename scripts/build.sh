@@ -85,8 +85,15 @@ echo "Building..."
 echo "=========================================="
 echo ""
 
-# Build
-cmake --build . --config Release -j$(nproc)
+# Determine optimal number of parallel jobs
+# Use all available CPU cores + 1 for better CPU saturation
+NUM_CORES=$(nproc)
+NUM_JOBS=$((NUM_CORES + 1))
+echo "Building with $NUM_JOBS parallel jobs (CPU cores: $NUM_CORES)"
+echo ""
+
+# Build with maximum parallelization
+cmake --build . --config Release -j${NUM_JOBS}
 testExitStatus $? "Build"
 
 cd ..
