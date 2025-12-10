@@ -121,8 +121,9 @@ bool ClientConnectionManager::AllPlayersReady() const {
     bool all_ready = true;
 
     for (const auto &[id, connection] : clients_) {
-        if (connection.player_id_ == 0)
+        if (connection.player_id_ == 0) {
             continue;  // Skip unauthenticated connections
+        }
         connected_players++;
         if (!connection.ready_) {
             all_ready = false;
@@ -144,8 +145,9 @@ uint32_t ClientConnectionManager::AssignClientId() {
 
 uint8_t ClientConnectionManager::AssignPlayerId() {
     uint8_t id = next_player_id_++;
-    if (next_player_id_ == 0)
+    if (next_player_id_ == 0) {
         next_player_id_ = 1;
+    }
 
     // Find first available player_id (check authenticated clients only)
     uint8_t attempts = 0;
@@ -157,8 +159,9 @@ uint8_t ClientConnectionManager::AssignPlayerId() {
                 break;
             }
         }
-        if (!id_taken)
+        if (!id_taken) {
             return id;
+        }
 
         id = next_player_id_++;
         if (next_player_id_ == 0)
