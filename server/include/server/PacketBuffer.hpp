@@ -55,6 +55,9 @@ inline T FromLittleEndian(T value) {
  */
 template <typename T>
 static constexpr T ByteSwap(T value) {
+    static_assert(
+        sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8,
+        "ByteSwap only supports 1, 2, 4, or 8 byte integral types");
     if constexpr (sizeof(T) == 1)
         return value;
     if constexpr (sizeof(T) == 2) {
@@ -90,9 +93,6 @@ static constexpr T ByteSwap(T value) {
                ((value >> 40) & 0x000000000000FF00) | (value << 56);
 #endif
     }
-    static_assert(
-        sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8,
-        "ByteSwap only supports 1, 2, 4, or 8 byte integral types");
 }
 }  // namespace detail
 
