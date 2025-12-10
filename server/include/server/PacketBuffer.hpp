@@ -10,7 +10,7 @@
 
 // C++20 alternative for std::byteswap
 template <typename T>
-constexpr T byteswap(T value) {
+constexpr T Byteswap(T value) {
     if constexpr (sizeof(T) == 2) {
         return __builtin_bswap16(value);
     } else if constexpr (sizeof(T) == 4) {
@@ -28,7 +28,7 @@ inline T ToLittleEndian(T value) {
     if constexpr (std::endian::native == std::endian::little) {
         return value;
     } else if constexpr (std::endian::native == std::endian::big) {
-        return byteswap(value);
+        return Byteswap(value);
     } else {
         static_assert(std::endian::native == std::endian::little ||
                           std::endian::native == std::endian::big,
