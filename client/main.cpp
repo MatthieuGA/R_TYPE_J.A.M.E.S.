@@ -34,6 +34,19 @@ int main(int argc, char *argv[]) {
                   << std::endl;
         game_world.server_connection_->ConnectToServer(config.username);
 
+        // Poll io_context to process connection attempt
+        // Give it a few iterations to complete the handshake
+        for (int i = 0;
+            i < 10 && !game_world.server_connection_->is_connected(); ++i) {
+            game_world.io_context_.poll();
+            sf::sleep(sf::milliseconds(50));  // Small delay between polls
+        }
+
+        if (!game_world.server_connection_->is_connected()) {
+            std::cerr << "[Network] Failed to connect to server (timeout)"
+                      << std::endl;
+        }
+
         while (game_world.window_.isOpen()) {
             sf::Event event;
             while (game_world.window_.pollEvent(event)) {
