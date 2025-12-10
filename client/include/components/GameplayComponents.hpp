@@ -142,4 +142,134 @@ struct AnimationDeath {
     bool is_dead = true;
 };
 
+/**
+ * @brief Component for defining pattern-based movement for entities.
+ *
+ * This component allows entities to move according to predefined patterns,
+ * such as sine waves, waypoints, or following the player. It includes
+ * parameters for controlling the movement behavior and state.
+ */
+struct PatternMovement {
+    enum class PatternType {
+        Straight,        // Straight line
+        SineHorizontal,  // Vertical oscillation
+        SineVertical,    // Horizontal oscillation
+        Wave,            // Wavy movement
+        Waypoints,       // Follow predefined waypoints
+        FollowPlayer,    // Follow the player
+        Circular,        // Circular motion
+    };
+
+    // Constructor for Straight movement
+    explicit PatternMovement()
+        : currentWaypoint(0),
+          type(PatternType::Straight),
+          elapsed(0.f),
+          spawnPos({0.f, 0.f}),
+          baseDir({1.f, 0.f}),
+          baseSpeed(0.f),
+          amplitude({0.f, 0.f}),
+          frequency({0.f, 0.f}),
+          waypoints({}),
+          waypointSpeed(0.f),
+          waypointThreshold(4.f),
+          targetEntityId(0) {}
+
+    // Constructor for Sine / Wave movement
+    PatternMovement(PatternType type, sf::Vector2f amplitude,
+        sf::Vector2f frequency, sf::Vector2f baseDir, float baseSpeed,
+        bool loop = true)
+        : currentWaypoint(0),
+          type(type),
+          elapsed(0.f),
+          spawnPos({0.f, 0.f}),
+          baseDir(baseDir),
+          baseSpeed(baseSpeed),
+          amplitude(amplitude),
+          frequency(frequency),
+          waypoints({}),
+          waypointSpeed(0.f),
+          waypointThreshold(4.f),
+          targetEntityId(0) {}
+
+    // Constructor for Waypoints movement
+    PatternMovement(std::vector<sf::Vector2f> waypoints, float waypointSpeed,
+        sf::Vector2f baseDir, float baseSpeed, bool loop = true)
+        : currentWaypoint(0),
+          type(PatternType::Waypoints),
+          elapsed(0.f),
+          spawnPos({0.f, 0.f}),
+          baseDir(baseDir),
+          baseSpeed(baseSpeed),
+          amplitude({0.f, 0.f}),
+          frequency({0.f, 0.f}),
+          waypoints(std::move(waypoints)),
+          waypointSpeed(waypointSpeed),
+          waypointThreshold(4.f),
+          targetEntityId(0) {}
+
+    // Constructor for Follow Player movement
+    PatternMovement(size_t targetEntityId, sf::Vector2f baseDir,
+        float baseSpeed, bool loop = true)
+        : currentWaypoint(0),
+          type(PatternType::FollowPlayer),
+          elapsed(0.f),
+          spawnPos({0.f, 0.f}),
+          baseDir(baseDir),
+          baseSpeed(baseSpeed),
+          amplitude({0.f, 0.f}),
+          frequency({0.f, 0.f}),
+          waypoints({}),
+          waypointSpeed(0.f),
+          waypointThreshold(4.f),
+          targetEntityId(targetEntityId) {}
+
+    // Constructor for Circular movement
+    PatternMovement(float circularRadius, float circularAngularSpeed,
+        sf::Vector2f baseDir, float baseSpeed, bool loop = true)
+        : currentWaypoint(0),
+          type(PatternType::Circular),
+          elapsed(0.f),
+          spawnPos({0.f, 0.f}),
+          baseDir(baseDir),
+          baseSpeed(baseSpeed),
+          amplitude({0.f, 0.f}),
+          frequency({0.f, 0.f}),
+          waypoints({}),
+          waypointSpeed(0.f),
+          waypointThreshold(4.f),
+          circularRadius(circularRadius),
+          circularAngularSpeed(circularAngularSpeed),
+          circularAngle(0.f),
+          targetEntityId(0) {}
+
+    PatternType type;
+
+    // Time
+    float elapsed = 0.f;  // Times since pattern started
+
+    // Base movement
+    sf::Vector2f spawnPos;  // Spawn position of the entity
+    sf::Vector2f baseDir;   // Base movement direction (normalized)
+    float baseSpeed = 0.f;  // Base movement speed
+
+    // Sine / Wave parameters
+    sf::Vector2f amplitude;  // Amplitude of the sine wave
+    sf::Vector2f frequency;  // Frequency of the sine wave
+
+    // Waypoints
+    std::vector<sf::Vector2f> waypoints;
+    std::size_t currentWaypoint = 0;
+    float waypointSpeed = 0.f;
+    float waypointThreshold = 4.f;  // Distance to consider waypoint reached
+
+    // Circular movement
+    float circularRadius = 50.f;
+    float circularAngularSpeed = 1.f;  // Radians per second
+    float circularAngle = 0.f;         // Current angle in radians
+
+    // Follow player / target
+    size_t targetEntityId = 0;  // Entity ID of the target to follow
+};
+
 }  // namespace Rtype::Client::Component

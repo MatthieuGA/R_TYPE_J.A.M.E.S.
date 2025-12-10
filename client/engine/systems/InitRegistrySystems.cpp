@@ -75,6 +75,18 @@ void InitRenderSystems(Rtype::Client::GameWorld &game_world) {
  * @param game_world The game world containing the registry.
  */
 void InitMovementSystem(Rtype::Client::GameWorld &game_world) {
+    // Patern movement system
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
+        Eng::sparse_array<Com::Velocity>,
+        Eng::sparse_array<Com::PatternMovement>>(
+        [&game_world](Eng::registry &r,
+            Eng::sparse_array<Com::Transform> &transforms,
+            Eng::sparse_array<Com::Velocity> &velocities,
+            Eng::sparse_array<Com::PatternMovement> &patern_movements) {
+            PaternMovementSystem(r, game_world.last_delta_, transforms,
+                velocities, patern_movements);
+        });
+
     // Movement system
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
         Eng::sparse_array<Com::Velocity>>(

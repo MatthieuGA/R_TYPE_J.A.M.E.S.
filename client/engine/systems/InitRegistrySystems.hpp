@@ -138,4 +138,9 @@ void PlayerHitSystem(Eng::registry &reg, GameWorld &game_world,
 
 void TimedEventSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::TimedEvents> &timed_events);
+
+void PaternMovementSystem(Eng::registry &reg, const float dt,
+    Eng::sparse_array<Com::Transform> &transforms,
+    Eng::sparse_array<Com::Velocity> &velocities,
+    Eng::sparse_array<Com::PatternMovement> &patern_movements);
 }  // namespace Rtype::Client
