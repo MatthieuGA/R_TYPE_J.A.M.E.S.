@@ -329,4 +329,67 @@ struct Text {
     }
 };
 
+struct Particle {
+    sf::Vector2f position;
+    sf::Vector2f velocity;
+    float lifetime;     // restant
+    float maxLifetime;  // durée de vie initiale
+};
+
+struct ParticleEmitter {
+    bool active = true;
+    float duration_active = -1.f;
+    float duration_past = 0.0f;
+
+    std::vector<Particle> particles;
+    std::size_t maxParticles = 300;
+
+    float emissionRate = 200.f;  // particules / seconde
+    float emissionAccumulator = 0.f;
+
+    sf::Color startColor = sf::Color(80, 80, 255, 255);  // bleu
+    sf::Color endColor = sf::Color(80, 80, 255, 0);      // bleu transparent
+
+    sf::Vector2f offset = {0.f, 0.f};  // offset local par rapport au Transform
+
+    float particleLifetime = 1.0f;  // durée de vie des particules en secondes
+    float particleSpeed = 50.f;     // vitesse initiale des particules
+    sf::Vector2f direction = {0.f, -1.f};  // direction initiale des particules
+    float spreadAngle = 30.f;              // angle de dispersion en degrés
+    float gravity = 0.f;                   // accélération verticale
+    float emissionRadius = 0.f;            // rayon d'apparition des particules
+    float start_size = 1.0f;               // taille de début des particules
+    float end_size = 1.0f;                 // taille de fin des particules
+
+    bool emitting = true;  // Does the Particle emit particle
+
+    // pour le rendu
+    sf::VertexArray vertices = sf::VertexArray(sf::Points);
+
+    ParticleEmitter(float emissionRate = 200.f, std::size_t maxParticles = 300,
+        sf::Color startColor = sf::Color(80, 80, 255, 255),
+        sf::Color endColor = sf::Color(80, 80, 255, 0),
+        sf::Vector2f offset = {0.f, 0.f}, bool active = true,
+        float particleLifetime = 1.0f, float particleSpeed = 50.f,
+        sf::Vector2f direction = {0.f, -1.f}, float spreadAngle = 30.f,
+        float gravity = 0.f, float emissionRadius = 0.f,
+        float start_size = 1.0f, float end_size = 1.0f, float duration = -1.f)
+        : active(active),
+          duration_active(duration),
+          duration_past(0.0f),
+          maxParticles(maxParticles),
+          emissionRate(emissionRate),
+          startColor(startColor),
+          endColor(endColor),
+          offset(offset),
+          particleLifetime(particleLifetime),
+          particleSpeed(particleSpeed),
+          direction(direction),
+          spreadAngle(spreadAngle),
+          gravity(gravity),
+          emissionRadius(emissionRadius),
+          start_size(start_size),
+          end_size(end_size) {}
+};
+
 }  // namespace Rtype::Client::Component

@@ -52,6 +52,13 @@ void InitRenderSystems(Rtype::Client::GameWorld &game_world) {
             Eng::sparse_array<Com::Text> &texts) {
             DrawTextRenderSystem(r, game_world, transforms, texts);
         });
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
+        Eng::sparse_array<Com::ParticleEmitter>>(
+        [&game_world](Eng::registry &r,
+            Eng::sparse_array<Com::Transform> const &transforms,
+            Eng::sparse_array<Com::ParticleEmitter> &emitters) {
+            ParticleSystemEmitterSystem(r, game_world, transforms, emitters);
+        });
 }
 
 /**
