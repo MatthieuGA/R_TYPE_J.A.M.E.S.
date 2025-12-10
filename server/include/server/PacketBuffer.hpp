@@ -50,6 +50,9 @@ constexpr T Byteswap(T value) {
                ((value >> 24) & 0x0000000000FF0000) |
                ((value >> 40) & 0x000000000000FF00) | (value << 56);
 #endif
+    } else {
+        static_assert(sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8,
+            "Byteswap only supports 2, 4, or 8 byte integral types");
     }
 }
 
