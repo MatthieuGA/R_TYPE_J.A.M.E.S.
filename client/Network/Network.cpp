@@ -285,9 +285,10 @@ void Network::Disconnect() {
             WriteHeader(pkt.data(), kOpDisconnectReq, 0,
                 static_cast<uint32_t>(current_tick_));
             boost::system::error_code ec;
-            boost::asio::write(tcp_socket_, boost::asio::buffer(pkt), ec);
+            (void)boost::asio::write(
+                tcp_socket_, boost::asio::buffer(pkt), ec);
             // Cancel pending operations to wake up handlers.
-            tcp_socket_.cancel(ec);
+            (void)tcp_socket_.cancel(ec);
         }
     } catch (...) {}
     boost::system::error_code ec;
@@ -295,11 +296,11 @@ void Network::Disconnect() {
     // receive operation_aborted and can exit cleanly without being
     // rescheduled on closed sockets.
     if (udp_socket_.is_open()) {
-        udp_socket_.cancel(ec);
-        udp_socket_.close(ec);
+        (void)udp_socket_.cancel(ec);
+        (void)udp_socket_.close(ec);
     }
     if (tcp_socket_.is_open()) {
-        tcp_socket_.close(ec);
+        (void)tcp_socket_.close(ec);
     }
     connected_.store(false);
 }
