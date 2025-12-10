@@ -19,7 +19,7 @@ namespace detail {
  *
  * Note: constexpr only on GCC/Clang due to MSVC intrinsic limitations.
  *
- * @tparam T The integral type to swap (must be 2, 4, or 8 bytes).
+ * @tparam T The integral type to swap (must be 1, 2, 4, or 8 bytes).
  * @param value The value to byte-swap.
  * @return The value with bytes in reversed order.
  */
