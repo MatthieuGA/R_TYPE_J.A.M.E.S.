@@ -132,12 +132,19 @@ void ServerConnection::AsyncReceiveTCP() {
     // Read header
     boost::asio::async_read(tcp_socket_,
         boost::asio::buffer(tcp_buffer_.data(), kHeaderSize),
-        [this](const boost::system::error_code &ec, std::size_t /*n*/) {
+        [this](const boost::system::error_code &ec, std::size_t bytes_read) {
             if (ec) {
                 if (ec != boost::asio::error::eof)
                     std::cerr
                         << "[Network] TCP header read error: " << ec.message()
                         << std::endl;
+                return;
+            }
+            // Ensure we read the full header before accessing buffer fields
+            if (bytes_read != kHeaderSize) {
+                std::cerr << "[Network] TCP header incomplete: got "
+                          << bytes_read << " bytes, expected " << kHeaderSize
+                          << std::endl;
                 return;
             }
             uint8_t opcode = tcp_buffer_[0];
