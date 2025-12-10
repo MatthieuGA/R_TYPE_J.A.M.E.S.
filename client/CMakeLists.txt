@@ -4,14 +4,23 @@ file(GLOB_RECURSE R_TYPE_CLIENT_SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
 )
 
+# Exclude plugin sources from client executable
+list(FILTER R_TYPE_CLIENT_SOURCES EXCLUDE REGEX "plugins/.*\\.cpp$")
+
 # Find threading library for portability
 find_package(Threads REQUIRED)
 
 target_sources(r-type_client PRIVATE ${R_TYPE_CLIENT_SOURCES})
-target_include_directories(r-type_client PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${Boost_INCLUDE_DIRS})
+target_include_directories(r-type_client PRIVATE 
+    ${CMAKE_CURRENT_SOURCE_DIR} 
+    ${CMAKE_SOURCE_DIR}/engine/include
+    ${Boost_INCLUDE_DIRS})
 target_link_libraries(r-type_client PRIVATE r-type_engine
     SFML::Window SFML::Graphics SFML::Network SFML::Audio SFML::System
     Boost::system Threads::Threads)
+
+# Build audio plugins
+add_subdirectory(plugins/audio/sfml)
 
 # Post build copy assets
 add_custom_command(TARGET r-type_client POST_BUILD

@@ -1,12 +1,16 @@
+#include <fstream>
 #include <iostream>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include <SFML/Graphics.hpp>
+#include <audio/IAudioModule.hpp>
+#include <loader/DLLoader.hpp>
 
 #include "engine/GameWorld.hpp"
 #include "engine/audio/AudioManager.hpp"
-#include "engine/audio/SFMLAudioBackend.hpp"
+#include "engine/audio/PluginAudioBackend.hpp"
 #include "game/InitRegistry.hpp"
 #include "game/scenes_management/InitScenes.hpp"
 #include "include/registry.hpp"
@@ -18,8 +22,25 @@ int main() {
     try {
         RC::GameWorld game_world;
 
-        // Initialize audio subsystem
-        auto audio_backend = std::make_unique<Audio::SFMLAudioBackend>();
+        // Load audio plugin dynamically
+        std::string plugin_path = "../lib/sfml_audio_module.so";
+        std::cout << "[Client] Loading audio plugin: " << plugin_path
+                  << std::endl;
+
+        Engine::DLLoader<Engine::Audio::IAudioModule> audio_loader;
+        audio_loader.open(plugin_path);
+        auto audio_module = audio_loader.getInstance("entryPoint");
+
+        if (!audio_module) {
+            throw std::runtime_error("Failed to load audio plugin");
+        }
+
+        std::cout << "[Client] Loaded audio plugin: "
+                  << audio_module->GetModuleName() << std::endl;
+
+        // Initialize audio subsystem with plugin adapter
+        auto audio_backend =
+            std::make_unique<Audio::PluginAudioBackend>(audio_module);
         Audio::AudioManager audio_manager(std::move(audio_backend));
         game_world.audio_manager_ = &audio_manager;
 
