@@ -7,16 +7,84 @@
 #include <stdexcept>
 #include <utility>
 #include <vector>
+#if defined(_MSC_VER)
+#include <stdlib.h>
+#endif
 
 namespace server::network {
 
 namespace detail {
+/**
+ * @brief Swaps the byte order of an integral value.
+ *
+ * This is a C++20 compatible alternative to std::byteswap (C++23).
+ * Uses compiler built-in functions for efficient byte swapping.
+ *
+ * Note: constexpr only on GCC/Clang due to MSVC intrinsic limitations.
+ *
+ * @tparam T The integral type to swap (must be 1, 2, 4, or 8 bytes).
+ * @param value The value to byte-swap.
+ * @return The value with bytes in reversed order.
+ */
+template <typename T>
+#if defined(__GNUC__) || defined(__clang__)
+static constexpr T ByteSwap(T value) {
+#else
+static inline T ByteSwap(T value) {
+#endif
+    static_assert(
+        sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8,
+        "ByteSwap only supports 1, 2, 4, or 8 byte integral types");
+    if constexpr (sizeof(T) == 1)
+        return value;
+    if constexpr (sizeof(T) == 2) {
+#if defined(_MSC_VER)
+        return _byteswap_ushort(value);
+#elif defined(__GNUC__) || defined(__clang__)
+        return __builtin_bswap16(value);
+#else
+    return (value >> 8) | (value << 8);
+#endif
+    }
+    if constexpr (sizeof(T) == 4) {
+#if defined(_MSC_VER)
+        return _byteswap_ulong(value);
+#elif defined(__GNUC__) || defined(__clang__)
+        return __builtin_bswap32(value);
+#else
+    return (value >> 24) | ((value << 8) & 0x00FF0000) |
+           ((value >> 8) & 0x0000FF00) | (value << 24);
+#endif
+    }
+    if constexpr (sizeof(T) == 8) {
+#if defined(_MSC_VER)
+        return _byteswap_uint64(value);
+#elif defined(__GNUC__) || defined(__clang__)
+        return __builtin_bswap64(value);
+#else
+    return (value >> 56) | ((value << 40) & 0x00FF000000000000) |
+           ((value << 24) & 0x0000FF0000000000) |
+           ((value << 8) & 0x000000FF00000000) |
+           ((value >> 8) & 0x00000000FF000000) |
+           ((value >> 24) & 0x0000000000FF0000) |
+           ((value >> 40) & 0x000000000000FF00) | (value << 56);
+#endif
+    }
+}
+
+/**
+ * @brief Convert integral value to little-endian byte order
+ *
+ * @tparam T Integral type
+ * @param value Value to convert
+ * @return T Value in little-endian byte order
+ */
 template <typename T>
 inline T ToLittleEndian(T value) {
     if constexpr (std::endian::native == std::endian::little) {
         return value;
     } else if constexpr (std::endian::native == std::endian::big) {
-        return std::byteswap(value);
+        return ByteSwap(value);
     } else {
         static_assert(std::endian::native == std::endian::little ||
                           std::endian::native == std::endian::big,
@@ -24,10 +92,18 @@ inline T ToLittleEndian(T value) {
     }
 }
 
+/**
+ * @brief Convert integral value from little-endian byte order
+ *
+ * @tparam T Integral type
+ * @param value Value in little-endian byte order
+ * @return T Value in native byte order
+ */
 template <typename T>
 inline T FromLittleEndian(T value) {
     return ToLittleEndian(value);
 }
+
 }  // namespace detail
 
 /**
