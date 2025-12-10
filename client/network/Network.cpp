@@ -120,7 +120,7 @@ void ServerConnection::ConnectToServer(const std::string &username) {
 
                 boost::asio::async_write(tcp_socket_,
                     boost::asio::buffer(*pkt),
-                    [this, pkt, username](const boost::system::error_code &wec,
+                    [this, pkt](const boost::system::error_code &wec,
                         std::size_t bytes_sent) {
                         if (wec) {
                             std::cerr << "[Network] CONNECT_REQ send failed: "
