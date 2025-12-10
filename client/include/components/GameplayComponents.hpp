@@ -225,22 +225,20 @@ struct PatternMovement {
           targetEntityId(targetEntityId) {}
 
     // Constructor for Circular movement
-    PatternMovement(float circularRadius, float circularAngularSpeed,
-        sf::Vector2f baseDir, float baseSpeed, bool loop = true)
+    PatternMovement(float baseSpeed, float radius, sf::Vector2f centerPos)
         : currentWaypoint(0),
           type(PatternType::Circular),
           elapsed(0.f),
-          spawnPos({0.f, 0.f}),
-          baseDir(baseDir),
+          spawnPos(centerPos),
+          baseDir({0.f, 0.f}),
           baseSpeed(baseSpeed),
           amplitude({0.f, 0.f}),
           frequency({0.f, 0.f}),
           waypoints({}),
+          angle(0.f),
+          radius(radius),
           waypointSpeed(0.f),
           waypointThreshold(4.f),
-          circularRadius(circularRadius),
-          circularAngularSpeed(circularAngularSpeed),
-          circularAngle(0.f),
           targetEntityId(0) {}
 
     PatternType type;
@@ -263,10 +261,9 @@ struct PatternMovement {
     float waypointSpeed = 0.f;
     float waypointThreshold = 4.f;  // Distance to consider waypoint reached
 
-    // Circular movement
-    float circularRadius = 50.f;
-    float circularAngularSpeed = 1.f;  // Radians per second
-    float circularAngle = 0.f;         // Current angle in radians
+    // Cicular
+    float angle = 0.f;
+    float radius = 0.f;
 
     // Follow player / target
     size_t targetEntityId = 0;  // Entity ID of the target to follow

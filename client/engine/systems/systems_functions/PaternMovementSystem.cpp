@@ -44,12 +44,44 @@ void SineVerticalMovementFunction(Eng::registry &reg, std::size_t entityId,
     Com::Transform &transform, Com::Velocity &velocity,
     Com::PatternMovement &patternMovement, float dt) {
     // Sine vertical movement logic
+    float sineOffset =
+        patternMovement.amplitude.x *
+        std::sin(patternMovement.frequency.x * patternMovement.elapsed);
+    velocity.vx = sineOffset;
+    velocity.vy = patternMovement.baseDir.y * patternMovement.baseSpeed;
+
+    if (velocity.vy < 0 && transform.y < -100.f) {
+        reg.KillEntity(reg.EntityFromIndex(entityId));
+    } else if (velocity.vy > 0 && transform.y > 1200.f) {
+        reg.KillEntity(reg.EntityFromIndex(entityId));
+    }
 }
 
 void WaveMovementFunction(Eng::registry &reg, std::size_t entityId,
     Com::Transform &transform, Com::Velocity &velocity,
     Com::PatternMovement &patternMovement, float dt) {
     // Wave movement logic
+    float sineOffsetX =
+        patternMovement.amplitude.x *
+        std::sin(patternMovement.frequency.x * patternMovement.elapsed);
+    float sineOffsetY =
+        patternMovement.amplitude.y *
+        std::sin(patternMovement.frequency.y * patternMovement.elapsed);
+    velocity.vx =
+        patternMovement.baseDir.x * patternMovement.baseSpeed + sineOffsetX;
+    velocity.vy =
+        patternMovement.baseDir.y * patternMovement.baseSpeed + sineOffsetY;
+
+    if (velocity.vx < 0 && transform.x < -100.f) {
+        reg.KillEntity(reg.EntityFromIndex(entityId));
+    } else if (velocity.vx > 0 && transform.x > 2000.f) {
+        reg.KillEntity(reg.EntityFromIndex(entityId));
+    }
+    if (velocity.vy < 0 && transform.y < -100.f) {
+        reg.KillEntity(reg.EntityFromIndex(entityId));
+    } else if (velocity.vy > 0 && transform.y > 1200.f) {
+        reg.KillEntity(reg.EntityFromIndex(entityId));
+    }
 }
 
 void WaypointsMovementFunction(Eng::registry &reg, std::size_t entityId,
@@ -68,6 +100,15 @@ void CircularMovementFunction(Eng::registry &reg, std::size_t entityId,
     Com::Transform &transform, Com::Velocity &velocity,
     Com::PatternMovement &patternMovement, float dt) {
     // Circular movement logic
+    patternMovement.angle =
+        (patternMovement.baseSpeed / patternMovement.radius) *
+        patternMovement.elapsed;
+    patternMovement.angle = std::fmod(patternMovement.angle, 2 * 3.14159265f);
+
+    transform.x = patternMovement.spawnPos.x +
+                  patternMovement.radius * std::cos(patternMovement.angle);
+    transform.y = patternMovement.spawnPos.y +
+                  patternMovement.radius * std::sin(patternMovement.angle);
 }
 
 std::function<void(Eng::registry &, std::size_t, Com::Transform &,

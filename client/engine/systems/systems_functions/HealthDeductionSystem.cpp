@@ -20,6 +20,7 @@ void DeathHandling(Eng::registry &reg,
         reg.RemoveComponent<Component::EnemyTag>(entity);
     reg.RemoveComponent<Component::TimedEvents>(entity);
     reg.RemoveComponent<Component::FrameEvents>(entity);
+    reg.RemoveComponent<Component::PatternMovement>(entity);
 
     // Play death animation
     if (animated_sprites.has(i)) {
