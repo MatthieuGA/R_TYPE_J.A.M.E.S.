@@ -1,4 +1,4 @@
-#include "Network/Network.hpp"
+#include "network/Network.hpp"
 
 #include <algorithm>
 #include <cstring>
