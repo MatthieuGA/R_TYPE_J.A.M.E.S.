@@ -49,12 +49,16 @@ struct EnemyShootTag {
             std::function<void(int)> act);
     };
 
-    float shoot_cooldown_max = 1.0f;
-    float shoot_cooldown = 0.0f;
+    struct CooldownAction {
+        std::function<void(int entity_id)> action;
+        float cooldown_max = 1.0f;
+        float cooldown = 0.0f;
+    };
+
     float speed_projectile = 200.0f;
     int damage_projectile = 10;
     std::vector<FrameEvent> frame_events;
-    std::function<void(int entity_id)> cooldown_action = nullptr;
+    std::vector<CooldownAction> cooldown_actions;
     sf::Vector2f offset_shoot_position = sf::Vector2f(0.0f, 0.0f);
 
     /**
@@ -65,7 +69,7 @@ struct EnemyShootTag {
      * @param damage Damage of the projectile
      * @param offset Offset position for shooting
      */
-    EnemyShootTag(float cooldown, float speed = 200.0f, int damage = 10,
+    EnemyShootTag(float speed = 200.0f, int damage = 10,
         sf::Vector2f offset = sf::Vector2f(0.0f, 0.0f));
 
     /**
@@ -84,7 +88,8 @@ struct EnemyShootTag {
      *
      * @param action Action callback function to execute (receives entity_id)
      */
-    void SetCooldownAction(std::function<void(int)> action);
+    void AddCooldownAction(
+        std::function<void(int)> action, float cooldown_max);
 };
 
 struct Projectile {

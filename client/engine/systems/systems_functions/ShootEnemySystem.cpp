@@ -8,12 +8,6 @@
 
 namespace Rtype::Client {
 
-void UpdateCooldown(Com::EnemyShootTag &enemy_shoot, float deltaTime) {
-    if (enemy_shoot.shoot_cooldown < enemy_shoot.shoot_cooldown_max) {
-        enemy_shoot.shoot_cooldown += deltaTime;
-    }
-}
-
 void HandleFrameBaseEvents(Eng::registry &reg, int entityId,
     Com::EnemyShootTag &enemy_shoot, Com::Transform const &transform,
     Eng::sparse_array<Com::AnimatedSprite> &animated_sprites, int i) {
@@ -42,16 +36,15 @@ void HandleFrameBaseEvents(Eng::registry &reg, int entityId,
     }
 }
 
-void HandleCooldownBasedShooting(Eng::registry &reg, int entityId,
-    Com::EnemyShootTag &enemy_shoot, Com::Transform const &transform,
-    Eng::sparse_array<Com::AnimatedSprite> &animated_sprites, int i) {
-    if (enemy_shoot.shoot_cooldown > enemy_shoot.shoot_cooldown_max) {
-        enemy_shoot.shoot_cooldown = 0.0f;
+void HandleCooldownBasedShooting(int entityId, float deltaTime,
+    Com::EnemyShootTag::CooldownAction &enemy_action) {
+    enemy_action.cooldown += deltaTime;
+    if (enemy_action.cooldown > enemy_action.cooldown_max) {
+        enemy_action.cooldown = 0.0f;
 
-        // Execute custom cooldown action if set, otherwise use default
-        // behavior
-        if (enemy_shoot.cooldown_action)
-            enemy_shoot.cooldown_action(entityId);
+        // Execute custom action if set
+        if (enemy_action.action)
+            enemy_action.action(entityId);
     }
 }
 
@@ -62,10 +55,8 @@ void ShootEnemySystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::EnemyTag> const &enemy_tags) {
     for (auto &&[i, transform, enemy_shoot, enemy_tag] :
         make_indexed_zipper(transforms, enemy_shoot_tags, enemy_tags)) {
-        UpdateCooldown(enemy_shoot, game_world.last_delta_);
-
-        HandleCooldownBasedShooting(
-            reg, i, enemy_shoot, transform, animated_sprites, i);
+        for (auto &cd_action : enemy_shoot.cooldown_actions)
+            HandleCooldownBasedShooting(i, game_world.last_delta_, cd_action);
         // Handle frame-based events if configured
         if (!enemy_shoot.frame_events.empty() && animated_sprites.has(i)) {
             HandleFrameBaseEvents(

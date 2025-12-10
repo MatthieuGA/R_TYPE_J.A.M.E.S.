@@ -146,7 +146,6 @@ void GameScene::AddEnemyLevel(Engine::registry &reg, sf::Vector2f position) {
         enemy_entity, Component::EnemyTag{Rtype::Client::MERMAID_SPEED});
 
     Component::EnemyShootTag enemy_shoot_tag(
-        Rtype::Client::MERMAID_SHOOT_COOLDOWN,
         Rtype::Client::MERMAID_PROJECTILE_SPEED,
         Rtype::Client::MERMAID_PROJECTILE_DAMAGE, sf::Vector2f(-3.0f, -15.0f));
 
@@ -162,12 +161,14 @@ void GameScene::AddEnemyLevel(Engine::registry &reg, sf::Vector2f position) {
         CreateEnemyProjectile(
             reg, shoot_direction, enemy_shoot, entity_id, transform);
     });
-    enemy_shoot_tag.cooldown_action = [this, &reg](int entity_id) {
-        // Default cooldown action: trigger Attack animation
-        auto &animSprite = reg.GetComponent<Component::AnimatedSprite>(
-            reg.EntityFromIndex(entity_id));
-        animSprite.SetCurrentAnimation("Attack");
-    };
+    enemy_shoot_tag.AddCooldownAction(
+        [this, &reg](int entity_id) {
+            // Default cooldown action: trigger Attack animation
+            auto &animSprite = reg.GetComponent<Component::AnimatedSprite>(
+                reg.EntityFromIndex(entity_id));
+            animSprite.SetCurrentAnimation("Attack");
+        },
+        MERMAID_SHOOT_COOLDOWN);
     reg.AddComponent<Component::EnemyShootTag>(
         enemy_entity, std::move(enemy_shoot_tag));
     reg.AddComponent<Component::HitBox>(
