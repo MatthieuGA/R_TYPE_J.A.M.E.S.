@@ -99,6 +99,16 @@ class Server {
     void Start();
 
     /**
+     * @brief Stop the game loop and reset game state and tick
+     */
+    void Stop();
+
+    /**
+     * @brief Stop the game loop and close all client connections
+     */
+    void Close();
+
+    /**
      * @brief Update game state (called each tick)
      */
     void Update();

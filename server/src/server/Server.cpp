@@ -87,9 +87,35 @@ void Server::RegisterSystems() {
 }
 
 void Server::Start() {
-    std::cout << "Starting server..." << std::endl;
+    std::cout << "Starting game..." << std::endl;
     running_ = true;
     SetupGameTick();
+}
+
+void Server::Stop() {
+    std::cout << "Stopping game..." << std::endl;
+    running_ = false;
+    tick_timer_.cancel();
+    std::cout << "Game stopped" << std::endl;
+}
+
+void Server::Close() {
+    std::cout << "Closing server..." << std::endl;
+    Stop();
+    // Close all client connections
+    for (auto &[player_id, connection] : clients_) {
+        std::cout << "Closing connection for player "
+                  << static_cast<int>(player_id) << " ('"
+                  << connection.username_ << "')" << std::endl;
+        boost::system::error_code ec;
+        if (connection.tcp_socket_.close(ec) && ec) {
+            std::cerr << "Error closing socket for player "
+                      << static_cast<int>(player_id) << ": " << ec.message()
+                      << std::endl;
+        }
+    }
+    clients_.clear();
+    std::cout << "Server closed" << std::endl;
 }
 
 void Server::SetupGameTick() {
