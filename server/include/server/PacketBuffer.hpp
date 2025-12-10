@@ -12,38 +12,6 @@ namespace server::network {
 
 namespace detail {
 /**
- * @brief Convert integral value to little-endian byte order
- *
- * @tparam T Integral type
- * @param value Value to convert
- * @return T Value in little-endian byte order
- */
-template <typename T>
-inline T ToLittleEndian(T value) {
-    if constexpr (std::endian::native == std::endian::little) {
-        return value;
-    } else if constexpr (std::endian::native == std::endian::big) {
-        return ByteSwap(value);
-    } else {
-        static_assert(std::endian::native == std::endian::little ||
-                          std::endian::native == std::endian::big,
-            "Mixed endianness not supported");
-    }
-}
-
-/**
- * @brief Convert integral value from little-endian byte order
- *
- * @tparam T Integral type
- * @param value Value in little-endian byte order
- * @return T Value in native byte order
- */
-template <typename T>
-inline T FromLittleEndian(T value) {
-    return ToLittleEndian(value);
-}
-
-/**
  * @brief Swaps the byte order of an integral value.
  *
  * This is a C++20 compatible alternative to std::byteswap (C++23).
@@ -100,6 +68,39 @@ static inline T ByteSwap(T value) {
 #endif
     }
 }
+
+/**
+ * @brief Convert integral value to little-endian byte order
+ *
+ * @tparam T Integral type
+ * @param value Value to convert
+ * @return T Value in little-endian byte order
+ */
+template <typename T>
+inline T ToLittleEndian(T value) {
+    if constexpr (std::endian::native == std::endian::little) {
+        return value;
+    } else if constexpr (std::endian::native == std::endian::big) {
+        return ByteSwap(value);
+    } else {
+        static_assert(std::endian::native == std::endian::little ||
+                          std::endian::native == std::endian::big,
+            "Mixed endianness not supported");
+    }
+}
+
+/**
+ * @brief Convert integral value from little-endian byte order
+ *
+ * @tparam T Integral type
+ * @param value Value in little-endian byte order
+ * @return T Value in native byte order
+ */
+template <typename T>
+inline T FromLittleEndian(T value) {
+    return ToLittleEndian(value);
+}
+
 }  // namespace detail
 
 /**
