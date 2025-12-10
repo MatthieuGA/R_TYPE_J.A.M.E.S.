@@ -19,7 +19,7 @@
  * @return The value with bytes in reversed order.
  */
 template <typename T>
-constexpr T ByteSwap(T value) {
+static constexpr T ByteSwap(T value) {
     if constexpr (sizeof(T) == 1)
         return value;
     if constexpr (sizeof(T) == 2) {
