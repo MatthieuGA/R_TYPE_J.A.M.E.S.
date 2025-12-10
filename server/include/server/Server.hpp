@@ -262,6 +262,31 @@ class Server {
         ClientConnection &client, const network::DisconnectReqPacket &packet);
 
     // ========================================================================
+    // TCP Packet Senders
+    // ========================================================================
+
+    /**
+     * @brief Send CONNECT_ACK packet to client
+     *
+     * Helper function to send authentication response.
+     *
+     * @param client Client connection to send to
+     * @param status Response status (OK, ServerFull, BadUsername, InGame)
+     * @param assigned_player_id Player ID if status is OK, 0 otherwise
+     */
+    void SendConnectAck(ClientConnection &client,
+        network::ConnectAckPacket::Status status,
+        uint8_t assigned_player_id = 0);
+
+    /**
+     * @brief Send GAME_START packet to all authenticated players
+     *
+     * RFC Section 5.5: Notifies all players that the game is starting.
+     * Only sends to clients with player_id != 0 (authenticated).
+     */
+    void SendGameStart();
+
+    // ========================================================================
     // Member Variables
     // ========================================================================
 
