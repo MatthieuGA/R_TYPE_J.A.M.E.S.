@@ -84,5 +84,9 @@ class Config {
     static int StringToPort(const char *str);
     static void PrintUsage(const char *programName);
     static void PrintHelp(const char *programName);
+    static void ParseMaxPlayers(
+        int &i, int argc, char *argv[], Config &config);
+    static void ParsePositionalArgs(
+        const std::string &arg, int &positional_index, Config &config);
 };
 }  // namespace server

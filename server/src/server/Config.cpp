@@ -35,6 +35,56 @@ void Config::PrintHelp(const char *programName) {
               << std::endl;
 }
 
+void Config::ParseMaxPlayers(int &i, int argc, char *argv[], Config &config) {
+    if (i + 1 >= argc) {
+        throw std::invalid_argument("Missing value for -p");
+    }
+    try {
+        int max_players = std::stoi(argv[++i]);
+        if (max_players < 1 || max_players > 255) {
+            throw std::out_of_range("Max players must be between 1 and 255");
+        }
+        config.maxPlayers_ = static_cast<uint8_t>(max_players);
+    } catch (const std::exception &e) {
+        std::cerr << "Invalid max players: " << argv[i] << std::endl;
+        throw;
+    }
+}
+
+void Config::ParsePositionalArgs(
+    const std::string &arg, int &positional_index, Config &config) {
+    if (positional_index == 0) {
+        try {
+            int tcp_port_value = StringToPort(arg.c_str());
+            if (tcp_port_value < 1 || tcp_port_value > 65535) {
+                throw std::out_of_range("Port must be between 1 and 65535");
+            }
+            config.tcpPort_ = static_cast<uint16_t>(tcp_port_value);
+        } catch (const std::exception &e) {
+            std::cerr << "Invalid TCP port: " << arg << std::endl;
+            throw;
+        }
+        positional_index++;
+    } else if (positional_index == 1) {
+        try {
+            int udp_port_value = StringToPort(arg.c_str());
+            if (udp_port_value < 1 || udp_port_value > 65535) {
+                throw std::out_of_range("Port must be between 1 and 65535");
+            }
+            config.udpPort_ = static_cast<uint16_t>(udp_port_value);
+        } catch (const std::exception &e) {
+            std::cerr << "Invalid UDP port: " << arg << std::endl;
+            throw;
+        }
+        positional_index++;
+    } else {
+        // We don't have argv[0] here, so we can't print usage with program
+        // name But Parse() handles the exception and can print usage if
+        // needed, or we just throw.
+        throw std::invalid_argument("Too many arguments provided");
+    }
+}
+
 Config Config::Parse(int argc, char *argv[]) {
     Config config;
     int positional_index = 0;
@@ -46,51 +96,15 @@ Config Config::Parse(int argc, char *argv[]) {
             PrintHelp(argv[0]);
             std::exit(0);
         } else if (arg == "-p") {
-            if (i + 1 >= argc) {
-                throw std::invalid_argument("Missing value for -p");
-            }
-            try {
-                int max_players = std::stoi(argv[++i]);
-                if (max_players < 1 || max_players > 255) {
-                    throw std::out_of_range(
-                        "Max players must be between 1 and 255");
-                }
-                config.maxPlayers_ = static_cast<uint8_t>(max_players);
-            } catch (const std::exception &e) {
-                std::cerr << "Invalid max players: " << argv[i] << std::endl;
-                throw;
-            }
+            ParseMaxPlayers(i, argc, argv, config);
         } else {
-            // Positional arguments (TCP Port, UDP Port)
-            if (positional_index == 0) {
-                try {
-                    int tcp_port_value = StringToPort(arg.c_str());
-                    if (tcp_port_value < 1 || tcp_port_value > 65535) {
-                        throw std::out_of_range(
-                            "Port must be between 1 and 65535");
-                    }
-                    config.tcpPort_ = static_cast<uint16_t>(tcp_port_value);
-                } catch (const std::exception &e) {
-                    std::cerr << "Invalid TCP port: " << arg << std::endl;
-                    throw;
+            try {
+                ParsePositionalArgs(arg, positional_index, config);
+            } catch (const std::invalid_argument &e) {
+                if (std::string(e.what()) == "Too many arguments provided") {
+                    PrintUsage(argv[0]);
                 }
-                positional_index++;
-            } else if (positional_index == 1) {
-                try {
-                    int udp_port_value = StringToPort(arg.c_str());
-                    if (udp_port_value < 1 || udp_port_value > 65535) {
-                        throw std::out_of_range(
-                            "Port must be between 1 and 65535");
-                    }
-                    config.udpPort_ = static_cast<uint16_t>(udp_port_value);
-                } catch (const std::exception &e) {
-                    std::cerr << "Invalid UDP port: " << arg << std::endl;
-                    throw;
-                }
-                positional_index++;
-            } else {
-                PrintUsage(argv[0]);
-                throw std::invalid_argument("Too many arguments provided");
+                throw;
             }
         }
     }
