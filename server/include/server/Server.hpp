@@ -34,8 +34,7 @@ struct ClientConnection {
     /**
      * @brief Construct a ClientConnection with moved socket
      *
-     * @param id Assigned player ID (1-255, with MAX_CLIENTS=4 concurrent
-     * limit)
+     * @param id Assigned player ID (1-255)
      * @param socket TCP socket (ownership transferred)
      */
     ClientConnection(uint8_t id, boost::asio::ip::tcp::socket socket)
@@ -215,8 +214,8 @@ class Server {
     // Next available PlayerId
     uint8_t next_player_id_;
 
-    static constexpr int TICK_RATE_MS = 16;    // ~60 FPS
-    static constexpr uint8_t MAX_CLIENTS = 4;  // R-Type supports 4 players
+    static constexpr int TICK_RATE_MS = 16;  // ~60 FPS
+    uint8_t max_clients_;                    // Configured max players
 };
 
 }  // namespace server
