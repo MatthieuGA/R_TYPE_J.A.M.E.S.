@@ -19,7 +19,7 @@
  * @return The value with bytes in reversed order.
  */
 template <typename T>
-constexpr T Byteswap(T value) {
+constexpr T ByteSwap(T value) {
     if constexpr (sizeof(T) == 1)
         return value;
     if constexpr (sizeof(T) == 2) {
@@ -57,7 +57,7 @@ constexpr T Byteswap(T value) {
     }
     static_assert(
         sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8,
-        "Byteswap only supports 1, 2, 4, or 8 byte integral types");
+        "ByteSwap only supports 1, 2, 4, or 8 byte integral types");
 }
 
 namespace server::network {
@@ -68,7 +68,7 @@ inline T ToLittleEndian(T value) {
     if constexpr (std::endian::native == std::endian::little) {
         return value;
     } else if constexpr (std::endian::native == std::endian::big) {
-        return Byteswap(value);
+        return ByteSwap(value);
     } else {
         static_assert(std::endian::native == std::endian::little ||
                           std::endian::native == std::endian::big,
