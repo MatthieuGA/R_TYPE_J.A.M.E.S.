@@ -1,19 +1,21 @@
-#include "server/PacketDispatcher.hpp"
+#include "server/PacketHandler.hpp"
 
 #include <iostream>
+#include <memory>
 #include <string>
+#include <vector>
 
-#include "server/ServerMessenger.hpp"
+#include "server/PacketSender.hpp"
 
 namespace server {
 
-PacketDispatcher::PacketDispatcher(
-    ClientConnectionManager &connection_manager, ServerMessenger &messenger)
+PacketHandler::PacketHandler(
+    ClientConnectionManager &connection_manager, PacketSender &packet_sender)
     : connection_manager_(connection_manager),
-      messenger_(messenger),
+      packet_sender_(packet_sender),
       on_game_start_(nullptr) {}
 
-void PacketDispatcher::RegisterHandlers() {
+void PacketHandler::RegisterHandlers() {
     // Register CONNECT_REQ handler (0x01)
     packet_handlers_[network::PacketType::ConnectReq] =
         [this](
@@ -48,11 +50,62 @@ void PacketDispatcher::RegisterHandlers() {
               << std::endl;
 }
 
-void PacketDispatcher::SetGameStartCallback(GameStartCallback callback) {
+void PacketHandler::SetGameStartCallback(GameStartCallback callback) {
     on_game_start_ = callback;
 }
 
-void PacketDispatcher::Dispatch(
+void PacketHandler::StartReceiving(uint32_t client_id) {
+    HandleClientMessages(client_id);
+}
+
+void PacketHandler::HandleClientMessages(uint32_t client_id) {
+    if (!connection_manager_.HasClient(client_id))
+        return;  // Client already disconnected
+
+    ClientConnection &client = connection_manager_.GetClient(client_id);
+    boost::asio::ip::tcp::socket &socket = client.tcp_socket_;
+
+    // Allocate buffer for receiving TCP messages (max 1024 bytes)
+    auto buffer = std::make_shared<std::vector<uint8_t>>(1024);
+
+    // Start async read - any data or EOF will trigger the callback
+    socket.async_receive(boost::asio::buffer(*buffer),
+        [this, buffer, client_id](
+            boost::system::error_code ec, std::size_t bytes_read) {
+            if (ec) {
+                // Socket closed or error - remove client
+                std::cout << "Client " << client_id
+                          << " disconnected: " << ec.message() << std::endl;
+                connection_manager_.RemoveClient(client_id);
+            } else if (bytes_read > 0) {
+                // Update last activity timestamp
+                if (!connection_manager_.HasClient(client_id))
+                    return;  // Client was removed
+
+                ClientConnection &client =
+                    connection_manager_.GetClient(client_id);
+                client.last_activity_ = std::chrono::steady_clock::now();
+
+                // Parse incoming TCP packet using PacketFactory
+                network::PacketParseResult result =
+                    network::DeserializePacket(buffer->data(), bytes_read);
+
+                // Dispatch to handler
+                Dispatch(client_id, result);
+
+                // Continue handling messages if connection still exists
+                if (connection_manager_.HasClient(client_id))
+                    HandleClientMessages(client_id);
+            } else {
+                // EOF without error - client disconnected gracefully
+                std::cout << "Client " << client_id
+                          << " disconnected gracefully" << std::endl;
+                connection_manager_.RemoveClient(client_id);
+            }
+        });
+}
+
+void PacketHandler::Dispatch(
     uint32_t client_id, const network::PacketParseResult &result) {
     if (!result.success) {
         std::cerr << "Failed to parse packet from client " << client_id << ": "
@@ -82,7 +135,7 @@ void PacketDispatcher::Dispatch(
     }
 }
 
-void PacketDispatcher::HandleConnectReq(
+void PacketHandler::HandleConnectReq(
     ClientConnection &client, const network::ConnectReqPacket &packet) {
     std::string username = Trim(packet.GetUsername());
     std::cout << "CONNECT_REQ from client " << client.client_id_
@@ -92,7 +145,7 @@ void PacketDispatcher::HandleConnectReq(
     if (username.empty() ||
         username.find_first_not_of('\0') == std::string::npos) {
         std::cerr << "Rejected: Empty username" << std::endl;
-        messenger_.SendConnectAck(
+        packet_sender_.SendConnectAck(
             client, network::ConnectAckPacket::BadUsername);
         return;  // Keep connection alive for retry
     }
@@ -101,7 +154,7 @@ void PacketDispatcher::HandleConnectReq(
     if (connection_manager_.IsUsernameTaken(username)) {
         std::cerr << "Rejected: Username '" << username << "' already taken"
                   << std::endl;
-        messenger_.SendConnectAck(
+        packet_sender_.SendConnectAck(
             client, network::ConnectAckPacket::BadUsername);
         return;  // Keep connection alive for retry
     }
@@ -112,7 +165,7 @@ void PacketDispatcher::HandleConnectReq(
                   << connection_manager_.GetAuthenticatedCount() << "/"
                   << static_cast<int>(connection_manager_.GetMaxClients())
                   << " players)" << std::endl;
-        messenger_.SendConnectAck(
+        packet_sender_.SendConnectAck(
             client, network::ConnectAckPacket::ServerFull);
         return;  // Keep connection alive for retry
     }
@@ -124,17 +177,17 @@ void PacketDispatcher::HandleConnectReq(
     if (player_id == 0) {
         std::cerr << "Failed to authenticate client " << client.client_id_
                   << std::endl;
-        messenger_.SendConnectAck(
+        packet_sender_.SendConnectAck(
             client, network::ConnectAckPacket::BadUsername);
         return;
     }
 
     // Send success response with assigned player_id
-    messenger_.SendConnectAck(
+    packet_sender_.SendConnectAck(
         client, network::ConnectAckPacket::OK, player_id);
 }
 
-void PacketDispatcher::HandleReadyStatus(
+void PacketHandler::HandleReadyStatus(
     ClientConnection &client, const network::ReadyStatusPacket &packet) {
     // Only authenticated players can send READY_STATUS
     if (client.player_id_ == 0) {
@@ -159,11 +212,11 @@ void PacketDispatcher::HandleReadyStatus(
         if (on_game_start_) {
             on_game_start_();  // Trigger game start via callback
         }
-        messenger_.SendGameStart();
+        packet_sender_.SendGameStart();
     }
 }
 
-void PacketDispatcher::HandleDisconnectReq(
+void PacketHandler::HandleDisconnectReq(
     ClientConnection &client, const network::DisconnectReqPacket &packet) {
     (void)packet;  // No payload in DISCONNECT_REQ
 
@@ -182,7 +235,7 @@ void PacketDispatcher::HandleDisconnectReq(
     // (NOTIFY_DISCONNECT)
 }
 
-std::string PacketDispatcher::Trim(
+std::string PacketHandler::Trim(
     const std::string &str, const std::string &whitespace) {
     const auto strBegin = str.find_first_not_of(whitespace);
     if (strBegin == std::string::npos)

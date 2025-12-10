@@ -1,7 +1,10 @@
 #pragma once
 
+#include <functional>
 #include <string>
 #include <unordered_map>
+
+#include <boost/asio.hpp>
 
 #include "server/ClientConnectionManager.hpp"
 #include "server/PacketFactory.hpp"
@@ -11,22 +14,25 @@
 namespace server {
 
 // Forward declaration
-class ServerMessenger;
+class PacketSender;
 
 /**
- * @brief Handles dispatching and processing of incoming TCP packets
+ * @brief Handles receiving, dispatching and processing of incoming TCP packets
  *
  * Responsible for:
+ * - Async TCP receive loop for each client
+ * - Parsing incoming packets
+ * - Detecting client disconnections
  * - Registering packet type handlers
  * - Routing incoming packets to appropriate handler functions
  * - Implementing game logic for each packet type (CONNECT_REQ, READY_STATUS,
  * etc.)
  *
- * This class contains the business logic for packet handling but delegates
+ * This class contains the complete receive + process pipeline but delegates
  * connection management to ClientConnectionManager and network sends to
- * ServerMessenger.
+ * PacketSender.
  */
-class PacketDispatcher {
+class PacketHandler {
  public:
     /**
      * @brief Type alias for packet handler functions
@@ -34,7 +40,7 @@ class PacketDispatcher {
      * Handlers receive a reference to the client connection and the parsed
      * packet.
      */
-    using PacketHandler = std::function<void(
+    using HandlerFunction = std::function<void(
         ClientConnection &client, const network::PacketVariant &packet)>;
 
     /**
@@ -43,13 +49,13 @@ class PacketDispatcher {
     using GameStartCallback = std::function<void()>;
 
     /**
-     * @brief Construct a new PacketDispatcher
+     * @brief Construct a new PacketHandler
      *
      * @param connection_manager Reference to the connection manager
-     * @param messenger Reference to the messenger for sending responses
+     * @param packet_sender Reference to the packet sender for responses
      */
-    PacketDispatcher(ClientConnectionManager &connection_manager,
-        ServerMessenger &messenger);
+    PacketHandler(ClientConnectionManager &connection_manager,
+        PacketSender &packet_sender);
 
     /**
      * @brief Register all packet type handlers
@@ -66,6 +72,16 @@ class PacketDispatcher {
     void SetGameStartCallback(GameStartCallback callback);
 
     /**
+     * @brief Start receiving messages from a client
+     *
+     * Initiates the async receive loop for the specified client.
+     * Automatically handles disconnections and parses incoming packets.
+     *
+     * @param client_id Internal client ID
+     */
+    void StartReceiving(uint32_t client_id);
+
+    /**
      * @brief Dispatch an incoming packet to the appropriate handler
      *
      * Looks up the handler for the packet's type and invokes it.
@@ -78,6 +94,17 @@ class PacketDispatcher {
         uint32_t client_id, const network::PacketParseResult &result);
 
  private:
+    /**
+     * @brief Handle incoming TCP messages and monitor for disconnection
+     *
+     * Starts async read to receive TCP packets from the client.
+     * Processes incoming messages and detects disconnections.
+     * Automatically removes client from connection manager on disconnect.
+     *
+     * @param client_id Internal ID of client to handle
+     */
+    void HandleClientMessages(uint32_t client_id);
+
     /**
      * @brief Handle CONNECT_REQ packet (authentication)
      *
@@ -128,11 +155,11 @@ class PacketDispatcher {
         const std::string &str, const std::string &whitespace = " \t");
 
     // Packet type -> handler function mapping
-    std::unordered_map<network::PacketType, PacketHandler> packet_handlers_;
+    std::unordered_map<network::PacketType, HandlerFunction> packet_handlers_;
 
     // References to other components (not owned)
     ClientConnectionManager &connection_manager_;
-    ServerMessenger &messenger_;
+    PacketSender &packet_sender_;
 
     // Callback for game start
     GameStartCallback on_game_start_;

@@ -1,7 +1,6 @@
 #include "server/Server.hpp"
 
 #include <iostream>
-#include <memory>
 #include <utility>
 
 #include "server/Components.hpp"
@@ -11,17 +10,15 @@ namespace server {
 Server::Server(Config &config, boost::asio::io_context &io_context)
     : config_(config),
       io_context_(io_context),
-      network_(std::make_unique<Network>(config, io_context)),
+      network_(config, io_context),
       registry_(),
       tick_timer_(io_context),
       running_(false),
       connection_manager_(config.GetMaxPlayers()),
-      messenger_(connection_manager_),
-      packet_dispatcher_(connection_manager_, messenger_) {
-    // Link messenger and dispatcher
-    messenger_.SetDispatcher(&packet_dispatcher_);
+      packet_sender_(connection_manager_),
+      packet_handler_(connection_manager_, packet_sender_) {
     // Set game start callback
-    packet_dispatcher_.SetGameStartCallback([this]() { Start(); });
+    packet_handler_.SetGameStartCallback([this]() { Start(); });
 }
 
 Server::~Server() {
@@ -34,18 +31,15 @@ void Server::Initialize() {
     RegisterSystems();
 
     // Register packet handlers
-    packet_dispatcher_.RegisterHandlers();
+    packet_handler_.RegisterHandlers();
 
     // Register TCP accept callback
-    network_->GetTcp().SetAcceptCallback(
+    network_.GetTcp().SetAcceptCallback(
         [this](boost::asio::ip::tcp::socket socket) {
             HandleTcpAccept(std::move(socket));
         });
 
     std::cout << "Server initialized successfully" << std::endl;
-    std::cout << "Ready to accept TCP connections (max "
-              << static_cast<int>(config_.GetMaxPlayers()) << " players)"
-              << std::endl;
 }
 
 void Server::RegisterComponents() {
@@ -110,8 +104,6 @@ void Server::Close() {
                       << ": " << ec.message() << std::endl;
         }
     }
-    // Clear all connections (will be handled by ClientConnectionManager
-    // destructor)
     std::cout << "Server closed" << std::endl;
 }
 
@@ -140,20 +132,12 @@ Engine::registry &Server::GetRegistry() {
     return registry_;
 }
 
-ClientConnectionManager &Server::GetConnectionManager() {
-    return connection_manager_;
-}
-
-// ============================================================================
-// TCP Connection Handlers
-// ============================================================================
-
 void Server::HandleTcpAccept(boost::asio::ip::tcp::socket socket) {
     // Add client to connection manager
     uint32_t client_id = connection_manager_.AddClient(std::move(socket));
 
     // Start handling messages immediately
-    messenger_.StartReceiving(client_id);
+    packet_handler_.StartReceiving(client_id);
 }
 
 }  // namespace server

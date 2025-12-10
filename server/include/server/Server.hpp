@@ -1,15 +1,13 @@
 #pragma once
 
-#include <memory>
-
 #include <boost/asio.hpp>
 
 #include "include/registry.hpp"
 #include "server/ClientConnectionManager.hpp"
 #include "server/Config.hpp"
 #include "server/Network.hpp"
-#include "server/PacketDispatcher.hpp"
-#include "server/ServerMessenger.hpp"
+#include "server/PacketHandler.hpp"
+#include "server/PacketSender.hpp"
 
 namespace server {
 
@@ -80,13 +78,6 @@ class Server {
      */
     Engine::registry &GetRegistry();
 
-    /**
-     * @brief Get the connection manager
-     *
-     * @return ClientConnectionManager& Reference to the connection manager
-     */
-    ClientConnectionManager &GetConnectionManager();
-
  private:
     /**
      * @brief Register all ECS components
@@ -118,15 +109,15 @@ class Server {
 
     Config &config_;
     boost::asio::io_context &io_context_;
-    std::unique_ptr<Network> network_;
+    Network network_;
     Engine::registry registry_;
     boost::asio::steady_timer tick_timer_;
     bool running_;
 
     // Manager components (owned by Server)
     ClientConnectionManager connection_manager_;
-    ServerMessenger messenger_;
-    PacketDispatcher packet_dispatcher_;
+    PacketSender packet_sender_;
+    PacketHandler packet_handler_;
 
     static constexpr int TICK_RATE_MS = 16;  // ~60 FPS
 };
