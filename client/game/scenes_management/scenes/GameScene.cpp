@@ -63,6 +63,9 @@ void GameScene::InitPlayerLevel(Engine::registry &reg) {
     Component::AnimatedSprite animated_sprite(34, 18, 2);
     animated_sprite.AddAnimation(
         "Hit", "original_rtype/players_hit.png", 34, 18, 2, 0.15f, false);
+    animated_sprite.AddAnimation("Death", "original_rtype/players_death.png",
+        36, 35, 6, 0.05f, false, sf::Vector2f(0.0f, 0.0f),
+        sf::Vector2f(0.0f, -10.0f));
     reg.AddComponent<Component::AnimatedSprite>(
         player_entity, std::move(animated_sprite));
     reg.AddComponent<Component::Inputs>(player_entity, Component::Inputs{});

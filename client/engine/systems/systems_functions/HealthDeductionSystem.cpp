@@ -23,6 +23,7 @@ void DeathHandling(Eng::registry &reg,
     if (animated_sprites.has(i)) {
         auto &animSprite = animated_sprites[i];
         animSprite->SetCurrentAnimation("Death", true);
+        animSprite->animated = true;
     } else {
         // No animated sprite, remove entity immediately
         reg.KillEntity(entity);
