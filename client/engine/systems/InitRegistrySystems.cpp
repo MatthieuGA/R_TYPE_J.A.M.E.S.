@@ -120,6 +120,14 @@ void InitControlsSystem(Rtype::Client::GameWorld &game_world) {
             Eng::registry &r, Eng::sparse_array<Com::Inputs> &inputs) {
             InputSystem(r, game_world.window_.hasFocus(), inputs);
         });
+    // Send network input packets after capturing local input
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::Inputs>,
+        Eng::sparse_array<Com::PlayerTag>>(
+        [&game_world](Eng::registry &r,
+            Eng::sparse_array<Com::Inputs> const &inputs,
+            Eng::sparse_array<Com::PlayerTag> const &player_tags) {
+            NetworkInputSystem(r, game_world, inputs, player_tags);
+        });
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Inputs>,
         Eng::sparse_array<Com::Controllable>, Eng::sparse_array<Com::Velocity>,
         Eng::sparse_array<Com::PlayerTag>>(ControllablePlayerSystem);

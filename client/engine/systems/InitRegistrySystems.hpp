@@ -101,4 +101,10 @@ void ButtonClickSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Drawable> &drawables,
     Eng::sparse_array<Com::Transform> &transforms);
 
+void NetworkInputSystem(Eng::registry &reg, GameWorld &game_world,
+    Eng::sparse_array<Com::Inputs> const &inputs,
+    Eng::sparse_array<Com::PlayerTag> const &player_tags);
+
+uint8_t InputToBitfield(const Com::Inputs &input);
+
 }  // namespace Rtype::Client
