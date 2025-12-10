@@ -21,11 +21,35 @@
 template <typename T>
 constexpr T Byteswap(T value) {
     if constexpr (sizeof(T) == 2) {
+#if defined(_MSC_VER)
+        return _byteswap_ushort(value);
+#elif defined(__GNUC__) || defined(__clang__)
         return __builtin_bswap16(value);
+#else
+        return (value >> 8) | (value << 8);
+#endif
     } else if constexpr (sizeof(T) == 4) {
+#if defined(_MSC_VER)
+        return _byteswap_ulong(value);
+#elif defined(__GNUC__) || defined(__clang__)
         return __builtin_bswap32(value);
+#else
+        return (value >> 24) | ((value << 8) & 0x00FF0000) |
+               ((value >> 8) & 0x0000FF00) | (value << 24);
+#endif
     } else if constexpr (sizeof(T) == 8) {
+#if defined(_MSC_VER)
+        return _byteswap_uint64(value);
+#elif defined(__GNUC__) || defined(__clang__)
         return __builtin_bswap64(value);
+#else
+        return (value >> 56) | ((value << 40) & 0x00FF000000000000) |
+               ((value << 24) & 0x0000FF0000000000) |
+               ((value << 8) & 0x000000FF00000000) |
+               ((value >> 8) & 0x00000000FF000000) |
+               ((value >> 24) & 0x0000000000FF0000) |
+               ((value >> 40) & 0x000000000000FF00) | (value << 56);
+#endif
     }
 }
 
