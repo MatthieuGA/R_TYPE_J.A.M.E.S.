@@ -28,6 +28,98 @@ using server::network::SerializePacket;
 using server::network::WorldSnapshotPacket;
 
 // ============================================================================
+// BYTE SWAP TESTS
+// ============================================================================
+
+TEST(ByteSwapTest, Uint8NoSwap) {
+    // 1-byte values should not be swapped
+    EXPECT_EQ(
+        server::network::detail::ByteSwap(static_cast<uint8_t>(0x12)), 0x12);
+    EXPECT_EQ(
+        server::network::detail::ByteSwap(static_cast<uint8_t>(0xFF)), 0xFF);
+    EXPECT_EQ(
+        server::network::detail::ByteSwap(static_cast<uint8_t>(0x00)), 0x00);
+}
+
+TEST(ByteSwapTest, Uint16Swap) {
+    // 2-byte swap: 0x1234 -> 0x3412
+    EXPECT_EQ(server::network::detail::ByteSwap(static_cast<uint16_t>(0x1234)),
+        0x3412);
+    EXPECT_EQ(server::network::detail::ByteSwap(static_cast<uint16_t>(0xABCD)),
+        0xCDAB);
+    EXPECT_EQ(server::network::detail::ByteSwap(static_cast<uint16_t>(0x0000)),
+        0x0000);
+    EXPECT_EQ(server::network::detail::ByteSwap(static_cast<uint16_t>(0xFFFF)),
+        0xFFFF);
+    EXPECT_EQ(server::network::detail::ByteSwap(static_cast<uint16_t>(0x00FF)),
+        0xFF00);
+}
+
+TEST(ByteSwapTest, Uint32Swap) {
+    // 4-byte swap: 0x12345678 -> 0x78563412
+    EXPECT_EQ(
+        server::network::detail::ByteSwap(static_cast<uint32_t>(0x12345678)),
+        0x78563412);
+    EXPECT_EQ(
+        server::network::detail::ByteSwap(static_cast<uint32_t>(0xABCDEF01)),
+        0x01EFCDAB);
+    EXPECT_EQ(
+        server::network::detail::ByteSwap(static_cast<uint32_t>(0x00000000)),
+        0x00000000);
+    EXPECT_EQ(
+        server::network::detail::ByteSwap(static_cast<uint32_t>(0xFFFFFFFF)),
+        0xFFFFFFFF);
+    EXPECT_EQ(
+        server::network::detail::ByteSwap(static_cast<uint32_t>(0x000000FF)),
+        0xFF000000);
+}
+
+TEST(ByteSwapTest, Uint64Swap) {
+    // 8-byte swap: 0x123456789ABCDEF0 -> 0xF0DEBC9A78563412
+    EXPECT_EQ(server::network::detail::ByteSwap(
+                  static_cast<uint64_t>(0x123456789ABCDEF0)),
+        0xF0DEBC9A78563412);
+    EXPECT_EQ(server::network::detail::ByteSwap(
+                  static_cast<uint64_t>(0x0000000000000000)),
+        0x0000000000000000);
+    EXPECT_EQ(server::network::detail::ByteSwap(
+                  static_cast<uint64_t>(0xFFFFFFFFFFFFFFFF)),
+        0xFFFFFFFFFFFFFFFF);
+    EXPECT_EQ(server::network::detail::ByteSwap(
+                  static_cast<uint64_t>(0x00000000000000FF)),
+        0xFF00000000000000);
+}
+
+TEST(ByteSwapTest, DoubleSwap) {
+    // Verify double swap returns original value
+    uint16_t val16 = 0x1234;
+    EXPECT_EQ(server::network::detail::ByteSwap(
+                  server::network::detail::ByteSwap(val16)),
+        val16);
+
+    uint32_t val32 = 0x12345678;
+    EXPECT_EQ(server::network::detail::ByteSwap(
+                  server::network::detail::ByteSwap(val32)),
+        val32);
+
+    uint64_t val64 = 0x123456789ABCDEF0;
+    EXPECT_EQ(server::network::detail::ByteSwap(
+                  server::network::detail::ByteSwap(val64)),
+        val64);
+}
+
+TEST(ByteSwapTest, ConstexprEvaluation) {
+    // Verify ByteSwap can be used in constant expressions
+    constexpr uint16_t swapped16 =
+        server::network::detail::ByteSwap(static_cast<uint16_t>(0x1234));
+    EXPECT_EQ(swapped16, 0x3412);
+
+    constexpr uint32_t swapped32 =
+        server::network::detail::ByteSwap(static_cast<uint32_t>(0x12345678));
+    EXPECT_EQ(swapped32, 0x78563412);
+}
+
+// ============================================================================
 // RFC COMPLIANCE VERIFICATION TESTS
 // ============================================================================
 
