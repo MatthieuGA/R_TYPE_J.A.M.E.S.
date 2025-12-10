@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 
+#include "include/ColorsConst.hpp"
 #include "include/LayersConst.hpp"
 #include "include/components/CoreComponents.hpp"
 #include "include/components/RenderComponent.hpp"
@@ -52,12 +53,12 @@ void MainMenuScene::InitBackground(Engine::registry &reg) {
 void MainMenuScene::InitUI(Engine::registry &reg, GameWorld &gameWorld) {
     auto play_button_entity = CreateEntityInScene(reg);
     reg.AddComponent<Component::Transform>(
-        play_button_entity, Component::Transform{960.0f, 500.0f, 0.0f, 5.0f,
+        play_button_entity, Component::Transform{960.0f, 400.0f, 0.0f, 3.f,
                                 Component::Transform::CENTER});
     reg.AddComponent<Component::Drawable>(play_button_entity,
-        Component::Drawable{"ui/Button.png", LAYER_UI, 1.0f});
+        Component::Drawable{"ui/button.png", LAYER_UI, 1.0f});
     reg.AddComponent<Component::HitBox>(
-        play_button_entity, Component::HitBox{64.0f * 5, 16.0f * 5, false});
+        play_button_entity, Component::HitBox{128.f, 32.f});
     reg.AddComponent<Component::Clickable>(play_button_entity,
         Component::Clickable{
             [&reg]() {
@@ -68,25 +69,25 @@ void MainMenuScene::InitUI(Engine::registry &reg, GameWorld &gameWorld) {
                 }
             },
         });
-    reg.AddComponent<Component::Text>(
-        play_button_entity, Component::Text("dogica.ttf", "Play", 10, 1,
-                                sf::Color::Black, sf::Vector2f(0.0f, -5.0f)));
+    reg.AddComponent<Component::Text>(play_button_entity,
+        Component::Text("dogica.ttf", "Play", 13, LAYER_UI + 1, WHITE_BLUE,
+            sf::Vector2f(0.0f, -5.0f)));
 
     auto quit_button_entity = CreateEntityInScene(reg);
     reg.AddComponent<Component::Transform>(
-        quit_button_entity, Component::Transform{960.0f, 700.0f, 0.0f, 5.0f,
+        quit_button_entity, Component::Transform{960.0f, 700.0f, 0.0f, 3.f,
                                 Component::Transform::CENTER});
     reg.AddComponent<Component::Drawable>(quit_button_entity,
-        Component::Drawable{"ui/Button.png", LAYER_UI, 1.0f});
+        Component::Drawable{"ui/button.png", LAYER_UI, 1.0f});
     reg.AddComponent<Component::HitBox>(
-        quit_button_entity, Component::HitBox{64.0f, 16.0f});
+        quit_button_entity, Component::HitBox{128.f, 32.f});
     reg.AddComponent<Component::Clickable>(
         quit_button_entity, Component::Clickable{
                                 [&gameWorld]() { gameWorld.window_.close(); },
                             });
     reg.AddComponent<Component::Text>(quit_button_entity,
-        Component::Text("dogica.ttf", "Quit", 10, LAYER_UI + 1,
-            sf::Color::Black, sf::Vector2f(0.0f, -5.0f)));
+        Component::Text("dogica.ttf", "Quit", 13, LAYER_UI + 1, WHITE_BLUE,
+            sf::Vector2f(0.0f, -5.0f)));
 }
 
 }  // namespace Rtype::Client
