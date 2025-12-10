@@ -57,8 +57,8 @@ inline void WriteHeader(uint8_t *dst, uint8_t opcode, uint16_t payload_size,
 }
 }  // namespace
 
-Network::Network(boost::asio::io_context &io, const std::string &server_ip,
-    uint16_t tcp_port, uint16_t udp_port)
+ServerConnection::ServerConnection(boost::asio::io_context &io,
+    const std::string &server_ip, uint16_t tcp_port, uint16_t udp_port)
     : io_context_(io),
       udp_socket_(io),
       tcp_socket_(io),
@@ -82,11 +82,11 @@ Network::Network(boost::asio::io_context &io, const std::string &server_ip,
     }
 }
 
-Network::~Network() {
+ServerConnection::~ServerConnection() {
     Disconnect();
 }
 
-void Network::ConnectToServer(const std::string &username) {
+void ServerConnection::ConnectToServer(const std::string &username) {
     using boost::asio::ip::tcp;
     try {
         tcp::endpoint server_ep(
@@ -128,7 +128,7 @@ void Network::ConnectToServer(const std::string &username) {
     }
 }
 
-void Network::AsyncReceiveTCP() {
+void ServerConnection::AsyncReceiveTCP() {
     // Read header
     boost::asio::async_read(tcp_socket_,
         boost::asio::buffer(tcp_buffer_.data(), kHeaderSize),
@@ -175,7 +175,7 @@ void Network::AsyncReceiveTCP() {
         });
 }
 
-void Network::HandleConnectAck(const std::vector<uint8_t> &data) {
+void ServerConnection::HandleConnectAck(const std::vector<uint8_t> &data) {
     if (data.size() <
         4) {  // Payload is 4 bytes: PlayerId + Status + Reserved[2]
         std::cerr << "[Network] CONNECT_ACK malformed" << std::endl;
@@ -195,7 +195,7 @@ void Network::HandleConnectAck(const std::vector<uint8_t> &data) {
     }
 }
 
-void Network::SendInput(uint8_t input_flags) {
+void ServerConnection::SendInput(uint8_t input_flags) {
     if (!connected_.load())
         return;
     // PLAYER_INPUT payload: 4 bytes (input_flags + 3 reserved bytes)
@@ -215,7 +215,7 @@ void Network::SendInput(uint8_t input_flags) {
         });
 }
 
-void Network::AsyncReceiveUDP() {
+void ServerConnection::AsyncReceiveUDP() {
     // Only schedule a new async receive if the socket is open.
     if (!udp_socket_.is_open())
         return;
@@ -269,7 +269,7 @@ void Network::AsyncReceiveUDP() {
         });
 }
 
-std::optional<client::SnapshotPacket> Network::PollSnapshot() {
+std::optional<client::SnapshotPacket> ServerConnection::PollSnapshot() {
     client::SnapshotPacket out;
     if (snapshot_queue_.pop(out)) {
         return out;
@@ -277,7 +277,7 @@ std::optional<client::SnapshotPacket> Network::PollSnapshot() {
     return std::nullopt;
 }
 
-void Network::Disconnect() {
+void ServerConnection::Disconnect() {
     // DISCONNECT_REQ on TCP if connected
     try {
         if (tcp_socket_.is_open()) {

@@ -156,7 +156,7 @@ std::vector<uint8_t> BuildWorldSnapshotPacket(
 TEST(NetworkTest, ConstructorInitializesCorrectly) {
     boost::asio::io_context io;
     EXPECT_NO_THROW({
-        client::Network net(io, "127.0.0.1", 4242, 4243);
+        client::ServerConnection net(io, "127.0.0.1", 4242, 4243);
         EXPECT_FALSE(net.is_connected());
         EXPECT_EQ(net.player_id(), 0);
     });
@@ -165,7 +165,7 @@ TEST(NetworkTest, ConstructorInitializesCorrectly) {
 TEST(NetworkTest, DestructorClosesSocketsSafely) {
     boost::asio::io_context io;
     {
-        client::Network net(io, "127.0.0.1", 4242, 4243);
+        client::ServerConnection net(io, "127.0.0.1", 4242, 4243);
         // Destructor should close sockets without throwing
     }
     SUCCEED();
@@ -177,13 +177,13 @@ TEST(NetworkTest, DestructorClosesSocketsSafely) {
 
 TEST(NetworkTest, InitialConnectionStateIsFalse) {
     boost::asio::io_context io;
-    client::Network net(io, "127.0.0.1", 4242, 4243);
+    client::ServerConnection net(io, "127.0.0.1", 4242, 4243);
     EXPECT_FALSE(net.is_connected());
 }
 
 TEST(NetworkTest, DisconnectBeforeConnectDoesNotThrow) {
     boost::asio::io_context io;
-    client::Network net(io, "127.0.0.1", 4242, 4243);
+    client::ServerConnection net(io, "127.0.0.1", 4242, 4243);
     EXPECT_NO_THROW(net.Disconnect());
 }
 
@@ -217,7 +217,7 @@ TEST(NetworkTest, ConnectToServerSendsConnectReqPacket) {
             });
     });
 
-    client::Network net(io, "127.0.0.1", 4242, 4243);
+    client::ServerConnection net(io, "127.0.0.1", 4242, 4243);
     net.ConnectToServer("TestUser");
 
     // Run io_context for a short time
@@ -245,7 +245,7 @@ TEST(NetworkTest, ConnectAckWithStatusOkSetsConnected) {
         });
     });
 
-    client::Network net(io, "127.0.0.1", 4244, 4243);
+    client::ServerConnection net(io, "127.0.0.1", 4244, 4243);
     net.ConnectToServer("TestUser");
 
     io.run_for(200ms);
@@ -268,7 +268,7 @@ TEST(NetworkTest, ConnectAckWithStatusFailureDisconnects) {
         });
     });
 
-    client::Network net(io, "127.0.0.1", 4245, 4243);
+    client::ServerConnection net(io, "127.0.0.1", 4245, 4243);
     net.ConnectToServer("TestUser");
 
     io.run_for(200ms);
@@ -282,7 +282,7 @@ TEST(NetworkTest, ConnectAckWithStatusFailureDisconnects) {
 
 TEST(NetworkTest, SendInputWhenNotConnectedDoesNothing) {
     boost::asio::io_context io;
-    client::Network net(io, "127.0.0.1", 4242, 4246);
+    client::ServerConnection net(io, "127.0.0.1", 4242, 4246);
 
     // Should not throw even when not connected
     EXPECT_NO_THROW(net.SendInput(0xFF));
@@ -318,7 +318,7 @@ TEST(NetworkTest, SendInputWhenConnectedSendsUdpPacket) {
         });
     });
 
-    client::Network net(io, "127.0.0.1", 4248, 4247);
+    client::ServerConnection net(io, "127.0.0.1", 4248, 4247);
     net.ConnectToServer("Player");
 
     io.run_for(100ms);  // Wait for connection
@@ -336,7 +336,7 @@ TEST(NetworkTest, SendInputWhenConnectedSendsUdpPacket) {
 
 TEST(NetworkTest, PollSnapshotWhenEmptyReturnsNullopt) {
     boost::asio::io_context io;
-    client::Network net(io, "127.0.0.1", 4242, 4243);
+    client::ServerConnection net(io, "127.0.0.1", 4242, 4243);
 
     auto snapshot = net.PollSnapshot();
     EXPECT_FALSE(snapshot.has_value());
@@ -348,7 +348,7 @@ TEST(NetworkTest, ReceiveWorldSnapshotPushesToQueue) {
 
     MockUdpServer udp_server(io, 4249);
 
-    client::Network net(io, "127.0.0.1", 4242, 4249);
+    client::ServerConnection net(io, "127.0.0.1", 4242, 4249);
 
     // Give client time to start UDP listening
     io.run_for(50ms);
@@ -417,7 +417,7 @@ TEST(NetworkTest, DISABLED_DisconnectSendsDisconnectReqPacket) {
         });
     });
 
-    client::Network net(io, "127.0.0.1", 4250, 4243);
+    client::ServerConnection net(io, "127.0.0.1", 4250, 4243);
     net.ConnectToServer("Player");
 
     io.run_for(100ms);
@@ -443,7 +443,7 @@ TEST(NetworkTest, DisconnectClearsConnectionState) {
         });
     });
 
-    client::Network net(io, "127.0.0.1", 4251, 4243);
+    client::ServerConnection net(io, "127.0.0.1", 4251, 4243);
     net.ConnectToServer("Player");
 
     io.run_for(100ms);
@@ -463,7 +463,7 @@ TEST(NetworkTest, DisconnectClearsConnectionState) {
 
 TEST(NetworkTest, ConnectionToInvalidHostDoesNotCrash) {
     boost::asio::io_context io;
-    client::Network net(io, "0.0.0.0", 9999, 9999);
+    client::ServerConnection net(io, "0.0.0.0", 9999, 9999);
 
     EXPECT_NO_THROW(net.ConnectToServer("User"));
     io.run_for(100ms);
@@ -484,7 +484,7 @@ TEST(NetworkTest, MalformedConnectAckIsHandledGracefully) {
         });
     });
 
-    client::Network net(io, "127.0.0.1", 4252, 4243);
+    client::ServerConnection net(io, "127.0.0.1", 4252, 4243);
     net.ConnectToServer("User");
 
     io.run_for(200ms);
@@ -517,7 +517,7 @@ TEST(NetworkTest, LongUsernameIsTruncatedTo32Bytes) {
             });
     });
 
-    client::Network net(io, "127.0.0.1", 4253, 4243);
+    client::ServerConnection net(io, "127.0.0.1", 4253, 4243);
     net.ConnectToServer(long_username);
 
     io.run_for(100ms);
@@ -540,7 +540,7 @@ TEST(NetworkTest, ShortUsernameIsPaddedWithNulls) {
             });
     });
 
-    client::Network net(io, "127.0.0.1", 4254, 4243);
+    client::ServerConnection net(io, "127.0.0.1", 4254, 4243);
     net.ConnectToServer("Hi");
 
     io.run_for(100ms);

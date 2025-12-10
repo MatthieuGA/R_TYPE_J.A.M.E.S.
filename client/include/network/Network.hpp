@@ -32,7 +32,7 @@ struct SnapshotPacket {
 /**
  * @brief Client network manager handling TCP handshake and UDP gameplay.
  */
-class Network {
+class ServerConnection {
  public:
     /**
      * @brief Construct a new Network instance.
@@ -41,13 +41,13 @@ class Network {
      * @param tcp_port TCP control port.
      * @param udp_port UDP gameplay port.
      */
-    Network(boost::asio::io_context &io, const std::string &server_ip,
+    ServerConnection(boost::asio::io_context &io, const std::string &server_ip,
         uint16_t tcp_port, uint16_t udp_port);
 
     /**
      * @brief Destructor. Closes sockets.
      */
-    ~Network();
+    ~ServerConnection();
 
     /**
      * @brief Connect to server and send CONNECT_REQ.
