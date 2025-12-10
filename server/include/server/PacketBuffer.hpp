@@ -20,6 +20,8 @@
  */
 template <typename T>
 constexpr T Byteswap(T value) {
+    if constexpr (sizeof(T) == 1)
+        return value;
     if constexpr (sizeof(T) == 2) {
 #if defined(_MSC_VER)
         return _byteswap_ushort(value);
@@ -28,7 +30,8 @@ constexpr T Byteswap(T value) {
 #else
         return (value >> 8) | (value << 8);
 #endif
-    } else if constexpr (sizeof(T) == 4) {
+    }
+    if constexpr (sizeof(T) == 4) {
 #if defined(_MSC_VER)
         return _byteswap_ulong(value);
 #elif defined(__GNUC__) || defined(__clang__)
@@ -37,7 +40,8 @@ constexpr T Byteswap(T value) {
         return (value >> 24) | ((value << 8) & 0x00FF0000) |
                ((value >> 8) & 0x0000FF00) | (value << 24);
 #endif
-    } else if constexpr (sizeof(T) == 8) {
+    }
+    if constexpr (sizeof(T) == 8) {
 #if defined(_MSC_VER)
         return _byteswap_uint64(value);
 #elif defined(__GNUC__) || defined(__clang__)
@@ -50,10 +54,10 @@ constexpr T Byteswap(T value) {
                ((value >> 24) & 0x0000000000FF0000) |
                ((value >> 40) & 0x000000000000FF00) | (value << 56);
 #endif
-    } else {
-        static_assert(sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8,
-            "Byteswap only supports 2, 4, or 8 byte integral types");
     }
+    static_assert(
+        sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8,
+        "Byteswap only supports 1, 2, 4, or 8 byte integral types");
 }
 
 namespace server::network {
