@@ -11,6 +11,13 @@
 namespace server::network {
 
 namespace detail {
+/**
+ * @brief Convert integral value to little-endian byte order
+ *
+ * @tparam T Integral type
+ * @param value Value to convert
+ * @return T Value in little-endian byte order
+ */
 template <typename T>
 inline T ToLittleEndian(T value) {
     if constexpr (std::endian::native == std::endian::little) {
@@ -24,6 +31,13 @@ inline T ToLittleEndian(T value) {
     }
 }
 
+/**
+ * @brief Convert integral value from little-endian byte order
+ *
+ * @tparam T Integral type
+ * @param value Value in little-endian byte order
+ * @return T Value in native byte order
+ */
 template <typename T>
 inline T FromLittleEndian(T value) {
     return ToLittleEndian(value);
