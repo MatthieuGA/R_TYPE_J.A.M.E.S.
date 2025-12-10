@@ -89,21 +89,8 @@ void Server::Stop() {
 void Server::Close() {
     std::cout << "Closing server..." << std::endl;
     Stop();
-    // Close all client connections
-    for (const auto &[client_id, connection_ref] :
-        connection_manager_.GetClients()) {
-        // Get non-const reference for socket operations
-        ClientConnection &connection =
-            connection_manager_.GetClient(client_id);
-        std::cout << "Closing connection for client " << client_id
-                  << " (Player " << static_cast<int>(connection.player_id_)
-                  << ", '" << connection.username_ << "')" << std::endl;
-        boost::system::error_code ec;
-        if (connection.tcp_socket_.close(ec) && ec) {
-            std::cerr << "Error closing socket for client " << client_id
-                      << ": " << ec.message() << std::endl;
-        }
-    }
+    // Client sockets will be closed automatically when connection_manager_ is
+    // destroyed
     std::cout << "Server closed" << std::endl;
 }
 
