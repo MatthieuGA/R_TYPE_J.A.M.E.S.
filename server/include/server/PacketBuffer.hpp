@@ -8,7 +8,16 @@
 #include <utility>
 #include <vector>
 
-// C++20 alternative for std::byteswap
+/**
+ * @brief Swaps the byte order of an integral value.
+ *
+ * This is a C++20 compatible alternative to std::byteswap (C++23).
+ * Uses compiler built-in functions for efficient byte swapping.
+ *
+ * @tparam T The integral type to swap (must be 2, 4, or 8 bytes).
+ * @param value The value to byte-swap.
+ * @return The value with bytes in reversed order.
+ */
 template <typename T>
 constexpr T Byteswap(T value) {
     if constexpr (sizeof(T) == 2) {
