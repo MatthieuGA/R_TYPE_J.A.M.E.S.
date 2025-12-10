@@ -49,12 +49,18 @@ inline T FromLittleEndian(T value) {
  * This is a C++20 compatible alternative to std::byteswap (C++23).
  * Uses compiler built-in functions for efficient byte swapping.
  *
+ * Note: constexpr only on GCC/Clang due to MSVC intrinsic limitations.
+ *
  * @tparam T The integral type to swap (must be 2, 4, or 8 bytes).
  * @param value The value to byte-swap.
  * @return The value with bytes in reversed order.
  */
 template <typename T>
+#if defined(__GNUC__) || defined(__clang__)
 static constexpr T ByteSwap(T value) {
+#else
+static inline T ByteSwap(T value) {
+#endif
     static_assert(
         sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8,
         "ByteSwap only supports 1, 2, 4, or 8 byte integral types");
@@ -66,7 +72,7 @@ static constexpr T ByteSwap(T value) {
 #elif defined(__GNUC__) || defined(__clang__)
         return __builtin_bswap16(value);
 #else
-        return (value >> 8) | (value << 8);
+    return (value >> 8) | (value << 8);
 #endif
     }
     if constexpr (sizeof(T) == 4) {
@@ -75,8 +81,8 @@ static constexpr T ByteSwap(T value) {
 #elif defined(__GNUC__) || defined(__clang__)
         return __builtin_bswap32(value);
 #else
-        return (value >> 24) | ((value << 8) & 0x00FF0000) |
-               ((value >> 8) & 0x0000FF00) | (value << 24);
+    return (value >> 24) | ((value << 8) & 0x00FF0000) |
+           ((value >> 8) & 0x0000FF00) | (value << 24);
 #endif
     }
     if constexpr (sizeof(T) == 8) {
@@ -85,12 +91,12 @@ static constexpr T ByteSwap(T value) {
 #elif defined(__GNUC__) || defined(__clang__)
         return __builtin_bswap64(value);
 #else
-        return (value >> 56) | ((value << 40) & 0x00FF000000000000) |
-               ((value << 24) & 0x0000FF0000000000) |
-               ((value << 8) & 0x000000FF00000000) |
-               ((value >> 8) & 0x00000000FF000000) |
-               ((value >> 24) & 0x0000000000FF0000) |
-               ((value >> 40) & 0x000000000000FF00) | (value << 56);
+    return (value >> 56) | ((value << 40) & 0x00FF000000000000) |
+           ((value << 24) & 0x0000FF0000000000) |
+           ((value << 8) & 0x000000FF00000000) |
+           ((value >> 8) & 0x00000000FF000000) |
+           ((value >> 24) & 0x0000000000FF0000) |
+           ((value >> 40) & 0x000000000000FF00) | (value << 56);
 #endif
     }
 }
