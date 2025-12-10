@@ -11,6 +11,9 @@ list(REMOVE_ITEM R_TYPE_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/test_server.cp
 list(REMOVE_ITEM R_TYPE_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/test_packets.cpp")
 list(REMOVE_ITEM R_TYPE_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/test_config.cpp")
 
+# Exclude command-line parser tests (compiled separately without network dependencies)
+list(REMOVE_ITEM R_TYPE_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/test_command_line_parser.cpp")
+
 if (R_TYPE_TEST_SOURCES)
     add_executable(engine_tests ${R_TYPE_TEST_SOURCES})
 else()
@@ -81,3 +84,26 @@ target_link_libraries(server_tests
 
 # Discover server tests for CTest
 gtest_discover_tests(server_tests)
+
+# Create separate test executable for command-line parser (no network dependencies)
+# This avoids thread safety issues with death tests + Boost.Asio threads
+add_executable(cli_parser_tests
+    test_command_line_parser.cpp
+    ${CMAKE_SOURCE_DIR}/client/game/CommandLineParser.cpp
+)
+
+# Include directories for CLI parser tests
+target_include_directories(cli_parser_tests
+    PRIVATE
+        ${CMAKE_SOURCE_DIR}/client
+        ${CMAKE_SOURCE_DIR}/client/include
+)
+
+# Link with Google Test only (no network libraries)
+target_link_libraries(cli_parser_tests
+    PRIVATE
+        GTest::gtest_main
+)
+
+# Discover CLI parser tests for CTest
+gtest_discover_tests(cli_parser_tests)
