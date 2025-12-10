@@ -148,20 +148,9 @@ struct AnimatedSprite {
     AnimatedSprite(int frameWidth, int frameHeight, float frameDuration,
         bool loop = true,
         sf::Vector2f first_frame_position = sf::Vector2f(0.0f, 0.0f),
-        int totalFrames = 0)
-        : currentAnimation("Default"), animated(true), elapsedTime(0.0f) {
-        Animation defaultAnimation("", frameWidth, frameHeight, totalFrames,
-            frameDuration, loop, first_frame_position);
-        animations["Default"] = defaultAnimation;
-    }
+        int totalFrames = 0);
 
-    AnimatedSprite(int frameWidth, int frameHeight, int current_frame)
-        : currentAnimation("Default"), animated(false), elapsedTime(0.0f) {
-        Animation defaultAnimation(
-            "", frameWidth, frameHeight, 1, 0.0f, false);
-        defaultAnimation.currentFrame = current_frame;
-        animations["Default"] = defaultAnimation;
-    }
+    AnimatedSprite(int frameWidth, int frameHeight, int current_frame);
 
     /**
      * @brief Add a new animation to the animation map.
@@ -181,10 +170,7 @@ struct AnimatedSprite {
         int frameWidth, int frameHeight, int totalFrames, float frameDuration,
         bool loop = true,
         sf::Vector2f first_frame_position = sf::Vector2f(0.0f, 0.0f),
-        sf::Vector2f offset = sf::Vector2f(0.0f, 0.0f)) {
-        animations[name] = Animation(path, frameWidth, frameHeight,
-            totalFrames, frameDuration, loop, first_frame_position, offset);
-    }
+        sf::Vector2f offset = sf::Vector2f(0.0f, 0.0f));
 
     /**
      * @brief Change the current playing animation.
@@ -196,58 +182,22 @@ struct AnimatedSprite {
      * resume later when interrupted
      * @return true if the animation exists and was changed, false otherwise
      */
-    bool SetCurrentAnimation(const std::string &name, bool reset = true,
-        bool push_to_queue = true) {
-        auto it = animations.find(name);
-        if (it == animations.end())
-            return false;
-
-        const bool should_queue =
-            push_to_queue && currentAnimation != "Default" &&
-            name != "Default" && name != currentAnimation && name != "Death";
-        if (should_queue) {
-            animationQueue.push_back(
-                {currentAnimation, animations[currentAnimation].currentFrame});
-        }
-        if (name == "Death")
-            animationQueue.clear();
-        currentAnimation = name;
-        if (reset) {
-            it->second.currentFrame = 0;
-            elapsedTime = 0.0f;
-        }
-        return true;
-    }
+    bool SetCurrentAnimation(
+        const std::string &name, bool reset = true, bool push_to_queue = true);
 
     /**
      * @brief Get the current animation object.
      *
      * @return Pointer to the current Animation, or nullptr if not found
      */
-    Animation *GetCurrentAnimation() {
-        auto it = animations.find(currentAnimation);
-        if (it == animations.end()) {
-            it = animations.find("Default");
-            if (it == animations.end())
-                return nullptr;
-        }
-        return &(it->second);
-    }
+    Animation *GetCurrentAnimation();
 
     /**
      * @brief Get the current animation object (const version).
      *
      * @return Const pointer to the current Animation, or nullptr if not found
      */
-    const Animation *GetCurrentAnimation() const {
-        auto it = animations.find(currentAnimation);
-        if (it == animations.end()) {
-            it = animations.find("Default");
-            if (it == animations.end())
-                return nullptr;
-        }
-        return &(it->second);
-    }
+    const Animation *GetCurrentAnimation() const;
 };
 
 /**
@@ -288,45 +238,10 @@ struct Text {
     Text &operator=(Text const &) = delete;
 
     // Move constructor: rebind text to the moved font
-    Text(Text &&other) noexcept
-        : content(std::move(other.content)),
-          fontPath(std::move(other.fontPath)),
-          characterSize(other.characterSize),
-          color(other.color),
-          opacity(other.opacity),
-          z_index(other.z_index),
-          offset(other.offset),
-          text(),
-          font(std::move(other.font)),
-          is_loaded(other.is_loaded) {
-        text.setFont(font);
-        text.setString(other.text.getString());
-        text.setCharacterSize(other.text.getCharacterSize());
-        text.setFillColor(other.text.getFillColor());
-    }
+    Text(Text &&other) noexcept;
 
     // Move assignment: similar to move ctor
-    Text &operator=(Text &&other) noexcept {
-        if (this == &other)
-            return *this;
-        content = std::move(other.content);
-        fontPath = std::move(other.fontPath);
-        characterSize = other.characterSize;
-        color = other.color;
-        opacity = other.opacity;
-        z_index = other.z_index;
-        offset = other.offset;
-        font = std::move(other.font);
-        is_loaded = other.is_loaded;
-
-        text = sf::Text();
-        text.setFont(font);
-        text.setString(other.text.getString());
-        text.setCharacterSize(other.text.getCharacterSize());
-        text.setFillColor(other.text.getFillColor());
-
-        return *this;
-    }
+    Text &operator=(Text &&other) noexcept;
 };
 
 struct Particle {

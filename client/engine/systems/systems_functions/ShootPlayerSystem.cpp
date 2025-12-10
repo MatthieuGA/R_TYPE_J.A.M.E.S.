@@ -37,7 +37,7 @@ void createProjectile(Eng::registry &reg, float x, float y, int ownerId) {
         projectile_entity, Component::HitBox{24.0f, 12.0f});
     reg.AddComponent<Component::ParticleEmitter>(projectile_entity,
         Component::ParticleEmitter(300, 500, sf::Color(0, 198, 255, 255),
-            sf::Color(0, 198, 255, 0), sf::Vector2f(0.f, 8.f), true, 0.3f,
+            sf::Color(0, 198, 255, 0), sf::Vector2f(0.f, 2.f), true, 0.3f,
             50.f, sf::Vector2f(-1.f, 0.f), 45.f, 0.f, 12.0f, 4.0f, 1.5f, -1.0f,
             LAYER_PARTICLE));
 }
@@ -71,7 +71,7 @@ void createChargedProjectile(
         projectile_entity, Component::HitBox{29.0f, 22.0f});
     reg.AddComponent<Component::ParticleEmitter>(projectile_entity,
         Component::ParticleEmitter(300, 500, sf::Color(0, 198, 255, 255),
-            sf::Color(0, 198, 255, 0), sf::Vector2f(0.f, 8.f), true, 0.4f,
+            sf::Color(0, 198, 255, 0), sf::Vector2f(0.f, 2.f), true, 0.4f,
             75.f, sf::Vector2f(-1.f, 0.f), 55.f, 0.f, 20.0f, 6.0f, 2.0f, -1.0f,
             LAYER_PARTICLE));
 }

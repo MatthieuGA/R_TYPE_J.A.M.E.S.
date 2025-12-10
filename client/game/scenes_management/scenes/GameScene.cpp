@@ -80,7 +80,7 @@ void GameScene::InitPlayerLevel(Engine::registry &reg) {
     reg.AddComponent<Component::AnimationEnterPlayer>(
         player_entity, Component::AnimationEnterPlayer{true});
     reg.AddComponent<Component::HitBox>(
-        player_entity, Component::HitBox{30.0f, 16.0f});
+        player_entity, Component::HitBox{30.0f, 10.0f});
     // Reactor particle emitter
     Component::ParticleEmitter emit_reactor(100, 200, sf::Color::Yellow,
         RED_HIT, sf::Vector2f(-15.f, 3.f), true, 0.25f, 40.f,
