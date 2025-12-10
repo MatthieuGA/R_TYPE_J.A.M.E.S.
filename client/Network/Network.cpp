@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstring>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -99,17 +100,20 @@ void Network::ConnectToServer(const std::string &username) {
                     return;
                 }
                 // Build CONNECT_REQ packet
-                std::array<uint8_t, kHeaderSize + 32> pkt{};
-                WriteHeader(pkt.data(), kOpConnectReq, 32,
+                auto pkt =
+                    std::make_shared<std::vector<uint8_t>>(kHeaderSize + 32);
+                WriteHeader(pkt->data(), kOpConnectReq, 32,
                     static_cast<uint32_t>(current_tick_));
                 // Username padded/truncated to 32 bytes
                 std::array<uint8_t, 32> uname{};
                 std::memcpy(uname.data(), username.data(),
                     std::min<size_t>(username.size(), 32));
-                std::memcpy(pkt.data() + kHeaderSize, uname.data(), 32);
+                std::memcpy(pkt->data() + kHeaderSize, uname.data(), 32);
 
-                boost::asio::async_write(tcp_socket_, boost::asio::buffer(pkt),
-                    [this](const boost::system::error_code &wec, std::size_t) {
+                boost::asio::async_write(tcp_socket_,
+                    boost::asio::buffer(*pkt),
+                    [this, pkt](
+                        const boost::system::error_code &wec, std::size_t) {
                         if (wec) {
                             std::cerr << "[Network] CONNECT_REQ send failed: "
                                       << wec.message() << std::endl;
@@ -143,6 +147,7 @@ void Network::AsyncReceiveTCP() {
                           << payload_size << " bytes (max: "
                           << (tcp_buffer_.size() - kHeaderSize) << ")"
                           << std::endl;
+                Disconnect();
                 return;
             }
             // Read payload
@@ -194,15 +199,15 @@ void Network::SendInput(uint8_t input_flags) {
     if (!connected_.load())
         return;
     // PLAYER_INPUT payload: 4 bytes (input_flags + 3 reserved bytes)
-    std::array<uint8_t, kHeaderSize + 4> pkt{};
+    auto pkt = std::make_shared<std::vector<uint8_t>>(kHeaderSize + 4);
     WriteHeader(
-        pkt.data(), kOpPlayerInput, 4, static_cast<uint32_t>(current_tick_));
-    pkt[kHeaderSize + 0] = input_flags;
-    pkt[kHeaderSize + 1] = 0;  // reserved[0]
-    pkt[kHeaderSize + 2] = 0;  // reserved[1]
-    pkt[kHeaderSize + 3] = 0;  // reserved[2]
-    udp_socket_.async_send_to(boost::asio::buffer(pkt), server_udp_endpoint_,
-        [](const boost::system::error_code &ec, std::size_t) {
+        pkt->data(), kOpPlayerInput, 4, static_cast<uint32_t>(current_tick_));
+    (*pkt)[kHeaderSize + 0] = input_flags;
+    (*pkt)[kHeaderSize + 1] = 0;  // reserved[0]
+    (*pkt)[kHeaderSize + 2] = 0;  // reserved[1]
+    (*pkt)[kHeaderSize + 3] = 0;  // reserved[2]
+    udp_socket_.async_send_to(boost::asio::buffer(*pkt), server_udp_endpoint_,
+        [pkt](const boost::system::error_code &ec, std::size_t) {
             if (ec) {
                 std::cerr << "[Network] UDP send input error: " << ec.message()
                           << std::endl;
@@ -251,7 +256,10 @@ void Network::AsyncReceiveUDP() {
                     snap.payload_size = payload_size;
                     std::memcpy(snap.payload.data(),
                         udp_buffer_.data() + kHeaderSize, payload_size);
-                    snapshot_queue_.push(snap);
+                    if (!snapshot_queue_.push(snap)) {
+                        std::cerr << "[Network] Snapshot queue full, "
+                                  << "dropping packet" << std::endl;
+                    }
                 }
             }
 
