@@ -24,7 +24,7 @@ namespace server::network {
 
 namespace detail {
 template <typename T>
-inline T to_little_endian(T value) {
+inline T ToLittleEndian(T value) {
     if constexpr (std::endian::native == std::endian::little) {
         return value;
     } else if constexpr (std::endian::native == std::endian::big) {
@@ -37,8 +37,8 @@ inline T to_little_endian(T value) {
 }
 
 template <typename T>
-inline T from_little_endian(T value) {
-    return to_little_endian(value);
+inline T FromLittleEndian(T value) {
+    return ToLittleEndian(value);
 }
 }  // namespace detail
 
@@ -103,45 +103,45 @@ class PacketBuffer {
         : buffer_(data, data + size), read_offset_(0) {}
 
     // Header serialization (RFC Section 4.1)
-    void write_header(const CommonHeader &header) {
-        write_uint8(header.op_code);
-        write_uint16(header.payload_size);
-        write_uint8(header.packet_index);
-        write_uint32(header.tick_id);
-        write_uint8(header.packet_count);
-        write_uint8(header.reserved[0]);
-        write_uint8(header.reserved[1]);
-        write_uint8(header.reserved[2]);
+    void WriteHeader(const CommonHeader &header) {
+        WriteUint8(header.op_code);
+        WriteUint16(header.payload_size);
+        WriteUint8(header.packet_index);
+        WriteUint32(header.tick_id);
+        WriteUint8(header.packet_count);
+        WriteUint8(header.reserved[0]);
+        WriteUint8(header.reserved[1]);
+        WriteUint8(header.reserved[2]);
     }
 
-    CommonHeader read_header() {
+    CommonHeader ReadHeader() {
         CommonHeader header;
-        header.op_code = read_uint8();
-        header.payload_size = read_uint16();
-        header.packet_index = read_uint8();
-        header.tick_id = read_uint32();
-        header.packet_count = read_uint8();
-        header.reserved[0] = read_uint8();
-        header.reserved[1] = read_uint8();
-        header.reserved[2] = read_uint8();
+        header.op_code = ReadUint8();
+        header.payload_size = ReadUint16();
+        header.packet_index = ReadUint8();
+        header.tick_id = ReadUint32();
+        header.packet_count = ReadUint8();
+        header.reserved[0] = ReadUint8();
+        header.reserved[1] = ReadUint8();
+        header.reserved[2] = ReadUint8();
         return header;
     }
 
     // Write primitive types (guaranteed little-endian)
-    void write_uint8(uint8_t value) {
+    void WriteUint8(uint8_t value) {
         buffer_.push_back(value);
     }
 
-    void write_uint16(uint16_t value) {
-        value = detail::to_little_endian(value);
+    void WriteUint16(uint16_t value) {
+        value = detail::ToLittleEndian(value);
         uint8_t bytes[2];
         std::memcpy(bytes, &value, 2);
         buffer_.push_back(bytes[0]);
         buffer_.push_back(bytes[1]);
     }
 
-    void write_uint32(uint32_t value) {
-        value = detail::to_little_endian(value);
+    void WriteUint32(uint32_t value) {
+        value = detail::ToLittleEndian(value);
         uint8_t bytes[4];
         std::memcpy(bytes, &value, 4);
         for (int i = 0; i < 4; ++i) {
@@ -149,8 +149,8 @@ class PacketBuffer {
         }
     }
 
-    void write_uint64(uint64_t value) {
-        value = detail::to_little_endian(value);
+    void WriteUint64(uint64_t value) {
+        value = detail::ToLittleEndian(value);
         uint8_t bytes[8];
         std::memcpy(bytes, &value, 8);
         for (int i = 0; i < 8; ++i) {
@@ -158,96 +158,96 @@ class PacketBuffer {
         }
     }
 
-    void write_float(float value) {
+    void WriteFloat(float value) {
         static_assert(sizeof(float) == 4);
         uint32_t bits;
         std::memcpy(&bits, &value, 4);
-        write_uint32(bits);
+        WriteUint32(bits);
     }
 
-    void write_double(double value) {
+    void WriteDouble(double value) {
         static_assert(sizeof(double) == 8);
         uint64_t bits;
         std::memcpy(&bits, &value, 8);
-        write_uint64(bits);
+        WriteUint64(bits);
     }
 
     // Read primitive types (guaranteed little-endian)
-    uint8_t read_uint8() {
-        check_bounds(1);
+    uint8_t ReadUint8() {
+        CheckBounds(1);
         return buffer_[read_offset_++];
     }
 
-    uint16_t read_uint16() {
-        check_bounds(2);
+    uint16_t ReadUint16() {
+        CheckBounds(2);
         uint16_t value;
         std::memcpy(&value, &buffer_[read_offset_], 2);
         read_offset_ += 2;
-        return detail::from_little_endian(value);
+        return detail::FromLittleEndian(value);
     }
 
-    uint32_t read_uint32() {
-        check_bounds(4);
+    uint32_t ReadUint32() {
+        CheckBounds(4);
         uint32_t value;
         std::memcpy(&value, &buffer_[read_offset_], 4);
         read_offset_ += 4;
-        return detail::from_little_endian(value);
+        return detail::FromLittleEndian(value);
     }
 
-    uint64_t read_uint64() {
-        check_bounds(8);
+    uint64_t ReadUint64() {
+        CheckBounds(8);
         uint64_t value;
         std::memcpy(&value, &buffer_[read_offset_], 8);
         read_offset_ += 8;
-        return detail::from_little_endian(value);
+        return detail::FromLittleEndian(value);
     }
 
-    float read_float() {
-        uint32_t bits = read_uint32();
+    float ReadFloat() {
+        uint32_t bits = ReadUint32();
         float value;
         std::memcpy(&value, &bits, 4);
         return value;
     }
 
-    double read_double() {
-        uint64_t bits = read_uint64();
+    double ReadDouble() {
+        uint64_t bits = ReadUint64();
         double value;
         std::memcpy(&value, &bits, 8);
         return value;
     }
 
     // Buffer access
-    const std::vector<uint8_t> &data() const {
+    const std::vector<uint8_t> &Data() const {
         return buffer_;
     }
 
-    std::vector<uint8_t> &data() {
+    std::vector<uint8_t> &Data() {
         return buffer_;
     }
 
-    size_t size() const {
+    size_t Size() const {
         return buffer_.size();
     }
 
-    size_t read_offset() const {
+    size_t ReadOffset() const {
         return read_offset_;
     }
 
-    size_t remaining() const {
+    size_t Remaining() const {
         return buffer_.size() - read_offset_;
     }
 
-    void reset_read_offset() {
+    void ResetReadOffset() {
         read_offset_ = 0;
     }
 
-    void clear() {
+    void Clear() {
         buffer_.clear();
         read_offset_ = 0;
     }
 
  private:
-    void check_bounds(size_t bytes_needed) const {
+    void CheckBounds(size_t bytes_needed) const {
         if (read_offset_ + bytes_needed > buffer_.size()) {
             throw std::out_of_range("PacketBuffer: read beyond buffer size");
         }

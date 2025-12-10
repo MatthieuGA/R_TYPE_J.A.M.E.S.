@@ -25,32 +25,32 @@ struct ConnectReqPacket {
 
     std::array<char, 32> username;  // Null-terminated, fixed size
 
-    CommonHeader make_header() const {
+    CommonHeader MakeHeader() const {
         return CommonHeader(static_cast<uint8_t>(type), PAYLOAD_SIZE);
     }
 
-    void serialize(PacketBuffer &buffer) const {
-        buffer.write_header(make_header());
+    void Serialize(PacketBuffer &buffer) const {
+        buffer.WriteHeader(MakeHeader());
         for (char c : username) {
-            buffer.write_uint8(static_cast<uint8_t>(c));
+            buffer.WriteUint8(static_cast<uint8_t>(c));
         }
     }
 
-    static ConnectReqPacket deserialize(PacketBuffer &buffer) {
+    static ConnectReqPacket Deserialize(PacketBuffer &buffer) {
         ConnectReqPacket packet;
         for (size_t i = 0; i < 32; ++i) {
-            packet.username[i] = static_cast<char>(buffer.read_uint8());
+            packet.username[i] = static_cast<char>(buffer.ReadUint8());
         }
         return packet;
     }
 
-    void set_username(const std::string &name) {
+    void SetUsername(const std::string &name) {
         username.fill('\0');
         size_t len = std::min(name.size(), size_t(31));
         std::copy_n(name.begin(), len, username.begin());
     }
 
-    std::string get_username() const {
+    std::string GetUsername() const {
         return std::string(username.data());
     }
 };
@@ -75,24 +75,24 @@ struct ConnectAckPacket {
         InGame = 3
     };
 
-    CommonHeader make_header() const {
+    CommonHeader MakeHeader() const {
         return CommonHeader(static_cast<uint8_t>(type), PAYLOAD_SIZE);
     }
 
-    void serialize(PacketBuffer &buffer) const {
-        buffer.write_header(make_header());
-        buffer.write_uint8(player_id.value);
-        buffer.write_uint8(status);
-        buffer.write_uint8(reserved[0]);
-        buffer.write_uint8(reserved[1]);
+    void Serialize(PacketBuffer &buffer) const {
+        buffer.WriteHeader(MakeHeader());
+        buffer.WriteUint8(player_id.value);
+        buffer.WriteUint8(status);
+        buffer.WriteUint8(reserved[0]);
+        buffer.WriteUint8(reserved[1]);
     }
 
-    static ConnectAckPacket deserialize(PacketBuffer &buffer) {
+    static ConnectAckPacket Deserialize(PacketBuffer &buffer) {
         ConnectAckPacket packet;
-        packet.player_id = PlayerId{buffer.read_uint8()};
-        packet.status = buffer.read_uint8();
-        packet.reserved[0] = buffer.read_uint8();
-        packet.reserved[1] = buffer.read_uint8();
+        packet.player_id = PlayerId{buffer.ReadUint8()};
+        packet.status = buffer.ReadUint8();
+        packet.reserved[0] = buffer.ReadUint8();
+        packet.reserved[1] = buffer.ReadUint8();
         return packet;
     }
 };
@@ -106,15 +106,15 @@ struct DisconnectReqPacket {
     static constexpr PacketType type = PacketType::DisconnectReq;
     static constexpr size_t PAYLOAD_SIZE = 0;
 
-    CommonHeader make_header() const {
+    CommonHeader MakeHeader() const {
         return CommonHeader(static_cast<uint8_t>(type), PAYLOAD_SIZE);
     }
 
-    void serialize(PacketBuffer &buffer) const {
-        buffer.write_header(make_header());
+    void Serialize(PacketBuffer &buffer) const {
+        buffer.WriteHeader(MakeHeader());
     }
 
-    static DisconnectReqPacket deserialize(PacketBuffer &buffer) {
+    static DisconnectReqPacket Deserialize(PacketBuffer &buffer) {
         (void)buffer;  // No payload to read
         return DisconnectReqPacket{};
     }
@@ -132,24 +132,24 @@ struct NotifyDisconnectPacket {
     PlayerId player_id;
     std::array<uint8_t, 3> reserved;
 
-    CommonHeader make_header() const {
+    CommonHeader MakeHeader() const {
         return CommonHeader(static_cast<uint8_t>(type), PAYLOAD_SIZE);
     }
 
-    void serialize(PacketBuffer &buffer) const {
-        buffer.write_header(make_header());
-        buffer.write_uint8(player_id.value);
-        buffer.write_uint8(reserved[0]);
-        buffer.write_uint8(reserved[1]);
-        buffer.write_uint8(reserved[2]);
+    void Serialize(PacketBuffer &buffer) const {
+        buffer.WriteHeader(MakeHeader());
+        buffer.WriteUint8(player_id.value);
+        buffer.WriteUint8(reserved[0]);
+        buffer.WriteUint8(reserved[1]);
+        buffer.WriteUint8(reserved[2]);
     }
 
-    static NotifyDisconnectPacket deserialize(PacketBuffer &buffer) {
+    static NotifyDisconnectPacket Deserialize(PacketBuffer &buffer) {
         NotifyDisconnectPacket packet;
-        packet.player_id = PlayerId{buffer.read_uint8()};
-        packet.reserved[0] = buffer.read_uint8();
-        packet.reserved[1] = buffer.read_uint8();
-        packet.reserved[2] = buffer.read_uint8();
+        packet.player_id = PlayerId{buffer.ReadUint8()};
+        packet.reserved[0] = buffer.ReadUint8();
+        packet.reserved[1] = buffer.ReadUint8();
+        packet.reserved[2] = buffer.ReadUint8();
         return packet;
     }
 };
@@ -165,18 +165,18 @@ struct GameStartPacket {
 
     EntityId controlled_entity_id;
 
-    CommonHeader make_header() const {
+    CommonHeader MakeHeader() const {
         return CommonHeader(static_cast<uint8_t>(type), PAYLOAD_SIZE);
     }
 
-    void serialize(PacketBuffer &buffer) const {
-        buffer.write_header(make_header());
-        buffer.write_uint32(controlled_entity_id.value);
+    void Serialize(PacketBuffer &buffer) const {
+        buffer.WriteHeader(MakeHeader());
+        buffer.WriteUint32(controlled_entity_id.value);
     }
 
-    static GameStartPacket deserialize(PacketBuffer &buffer) {
+    static GameStartPacket Deserialize(PacketBuffer &buffer) {
         GameStartPacket packet;
-        packet.controlled_entity_id = EntityId{buffer.read_uint32()};
+        packet.controlled_entity_id = EntityId{buffer.ReadUint32()};
         return packet;
     }
 };
@@ -193,24 +193,24 @@ struct GameEndPacket {
     PlayerId winning_player_id;  // 0 = draw
     std::array<uint8_t, 3> reserved;
 
-    CommonHeader make_header() const {
+    CommonHeader MakeHeader() const {
         return CommonHeader(static_cast<uint8_t>(type), PAYLOAD_SIZE);
     }
 
-    void serialize(PacketBuffer &buffer) const {
-        buffer.write_header(make_header());
-        buffer.write_uint8(winning_player_id.value);
-        buffer.write_uint8(reserved[0]);
-        buffer.write_uint8(reserved[1]);
-        buffer.write_uint8(reserved[2]);
+    void Serialize(PacketBuffer &buffer) const {
+        buffer.WriteHeader(MakeHeader());
+        buffer.WriteUint8(winning_player_id.value);
+        buffer.WriteUint8(reserved[0]);
+        buffer.WriteUint8(reserved[1]);
+        buffer.WriteUint8(reserved[2]);
     }
 
-    static GameEndPacket deserialize(PacketBuffer &buffer) {
+    static GameEndPacket Deserialize(PacketBuffer &buffer) {
         GameEndPacket packet;
-        packet.winning_player_id = PlayerId{buffer.read_uint8()};
-        packet.reserved[0] = buffer.read_uint8();
-        packet.reserved[1] = buffer.read_uint8();
-        packet.reserved[2] = buffer.read_uint8();
+        packet.winning_player_id = PlayerId{buffer.ReadUint8()};
+        packet.reserved[0] = buffer.ReadUint8();
+        packet.reserved[1] = buffer.ReadUint8();
+        packet.reserved[2] = buffer.ReadUint8();
         return packet;
     }
 };
@@ -227,24 +227,24 @@ struct ReadyStatusPacket {
     uint8_t is_ready;  // 0=Not Ready, 1=Ready
     std::array<uint8_t, 3> reserved;
 
-    CommonHeader make_header() const {
+    CommonHeader MakeHeader() const {
         return CommonHeader(static_cast<uint8_t>(type), PAYLOAD_SIZE);
     }
 
-    void serialize(PacketBuffer &buffer) const {
-        buffer.write_header(make_header());
-        buffer.write_uint8(is_ready);
-        buffer.write_uint8(reserved[0]);
-        buffer.write_uint8(reserved[1]);
-        buffer.write_uint8(reserved[2]);
+    void Serialize(PacketBuffer &buffer) const {
+        buffer.WriteHeader(MakeHeader());
+        buffer.WriteUint8(is_ready);
+        buffer.WriteUint8(reserved[0]);
+        buffer.WriteUint8(reserved[1]);
+        buffer.WriteUint8(reserved[2]);
     }
 
-    static ReadyStatusPacket deserialize(PacketBuffer &buffer) {
+    static ReadyStatusPacket Deserialize(PacketBuffer &buffer) {
         ReadyStatusPacket packet;
-        packet.is_ready = buffer.read_uint8();
-        packet.reserved[0] = buffer.read_uint8();
-        packet.reserved[1] = buffer.read_uint8();
-        packet.reserved[2] = buffer.read_uint8();
+        packet.is_ready = buffer.ReadUint8();
+        packet.reserved[0] = buffer.ReadUint8();
+        packet.reserved[1] = buffer.ReadUint8();
+        packet.reserved[2] = buffer.ReadUint8();
         return packet;
     }
 };
@@ -265,25 +265,25 @@ struct PlayerInputPacket {
     InputFlags inputs;
     std::array<uint8_t, 3> reserved;
 
-    CommonHeader make_header(uint32_t tick_id) const {
+    CommonHeader MakeHeader(uint32_t tick_id) const {
         return CommonHeader(
             static_cast<uint8_t>(type), PAYLOAD_SIZE, tick_id, 0, 1);
     }
 
-    void serialize(PacketBuffer &buffer, uint32_t tick_id) const {
-        buffer.write_header(make_header(tick_id));
-        buffer.write_uint8(inputs.value);
-        buffer.write_uint8(reserved[0]);
-        buffer.write_uint8(reserved[1]);
-        buffer.write_uint8(reserved[2]);
+    void Serialize(PacketBuffer &buffer, uint32_t tick_id) const {
+        buffer.WriteHeader(MakeHeader(tick_id));
+        buffer.WriteUint8(inputs.value);
+        buffer.WriteUint8(reserved[0]);
+        buffer.WriteUint8(reserved[1]);
+        buffer.WriteUint8(reserved[2]);
     }
 
-    static PlayerInputPacket deserialize(PacketBuffer &buffer) {
+    static PlayerInputPacket Deserialize(PacketBuffer &buffer) {
         PlayerInputPacket packet;
-        packet.inputs = InputFlags{buffer.read_uint8()};
-        packet.reserved[0] = buffer.read_uint8();
-        packet.reserved[1] = buffer.read_uint8();
-        packet.reserved[2] = buffer.read_uint8();
+        packet.inputs = InputFlags{buffer.ReadUint8()};
+        packet.reserved[0] = buffer.ReadUint8();
+        packet.reserved[1] = buffer.ReadUint8();
+        packet.reserved[2] = buffer.ReadUint8();
         return packet;
     }
 };
@@ -300,23 +300,23 @@ struct EntityState {
     uint16_t pos_y;       // 2 bytes (normalized 0..38864)
     uint16_t angle;       // 2 bytes (degrees 0..360)
 
-    void serialize(PacketBuffer &buffer) const {
-        buffer.write_uint32(entity_id.value);
-        buffer.write_uint8(entity_type);
-        buffer.write_uint8(reserved);
-        buffer.write_uint16(pos_x);
-        buffer.write_uint16(pos_y);
-        buffer.write_uint16(angle);
+    void Serialize(PacketBuffer &buffer) const {
+        buffer.WriteUint32(entity_id.value);
+        buffer.WriteUint8(entity_type);
+        buffer.WriteUint8(reserved);
+        buffer.WriteUint16(pos_x);
+        buffer.WriteUint16(pos_y);
+        buffer.WriteUint16(angle);
     }
 
-    static EntityState deserialize(PacketBuffer &buffer) {
+    static EntityState Deserialize(PacketBuffer &buffer) {
         EntityState state;
-        state.entity_id = EntityId{buffer.read_uint32()};
-        state.entity_type = buffer.read_uint8();
-        state.reserved = buffer.read_uint8();
-        state.pos_x = buffer.read_uint16();
-        state.pos_y = buffer.read_uint16();
-        state.angle = buffer.read_uint16();
+        state.entity_id = EntityId{buffer.ReadUint32()};
+        state.entity_type = buffer.ReadUint8();
+        state.reserved = buffer.ReadUint8();
+        state.pos_x = buffer.ReadUint16();
+        state.pos_y = buffer.ReadUint16();
+        state.angle = buffer.ReadUint16();
         return state;
     }
 };
@@ -335,37 +335,36 @@ struct WorldSnapshotPacket {
     std::array<uint8_t, 2> reserved;
     std::vector<EntityState> entities;
 
-    size_t payload_size() const {
+    size_t PayloadSize() const {
         return 4 + (entities.size() * 12);
     }
 
-    CommonHeader make_header(
+    CommonHeader MakeHeader(
         uint32_t tick_id, uint8_t packet_index, uint8_t packet_count) const {
         return CommonHeader(static_cast<uint8_t>(type),
-            static_cast<uint16_t>(payload_size()), tick_id, packet_index,
+            static_cast<uint16_t>(PayloadSize()), tick_id, packet_index,
             packet_count);
     }
 
-    void serialize(PacketBuffer &buffer, uint32_t tick_id,
+    void Serialize(PacketBuffer &buffer, uint32_t tick_id,
         uint8_t packet_index = 0, uint8_t packet_count = 1) const {
-        buffer.write_header(make_header(tick_id, packet_index, packet_count));
-        buffer.write_uint16(entity_count);
-        buffer.write_uint8(reserved[0]);
-        buffer.write_uint8(reserved[1]);
+        buffer.WriteHeader(MakeHeader(tick_id, packet_index, packet_count));
+        buffer.WriteUint16(entity_count);
+        buffer.WriteUint8(reserved[0]);
+        buffer.WriteUint8(reserved[1]);
         for (const auto &entity : entities) {
-            entity.serialize(buffer);
+            entity.Serialize(buffer);
         }
     }
 
-    static WorldSnapshotPacket deserialize(PacketBuffer &buffer) {
+    static WorldSnapshotPacket Deserialize(PacketBuffer &buffer) {
         WorldSnapshotPacket packet;
-        packet.entity_count = buffer.read_uint16();
-        packet.reserved[0] = buffer.read_uint8();
-        packet.reserved[1] = buffer.read_uint8();
-
+        packet.entity_count = buffer.ReadUint16();
+        packet.reserved[0] = buffer.ReadUint8();
+        packet.reserved[1] = buffer.ReadUint8();
         packet.entities.reserve(packet.entity_count);
         for (uint16_t i = 0; i < packet.entity_count; ++i) {
-            packet.entities.push_back(EntityState::deserialize(buffer));
+            packet.entities.push_back(EntityState::Deserialize(buffer));
         }
         return packet;
     }
@@ -385,27 +384,27 @@ struct PlayerStatsPacket {
     std::array<uint8_t, 2> reserved;
     uint32_t score;
 
-    CommonHeader make_header(uint32_t tick_id) const {
+    CommonHeader MakeHeader(uint32_t tick_id) const {
         return CommonHeader(
             static_cast<uint8_t>(type), PAYLOAD_SIZE, tick_id, 0, 1);
     }
 
-    void serialize(PacketBuffer &buffer, uint32_t tick_id) const {
-        buffer.write_header(make_header(tick_id));
-        buffer.write_uint8(player_id.value);
-        buffer.write_uint8(lives);
-        buffer.write_uint8(reserved[0]);
-        buffer.write_uint8(reserved[1]);
-        buffer.write_uint32(score);
+    void Serialize(PacketBuffer &buffer, uint32_t tick_id) const {
+        buffer.WriteHeader(MakeHeader(tick_id));
+        buffer.WriteUint8(player_id.value);
+        buffer.WriteUint8(lives);
+        buffer.WriteUint8(reserved[0]);
+        buffer.WriteUint8(reserved[1]);
+        buffer.WriteUint32(score);
     }
 
-    static PlayerStatsPacket deserialize(PacketBuffer &buffer) {
+    static PlayerStatsPacket Deserialize(PacketBuffer &buffer) {
         PlayerStatsPacket packet;
-        packet.player_id = PlayerId{buffer.read_uint8()};
-        packet.lives = buffer.read_uint8();
-        packet.reserved[0] = buffer.read_uint8();
-        packet.reserved[1] = buffer.read_uint8();
-        packet.score = buffer.read_uint32();
+        packet.player_id = PlayerId{buffer.ReadUint8()};
+        packet.lives = buffer.ReadUint8();
+        packet.reserved[0] = buffer.ReadUint8();
+        packet.reserved[1] = buffer.ReadUint8();
+        packet.score = buffer.ReadUint32();
         return packet;
     }
 };
