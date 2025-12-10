@@ -145,10 +145,16 @@ void ServerConnection::AsyncReceiveTCP() {
         boost::asio::buffer(tcp_buffer_.data(), kHeaderSize),
         [this](const boost::system::error_code &ec, std::size_t bytes_read) {
             if (ec) {
-                if (ec != boost::asio::error::eof)
+                if (ec == boost::asio::error::eof) {
+                    std::cerr << "[Network] Server closed connection (EOF)"
+                              << std::endl;
+                    connected_.store(false);
+                } else if (ec != boost::asio::error::operation_aborted) {
                     std::cerr
                         << "[Network] TCP header read error: " << ec.message()
                         << std::endl;
+                    connected_.store(false);
+                }
                 return;
             }
             // Ensure we read the full header before accessing buffer fields
@@ -180,8 +186,16 @@ void ServerConnection::AsyncReceiveTCP() {
                 [this, opcode, payload_size](
                     const boost::system::error_code &pec, std::size_t /*pn*/) {
                     if (pec) {
-                        std::cerr << "[Network] TCP payload read error: "
-                                  << pec.message() << std::endl;
+                        if (pec == boost::asio::error::eof) {
+                            std::cerr
+                                << "[Network] Server closed connection (EOF)"
+                                << std::endl;
+                            connected_.store(false);
+                        } else {
+                            std::cerr << "[Network] TCP payload read error: "
+                                      << pec.message() << std::endl;
+                            connected_.store(false);
+                        }
                         return;
                     }
                     std::vector<uint8_t> data(payload_size);
