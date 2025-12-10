@@ -41,9 +41,31 @@ elif [ -f "../vcpkg/scripts/buildsystems/vcpkg.cmake" ]; then
     VCPKG_CMAKE_TOOLCHAIN="../vcpkg/scripts/buildsystems/vcpkg.cmake"
     echo "✓ Using vcpkg from parent directory"
 else
-    echo "ERROR: vcpkg not found"
-    echo "Please set VCPKG_ROOT environment variable or install vcpkg in the project directory"
-    exit 1
+    echo "WARNING: vcpkg not found"
+    echo ""
+    echo "Would you like to install vcpkg in the project directory? [y/N]"
+    read -r response
+    if [[ "$response" =~ ^[Yy]$ ]]; then
+        echo "Cloning vcpkg..."
+        git clone https://github.com/microsoft/vcpkg.git
+        testExitStatus $? "vcpkg clone"
+        
+        echo "Bootstrapping vcpkg..."
+        cd vcpkg
+        ./bootstrap-vcpkg.sh
+        testExitStatus $? "vcpkg bootstrap"
+        cd ..
+        
+        VCPKG_CMAKE_TOOLCHAIN="vcpkg/scripts/buildsystems/vcpkg.cmake"
+        echo "✓ vcpkg installed successfully"
+    else
+        echo "ERROR: vcpkg is required to build this project"
+        echo "Please either:"
+        echo "  1. Set VCPKG_ROOT environment variable"
+        echo "  2. Install vcpkg in the project directory"
+        echo "  3. Run this script again and choose 'y' to install vcpkg"
+        exit 1
+    fi
 fi
 echo ""
 
