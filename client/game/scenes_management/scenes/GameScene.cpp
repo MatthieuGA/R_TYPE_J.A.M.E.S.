@@ -102,8 +102,12 @@ void GameScene::InitPlayerLevel(Engine::registry &reg) {
                                     sf::Vector2f(0.0f, 50.0f), 8));
 
     // Add the charging entity to the player's children list
-    reg.GetComponent<Component::Transform>(player_entity)
-        .children.push_back(player_charging_entity.GetId());
+    try {
+        reg.GetComponent<Component::Transform>(player_entity)
+            .children.push_back(player_charging_entity.GetId());
+    } catch (const std::exception &e) {
+        return;
+    }
 }
 
 void GameScene::InitScene(Engine::registry &reg, GameWorld &gameWorld) {
@@ -150,28 +154,38 @@ void GameScene::AddEnemyLevel(Engine::registry &reg, sf::Vector2f position) {
         Rtype::Client::MERMAID_PROJECTILE_DAMAGE, sf::Vector2f(-3.0f, -15.0f));
 
     // Add frame event with custom action
-    enemy_shoot_tag.AddFrameEvent("Attack", 5, [this, &reg](int entity_id) {
-        // Custom action executed at frame 5 of Attack animation
-        auto &transform = reg.GetComponent<Component::Transform>(
-            reg.EntityFromIndex(entity_id));
-        auto &enemy_shoot = reg.GetComponent<Component::EnemyShootTag>(
-            reg.EntityFromIndex(entity_id));
+    reg.AddComponent<Component::FrameEvents>(enemy_entity,
+        Component::FrameEvents("Attack", 5, [this, &reg](int entity_id) {
+            // Custom action executed at frame 5 of Attack animation
+            try {
+                auto &transform = reg.GetComponent<Component::Transform>(
+                    reg.EntityFromIndex(entity_id));
+                auto &enemy_shoot = reg.GetComponent<Component::EnemyShootTag>(
+                    reg.EntityFromIndex(entity_id));
 
-        sf::Vector2f shoot_direction = sf::Vector2f(-1.0f, 0.0f);
-        CreateEnemyProjectile(
-            reg, shoot_direction, enemy_shoot, entity_id, transform);
-    });
+                sf::Vector2f shoot_direction = sf::Vector2f(-1.0f, 0.0f);
+                CreateEnemyProjectile(
+                    reg, shoot_direction, enemy_shoot, entity_id, transform);
+            } catch (const std::exception &e) {
+                return;
+            }
+        }));
     reg.AddComponent<Component::TimedEvents>(enemy_entity,
         Component::TimedEvents(
             [this, &reg](int entity_id) {
                 // Default cooldown action: trigger Attack animation
-                auto &animSprite = reg.GetComponent<Component::AnimatedSprite>(
-                    reg.EntityFromIndex(entity_id));
-                auto &health = reg.GetComponent<Component::Health>(
-                    reg.EntityFromIndex(entity_id));
-                if (health.currentHealth <= 0)
+                try {
+                    auto &animSprite =
+                        reg.GetComponent<Component::AnimatedSprite>(
+                            reg.EntityFromIndex(entity_id));
+                    auto &health = reg.GetComponent<Component::Health>(
+                        reg.EntityFromIndex(entity_id));
+                    if (health.currentHealth <= 0)
+                        return;
+                    animSprite.SetCurrentAnimation("Attack");
+                } catch (const std::exception &e) {
                     return;
-                animSprite.SetCurrentAnimation("Attack");
+                }
             },
             MERMAID_SHOOT_COOLDOWN));
     reg.AddComponent<Component::EnemyShootTag>(

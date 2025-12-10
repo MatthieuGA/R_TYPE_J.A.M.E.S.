@@ -20,23 +20,33 @@ void TimedEvents::AddCooldownAction(
     cooldown_actions.push_back(std::move(cd_action));
 }
 
+// ------------------------------ FrameEvents ------------------------------
+
+void FrameEvents::AddFrameEvent(const std::string &animation_name, int frame,
+    std::function<void(int)> action) {
+    frame_events.emplace_back(animation_name, frame, std::move(action));
+}
+
+FrameEvents::FrameEvent::FrameEvent(
+    const std::string &anim_name, int frame, std::function<void(int)> act)
+    : animation_name(anim_name),
+      trigger_frame(frame),
+      action(std::move(act)),
+      triggered(false) {}
+
+FrameEvents::FrameEvents(const std::string &animation_name, int frame,
+    std::function<void(int)> action) {
+    frame_events.emplace_back(animation_name, frame, std::move(action));
+}
+
+FrameEvents::FrameEvents(std::vector<FrameEvent> events)
+    : frame_events(std::move(events)) {}
+
 // ------------------------------ EnemyShootTag -----------------------------
 
 EnemyShootTag::EnemyShootTag(float speed, int damage, sf::Vector2f offset)
     : speed_projectile(speed),
       damage_projectile(damage),
       offset_shoot_position(offset) {}
-
-void EnemyShootTag::AddFrameEvent(const std::string &animation_name, int frame,
-    std::function<void(int)> action) {
-    frame_events.emplace_back(animation_name, frame, std::move(action));
-}
-
-EnemyShootTag::FrameEvent::FrameEvent(
-    const std::string &anim_name, int frame, std::function<void(int)> act)
-    : animation_name(anim_name),
-      trigger_frame(frame),
-      action(std::move(act)),
-      triggered(false) {}
 
 }  // namespace Rtype::Client::Component

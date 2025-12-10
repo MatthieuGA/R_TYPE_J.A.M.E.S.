@@ -8,14 +8,14 @@
 
 - `PlayerTag` (contient `speed_max` et autres propriétés de joueur)
 - `Velocity` (lecture de `vx` et `vy`)
-- `AnimatedSprite` (mise à jour de `currentFrame`)
+- `AnimatedSprite` (mise à jour de `current_frame`)
 - `Transform` (mise à jour de `rotationDegrees` pour le joueur et ses enfants)
 
 ## Comportement
 
 ### Animation Verticale
 
-Le système définit `animated_sprite.currentFrame` selon la vélocité verticale (`velocity.vy`):
+Le système définit `animated_sprite.current_frame` selon la vélocité verticale (`velocity.vy`):
 
 | Condition | Frame | Animation |
 |-----------|-------|-----------|

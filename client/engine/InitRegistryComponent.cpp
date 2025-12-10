@@ -17,6 +17,7 @@ void InitRegistryComponents(Engine::registry &reg) {
     reg.RegisterComponent<Rtype::Client::Component::Text>();
     reg.RegisterComponent<Rtype::Client::Component::ParticleEmitter>();
     reg.RegisterComponent<Rtype::Client::Component::TimedEvents>();
+    reg.RegisterComponent<Rtype::Client::Component::FrameEvents>();
     // Register gameplay components
     reg.RegisterComponent<Rtype::Client::Component::PlayerTag>();
     reg.RegisterComponent<Rtype::Client::Component::EnemyTag>();

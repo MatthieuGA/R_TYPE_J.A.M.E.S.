@@ -19,7 +19,7 @@ AnimatedSprite::AnimatedSprite(
     int frameWidth, int frameHeight, int current_frame)
     : currentAnimation("Default"), animated(false), elapsedTime(0.0f) {
     Animation defaultAnimation("", frameWidth, frameHeight, 1, 0.0f, false);
-    defaultAnimation.currentFrame = current_frame;
+    defaultAnimation.current_frame = current_frame;
     animations["Default"] = defaultAnimation;
 }
 
@@ -43,13 +43,13 @@ bool AnimatedSprite::SetCurrentAnimation(
                               name != "Death";
     if (should_queue) {
         animationQueue.push_back(
-            {currentAnimation, animations[currentAnimation].currentFrame});
+            {currentAnimation, animations[currentAnimation].current_frame});
     }
     if (name == "Death")
         animationQueue.clear();
     currentAnimation = name;
     if (reset) {
-        it->second.currentFrame = 0;
+        it->second.current_frame = 0;
         elapsedTime = 0.0f;
     }
     return true;

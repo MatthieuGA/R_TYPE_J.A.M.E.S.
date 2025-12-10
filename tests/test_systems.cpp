@@ -98,10 +98,10 @@ TEST(Systems, AnimationSystemAdvancesFrame) {
     anim_sprites[0]->elapsedTime =
         anim_sprites[0]->GetCurrentAnimation()->frameDuration;
 
-    // First call should advance the currentFrame because elapsedTime >=
+    // First call should advance the current_frame because elapsedTime >=
     // frameDuration
     AnimationSystem(reg, 0.0f, anim_sprites, drawables);
-    EXPECT_EQ(anim_sprites[0]->GetCurrentAnimation()->currentFrame, 1);
+    EXPECT_EQ(anim_sprites[0]->GetCurrentAnimation()->current_frame, 1);
 
     // Second call with zero delta will cause SetFrame to update the drawable
     // rect
@@ -186,8 +186,8 @@ TEST(Systems, PlayerSystemSetsFrameBasedOnVelocity) {
     PlayerSystem(reg, player_tags, velocities, inputs, particle_emitters,
         transforms, animated_sprites);
     ASSERT_TRUE(animated_sprites[0].has_value());
-    // velocity.vy == 100 -> should map to currentFrame == 1
-    EXPECT_EQ(animated_sprites[0]->GetCurrentAnimation()->currentFrame, 1);
+    // velocity.vy == 100 -> should map to current_frame == 1
+    EXPECT_EQ(animated_sprites[0]->GetCurrentAnimation()->current_frame, 1);
 }
 
 TEST(Systems, ShootPlayerSystemCreatesProjectileAndResetsCooldown) {

@@ -96,7 +96,7 @@ struct AnimatedSprite {
         int frameWidth;
         int frameHeight;
         int totalFrames;
-        int currentFrame;
+        int current_frame;
         float frameDuration;
         bool loop;
         sf::Vector2f first_frame_position = sf::Vector2f(0.0f, 0.0f);
@@ -111,7 +111,7 @@ struct AnimatedSprite {
               frameWidth(0),
               frameHeight(0),
               totalFrames(0),
-              currentFrame(0),
+              current_frame(0),
               frameDuration(0.0f),
               loop(false),
               first_frame_position(0.0f, 0.0f),
@@ -128,7 +128,7 @@ struct AnimatedSprite {
               frameWidth(frameWidth),
               frameHeight(frameHeight),
               totalFrames(totalFrames),
-              currentFrame(0),
+              current_frame(0),
               frameDuration(frameDuration),
               loop(loop),
               first_frame_position(first_frame_position),

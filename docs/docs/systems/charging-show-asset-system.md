@@ -61,7 +61,7 @@ void SetOpacityChildren(
 
 **Logique**:
 
-1. Si l'opacité actuelle est 0, réinitialise `currentFrame` à 0
+1. Si l'opacité actuelle est 0, réinitialise `current_frame` à 0
 2. Met à jour l'opacité selon la condition `charge_time > charge_time_min`
 
 ## Architecture Parent-Enfant

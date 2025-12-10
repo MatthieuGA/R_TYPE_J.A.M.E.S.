@@ -28,7 +28,7 @@ void SetOpacityChildren(Eng::sparse_array<Com::Drawable> &drawables,
             it = animated_sprite->animations.find("Default");
         }
         if (it != animated_sprite->animations.end()) {
-            it->second.currentFrame = 0;
+            it->second.current_frame = 0;
         }
     }
     drawable->opacity =

@@ -53,7 +53,7 @@ void InitializeDrawableAnimated(Com::Drawable &drawable,
     }
     SetDrawableAnimationOrigin(drawable, animatedSprite, transform);
     drawable.sprite.setTextureRect(
-        sf::IntRect(animation.currentFrame * animation.frameWidth, 0,
+        sf::IntRect(animation.current_frame * animation.frameWidth, 0,
             animation.frameWidth, animation.frameHeight));
     drawable.isLoaded = true;
 }

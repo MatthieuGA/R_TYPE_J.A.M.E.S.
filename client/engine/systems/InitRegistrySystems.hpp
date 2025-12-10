@@ -127,11 +127,10 @@ void DeathAnimationSystem(Eng::registry &reg,
     Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
     Eng::sparse_array<Com::AnimationDeath> &animation_deaths);
 
-void ShootEnemySystem(Eng::registry &reg, GameWorld &game_world,
+void FrameBaseEventSystem(Eng::registry &reg,
     Eng::sparse_array<Com::Transform> &transforms,
     Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
-    Eng::sparse_array<Com::EnemyShootTag> &enemy_shoot_tags,
-    Eng::sparse_array<Com::EnemyTag> const &enemy_tags);
+    Eng::sparse_array<Com::FrameEvents> &frame_events);
 
 void PlayerHitSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,

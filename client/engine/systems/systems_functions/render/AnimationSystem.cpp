@@ -46,7 +46,7 @@ bool ApplyAnimationTexture(
  * @brief Sets the texture rectangle on the drawable according to the
  * current frame stored in the Animation.
  *
- * @param animation Animation state (currentFrame, frameWidth/Height)
+ * @param animation Animation state (current_frame, frameWidth/Height)
  * @param drawable Drawable component containing the texture and sprite
  */
 void SetFrame(
@@ -64,10 +64,12 @@ void SetFrame(
     const int columns = textureSize.x / animation.frameWidth;
     if (columns == 0)
         return;
-    const int left = animation.first_frame_position.x +
-                     (animation.currentFrame % columns) * animation.frameWidth;
-    const int top = animation.first_frame_position.y +
-                    (animation.currentFrame / columns) * animation.frameHeight;
+    const int left =
+        animation.first_frame_position.x +
+        (animation.current_frame % columns) * animation.frameWidth;
+    const int top =
+        animation.first_frame_position.y +
+        (animation.current_frame / columns) * animation.frameHeight;
     drawable.sprite.setTextureRect(
         sf::IntRect(left, top, animation.frameWidth, animation.frameHeight));
 }
@@ -81,12 +83,12 @@ void SetFrame(
  */
 void NextFrame(
     Com::AnimatedSprite::Animation &animation, Com::Drawable &drawable) {
-    animation.currentFrame++;
-    if (animation.currentFrame >= animation.totalFrames) {
+    animation.current_frame++;
+    if (animation.current_frame >= animation.totalFrames) {
         if (animation.loop)
-            animation.currentFrame = 0;
+            animation.current_frame = 0;
         else
-            animation.currentFrame = animation.totalFrames - 1;
+            animation.current_frame = animation.totalFrames - 1;
     }
     SetFrame(animation, drawable);
 }
@@ -128,7 +130,7 @@ void AnimationSystem(Eng::registry &reg, const float dt,
             while (anim_sprite.elapsedTime >= animation->frameDuration) {
                 anim_sprite.elapsedTime -= animation->frameDuration;
                 if (!animation->loop &&
-                    animation->currentFrame == animation->totalFrames - 1) {
+                    animation->current_frame == animation->totalFrames - 1) {
                     // Animation finished, switch back to default
                     if (anim_sprite.animationQueue.empty()) {
                         anim_sprite.SetCurrentAnimation("Default", true);
@@ -141,7 +143,7 @@ void AnimationSystem(Eng::registry &reg, const float dt,
                             nextAnim, false, false);
                         auto *newAnim = anim_sprite.GetCurrentAnimation();
                         if (newAnim != nullptr)
-                            newAnim->currentFrame = frame;
+                            newAnim->current_frame = frame;
                     }
                     // Re-apply the default animation texture
                     auto *defaultAnim = anim_sprite.GetCurrentAnimation();

@@ -201,19 +201,10 @@ void InitGameplaySystems(Rtype::Client::GameWorld &game_world) {
             ShootPlayerSystem(r, game_world, transforms, inputs, player_tags);
         });
 
-    // Enemy shooting system
+    // Frame base event system
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
         Eng::sparse_array<Com::AnimatedSprite>,
-        Eng::sparse_array<Com::EnemyShootTag>,
-        Eng::sparse_array<Com::EnemyTag>>(
-        [&game_world](Eng::registry &r,
-            Eng::sparse_array<Com::Transform> &transforms,
-            Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
-            Eng::sparse_array<Com::EnemyShootTag> &enemy_shoot_tags,
-            Eng::sparse_array<Com::EnemyTag> const &enemy_tags) {
-            ShootEnemySystem(r, game_world, transforms, animated_sprites,
-                enemy_shoot_tags, enemy_tags);
-        });
+        Eng::sparse_array<Com::FrameEvents>>(FrameBaseEventSystem);
 
     // Charging show asset system
     game_world.registry_.AddSystem<Eng::sparse_array<Com::PlayerTag>,

@@ -47,12 +47,7 @@ struct TimedEvents {
         std::function<void(int)> action, float cooldown_max);
 };
 
-struct EnemyShootTag {
-    /**
-     * @brief Event to trigger at specific animation frames.
-     *
-     * Allows executing a custom action callback at a specific frame of an anim
-     */
+struct FrameEvents {
     struct FrameEvent {
         std::string animation_name;
         int trigger_frame;
@@ -70,9 +65,28 @@ struct EnemyShootTag {
             std::function<void(int)> act);
     };
 
+    std::vector<FrameEvent> frame_events;
+
+    FrameEvents() = default;
+    FrameEvents(const std::string &animation_name, int frame,
+        std::function<void(int)> action);
+    explicit FrameEvents(std::vector<FrameEvent> events);
+
+    /**
+     * @brief Adds a frame event to trigger an action at a specific animation
+     * frame.
+     *
+     * @param animation_name Name of the animation
+     * @param frame Frame number to trigger at
+     * @param action Action callback function to execute (receives entity_id)
+     */
+    void AddFrameEvent(const std::string &animation_name, int frame,
+        std::function<void(int)> action);
+};
+
+struct EnemyShootTag {
     float speed_projectile = 200.0f;
     int damage_projectile = 10;
-    std::vector<FrameEvent> frame_events;
     sf::Vector2f offset_shoot_position = sf::Vector2f(0.0f, 0.0f);
 
     /**
@@ -85,17 +99,6 @@ struct EnemyShootTag {
      */
     EnemyShootTag(float speed = 200.0f, int damage = 10,
         sf::Vector2f offset = sf::Vector2f(0.0f, 0.0f));
-
-    /**
-     * @brief Adds a frame event to trigger an action at a specific animation
-     * frame.
-     *
-     * @param animation_name Name of the animation
-     * @param frame Frame number to trigger at
-     * @param action Action callback function to execute (receives entity_id)
-     */
-    void AddFrameEvent(const std::string &animation_name, int frame,
-        std::function<void(int)> action);
 };
 
 struct Projectile {

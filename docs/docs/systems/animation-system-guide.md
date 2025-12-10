@@ -99,12 +99,12 @@ auto& animated_sprite = registry.get_components<Component::AnimatedSprite>()[ent
 
 auto* current_anim = animated_sprite->GetCurrentAnimation();
 if (current_anim != nullptr) {
-    std::cout << "Frame actuelle: " << current_anim->currentFrame 
+    std::cout << "Frame actuelle: " << current_anim->current_frame 
               << "/" << current_anim->totalFrames << std::endl;
     
     // Vérifier si l'animation est terminée (pour les animations non-looping)
     if (!current_anim->loop && 
-        current_anim->currentFrame == current_anim->totalFrames - 1) {
+        current_anim->current_frame == current_anim->totalFrames - 1) {
         std::cout << "Animation terminée!" << std::endl;
     }
 }
@@ -130,7 +130,7 @@ void PlayerCombatSystem(Eng::registry &reg,
         // Vérifier si l'animation d'attaque est terminée
         if (player.is_attacking) {
             auto* anim = anim_sprite.GetCurrentAnimation();
-            if (anim != nullptr && anim->currentFrame == anim->totalFrames - 1) {
+            if (anim != nullptr && anim->current_frame == anim->totalFrames - 1) {
                 player.is_attacking = false;
                 anim_sprite.SetCurrentAnimation("idle");
             }

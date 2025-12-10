@@ -18,6 +18,8 @@ void DeathHandling(Eng::registry &reg,
         reg.RemoveComponent<Component::PlayerTag>(entity);
     if (reg.GetComponents<Component::EnemyTag>().has(i))
         reg.RemoveComponent<Component::EnemyTag>(entity);
+    reg.RemoveComponent<Component::TimedEvents>(entity);
+    reg.RemoveComponent<Component::FrameEvents>(entity);
 
     // Play death animation
     if (animated_sprites.has(i)) {
@@ -38,7 +40,7 @@ void HandleCollision(Eng::registry &reg, Component::Health &health,
     if (animated_sprites.has(i)) {
         auto &animSprite = animated_sprites[i];
         animSprite->SetCurrentAnimation("Hit", true);
-        animSprite->GetCurrentAnimation()->currentFrame = 1;
+        animSprite->GetCurrentAnimation()->current_frame = 1;
     }
 
     reg.RemoveComponent<Component::Projectile>(projEntity);

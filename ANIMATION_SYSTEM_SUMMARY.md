@@ -25,7 +25,7 @@ Obtient un pointeur vers l'animation courante :
 ```cpp
 auto* anim = animated_sprite.GetCurrentAnimation();
 if (anim != nullptr) {
-    std::cout << "Frame: " << anim->currentFrame << std::endl;
+    std::cout << "Frame: " << anim->current_frame << std::endl;
 }
 ```
 
@@ -75,7 +75,7 @@ if (player_is_moving) {
 
 // 6. Vérifier si une animation non-looping est terminée
 auto* anim = anim_sprite.GetCurrentAnimation();
-if (anim && !anim->loop && anim->currentFrame == anim->totalFrames - 1) {
+if (anim && !anim->loop && anim->current_frame == anim->totalFrames - 1) {
     // L'animation est terminée
     anim_sprite.SetCurrentAnimation("idle");
 }

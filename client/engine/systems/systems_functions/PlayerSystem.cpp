@@ -35,15 +35,15 @@ void PlayerSystem(Eng::registry &reg,
         auto &animation = it->second;
 
         if (velocity.vy > 200.f)
-            animation.currentFrame = 0;
+            animation.current_frame = 0;
         else if (velocity.vy >= 75)
-            animation.currentFrame = 1;
+            animation.current_frame = 1;
         else if (velocity.vy < -200.f)
-            animation.currentFrame = 4;
+            animation.current_frame = 4;
         else if (velocity.vy <= -75)
-            animation.currentFrame = 3;
+            animation.current_frame = 3;
         else
-            animation.currentFrame = 2;
+            animation.current_frame = 2;
 
         float rotation = velocity.vx / player_tag.speed_max * 5.f;
         transform.rotationDegrees = rotation;
