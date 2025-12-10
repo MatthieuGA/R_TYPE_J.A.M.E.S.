@@ -172,15 +172,19 @@ TEST(Systems, PlayerSystemSetsFrameBasedOnVelocity) {
     Eng::sparse_array<Com::PlayerTag> player_tags;
     Eng::sparse_array<Com::Velocity> velocities;
     Eng::sparse_array<Com::AnimatedSprite> animated_sprites;
+    Eng::sparse_array<Com::Inputs> inputs;
+    Eng::sparse_array<Com::ParticleEmitter> particle_emitters;
     Eng::sparse_array<Com::Transform> transforms;
 
     player_tags.insert_at(0, Com::PlayerTag{400.f, 0.5f, 0.0f, 1});
     velocities.insert_at(0, Com::Velocity{0.0f, 100.0f});
     animated_sprites.insert_at(0, Com::AnimatedSprite(16, 16, 0.1f));
     transforms.insert_at(0, Com::Transform(0.0f, 0.0f, 0.0f, 1.0f));
+    inputs.insert_at(0, Com::Inputs{0.0f, 0.0f, false});
+    particle_emitters.insert_at(0, Com::ParticleEmitter());
 
-    PlayerSystem(reg, player_tags, velocities, transforms, animated_sprites);
-
+    PlayerSystem(reg, player_tags, velocities, inputs, particle_emitters,
+        transforms, animated_sprites);
     ASSERT_TRUE(animated_sprites[0].has_value());
     // velocity.vy == 100 -> should map to currentFrame == 1
     EXPECT_EQ(animated_sprites[0]->GetCurrentAnimation()->currentFrame, 1);

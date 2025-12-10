@@ -17,6 +17,8 @@ namespace Rtype::Client {
 void PlayerSystem(Eng::registry &reg,
     Eng::sparse_array<Com::PlayerTag> const &player_tags,
     Eng::sparse_array<Com::Velocity> const &velocities,
+    Eng::sparse_array<Com::Inputs> const &inputs,
+    Eng::sparse_array<Com::ParticleEmitter> &particle_emitters,
     Eng::sparse_array<Com::Transform> &transforms,
     Eng::sparse_array<Com::AnimatedSprite> &animated_sprites) {
     for (auto &&[i, player_tag, velocity, animated_sprite, transform] :
@@ -45,6 +47,13 @@ void PlayerSystem(Eng::registry &reg,
 
         float rotation = velocity.vx / player_tag.speed_max * 5.f;
         transform.rotationDegrees = rotation;
+
+        if (inputs.has(i) && particle_emitters.has(i)) {
+            auto const &input = inputs[i];
+            auto &emitter = particle_emitters[i];
+
+            emitter->emitting = input->horizontal > 0.0f;
+        }
 
         for (auto &&[j, child_transform] : make_indexed_zipper(transforms)) {
             if (child_transform.parent_entity.has_value() &&

@@ -81,6 +81,13 @@ void GameScene::InitPlayerLevel(Engine::registry &reg) {
         player_entity, Component::AnimationEnterPlayer{true});
     reg.AddComponent<Component::HitBox>(
         player_entity, Component::HitBox{30.0f, 16.0f});
+    // Reactor particle emitter
+    Component::ParticleEmitter emit_reactor(100, 200, sf::Color::Yellow,
+        RED_HIT, sf::Vector2f(-15.f, 3.f), true, 0.25f, 40.f,
+        sf::Vector2f(-1.f, 0.f), 30.f, 5.f, 10.0f, 4.0f, 3.f, -1.0f,
+        LAYER_PLAYER - 2);
+    reg.AddComponent<Component::ParticleEmitter>(
+        player_entity, std::move(emit_reactor));
 
     auto player_charging_entity = CreateEntityInScene(reg);
     reg.AddComponent<Component::Transform>(

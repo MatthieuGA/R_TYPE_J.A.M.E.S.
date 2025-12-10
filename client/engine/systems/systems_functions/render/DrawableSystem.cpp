@@ -28,9 +28,13 @@ void updateEmitter(
            emitter.particles.size() < emitter.maxParticles) {
         emitter.emissionAccumulator -= 1.0f;
 
+        sf::Vector2f offset_computed =
+            sf::Vector2f(emitter.offset.x * transform.scale.x,
+                emitter.offset.y * transform.scale.y);
+
         Component::Particle newParticle;
         newParticle.position = sf::Vector2f(
-            transform.x + emitter.offset.x, transform.y + emitter.offset.y);
+            transform.x + offset_computed.x, transform.y + offset_computed.y);
 
         // Calculate particle velocity with spread angle
         std::random_device rd;
