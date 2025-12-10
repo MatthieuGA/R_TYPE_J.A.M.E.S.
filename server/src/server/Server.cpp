@@ -33,6 +33,7 @@ Server::Server(Config &config, boost::asio::io_context &io_context)
       tick_timer_(io_context),
       running_(false),
       max_clients_(config.GetMaxPlayers()),
+      next_client_id_(1),
       next_player_id_(1) {}
 
 Server::~Server() {
@@ -43,6 +44,7 @@ void Server::Initialize() {
     std::cout << "Initializing server..." << std::endl;
     RegisterComponents();
     RegisterSystems();
+    RegisterPacketHandlers();
 
     // Register TCP accept callback
     network_->GetTcp().SetAcceptCallback(
@@ -103,15 +105,14 @@ void Server::Close() {
     std::cout << "Closing server..." << std::endl;
     Stop();
     // Close all client connections
-    for (auto &[player_id, connection] : clients_) {
-        std::cout << "Closing connection for player "
-                  << static_cast<int>(player_id) << " ('"
-                  << connection.username_ << "')" << std::endl;
+    for (auto &[client_id, connection] : clients_) {
+        std::cout << "Closing connection for client " << client_id
+                  << " (Player " << static_cast<int>(connection.player_id_)
+                  << ", '" << connection.username_ << "')" << std::endl;
         boost::system::error_code ec;
         if (connection.tcp_socket_.close(ec) && ec) {
-            std::cerr << "Error closing socket for player "
-                      << static_cast<int>(player_id) << ": " << ec.message()
-                      << std::endl;
+            std::cerr << "Error closing socket for client " << client_id
+                      << ": " << ec.message() << std::endl;
         }
     }
     clients_.clear();
@@ -148,188 +149,65 @@ Engine::registry &Server::GetRegistry() {
 // ============================================================================
 
 void Server::HandleTcpAccept(boost::asio::ip::tcp::socket socket) {
-    // Allocate buffer on heap (lambda must own it for async lifetime)
-    auto buffer = std::make_shared<std::vector<uint8_t>>(44);  // 12 + 32 bytes
+    // Assign unique internal client_id
+    uint32_t client_id = AssignClientId();
+    std::cout << "New TCP connection accepted, assigned client ID "
+              << client_id << std::endl;
 
-    // Move socket into shared_ptr before calling async_receive
-    // (can't call method on socket after it's moved into lambda capture)
-    auto socket_ptr =
-        std::make_shared<boost::asio::ip::tcp::socket>(std::move(socket));
+    // Create unauthenticated connection (player_id=0 until authenticated)
+    // Client must send CONNECT_REQ to get a player_id assigned
+    ClientConnection connection(client_id, 0, std::move(socket));
 
-    // Start async receive for CONNECT_REQ packet
-    socket_ptr->async_receive(boost::asio::buffer(*buffer),
-        [this, buffer, socket_ptr](
-            boost::system::error_code ec, std::size_t bytes_read) {
-            if (ec) {
-                std::cerr << "Error reading CONNECT_REQ: " << ec.message()
-                          << std::endl;
-                return;
-            }
+    // Add to clients map
+    clients_.emplace(client_id, std::move(connection));
 
-            // CONNECT_REQ must be exactly 44 bytes (12 header + 32 username)
-            if (bytes_read != 44) {
-                std::cerr << "Incorrect CONNECT_REQ: expected 44 bytes, got "
-                          << bytes_read << std::endl;
-                return;
-            }
-
-            // Parse header
-            network::PacketBuffer packet_buffer(*buffer);
-            network::CommonHeader header = packet_buffer.ReadHeader();
-
-            if (header.op_code !=
-                static_cast<uint8_t>(network::PacketType::ConnectReq)) {
-                std::cerr << "Expected CONNECT_REQ (0x01), got opcode 0x"
-                          << std::hex << static_cast<int>(header.op_code)
-                          << std::dec << std::endl;
-                return;
-            }
-
-            // Extract payload (username)
-            std::vector<uint8_t> payload(
-                buffer->begin() + 12,  // Skip 12-byte header
-                buffer->begin() + 12 +
-                    32);  // 32-byte username null-terminated
-
-            HandleConnectReq(*socket_ptr, payload);
-        });
+    // Start handling messages immediately
+    HandleClientMessages(client_id);
 }
 
-void Server::HandleConnectReq(boost::asio::ip::tcp::socket &socket,
-    const std::vector<uint8_t> &payload) {
-    // Deserialize CONNECT_REQ
-    network::PacketBuffer buffer(payload);
-    network::ConnectReqPacket req =
-        network::ConnectReqPacket::Deserialize(buffer);
-    std::string username = trim(req.GetUsername());
-
-    std::cout << "CONNECT_REQ with username: '" << username << "'"
-              << std::endl;
-
-    // Validation: Empty username
-    if (username.empty() ||
-        username.find_first_not_of('\0') == std::string::npos) {
-        std::cerr << "Rejected: Empty username" << std::endl;
-        // Keep socket alive for async_send via shared_ptr
-        auto socket_ptr =
-            std::make_shared<boost::asio::ip::tcp::socket>(std::move(socket));
-        SendConnectAck(*socket_ptr, 0, network::ConnectAckPacket::BadUsername,
-            socket_ptr);
-        return;
-    }
-
-    // Validation: Username already taken
-    if (IsUsernameTaken(username)) {
-        std::cerr << "Rejected: Username '" << username << "' already taken"
-                  << std::endl;
-        // Keep socket alive for async_send via shared_ptr
-        auto socket_ptr =
-            std::make_shared<boost::asio::ip::tcp::socket>(std::move(socket));
-        SendConnectAck(*socket_ptr, 0, network::ConnectAckPacket::BadUsername,
-            socket_ptr);
-        return;
-    }
-
-    // Validation: Server full
-    if (clients_.size() >= max_clients_) {
-        std::cerr << "Rejected: Server full (" << clients_.size() << "/"
-                  << static_cast<int>(max_clients_) << " players)"
-                  << std::endl;
-        // Keep socket alive for async_send via shared_ptr
-        auto socket_ptr =
-            std::make_shared<boost::asio::ip::tcp::socket>(std::move(socket));
-        SendConnectAck(
-            *socket_ptr, 0, network::ConnectAckPacket::ServerFull, socket_ptr);
-        return;
-    }
-
-    // Assign PlayerId and add to clients map
-    uint8_t player_id = AssignPlayerId();
-
-    // Create ClientConnection and move socket ownership
-    ClientConnection connection(player_id, std::move(socket));
-    connection.username_ = username;
-
-    std::cout << "Player connected: '" << username << "' assigned ID "
-              << static_cast<int>(player_id) << std::endl;
-
-    // Send CONNECT_ACK (must send before moving connection into map)
-    SendConnectAck(
-        connection.tcp_socket_, player_id, network::ConnectAckPacket::OK);
-
-    // Transfer ownership to clients_ map
-    clients_.emplace(player_id, std::move(connection));
-
-    // Start handling incoming messages and monitoring for disconnect
-    HandleClientMessages(player_id);
-}
-
-void Server::SendConnectAck(boost::asio::ip::tcp::socket &socket,
-    uint8_t player_id, network::ConnectAckPacket::Status status,
-    std::shared_ptr<boost::asio::ip::tcp::socket> socket_keeper) {
-    network::ConnectAckPacket ack;
-    ack.player_id = network::PlayerId{player_id};
-    ack.status = status;
-    ack.reserved = {0, 0};
-
-    // Serialize packet
-    network::PacketBuffer buffer;
-    ack.Serialize(buffer);
-    const auto &data = buffer.Data();
-
-    // Send async (use shared_ptr to keep data alive)
-    auto data_copy = std::make_shared<std::vector<uint8_t>>(data);
-
-    socket.async_send(boost::asio::buffer(*data_copy),
-        [data_copy, socket_keeper, player_id, status](
-            boost::system::error_code ec, std::size_t) {
-            if (ec) {
-                std::cerr << "Error sending CONNECT_ACK to player "
-                          << static_cast<int>(player_id) << ": "
-                          << ec.message() << std::endl;
-            } else {
-                std::cout << "Sent CONNECT_ACK: PlayerId="
-                          << static_cast<int>(player_id)
-                          << ", Status=" << static_cast<int>(status)
-                          << std::endl;
-            }
-            // socket_keeper automatically cleans up socket when this lambda is
-            // destroyed
-        });
+uint32_t Server::AssignClientId() {
+    return next_client_id_++;
 }
 
 uint8_t Server::AssignPlayerId() {
     uint8_t id = next_player_id_++;
-    if (next_player_id_ == 0) {
+    if (next_player_id_ == 0)
         next_player_id_ = 1;
-    }
-
-    // Prevent infinite loop if all IDs exhausted
+    // Find first available player_id (check authenticated clients only)
     uint8_t attempts = 0;
-    while (clients_.find(id) != clients_.end()) {
-        if (++attempts >= 255) {
-            throw std::runtime_error("All player IDs exhausted");
+    while (attempts < 255) {
+        bool id_taken = false;
+        for (const auto &[cid, conn] : clients_) {
+            if (conn.player_id_ != 0 && conn.player_id_ == id) {
+                id_taken = true;
+                break;
+            }
         }
+        if (!id_taken)
+            return id;
         id = next_player_id_++;
-        if (next_player_id_ == 0) {
+        if (next_player_id_ == 0)
             next_player_id_ = 1;
-        }
+        attempts++;
     }
-
-    return id;
+    throw std::runtime_error("All player IDs exhausted");
 }
 
-void Server::RemoveClient(uint8_t player_id) {
-    auto it = clients_.find(player_id);
+void Server::RemoveClient(uint32_t client_id) {
+    auto it = clients_.find(client_id);
     if (it == clients_.end()) {
-        std::cerr << "RemoveClient: Player " << static_cast<int>(player_id)
-                  << " not found" << std::endl;
+        std::cerr << "RemoveClient: Client " << client_id << " not found"
+                  << std::endl;
         return;
     }
-
-    std::cout << "Player " << static_cast<int>(player_id) << " ('"
-              << it->second.username_ << "') disconnected" << std::endl;
-
+    if (it->second.player_id_ != 0) {
+        std::cout << "Client " << client_id << " (Player "
+                  << static_cast<int>(it->second.player_id_) << ", '"
+                  << it->second.username_ << "') disconnected" << std::endl;
+    } else {
+        std::cout << "Client " << client_id
+                  << " (unauthenticated) disconnected" << std::endl;
+    }
     // TCP socket closes automatically (object is destroyed)
     clients_.erase(it);
 }
@@ -337,46 +215,240 @@ void Server::RemoveClient(uint8_t player_id) {
 bool Server::IsUsernameTaken(const std::string &username) const {
     return std::any_of(
         clients_.begin(), clients_.end(), [&username](const auto &pair) {
-            return pair.second.username_ == username;
+            return pair.second.player_id_ != 0 &&
+                   pair.second.username_ == username;
         });
 }
 
-void Server::HandleClientMessages(uint8_t player_id) {
-    auto it = clients_.find(player_id);
-    if (it == clients_.end()) {
+void Server::HandleClientMessages(uint32_t client_id) {
+    auto it = clients_.find(client_id);
+    if (it == clients_.end())
         return;  // Client already disconnected
-    }
+    boost::asio::ip::tcp::socket &socket = it->second.tcp_socket_;
 
-    // Allocate buffer for receiving TCP messages
+    // Allocate buffer for receiving TCP messages (max 1024 bytes)
     auto buffer = std::make_shared<std::vector<uint8_t>>(1024);
 
     // Start async read - any data or EOF will trigger the callback
-    it->second.tcp_socket_.async_receive(boost::asio::buffer(*buffer),
-        [this, buffer, player_id](
+    socket.async_receive(boost::asio::buffer(*buffer),
+        [this, buffer, client_id](
             boost::system::error_code ec, std::size_t bytes_read) {
             if (ec) {
                 // Socket closed or error - remove client
-                std::cout << "Client " << static_cast<int>(player_id)
+                std::cout << "Client " << client_id
                           << " disconnected: " << ec.message() << std::endl;
-                RemoveClient(player_id);
+                RemoveClient(client_id);
             } else if (bytes_read > 0) {
-                // Received TCP message from client
-                std::cout << "Received " << bytes_read << " bytes from client "
-                          << static_cast<int>(player_id) << std::endl;
-                // TODO: Process incoming TCP packets here
-                // (e.g., lobby commands, chat messages, disconnect requests)
+                // Update last activity timestamp and get client reference
+                auto it = clients_.find(client_id);
+                if (it == clients_.end())
+                    return;  // Client was removed
+                it->second.last_activity_ = std::chrono::steady_clock::now();
 
-                // Continue handling messages if client still connected
-                if (clients_.find(player_id) != clients_.end()) {
-                    HandleClientMessages(player_id);
+                // Parse incoming TCP packet using PacketFactory
+                network::PacketParseResult result =
+                    network::DeserializePacket(buffer->data(), bytes_read);
+
+                if (!result.success) {
+                    std::cerr << "Failed to parse packet from client "
+                              << client_id << ": " << result.error
+                              << std::endl;
+                } else {
+                    // Dispatch to appropriate handler based on packet type
+                    auto packet_type = static_cast<network::PacketType>(
+                        result.header.op_code);
+                    auto handler_it = packet_handlers_.find(packet_type);
+
+                    if (handler_it != packet_handlers_.end()) {
+                        // Pass ClientConnection reference to handler
+                        handler_it->second(it->second, result.packet);
+                    } else {
+                        std::cerr << "No handler registered for packet type 0x"
+                                  << std::hex << static_cast<int>(packet_type)
+                                  << std::dec << " from client " << client_id
+                                  << std::endl;
+                    }
                 }
+                // Continue handling messages if connection still exists
+                if (clients_.find(client_id) != clients_.end())
+                    HandleClientMessages(client_id);
             } else {
                 // EOF without error - client disconnected gracefully
-                std::cout << "Client " << static_cast<int>(player_id)
+                std::cout << "Client " << client_id
                           << " disconnected gracefully" << std::endl;
-                RemoveClient(player_id);
+                RemoveClient(client_id);
             }
         });
 }
 
+// ============================================================================
+// TCP Packet Handler Registration and Handlers
+// ============================================================================
+
+void Server::RegisterPacketHandlers() {
+    // Register CONNECT_REQ handler (0x01)
+    packet_handlers_[network::PacketType::ConnectReq] =
+        [this](
+            ClientConnection &client, const network::PacketVariant &packet) {
+            if (const auto *connect_packet =
+                    std::get_if<network::ConnectReqPacket>(&packet)) {
+                HandleConnectReq(client, *connect_packet);
+            }
+        };
+    // Register READY_STATUS handler (0x07)
+    packet_handlers_[network::PacketType::ReadyStatus] =
+        [this](
+            ClientConnection &client, const network::PacketVariant &packet) {
+            if (const auto *ready_packet =
+                    std::get_if<network::ReadyStatusPacket>(&packet)) {
+                HandleReadyStatus(client, *ready_packet);
+            }
+        };
+    // Register DISCONNECT_REQ handler (0x03)
+    packet_handlers_[network::PacketType::DisconnectReq] =
+        [this](
+            ClientConnection &client, const network::PacketVariant &packet) {
+            if (const auto *disconnect_packet =
+                    std::get_if<network::DisconnectReqPacket>(&packet)) {
+                HandleDisconnectReq(client, *disconnect_packet);
+            }
+        };
+    std::cout << "Registered " << packet_handlers_.size() << " packet handlers"
+              << std::endl;
+}
+
+void Server::HandleConnectReq(
+    ClientConnection &client, const network::ConnectReqPacket &packet) {
+    std::string username = trim(packet.GetUsername());
+    std::cout << "CONNECT_REQ from client " << client.client_id_
+              << " with username: '" << username << "'" << std::endl;
+
+    // Helper lambda to send CONNECT_ACK
+    auto send_ack = [&](network::ConnectAckPacket::Status status,
+                        uint8_t assigned_player_id = 0) {
+        network::ConnectAckPacket ack;
+        ack.player_id = network::PlayerId{assigned_player_id};
+        ack.status = status;
+        ack.reserved = {0, 0};
+
+        network::PacketBuffer buffer;
+        ack.Serialize(buffer);
+        const auto &data = buffer.Data();
+        auto data_copy = std::make_shared<std::vector<uint8_t>>(data);
+
+        client.tcp_socket_.async_send(boost::asio::buffer(*data_copy),
+            [data_copy, assigned_player_id, status](
+                boost::system::error_code ec, std::size_t) {
+                if (ec) {
+                    std::cerr << "Error sending CONNECT_ACK: " << ec.message()
+                              << std::endl;
+                } else {
+                    std::cout << "Sent CONNECT_ACK: PlayerId="
+                              << static_cast<int>(assigned_player_id)
+                              << ", Status=" << static_cast<int>(status)
+                              << std::endl;
+                }
+            });
+    };
+
+    // Validation: Empty username
+    if (username.empty() ||
+        username.find_first_not_of('\0') == std::string::npos) {
+        std::cerr << "Rejected: Empty username" << std::endl;
+        send_ack(network::ConnectAckPacket::BadUsername);
+        return;  // Keep connection alive for retry
+    }
+
+    // Validation: Username already taken
+    if (IsUsernameTaken(username)) {
+        std::cerr << "Rejected: Username '" << username << "' already taken"
+                  << std::endl;
+        send_ack(network::ConnectAckPacket::BadUsername);
+        return;  // Keep connection alive for retry
+    }
+
+    // Validation: Server full (count only authenticated clients)
+    size_t authenticated_count = 0;
+    for (const auto &[id, conn] : clients_) {
+        if (conn.player_id_ != 0) {
+            authenticated_count++;
+        }
+    }
+
+    if (authenticated_count >= max_clients_) {
+        std::cerr << "Rejected: Server full (" << authenticated_count << "/"
+                  << static_cast<int>(max_clients_) << " players)"
+                  << std::endl;
+        send_ack(network::ConnectAckPacket::ServerFull);
+        return;  // Keep connection alive for retry
+    }
+
+    // Assign player_id to authenticate client
+    uint8_t player_id = AssignPlayerId();
+    client.player_id_ = player_id;
+    client.username_ = username;
+
+    std::cout << "Client " << client.client_id_ << " authenticated as Player "
+              << static_cast<int>(player_id) << " ('" << username << "')"
+              << std::endl;
+
+    // Send success response with assigned player_id
+    send_ack(network::ConnectAckPacket::OK, player_id);
+}
+
+void Server::HandleReadyStatus(
+    ClientConnection &client, const network::ReadyStatusPacket &packet) {
+    // Only authenticated players can send READY_STATUS
+    if (client.player_id_ == 0) {
+        std::cerr << "READY_STATUS from unauthenticated client "
+                  << client.client_id_
+                  << ". Client must send CONNECT_REQ first." << std::endl;
+        return;
+    }
+
+    bool is_ready = (packet.is_ready != 0);
+    client.ready_ = is_ready;
+
+    std::cout << "Player " << static_cast<int>(client.player_id_) << " ('"
+              << client.username_ << "') is now "
+              << (is_ready ? "READY" : "NOT READY") << std::endl;
+
+    // Check if all authenticated players are ready
+    bool all_ready = true;
+    size_t connected_players = 0;
+    for (const auto &[id, connection] : clients_) {
+        if (connection.player_id_ == 0)
+            continue;  // Skip unauthenticated connections
+        connected_players++;
+        if (!connection.ready_) {
+            all_ready = false;
+            break;
+        }
+    }
+    if (all_ready && connected_players > 0) {
+        std::cout << "All " << connected_players
+                  << " players ready! Starting game..." << std::endl;
+        // TODO(feature): Send GAME_START packet to all clients
+        // this->Start();
+    }
+}
+
+void Server::HandleDisconnectReq(
+    ClientConnection &client, const network::DisconnectReqPacket &packet) {
+    (void)packet;  // No payload in DISCONNECT_REQ
+
+    if (client.player_id_ != 0) {
+        std::cout << "Player " << static_cast<int>(client.player_id_) << " ('"
+                  << client.username_ << "') requested disconnect"
+                  << std::endl;
+    } else {
+        std::cout << "Client " << client.client_id_
+                  << " (unauthenticated) requested disconnect" << std::endl;
+    }
+
+    // Remove client (graceful shutdown)
+    RemoveClient(client.client_id_);
+    // TODO(future): Notify other clients about disconnection
+    // (NOTIFY_DISCONNECT)
+}
 }  // namespace server
