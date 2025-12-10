@@ -149,12 +149,7 @@ void GameScene::AddEnemyLevel(
         enemy_entity, Component::EnemyTag{Rtype::Client::MERMAID_SPEED});
     reg.AddComponent<Component::Velocity>(enemy_entity, Component::Velocity{});
     reg.AddComponent<Component::PatternMovement>(enemy_entity,
-        Component::PatternMovement(
-            std::vector<sf::Vector2f>{sf::Vector2f{1400.f, 700.f},
-                sf::Vector2f{1100.f, 700.f}, sf::Vector2f{1100.f, 400.f},
-                sf::Vector2f{1400.f, 400.f}},
-            sf::Vector2f(-1.0f, 0.0f), Rtype::Client::MERMAID_SPEED, i % 4,
-            true));
+        Component::PatternMovement(Rtype::Client::MERMAID_SPEED));
 
     Component::EnemyShootTag enemy_shoot_tag(
         Rtype::Client::MERMAID_PROJECTILE_SPEED,

@@ -210,20 +210,18 @@ struct PatternMovement {
           targetEntityId(0) {}
 
     // Constructor for Follow Player movement
-    PatternMovement(size_t targetEntityId, sf::Vector2f baseDir,
-        float baseSpeed, bool loop = true)
+    explicit PatternMovement(float baseSpeed)
         : currentWaypoint(0),
           type(PatternType::FollowPlayer),
           elapsed(0.f),
           spawnPos({0.f, 0.f}),
-          baseDir(baseDir),
+          baseDir({0.f, 0.f}),
           baseSpeed(baseSpeed),
           amplitude({0.f, 0.f}),
           frequency({0.f, 0.f}),
           waypoints({}),
           waypointSpeed(0.f),
-          waypointThreshold(4.f),
-          targetEntityId(targetEntityId) {}
+          waypointThreshold(4.f) {}
 
     // Constructor for Circular movement
     PatternMovement(float baseSpeed, float radius, sf::Vector2f centerPos)

@@ -1,3 +1,4 @@
+#include <limits>
 #include <map>
 
 #include "engine/systems/InitRegistrySystems.hpp"
@@ -154,6 +155,54 @@ void FollowPlayerMovementFunction(Eng::registry &reg, std::size_t entityId,
     Com::Transform &transform, Com::Velocity &velocity,
     Com::PatternMovement &patternMovement, float dt) {
     // Follow player movement logic
+    try {
+        if (patternMovement.targetEntityId == -1) {
+            // Find the closest player entity
+            size_t id_min = -1;
+            float dist_min = std::numeric_limits<float>::max();
+
+            auto &playerTags = reg.GetComponents<Com::PlayerTag>();
+            auto &playerTransform = reg.GetComponents<Com::Transform>();
+            for (auto &&[i, playerTag, pTransform] :
+                make_indexed_zipper(playerTags, playerTransform)) {
+                sf::Vector2f direction = {
+                    pTransform.x - transform.x, pTransform.y - transform.y};
+                float distance = std::sqrt(
+                    direction.x * direction.x + direction.y * direction.y);
+                if (distance > 0.0f && distance < dist_min) {
+                    dist_min = distance;
+                    id_min = i;
+                }
+            }
+            if (id_min == -1)
+                return;
+            // Set the target entity ID to the closest player
+            patternMovement.targetEntityId = id_min;
+        } else {
+            // Move towards the target player entity
+            try {
+                auto &targetTransform = reg.GetComponent<Com::Transform>(
+                    reg.EntityFromIndex(patternMovement.targetEntityId));
+
+                sf::Vector2f direction = {targetTransform.x - transform.x,
+                    targetTransform.y - transform.y};
+                float distance = std::sqrt(
+                    direction.x * direction.x + direction.y * direction.y);
+                if (distance > 0.0f) {
+                    direction.x /= distance;
+                    direction.y /= distance;
+                    velocity.vx = direction.x * patternMovement.baseSpeed;
+                    velocity.vy = direction.y * patternMovement.baseSpeed;
+                }
+            } catch (const std::exception &e) {
+                // Target entity not found, reset targetEntityId
+                patternMovement.targetEntityId = -1;
+                return;
+            }
+        }
+    } catch (const std::exception &e) {
+        return;
+    }
 }
 
 void CircularMovementFunction(Eng::registry &reg, std::size_t entityId,
