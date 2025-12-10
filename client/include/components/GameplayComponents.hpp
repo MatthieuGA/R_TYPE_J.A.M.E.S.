@@ -26,6 +26,27 @@ struct EnemyTag {
     float speed = 100.0f;
 };
 
+struct TimedEvents {
+    struct CooldownAction {
+        std::function<void(int entity_id)> action;
+        float cooldown_max = 1.0f;
+        float cooldown = 0.0f;
+    };
+
+    std::vector<CooldownAction> cooldown_actions = {};
+
+    TimedEvents(std::function<void(int)> action, float cooldown_max);
+    TimedEvents() = default;
+
+    /**
+     * @brief Sets the cooldown action to be executed when cooldown elapses.
+     *
+     * @param action Action callback function to execute (receives entity_id)
+     */
+    void AddCooldownAction(
+        std::function<void(int)> action, float cooldown_max);
+};
+
 struct EnemyShootTag {
     /**
      * @brief Event to trigger at specific animation frames.
@@ -49,16 +70,9 @@ struct EnemyShootTag {
             std::function<void(int)> act);
     };
 
-    struct CooldownAction {
-        std::function<void(int entity_id)> action;
-        float cooldown_max = 1.0f;
-        float cooldown = 0.0f;
-    };
-
     float speed_projectile = 200.0f;
     int damage_projectile = 10;
     std::vector<FrameEvent> frame_events;
-    std::vector<CooldownAction> cooldown_actions;
     sf::Vector2f offset_shoot_position = sf::Vector2f(0.0f, 0.0f);
 
     /**
@@ -82,14 +96,6 @@ struct EnemyShootTag {
      */
     void AddFrameEvent(const std::string &animation_name, int frame,
         std::function<void(int)> action);
-
-    /**
-     * @brief Sets the cooldown action to be executed when cooldown elapses.
-     *
-     * @param action Action callback function to execute (receives entity_id)
-     */
-    void AddCooldownAction(
-        std::function<void(int)> action, float cooldown_max);
 };
 
 struct Projectile {

@@ -137,7 +137,6 @@ void PlayerHitSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
     Eng::sparse_array<Com::PlayerTag> &player_hits);
 
-void ParticleSystemEmitterSystem(Eng::registry &reg, GameWorld &game_world,
-    Eng::sparse_array<Com::Transform> const &transforms,
-    Eng::sparse_array<Com::ParticleEmitter> &emitters);
+void TimedEventSystem(Eng::registry &reg, GameWorld &game_world,
+    Eng::sparse_array<Com::TimedEvents> &timed_events);
 }  // namespace Rtype::Client

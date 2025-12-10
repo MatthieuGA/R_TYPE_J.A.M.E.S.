@@ -84,7 +84,7 @@ void GameScene::InitPlayerLevel(Engine::registry &reg) {
     // Reactor particle emitter
     Component::ParticleEmitter emit_reactor(100, 200, sf::Color::Yellow,
         RED_HIT, sf::Vector2f(-15.f, 3.f), true, 0.25f, 40.f,
-        sf::Vector2f(-1.f, 0.f), 30.f, 5.f, 10.0f, 4.0f, 3.f, -1.0f,
+        sf::Vector2f(-1.f, -0.1f), 30.f, 5.f, 10.0f, 4.0f, 3.f, -1.0f,
         LAYER_PLAYER - 2);
     reg.AddComponent<Component::ParticleEmitter>(
         player_entity, std::move(emit_reactor));
@@ -111,11 +111,11 @@ void GameScene::InitScene(Engine::registry &reg, GameWorld &gameWorld) {
     InitPlayerLevel(reg);
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis_y(50, 600);
-    std::uniform_int_distribution<> dis_x(0, 199);
+    std::uniform_int_distribution<> dis_y(50, 1000);
+    std::uniform_int_distribution<> dis_x(0, 1400);
     for (int i = 0; i < 5; i++) {
         const float randY = static_cast<float>(dis_y(gen));
-        const float randX = 500 + (i * 300) + static_cast<float>(dis_x(gen));
+        const float randX = 400 + static_cast<float>(dis_x(gen));
         AddEnemyLevel(reg, sf::Vector2f(randX, randY));
     }
 }
@@ -161,14 +161,19 @@ void GameScene::AddEnemyLevel(Engine::registry &reg, sf::Vector2f position) {
         CreateEnemyProjectile(
             reg, shoot_direction, enemy_shoot, entity_id, transform);
     });
-    enemy_shoot_tag.AddCooldownAction(
-        [this, &reg](int entity_id) {
-            // Default cooldown action: trigger Attack animation
-            auto &animSprite = reg.GetComponent<Component::AnimatedSprite>(
-                reg.EntityFromIndex(entity_id));
-            animSprite.SetCurrentAnimation("Attack");
-        },
-        MERMAID_SHOOT_COOLDOWN);
+    reg.AddComponent<Component::TimedEvents>(enemy_entity,
+        Component::TimedEvents(
+            [this, &reg](int entity_id) {
+                // Default cooldown action: trigger Attack animation
+                auto &animSprite = reg.GetComponent<Component::AnimatedSprite>(
+                    reg.EntityFromIndex(entity_id));
+                auto &health = reg.GetComponent<Component::Health>(
+                    reg.EntityFromIndex(entity_id));
+                if (health.currentHealth <= 0)
+                    return;
+                animSprite.SetCurrentAnimation("Attack");
+            },
+            MERMAID_SHOOT_COOLDOWN));
     reg.AddComponent<Component::EnemyShootTag>(
         enemy_entity, std::move(enemy_shoot_tag));
     reg.AddComponent<Component::HitBox>(
