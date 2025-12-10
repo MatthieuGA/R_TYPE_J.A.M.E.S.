@@ -74,6 +74,9 @@ void Server::RegisterSystems() {
 }
 
 void Server::Start() {
+    if (running_) {
+        return;
+    }
     std::cout << "Starting game..." << std::endl;
     running_ = true;
     SetupGameTick();
