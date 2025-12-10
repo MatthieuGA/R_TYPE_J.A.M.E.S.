@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "include/EnemiesConst.hpp"
+#include "include/LayersConst.hpp"
 #include "include/PlayerConst.hpp"
 #include "include/components/CoreComponents.hpp"
 #include "include/components/GameplayComponents.hpp"
@@ -33,14 +34,18 @@ void GameScene::AddBackgroundEntity(
 
 void GameScene::InitBackgrounds(Engine::registry &reg) {
     std::vector<BackgroundInfo> background_list = {
-        {"background/level_1/1.png", -5.f, 0.f, -10, true, 1.f, .0005f, 0.2f},
-        {"background/level_1/2.png", -15.f, 0.f, -9, true, 6.f, .007f, 1.2f},
-        {"background/level_1/3.png", -25.f, 0.f, -8, true, 6.f, .007f, 1.2f},
-        {"background/level_1/4.png", -35.f, 0.f, -7, true, 4.f, .005f, 1.5f},
-        {"background/level_1/5.png", -150.f, -20.f, 10, false, 0.f, 0.f, 0.f,
-            0.8f},
-        {"background/level_1/5.png", -130.f, -200.f, 11, false, 0.f, 0.f, 0.f,
-            0.6f}};
+        {"background/level_1/1.png", -5.f, 0.f, LAYER_BACKGROUND - 3, true,
+            1.f, .0005f, 0.2f},
+        {"background/level_1/2.png", -15.f, 0.f, LAYER_BACKGROUND - 2, true,
+            6.f, .007f, 1.2f},
+        {"background/level_1/3.png", -25.f, 0.f, LAYER_BACKGROUND - 1, true,
+            6.f, .007f, 1.2f},
+        {"background/level_1/4.png", -35.f, 0.f, LAYER_BACKGROUND, true, 4.f,
+            .005f, 1.5f},
+        {"background/level_1/5.png", -150.f, -20.f, LAYER_FOREGROUND, false,
+            0.f, 0.f, 0.f, 0.8f},
+        {"background/level_1/5.png", -130.f, -200.f, LAYER_FOREGROUND + 1,
+            false, 0.f, 0.f, 0.f, 0.6f}};
 
     // Initialize background entity
     for (const auto &background : background_list) {
@@ -53,8 +58,8 @@ void GameScene::InitPlayerLevel(Engine::registry &reg) {
     auto player_entity = CreateEntityInScene(reg);
     reg.AddComponent<Component::Transform>(player_entity,
         {-100.0f, 300.0f, 0.0f, 4.0f, Component::Transform::CENTER});
-    reg.AddComponent<Component::Drawable>(
-        player_entity, Component::Drawable{"original_rtype/players.png"});
+    reg.AddComponent<Component::Drawable>(player_entity,
+        Component::Drawable{"original_rtype/players.png", LAYER_PLAYER});
     Component::AnimatedSprite animated_sprite(34, 18, 2);
     animated_sprite.AddAnimation(
         "Hit", "original_rtype/players_hit.png", 34, 18, 2, 0.15f, false);
@@ -79,7 +84,8 @@ void GameScene::InitPlayerLevel(Engine::registry &reg) {
                                     Component::Transform::CENTER, {0.0f, 0.0f},
                                     player_entity.GetId()));
     reg.AddComponent<Component::Drawable>(player_charging_entity,
-        Component::Drawable{"original_rtype/r-typesheet1.gif", -1, 0.0f});
+        Component::Drawable{
+            "original_rtype/r-typesheet1.gif", LAYER_PLAYER - 1, 0.0f});
     reg.AddComponent<Component::AnimatedSprite>(
         player_charging_entity, Component::AnimatedSprite(33, 33, 0.1f, true,
                                     sf::Vector2f(0.0f, 50.0f), 8));
@@ -109,7 +115,7 @@ void GameScene::AddEnemyLevel(Engine::registry &reg, sf::Vector2f position) {
         enemy_entity, {position.x, position.y, 0.0f, {-3.0f, 3.0f},
                           Component::Transform::CENTER});
     reg.AddComponent<Component::Drawable>(
-        enemy_entity, Component::Drawable{"ennemies/4/Idle.png"});
+        enemy_entity, Component::Drawable{"ennemies/4/Idle.png", LAYER_ENEMY});
     Component::AnimatedSprite animated_sprite(
         48, 48, 0.2f, true, sf::Vector2f(0.0f, 0.0f), 4);
     animated_sprite.AddAnimation(
@@ -131,8 +137,7 @@ void GameScene::AddEnemyLevel(Engine::registry &reg, sf::Vector2f position) {
     Component::EnemyShootTag enemy_shoot_tag(
         Rtype::Client::MERMAID_SHOOT_COOLDOWN,
         Rtype::Client::MERMAID_PROJECTILE_SPEED,
-        Rtype::Client::MERMAID_PROJECTILE_DAMAGE,
-        Component::EnemyShootTag::STRAIGHT_LEFT, sf::Vector2f(-3.0f, -15.0f));
+        Rtype::Client::MERMAID_PROJECTILE_DAMAGE, sf::Vector2f(-3.0f, -15.0f));
 
     // Add frame event with custom action
     enemy_shoot_tag.AddFrameEvent("Attack", 5, [this, &reg](int entity_id) {
@@ -171,7 +176,7 @@ void GameScene::CreateEnemyProjectile(Engine::registry &reg,
                               std::abs(transform.scale.y)),
             0.0f, 3.0f, Component::Transform::CENTER});
     reg.AddComponent<Component::Drawable>(projectile_entity,
-        Component::Drawable("ennemies/4/Projectile.png", -1));
+        Component::Drawable("ennemies/4/Projectile.png", LAYER_PROJECTILE));
     reg.AddComponent<Component::Projectile>(projectile_entity,
         Component::Projectile{enemy_shoot.damage_projectile, direction,
             enemy_shoot.speed_projectile, ownerId, true});

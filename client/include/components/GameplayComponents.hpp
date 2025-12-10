@@ -32,11 +32,6 @@ struct EnemyShootTag {
     float speed_projectile = 200.0f;
     int damage_projectile = 10;
 
-    enum ShootType {
-        STRAIGHT_LEFT,
-        AIMED
-    } shoot_type = STRAIGHT_LEFT;
-
     sf::Vector2f offset_shoot_position = sf::Vector2f(0.0f, 0.0f);
 
     /**
@@ -70,12 +65,10 @@ struct EnemyShootTag {
     std::function<void(int entity_id)> cooldown_action = nullptr;
 
     explicit EnemyShootTag(float cooldown, float speed = 200.0f,
-        int damage = 10, ShootType type = STRAIGHT_LEFT,
-        sf::Vector2f offset = sf::Vector2f(0.0f, 0.0f))
+        int damage = 10, sf::Vector2f offset = sf::Vector2f(0.0f, 0.0f))
         : shoot_cooldown_max(cooldown),
           speed_projectile(speed),
           damage_projectile(damage),
-          shoot_type(type),
           offset_shoot_position(offset),
           cooldown_action(nullptr) {}
 

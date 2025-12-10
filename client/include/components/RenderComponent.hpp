@@ -360,6 +360,7 @@ struct ParticleEmitter {
     float emissionRadius = 0.f;            // rayon d'apparition des particules
     float start_size = 1.0f;               // taille de début des particules
     float end_size = 1.0f;                 // taille de fin des particules
+    int z_index = 0;                       // layer de rendu des particules
 
     bool emitting = true;  // Does the Particle emit particle
 
@@ -373,7 +374,8 @@ struct ParticleEmitter {
         float particleLifetime = 1.0f, float particleSpeed = 50.f,
         sf::Vector2f direction = {0.f, -1.f}, float spreadAngle = 30.f,
         float gravity = 0.f, float emissionRadius = 0.f,
-        float start_size = 1.0f, float end_size = 1.0f, float duration = -1.f)
+        float start_size = 1.0f, float end_size = 1.0f, float duration = -1.f,
+        int z_index = 0)
         : active(active),
           duration_active(duration),
           duration_past(0.0f),
@@ -389,7 +391,8 @@ struct ParticleEmitter {
           gravity(gravity),
           emissionRadius(emissionRadius),
           start_size(start_size),
-          end_size(end_size) {}
+          end_size(end_size),
+          z_index(z_index) {}
 };
 
 }  // namespace Rtype::Client::Component

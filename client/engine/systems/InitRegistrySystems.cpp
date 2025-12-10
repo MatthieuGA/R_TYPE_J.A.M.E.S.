@@ -36,14 +36,16 @@ void InitRenderSystems(Rtype::Client::GameWorld &game_world) {
         Eng::sparse_array<Com::AnimationDeath>>(DeathAnimationSystem);
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
         Eng::sparse_array<Com::Drawable>, Eng::sparse_array<Com::Shader>,
-        Eng::sparse_array<Com::AnimatedSprite>>(
+        Eng::sparse_array<Com::AnimatedSprite>,
+        Eng::sparse_array<Com::ParticleEmitter>>(
         [&game_world](Eng::registry &r,
             Eng::sparse_array<Com::Transform> const &transforms,
             Eng::sparse_array<Com::Drawable> &drawables,
             Eng::sparse_array<Com::Shader> &shaders,
-            Eng::sparse_array<Com::AnimatedSprite> const &animated_sprites) {
+            Eng::sparse_array<Com::AnimatedSprite> const &animated_sprites,
+            Eng::sparse_array<Com::ParticleEmitter> &emitters) {
             DrawableSystem(r, game_world, transforms, drawables, shaders,
-                animated_sprites);
+                animated_sprites, emitters);
         });
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
         Eng::sparse_array<Com::Text>>(
@@ -51,13 +53,6 @@ void InitRenderSystems(Rtype::Client::GameWorld &game_world) {
             Eng::sparse_array<Com::Transform> const &transforms,
             Eng::sparse_array<Com::Text> &texts) {
             DrawTextRenderSystem(r, game_world, transforms, texts);
-        });
-    game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
-        Eng::sparse_array<Com::ParticleEmitter>>(
-        [&game_world](Eng::registry &r,
-            Eng::sparse_array<Com::Transform> const &transforms,
-            Eng::sparse_array<Com::ParticleEmitter> &emitters) {
-            ParticleSystemEmitterSystem(r, game_world, transforms, emitters);
         });
 }
 

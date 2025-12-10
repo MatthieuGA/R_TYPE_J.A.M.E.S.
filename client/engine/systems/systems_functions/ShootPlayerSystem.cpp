@@ -3,6 +3,7 @@
 #include <SFML/Graphics.hpp>
 
 #include "engine/systems/InitRegistrySystems.hpp"
+#include "include/LayersConst.hpp"
 #include "include/PlayerConst.hpp"
 
 namespace Rtype::Client {
@@ -21,7 +22,8 @@ void createProjectile(Eng::registry &reg, float x, float y, int ownerId) {
     reg.AddComponent<Component::Transform>(projectile_entity,
         Component::Transform{x, y, 0.0f, 3.0f, Com::Transform::CENTER});
     reg.AddComponent<Component::Drawable>(projectile_entity,
-        Component::Drawable("original_rtype/r-typesheet2.gif", -1));
+        Component::Drawable(
+            "original_rtype/r-typesheet2.gif", LAYER_PROJECTILE));
     Component::AnimatedSprite animSprite(24, 32, 10);
     animSprite.AddAnimation("Death", "original_rtype/r-typesheet1.gif", 15, 15,
         2, 0.08f, false, sf::Vector2f(288.0f, 86.0f),
@@ -36,8 +38,8 @@ void createProjectile(Eng::registry &reg, float x, float y, int ownerId) {
     reg.AddComponent<Component::ParticleEmitter>(projectile_entity,
         Component::ParticleEmitter(300, 500, sf::Color(0, 198, 255, 255),
             sf::Color(0, 198, 255, 0), sf::Vector2f(0.f, 8.f), true, 0.3f,
-            50.f, sf::Vector2f(-1.f, 0.f), 45.f, 0.f, 12.0f, 4.0f, 1.5f,
-            -1.0f));
+            50.f, sf::Vector2f(-1.f, 0.f), 45.f, 0.f, 12.0f, 4.0f, 1.5f, -1.0f,
+            LAYER_PARTICLE));
 }
 
 /**
@@ -55,7 +57,8 @@ void createChargedProjectile(
     reg.AddComponent<Component::Transform>(projectile_entity,
         Component::Transform{x, y, 0.0f, 3.0f, Com::Transform::CENTER});
     reg.AddComponent<Component::Drawable>(projectile_entity,
-        Component::Drawable("original_rtype/r-typesheet1.gif", -1));
+        Component::Drawable(
+            "original_rtype/r-typesheet1.gif", LAYER_PROJECTILE));
     Component::AnimatedSprite animSprite(29, 22, 25);
     animSprite.AddAnimation("Death", "original_rtype/r-typesheet1.gif", 33, 31,
         6, 0.03f, false, sf::Vector2f(68.0f, 342.0f));
@@ -69,8 +72,8 @@ void createChargedProjectile(
     reg.AddComponent<Component::ParticleEmitter>(projectile_entity,
         Component::ParticleEmitter(300, 500, sf::Color(0, 198, 255, 255),
             sf::Color(0, 198, 255, 0), sf::Vector2f(0.f, 8.f), true, 0.4f,
-            75.f, sf::Vector2f(-1.f, 0.f), 55.f, 0.f, 20.0f, 6.0f, 2.0f,
-            -1.0f));
+            75.f, sf::Vector2f(-1.f, 0.f), 55.f, 0.f, 20.0f, 6.0f, 2.0f, -1.0f,
+            LAYER_PARTICLE));
 }
 
 /**
