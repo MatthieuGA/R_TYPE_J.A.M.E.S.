@@ -27,7 +27,9 @@ target_link_libraries(engine_tests
 # Ensure test target can find client headers (client/include and client/Engine)
 target_include_directories(engine_tests PRIVATE
     ${CMAKE_SOURCE_DIR}/client
+    ${CMAKE_SOURCE_DIR}/client/include
     ${CMAKE_SOURCE_DIR}/client/Engine
+    ${CMAKE_SOURCE_DIR}/client/network
 )
 
 # Compile client engine sources into the test executable so systems are available
@@ -35,9 +37,18 @@ file(GLOB_RECURSE CLIENT_ENGINE_SOURCES CONFIGURE_DEPENDS
     "${CMAKE_SOURCE_DIR}/client/engine/*.cpp"
     "${CMAKE_SOURCE_DIR}/client/game/*.cpp"
 )
+
 if (CLIENT_ENGINE_SOURCES)
     target_sources(engine_tests PRIVATE ${CLIENT_ENGINE_SOURCES})
 endif()
+
+# Add client Network implementation for network tests
+target_sources(engine_tests PRIVATE
+    ${CMAKE_SOURCE_DIR}/client/network/Network.cpp
+)
+
+# Add Boost for network tests
+target_link_libraries(engine_tests PRIVATE Boost::system)
 
 # Discover tests for CTest
 gtest_discover_tests(engine_tests)
