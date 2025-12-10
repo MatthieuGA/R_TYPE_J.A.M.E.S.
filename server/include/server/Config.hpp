@@ -11,22 +11,63 @@ constexpr uint8_t DEFAULT_MAX_PLAYERS = 4;
 
 class Config {
  public:
+    /**
+     * @brief Get the singleton Config instance initialized from command line
+     * arguments
+     *
+     * @param argc Argument count
+     * @param argv Argument values
+     * @return Config& Reference to the singleton configuration
+     */
     static Config &FromCommandLine(int argc, char *argv[]);
 
+    /**
+     * @brief Parse command line arguments into a new Config object
+     *
+     * Useful for testing without modifying the singleton state.
+     *
+     * @param argc Argument count
+     * @param argv Argument values
+     * @return Config Parsed configuration object
+     */
     static Config Parse(int argc, char *argv[]);
 
+    /**
+     * @brief Get the configured TCP port
+     * @return uint16_t TCP port number
+     */
     uint16_t GetTcpPort() const {
         return tcpPort_;
     }
 
+    /**
+     * @brief Get the configured UDP port
+     * @return uint16_t UDP port number
+     */
     uint16_t GetUdpPort() const {
         return udpPort_;
     }
 
+    /**
+     * @brief Get the maximum number of allowed players
+     * @return uint8_t Max players (1-255)
+     */
+    uint8_t GetMaxPlayers() const {
+        return maxPlayers_;
+    }
+
+    /**
+     * @brief Get the TCP bind address
+     * @return const std::string& IP address string
+     */
     const std::string &GetTcpAddress() const {
         return tcpAddress_;
     }
 
+    /**
+     * @brief Get the UDP bind address
+     * @return const std::string& IP address string
+     */
     const std::string &GetUdpAddress() const {
         return udpAddress_;
     }
