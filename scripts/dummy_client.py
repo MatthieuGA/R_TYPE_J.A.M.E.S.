@@ -55,11 +55,14 @@ class DummyClient:
             # Send CONNECT_REQ packet
             self._send_connect_req()
             
-            # Wait for CONNECT_ACK
+            # Wait for CONNECT_ACK (connection stays open regardless of status)
             return self._receive_connect_ack()
             
         except Exception as e:
             print(f"[Client {self.client_id}] Connection failed: {e}")
+            if self.sock:
+                self.sock.close()
+                self.sock = None
             return False
     
     def _send_connect_req(self):
@@ -137,6 +140,7 @@ class DummyClient:
                 return True
             else:
                 print(f"[Client {self.client_id}] Connection rejected: {status_str}")
+                print(f"[Client {self.client_id}] Staying connected (can retry later)")
                 return False
                 
         except Exception as e:
@@ -212,10 +216,10 @@ def main():
     # Ask user how many clients
     while True:
         try:
-            num_clients = int(input("How many clients do you want to spawn? (1-255): "))
-            if 1 <= num_clients <= 255:
+            num_clients = int(input("How many clients do you want to spawn? (min 1): "))
+            if 1 <= num_clients:
                 break
-            print("Please enter a number between 1 and 255")
+            print("Please enter a number greater than or equal to 1")
         except ValueError:
             print("Invalid input, please enter a number")
     
@@ -227,10 +231,18 @@ def main():
             break
         print("Please answer 'y' or 'n'")
     
+    # Ask if there should be a delay between clients
+    while True:
+        delay_input = input("Wait 1 second between each client connection? (y/n): ").lower().strip()
+        if delay_input in ['y', 'n', 'yes', 'no']:
+            use_delay = delay_input in ['y', 'yes']
+            break
+        print("Please answer 'y' or 'n'")
+    
     print()
     print(f"Spawning {num_clients} client(s)...")
     print(f"Ready status: {'Will send READY' if send_ready else 'Will NOT send ready'}")
-    print(f"Delay between clients: 1 second")
+    print(f"Delay between clients: {'1 second' if use_delay else 'None (immediate)'}")
     print()
     
     clients = []
@@ -240,18 +252,21 @@ def main():
         for i in range(1, num_clients + 1):
             client = DummyClient(i, host, port)
             
-            if client.connect():
+            success = client.connect()
+            
+            # Add to clients list if TCP connection succeeded (regardless of auth status)
+            if client.sock:
                 clients.append(client)
                 
-                # Send ready status if requested
-                if send_ready:
+                # Send ready status only if authenticated and requested
+                if success and send_ready:
                     time.sleep(0.5)  # Small delay before sending ready
                     client.send_ready_status(is_ready=True)
             else:
-                print(f"[Client {i}] Failed to connect, continuing with next client...")
+                print(f"[Client {i}] Failed to establish TCP connection, skipping...")
             
             # Wait 1 second before spawning next client (except for the last one)
-            if i < num_clients:
+            if use_delay and i < num_clients:
                 time.sleep(1)
         
         print()
