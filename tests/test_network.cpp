@@ -15,6 +15,7 @@
 #include <array>
 #include <chrono>
 #include <cstring>
+#include <memory>
 #include <string>
 #include <thread>
 #include <vector>
@@ -193,27 +194,33 @@ TEST(NetworkTest, DisconnectBeforeConnectDoesNotThrow) {
 
 TEST(NetworkTest, ConnectToServerSendsConnectReqPacket) {
     boost::asio::io_context io;
-    bool connect_req_received = false;
-    std::vector<uint8_t> received_data(
+    auto connect_req_received = std::make_shared<bool>(false);
+    auto received_data = std::make_shared<std::vector<uint8_t>>(
         44);  // 12-byte header + 32-byte username
 
     MockTcpServer server(io, 4242);
-    server.AsyncAccept([&](boost::system::error_code ec) {
+    server.AsyncAccept([&, connect_req_received, received_data](
+                           boost::system::error_code ec) {
+        if (ec)
+            return;
         EXPECT_FALSE(ec);
         server.AsyncRead(
-            received_data, [&](boost::system::error_code ec, size_t bytes) {
+            *received_data, [connect_req_received, received_data](
+                                boost::system::error_code ec, size_t bytes) {
+                if (ec)
+                    return;
                 EXPECT_FALSE(ec);
                 EXPECT_EQ(bytes, 44);
                 // Verify OpCode 0x01 (CONNECT_REQ)
-                EXPECT_EQ(received_data[0], 0x01);
+                EXPECT_EQ((*received_data)[0], 0x01);
                 // Verify payload_size = 32
-                EXPECT_EQ(received_data[1], 32);
-                EXPECT_EQ(received_data[2], 0);
+                EXPECT_EQ((*received_data)[1], 32);
+                EXPECT_EQ((*received_data)[2], 0);
                 // Verify username
                 std::string username(
-                    received_data.begin() + 12, received_data.begin() + 44);
+                    received_data->begin() + 12, received_data->begin() + 44);
                 EXPECT_TRUE(username.find("TestUser") != std::string::npos);
-                connect_req_received = true;
+                *connect_req_received = true;
             });
     });
 
@@ -223,25 +230,34 @@ TEST(NetworkTest, ConnectToServerSendsConnectReqPacket) {
     // Run io_context for a short time
     io.run_for(100ms);
 
-    EXPECT_TRUE(connect_req_received);
+    EXPECT_TRUE(*connect_req_received);
 }
 
 TEST(NetworkTest, ConnectAckWithStatusOkSetsConnected) {
     boost::asio::io_context io;
-    bool connection_complete = false;
+    auto connection_complete = std::make_shared<bool>(false);
 
     MockTcpServer server(io, 4244);
-    server.AsyncAccept([&](boost::system::error_code ec) {
+    server.AsyncAccept([&, connection_complete](boost::system::error_code ec) {
+        if (ec)
+            return;
         EXPECT_FALSE(ec);
-        std::vector<uint8_t> req(44);
-        server.AsyncRead(req, [&](boost::system::error_code ec, size_t) {
+        auto req = std::make_shared<std::vector<uint8_t>>(44);
+        server.AsyncRead(*req, [&, connection_complete, req](
+                                   boost::system::error_code ec, size_t) {
+            if (ec)
+                return;
             EXPECT_FALSE(ec);
             // Send CONNECT_ACK with PlayerId=5, Status=0 (OK)
-            auto ack = BuildConnectAckPacket(5, 0);
-            server.AsyncWrite(ack, [&](boost::system::error_code ec) {
-                EXPECT_FALSE(ec);
-                connection_complete = true;
-            });
+            auto ack = std::make_shared<std::vector<uint8_t>>(
+                BuildConnectAckPacket(5, 0));
+            server.AsyncWrite(*ack,
+                [connection_complete, ack](boost::system::error_code ec) {
+                    if (ec)
+                        return;
+                    EXPECT_FALSE(ec);
+                    *connection_complete = true;
+                });
         });
     });
 
@@ -250,7 +266,7 @@ TEST(NetworkTest, ConnectAckWithStatusOkSetsConnected) {
 
     io.run_for(200ms);
 
-    EXPECT_TRUE(connection_complete);
+    EXPECT_TRUE(*connection_complete);
     EXPECT_TRUE(net.is_connected());
     EXPECT_EQ(net.player_id(), 5);
 }
@@ -260,11 +276,16 @@ TEST(NetworkTest, ConnectAckWithStatusFailureDisconnects) {
 
     MockTcpServer server(io, 4245);
     server.AsyncAccept([&](boost::system::error_code ec) {
-        std::vector<uint8_t> req(44);
-        server.AsyncRead(req, [&](boost::system::error_code ec, size_t) {
+        if (ec)
+            return;
+        auto req = std::make_shared<std::vector<uint8_t>>(44);
+        server.AsyncRead(*req, [&, req](boost::system::error_code ec, size_t) {
+            if (ec)
+                return;
             // Send CONNECT_ACK with Status=1 (ServerFull)
-            auto ack = BuildConnectAckPacket(0, 1);
-            server.AsyncWrite(ack, [](boost::system::error_code) {});
+            auto ack = std::make_shared<std::vector<uint8_t>>(
+                BuildConnectAckPacket(0, 1));
+            server.AsyncWrite(*ack, [ack](boost::system::error_code) {});
         });
     });
 
@@ -290,44 +311,53 @@ TEST(NetworkTest, SendInputWhenNotConnectedDoesNothing) {
 
 TEST(NetworkTest, SendInputWhenConnectedSendsUdpPacket) {
     boost::asio::io_context io;
-    bool input_received = false;
-    std::array<uint8_t, 1500> udp_buffer{};
+    auto input_received = std::make_shared<bool>(false);
+    auto udp_buffer = std::make_shared<std::array<uint8_t, 1500>>();
     boost::asio::ip::udp::endpoint client_endpoint;
 
     MockUdpServer udp_server(io, 4247);
-    udp_server.AsyncReceiveFrom(udp_buffer, client_endpoint,
-        [&](boost::system::error_code ec, size_t bytes) {
+    udp_server.AsyncReceiveFrom(*udp_buffer, client_endpoint,
+        [input_received, udp_buffer](
+            boost::system::error_code ec, size_t bytes) {
+            if (ec)
+                return;
             EXPECT_FALSE(ec);
             EXPECT_GE(bytes, 16);  // 12-byte header + 4-byte payload
             // Verify OpCode 0x10 (PLAYER_INPUT)
-            EXPECT_EQ(udp_buffer[0], 0x10);
+            EXPECT_EQ((*udp_buffer)[0], 0x10);
             // Verify payload_size = 4
-            EXPECT_EQ(udp_buffer[1], 4);
+            EXPECT_EQ((*udp_buffer)[1], 4);
             // Verify input_flags
-            EXPECT_EQ(udp_buffer[12], 0x42);  // input_flags
-            input_received = true;
+            EXPECT_EQ((*udp_buffer)[12], 0x42);  // input_flags
+            *input_received = true;
         });
 
     // Simulate connection by creating a connected network
     MockTcpServer tcp_server(io, 4248);
     tcp_server.AsyncAccept([&](boost::system::error_code ec) {
-        std::vector<uint8_t> req(44);
-        tcp_server.AsyncRead(req, [&](boost::system::error_code ec, size_t) {
-            auto ack = BuildConnectAckPacket(1, 0);
-            tcp_server.AsyncWrite(ack, [](boost::system::error_code) {});
+        if (ec)
+            return;
+        auto req = std::make_shared<std::vector<uint8_t>>(44);
+        tcp_server.AsyncRead(*req, [&, req](
+                                       boost::system::error_code ec, size_t) {
+            if (ec)
+                return;
+            auto ack = std::make_shared<std::vector<uint8_t>>(
+                BuildConnectAckPacket(1, 0));
+            tcp_server.AsyncWrite(*ack, [ack](boost::system::error_code) {});
         });
     });
 
     client::ServerConnection net(io, "127.0.0.1", 4248, 4247);
     net.ConnectToServer("Player");
 
-    io.run_for(100ms);  // Wait for connection
+    io.run_for(200ms);  // Wait for connection
     io.restart();
 
     net.SendInput(0x42);
     io.run_for(100ms);
 
-    EXPECT_TRUE(input_received);
+    EXPECT_TRUE(*input_received);
 }
 
 // ============================================================================
@@ -436,10 +466,15 @@ TEST(NetworkTest, DisconnectClearsConnectionState) {
 
     MockTcpServer server(io, 4251);
     server.AsyncAccept([&](boost::system::error_code ec) {
-        std::vector<uint8_t> req(44);
-        server.AsyncRead(req, [&](boost::system::error_code ec, size_t) {
-            auto ack = BuildConnectAckPacket(10, 0);
-            server.AsyncWrite(ack, [](boost::system::error_code) {});
+        if (ec)
+            return;
+        auto req = std::make_shared<std::vector<uint8_t>>(44);
+        server.AsyncRead(*req, [&, req](boost::system::error_code ec, size_t) {
+            if (ec)
+                return;
+            auto ack = std::make_shared<std::vector<uint8_t>>(
+                BuildConnectAckPacket(10, 0));
+            server.AsyncWrite(*ack, [ack](boost::system::error_code) {});
         });
     });
 
@@ -476,11 +511,17 @@ TEST(NetworkTest, MalformedConnectAckIsHandledGracefully) {
 
     MockTcpServer server(io, 4252);
     server.AsyncAccept([&](boost::system::error_code ec) {
-        std::vector<uint8_t> req(44);
-        server.AsyncRead(req, [&](boost::system::error_code ec, size_t) {
+        if (ec)
+            return;
+        auto req = std::make_shared<std::vector<uint8_t>>(44);
+        server.AsyncRead(*req, [&, req](boost::system::error_code ec, size_t) {
+            if (ec)
+                return;
             // Send malformed packet (too short)
-            std::vector<uint8_t> bad_ack = {0x02, 0x01};
-            server.AsyncWrite(bad_ack, [](boost::system::error_code) {});
+            auto bad_ack = std::make_shared<std::vector<uint8_t>>(
+                std::vector<uint8_t>{0x02, 0x01});
+            server.AsyncWrite(
+                *bad_ack, [bad_ack](boost::system::error_code) {});
         });
     });
 
@@ -499,17 +540,22 @@ TEST(NetworkTest, MalformedConnectAckIsHandledGracefully) {
 TEST(NetworkTest, LongUsernameIsTruncatedTo32Bytes) {
     boost::asio::io_context io;
     std::string long_username(100, 'X');
-    std::vector<uint8_t> received_data(44);
+    auto received_data = std::make_shared<std::vector<uint8_t>>(44);
 
     MockTcpServer server(io, 4253);
-    server.AsyncAccept([&](boost::system::error_code ec) {
-        server.AsyncRead(
-            received_data, [&](boost::system::error_code ec, size_t bytes) {
+    server.AsyncAccept([&, received_data](boost::system::error_code ec) {
+        if (ec)
+            return;
+        server.AsyncRead(*received_data,
+            [received_data](boost::system::error_code ec, size_t bytes) {
+                if (ec)
+                    return;
                 EXPECT_EQ(bytes, 44);
                 // Username should be truncated to 32 bytes
                 bool all_x = true;
                 for (size_t i = 12; i < 44; ++i) {
-                    if (received_data[i] != 'X' && received_data[i] != '\0') {
+                    if ((*received_data)[i] != 'X' &&
+                        (*received_data)[i] != '\0') {
                         all_x = false;
                     }
                 }
@@ -521,22 +567,27 @@ TEST(NetworkTest, LongUsernameIsTruncatedTo32Bytes) {
     net.ConnectToServer(long_username);
 
     io.run_for(100ms);
+    io.poll();  // Ensure cleanup
 }
 
 TEST(NetworkTest, ShortUsernameIsPaddedWithNulls) {
     boost::asio::io_context io;
-    std::vector<uint8_t> received_data(44);
+    auto received_data = std::make_shared<std::vector<uint8_t>>(44);
 
     MockTcpServer server(io, 4254);
-    server.AsyncAccept([&](boost::system::error_code ec) {
-        server.AsyncRead(
-            received_data, [&](boost::system::error_code ec, size_t bytes) {
+    server.AsyncAccept([&, received_data](boost::system::error_code ec) {
+        if (ec)
+            return;
+        server.AsyncRead(*received_data,
+            [received_data](boost::system::error_code ec, size_t bytes) {
+                if (ec)
+                    return;
                 EXPECT_EQ(bytes, 44);
                 // Check that "Hi" is at the start
-                EXPECT_EQ(received_data[12], 'H');
-                EXPECT_EQ(received_data[13], 'i');
+                EXPECT_EQ((*received_data)[12], 'H');
+                EXPECT_EQ((*received_data)[13], 'i');
                 // Rest should be null-padded
-                EXPECT_EQ(received_data[14], '\0');
+                EXPECT_EQ((*received_data)[14], '\0');
             });
     });
 
@@ -544,4 +595,5 @@ TEST(NetworkTest, ShortUsernameIsPaddedWithNulls) {
     net.ConnectToServer("Hi");
 
     io.run_for(100ms);
+    io.poll();  // Ensure cleanup
 }
