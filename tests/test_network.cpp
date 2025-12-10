@@ -201,14 +201,10 @@ TEST(NetworkTest, ConnectToServerSendsConnectReqPacket) {
     MockTcpServer server(io, 4242);
     server.AsyncAccept([&, connect_req_received, received_data](
                            boost::system::error_code ec) {
-        if (ec)
-            return;
         EXPECT_FALSE(ec);
         server.AsyncRead(
             *received_data, [connect_req_received, received_data](
                                 boost::system::error_code ec, size_t bytes) {
-                if (ec)
-                    return;
                 EXPECT_FALSE(ec);
                 EXPECT_EQ(bytes, 44);
                 // Verify OpCode 0x01 (CONNECT_REQ)
@@ -239,22 +235,16 @@ TEST(NetworkTest, ConnectAckWithStatusOkSetsConnected) {
 
     MockTcpServer server(io, 4244);
     server.AsyncAccept([&, connection_complete](boost::system::error_code ec) {
-        if (ec)
-            return;
         EXPECT_FALSE(ec);
         auto req = std::make_shared<std::vector<uint8_t>>(44);
         server.AsyncRead(*req, [&, connection_complete, req](
                                    boost::system::error_code ec, size_t) {
-            if (ec)
-                return;
             EXPECT_FALSE(ec);
             // Send CONNECT_ACK with PlayerId=5, Status=0 (OK)
             auto ack = std::make_shared<std::vector<uint8_t>>(
                 BuildConnectAckPacket(5, 0));
             server.AsyncWrite(*ack,
                 [connection_complete, ack](boost::system::error_code ec) {
-                    if (ec)
-                        return;
                     EXPECT_FALSE(ec);
                     *connection_complete = true;
                 });
@@ -319,8 +309,6 @@ TEST(NetworkTest, SendInputWhenConnectedSendsUdpPacket) {
     udp_server.AsyncReceiveFrom(*udp_buffer, client_endpoint,
         [input_received, udp_buffer](
             boost::system::error_code ec, size_t bytes) {
-            if (ec)
-                return;
             EXPECT_FALSE(ec);
             EXPECT_GE(bytes, 16);  // 12-byte header + 4-byte payload
             // Verify OpCode 0x10 (PLAYER_INPUT)
