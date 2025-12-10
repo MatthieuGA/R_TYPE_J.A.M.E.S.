@@ -234,8 +234,8 @@ void Server::HandleConnectReq(boost::asio::ip::tcp::socket &socket,
     // Transfer ownership to clients_ map
     clients_.emplace(player_id, std::move(connection));
 
-    // Start monitoring for disconnect
-    MonitorClientDisconnect(player_id);
+    // Start handling incoming messages and monitoring for disconnect
+    HandleClientMessages(player_id);
 }
 
 void Server::SendConnectAck(boost::asio::ip::tcp::socket &socket,
@@ -315,14 +315,14 @@ bool Server::IsUsernameTaken(const std::string &username) const {
         });
 }
 
-void Server::MonitorClientDisconnect(uint8_t player_id) {
+void Server::HandleClientMessages(uint8_t player_id) {
     auto it = clients_.find(player_id);
     if (it == clients_.end()) {
         return;  // Client already disconnected
     }
 
-    // Allocate a small buffer for detecting socket closure
-    auto buffer = std::make_shared<std::vector<uint8_t>>(1);
+    // Allocate buffer for receiving TCP messages
+    auto buffer = std::make_shared<std::vector<uint8_t>>(1024);
 
     // Start async read - any data or EOF will trigger the callback
     it->second.tcp_socket_.async_receive(boost::asio::buffer(*buffer),
@@ -334,14 +334,15 @@ void Server::MonitorClientDisconnect(uint8_t player_id) {
                           << " disconnected: " << ec.message() << std::endl;
                 RemoveClient(player_id);
             } else if (bytes_read > 0) {
-                // Received unexpected data - for now, just continue monitoring
-                // In a full implementation, this would handle ongoing messages
+                // Received TCP message from client
                 std::cout << "Received " << bytes_read << " bytes from client "
-                          << static_cast<int>(player_id)
-                          << " (unexpected during lobby)" << std::endl;
-                // Check if client still exists before continuing monitoring
+                          << static_cast<int>(player_id) << std::endl;
+                // TODO: Process incoming TCP packets here
+                // (e.g., lobby commands, chat messages, disconnect requests)
+
+                // Continue handling messages if client still connected
                 if (clients_.find(player_id) != clients_.end()) {
-                    MonitorClientDisconnect(player_id);
+                    HandleClientMessages(player_id);
                 }
             } else {
                 // EOF without error - client disconnected gracefully

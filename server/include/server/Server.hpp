@@ -181,14 +181,15 @@ class Server {
     void RemoveClient(uint8_t player_id);
 
     /**
-     * @brief Monitor client socket for disconnection
+     * @brief Handle incoming TCP messages and monitor for disconnection
      *
-     * Starts async read to detect when client closes connection.
+     * Starts async read to receive TCP packets from the client.
+     * Processes incoming messages and detects disconnections.
      * Automatically removes client from clients_ map on disconnect.
      *
-     * @param player_id ID of client to monitor
+     * @param player_id ID of client to handle
      */
-    void MonitorClientDisconnect(uint8_t player_id);
+    void HandleClientMessages(uint8_t player_id);
 
     /**
      * @brief Check if username is already taken
