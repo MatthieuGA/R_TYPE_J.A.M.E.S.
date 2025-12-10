@@ -164,8 +164,9 @@ uint8_t ClientConnectionManager::AssignPlayerId() {
         }
 
         id = next_player_id_++;
-        if (next_player_id_ == 0)
+        if (next_player_id_ == 0) {
             next_player_id_ = 1;
+        }
         attempts++;
     }
 

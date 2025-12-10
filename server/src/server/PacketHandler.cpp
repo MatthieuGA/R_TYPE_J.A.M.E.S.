@@ -59,8 +59,9 @@ void PacketHandler::StartReceiving(uint32_t client_id) {
 }
 
 void PacketHandler::HandleClientMessages(uint32_t client_id) {
-    if (!connection_manager_.HasClient(client_id))
+    if (!connection_manager_.HasClient(client_id)) {
         return;  // Client already disconnected
+    }
 
     ClientConnection &client = connection_manager_.GetClient(client_id);
     boost::asio::ip::tcp::socket &socket = client.tcp_socket_;
@@ -79,8 +80,9 @@ void PacketHandler::HandleClientMessages(uint32_t client_id) {
                 connection_manager_.RemoveClient(client_id);
             } else if (bytes_read > 0) {
                 // Update last activity timestamp
-                if (!connection_manager_.HasClient(client_id))
+                if (!connection_manager_.HasClient(client_id)) {
                     return;  // Client was removed
+                }
 
                 ClientConnection &client =
                     connection_manager_.GetClient(client_id);
@@ -94,8 +96,9 @@ void PacketHandler::HandleClientMessages(uint32_t client_id) {
                 Dispatch(client_id, result);
 
                 // Continue handling messages if connection still exists
-                if (connection_manager_.HasClient(client_id))
+                if (connection_manager_.HasClient(client_id)) {
                     HandleClientMessages(client_id);
+                }
             } else {
                 // EOF without error - client disconnected gracefully
                 std::cout << "Client " << client_id
@@ -238,8 +241,9 @@ void PacketHandler::HandleDisconnectReq(
 std::string PacketHandler::Trim(
     const std::string &str, const std::string &whitespace) {
     const auto strBegin = str.find_first_not_of(whitespace);
-    if (strBegin == std::string::npos)
+    if (strBegin == std::string::npos) {
         return "";  // no content
+    }
 
     const auto strEnd = str.find_last_not_of(whitespace);
     const auto strRange = strEnd - strBegin + 1;
