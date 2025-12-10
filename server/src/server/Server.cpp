@@ -32,6 +32,7 @@ Server::Server(Config &config, boost::asio::io_context &io_context)
       registry_(),
       tick_timer_(io_context),
       running_(false),
+      max_clients_(config.GetMaxPlayers()),
       next_player_id_(1) {}
 
 Server::~Server() {
@@ -51,7 +52,7 @@ void Server::Initialize() {
 
     std::cout << "Server initialized successfully" << std::endl;
     std::cout << "Ready to accept TCP connections (max "
-              << static_cast<int>(MAX_CLIENTS) << " players)" << std::endl;
+              << static_cast<int>(max_clients_) << " players)" << std::endl;
 }
 
 void Server::RegisterComponents() {
@@ -204,9 +205,10 @@ void Server::HandleConnectReq(boost::asio::ip::tcp::socket &socket,
     }
 
     // Validation: Server full
-    if (clients_.size() >= MAX_CLIENTS) {
+    if (clients_.size() >= max_clients_) {
         std::cerr << "Rejected: Server full (" << clients_.size() << "/"
-                  << static_cast<int>(MAX_CLIENTS) << " players)" << std::endl;
+                  << static_cast<int>(max_clients_) << " players)"
+                  << std::endl;
         // Keep socket alive for async_send via shared_ptr
         auto socket_ptr =
             std::make_shared<boost::asio::ip::tcp::socket>(std::move(socket));
