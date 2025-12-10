@@ -9,6 +9,7 @@ file(GLOB_RECURSE R_TYPE_TEST_SOURCES CONFIGURE_DEPENDS
 # Exclude server-specific tests (compiled separately with server sources/includes)
 list(REMOVE_ITEM R_TYPE_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/test_server.cpp")
 list(REMOVE_ITEM R_TYPE_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/test_packets.cpp")
+list(REMOVE_ITEM R_TYPE_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/test_config.cpp")
 
 if (R_TYPE_TEST_SOURCES)
     add_executable(engine_tests ${R_TYPE_TEST_SOURCES})
@@ -46,6 +47,7 @@ gtest_discover_tests(engine_tests)
 add_executable(server_tests
     test_server.cpp
     test_packets.cpp
+    test_config.cpp
     ${CMAKE_SOURCE_DIR}/server/src/server/Server.cpp
     ${CMAKE_SOURCE_DIR}/server/src/server/Config.cpp
     ${CMAKE_SOURCE_DIR}/server/src/server/Network.cpp
