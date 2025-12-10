@@ -1,9 +1,12 @@
 add_executable(r-type_server)
 target_sources(r-type_server PRIVATE
     main.cpp
+    src/server/ClientConnectionManager.cpp
     src/server/Config.cpp
     src/server/Network.cpp
+    src/server/PacketDispatcher.cpp
     src/server/Server.cpp
+    src/server/ServerMessenger.cpp
 )
 
 # Include directories
