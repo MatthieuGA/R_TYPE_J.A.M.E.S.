@@ -63,7 +63,7 @@ void GameScene::InitPlayerLevel(Engine::registry &reg) {
         Component::Drawable{"original_rtype/players.png", LAYER_PLAYER});
     Component::AnimatedSprite animated_sprite(34, 18, 2);
     animated_sprite.AddAnimation(
-        "Hit", "original_rtype/players_hit.png", 34, 18, 2, 0.15f, false);
+        "Hit", "original_rtype/players_hit.png", 34, 18, 2, 0.25f, false);
     animated_sprite.AddAnimation("Death", "original_rtype/players_death.png",
         36, 35, 6, 0.05f, false, sf::Vector2f(0.0f, 0.0f),
         sf::Vector2f(0.0f, -10.0f));
@@ -88,6 +88,8 @@ void GameScene::InitPlayerLevel(Engine::registry &reg) {
         LAYER_PLAYER - 2);
     reg.AddComponent<Component::ParticleEmitter>(
         player_entity, std::move(emit_reactor));
+    reg.AddComponent<Component::HealthBar>(
+        player_entity, Component::HealthBar{sf::Vector2f(0.0f, 10.f)});
 
     auto player_charging_entity = CreateEntityInScene(reg);
     reg.AddComponent<Component::Transform>(
@@ -150,6 +152,8 @@ void GameScene::AddEnemyLevel(
     reg.AddComponent<Component::Velocity>(enemy_entity, Component::Velocity{});
     reg.AddComponent<Component::PatternMovement>(enemy_entity,
         Component::PatternMovement(Rtype::Client::MERMAID_SPEED));
+    reg.AddComponent<Component::HealthBar>(
+        enemy_entity, Component::HealthBar{sf::Vector2f(8.0f, 27.f)});
 
     Component::EnemyShootTag enemy_shoot_tag(
         Rtype::Client::MERMAID_PROJECTILE_SPEED,

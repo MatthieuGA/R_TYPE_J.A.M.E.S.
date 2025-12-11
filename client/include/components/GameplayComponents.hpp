@@ -268,4 +268,21 @@ struct PatternMovement {
     size_t targetEntityId = 0;  // Entity ID of the target to follow
 };
 
+struct HealthBar {
+    sf::Vector2f offset = {0.f, -10.f};
+    float percent = 100.f;
+    float percent_delay = 100.f;
+    bool is_taking_damage = false;
+
+    float timer_damage = 0.f;
+
+    sf::Sprite green_bar;
+    sf::Sprite yellow_bar;
+    sf::Sprite foreground_bar;
+    sf::Texture green_texture;
+    sf::Texture yellow_texture;
+    sf::Texture foreground_texture;
+    bool is_loaded = false;
+};
+
 }  // namespace Rtype::Client::Component

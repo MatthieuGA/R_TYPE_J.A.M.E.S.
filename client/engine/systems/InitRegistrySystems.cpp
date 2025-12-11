@@ -63,6 +63,16 @@ void InitRenderSystems(Rtype::Client::GameWorld &game_world) {
             Eng::sparse_array<Com::Text> &texts) {
             DrawTextRenderSystem(r, game_world, transforms, texts);
         });
+
+    // Health bar system
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
+        Eng::sparse_array<Com::HealthBar>, Eng::sparse_array<Com::Health>>(
+        [&game_world](Eng::registry &r,
+            Eng::sparse_array<Com::Transform> const &transforms,
+            Eng::sparse_array<Com::HealthBar> &health_bars,
+            Eng::sparse_array<Com::Health> const &healths) {
+            HealthBarSystem(r, game_world, transforms, health_bars, healths);
+        });
 }
 
 /**
@@ -251,7 +261,8 @@ void InitGameplaySystems(Rtype::Client::GameWorld &game_world) {
 
     // Health deduction system
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Health>,
-        Eng::sparse_array<Com::EnemyTag>, Eng::sparse_array<Com::PlayerTag>,
+        Eng::sparse_array<Com::HealthBar>, Eng::sparse_array<Com::EnemyTag>,
+        Eng::sparse_array<Com::PlayerTag>,
         Eng::sparse_array<Com::AnimatedSprite>, Eng::sparse_array<Com::HitBox>,
         Eng::sparse_array<Com::Transform>, Eng::sparse_array<Com::Projectile>>(
         HealthDeductionSystem);

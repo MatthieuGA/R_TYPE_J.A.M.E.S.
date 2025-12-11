@@ -116,6 +116,7 @@ void ButtonClickSystem(Eng::registry &reg, GameWorld &game_world,
 
 void HealthDeductionSystem(Eng::registry &reg,
     Eng::sparse_array<Com::Health> &healths,
+    Eng::sparse_array<Com::HealthBar> &health_bars,
     Eng::sparse_array<Com::EnemyTag> const &enemyTags,
     Eng::sparse_array<Com::PlayerTag> const &playerTags,
     Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
@@ -143,4 +144,9 @@ void PaternMovementSystem(Eng::registry &reg, const float dt,
     Eng::sparse_array<Com::Transform> &transforms,
     Eng::sparse_array<Com::Velocity> &velocities,
     Eng::sparse_array<Com::PatternMovement> &patern_movements);
+
+void HealthBarSystem(Eng::registry &reg, GameWorld &game_world,
+    Eng::sparse_array<Com::Transform> const &transforms,
+    Eng::sparse_array<Com::HealthBar> &health_bars,
+    Eng::sparse_array<Com::Health> const &healths);
 }  // namespace Rtype::Client

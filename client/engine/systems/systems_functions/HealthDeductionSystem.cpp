@@ -34,10 +34,16 @@ void DeathHandling(Eng::registry &reg,
 }
 
 void HandleCollision(Eng::registry &reg, Component::Health &health,
+    Eng::sparse_array<Component::HealthBar> &health_bars,
     Eng::sparse_array<Component::AnimatedSprite> &animated_sprites,
     std::size_t i, Engine::entity projEntity, std::size_t j,
     const Component::Projectile &projectile) {
     health.currentHealth -= projectile.damage;
+    if (health_bars.has(i)) {
+        auto &bar = health_bars[i];
+        bar->timer_damage = 0.0f;
+    }
+
     if (animated_sprites.has(i)) {
         auto &animSprite = animated_sprites[i];
         animSprite->SetCurrentAnimation("Hit", true);
@@ -74,6 +80,7 @@ void HandleCollision(Eng::registry &reg, Component::Health &health,
  */
 void HealthDeductionSystem(Eng::registry &reg,
     Eng::sparse_array<Component::Health> &healths,
+    Eng::sparse_array<Component::HealthBar> &health_bars,
     Eng::sparse_array<Component::EnemyTag> const &enemyTags,
     Eng::sparse_array<Component::PlayerTag> const &playerTags,
     Eng::sparse_array<Component::AnimatedSprite> &animated_sprites,
@@ -96,8 +103,8 @@ void HealthDeductionSystem(Eng::registry &reg,
             // Simple AABB collision detection
             if (IsColliding(transform, hitBox, projTransform, projHitBox)) {
                 // Collision detected, deduct health
-                HandleCollision(reg, health, animated_sprites, i, projEntity,
-                    j, projectile);
+                HandleCollision(reg, health, health_bars, animated_sprites, i,
+                    projEntity, j, projectile);
             }
         }
 
