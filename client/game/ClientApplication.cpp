@@ -6,6 +6,8 @@
 
 #include "game/InitRegistry.hpp"
 #include "game/scenes_management/InitScenes.hpp"
+#include "include/components/ScenesComponents.hpp"
+#include "include/indexed_zipper.hpp"
 
 namespace Rtype::Client {
 
@@ -63,6 +65,49 @@ void ClientApplication::RunGameLoop(GameWorld &game_world) {
         while (game_world.window_.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
                 game_world.window_.close();
+            }
+        }
+
+        // Poll asio for network events
+        game_world.io_context_.poll();
+
+        // Check if game has started (received GAME_START from server)
+        if (game_world.server_connection_) {
+            if (game_world.server_connection_->HasGameStarted()) {
+                std::cout
+                    << "[Client] Game started! Switching to GameLevel scene"
+                    << std::endl;
+                std::cout.flush();
+                // Reset the flag to avoid re-triggering
+                game_world.server_connection_->ResetGameStarted();
+
+                // Switch scene to GameLevel
+                auto &scene_comps =
+                    game_world.registry_
+                        .GetComponents<Component::SceneManagement>();
+                std::cout << "[Client] SceneManagement components count: "
+                          << scene_comps.size() << std::endl;
+                std::cout.flush();
+
+                bool found = false;
+                for (auto &&[i, gs] : make_indexed_zipper(scene_comps)) {
+                    found = true;
+                    std::cout << "[Client] Found SceneManagement at index "
+                              << i << ", current=" << gs.current
+                              << ", next=" << gs.next << std::endl;
+                    std::cout.flush();
+                    gs.next = "GameLevel";
+                    std::cout << "[Client] Set next to GameLevel" << std::endl;
+                    std::cout.flush();
+                    break;  // Only need to set once
+                }
+
+                if (!found) {
+                    std::cerr << "[Client] ERROR: No SceneManagement "
+                                 "component found!"
+                              << std::endl;
+                    std::cerr.flush();
+                }
             }
         }
 

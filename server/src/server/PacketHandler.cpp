@@ -207,6 +207,20 @@ void PacketHandler::HandleReadyStatus(
               << client.username_ << "') is now "
               << (is_ready ? "READY" : "NOT READY") << std::endl;
 
+    // Count how many players are ready
+    size_t ready_count = 0;
+    size_t total_authenticated = 0;
+    for (const auto &[id, conn] : connection_manager_.GetClients()) {
+        if (conn.player_id_ != 0) {
+            total_authenticated++;
+            if (conn.ready_) {
+                ready_count++;
+            }
+        }
+    }
+    std::cout << "Players ready: " << ready_count << "/" << total_authenticated
+              << std::endl;
+
     // Check if all authenticated players are ready
     if (connection_manager_.AllPlayersReady()) {
         size_t connected_players = connection_manager_.GetAuthenticatedCount();

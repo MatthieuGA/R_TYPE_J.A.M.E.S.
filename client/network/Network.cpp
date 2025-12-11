@@ -64,6 +64,7 @@ ServerConnection::ServerConnection(boost::asio::io_context &io,
       tcp_socket_(io),
       connected_(false),
       player_id_(0),
+      game_started_(false),
       current_tick_(0),
       server_ip_(server_ip),
       tcp_port_(tcp_port),
@@ -203,6 +204,8 @@ void ServerConnection::AsyncReceiveTCP() {
                         payload_size);
                     if (opcode == kOpConnectAck) {
                         HandleConnectAck(data);
+                    } else if (opcode == 0x05) {  // kOpGameStart
+                        HandleGameStart(data);
                     } else {
                         std::cout << "[Network] Unhandled TCP opcode: 0x"
                                   << std::hex << static_cast<int>(opcode)
@@ -234,6 +237,24 @@ void ServerConnection::HandleConnectAck(const std::vector<uint8_t> &data) {
     }
 }
 
+void ServerConnection::HandleGameStart(const std::vector<uint8_t> &data) {
+    if (data.size() < 4) {  // Payload is 4 bytes: ControlledEntityId (u32)
+        std::cerr << "[Network] GAME_START malformed" << std::endl;
+        return;
+    }
+
+    // Read controlled entity ID (little-endian u32)
+    uint32_t controlled_entity_id = static_cast<uint32_t>(data[0]) |
+                                    (static_cast<uint32_t>(data[1]) << 8) |
+                                    (static_cast<uint32_t>(data[2]) << 16) |
+                                    (static_cast<uint32_t>(data[3]) << 24);
+
+    std::cout << "[Network] GAME_START received! Controlled EntityId="
+              << controlled_entity_id << std::endl;
+
+    game_started_.store(true);
+}
+
 void ServerConnection::SendInput(uint8_t input_flags) {
     if (!connected_.load())
         return;
@@ -250,6 +271,38 @@ void ServerConnection::SendInput(uint8_t input_flags) {
             if (ec) {
                 std::cerr << "[Network] UDP send input error: " << ec.message()
                           << std::endl;
+            }
+        });
+}
+
+void ServerConnection::SendReadyStatus(bool is_ready) {
+    if (!connected_.load()) {
+        std::cerr << "[Network] Cannot send READY_STATUS: not connected"
+                  << std::endl;
+        return;
+    }
+
+    // READY_STATUS (0x07) payload: 4 bytes (IsReady + 3 reserved bytes)
+    constexpr uint8_t kOpReadyStatus = 0x07;
+    auto pkt = std::make_shared<std::vector<uint8_t>>(kHeaderSize + 4);
+    WriteHeader(pkt->data(), kOpReadyStatus, 4, 0);  // TickId = 0 for TCP
+    (*pkt)[kHeaderSize + 0] = is_ready ? 0x01 : 0x00;
+    (*pkt)[kHeaderSize + 1] = 0;  // reserved[0]
+    (*pkt)[kHeaderSize + 2] = 0;  // reserved[1]
+    (*pkt)[kHeaderSize + 3] = 0;  // reserved[2]
+
+    std::cout << "[Network] Sending READY_STATUS ("
+              << (is_ready ? "Ready" : "Not Ready") << ")" << std::endl;
+
+    boost::asio::async_write(tcp_socket_, boost::asio::buffer(*pkt),
+        [pkt, is_ready](
+            const boost::system::error_code &ec, std::size_t bytes_sent) {
+            if (ec) {
+                std::cerr << "[Network] Failed to send READY_STATUS: "
+                          << ec.message() << std::endl;
+            } else {
+                std::cout << "[Network] READY_STATUS sent successfully ("
+                          << bytes_sent << " bytes)" << std::endl;
             }
         });
 }

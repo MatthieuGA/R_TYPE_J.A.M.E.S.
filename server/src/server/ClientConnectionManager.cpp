@@ -131,7 +131,8 @@ bool ClientConnectionManager::AllPlayersReady() const {
         }
     }
 
-    return all_ready && connected_players > 0;
+    // Require at least 2 players to start the game
+    return all_ready && connected_players >= 2;
 }
 
 const std::unordered_map<uint32_t, ClientConnection> &

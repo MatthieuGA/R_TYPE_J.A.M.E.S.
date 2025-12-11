@@ -83,15 +83,38 @@ class ServerConnection {
     void SendInput(uint8_t input_flags);
 
     /**
+     * @brief Send ready status to server via TCP.
+     * @param is_ready True if player is ready to start, false otherwise.
+     */
+    void SendReadyStatus(bool is_ready);
+
+    /**
      * @brief Pop a world snapshot if available.
      */
     std::optional<client::SnapshotPacket> PollSnapshot();
+
+    /**
+     * @brief Check if game has started (received GAME_START packet).
+     * @return true if GAME_START was received, false otherwise.
+     */
+    bool HasGameStarted() const {
+        return game_started_.load();
+    }
+
+    /**
+     * @brief Reset the game started flag.
+     * Useful after handling the GAME_START event.
+     */
+    void ResetGameStarted() {
+        game_started_.store(false);
+    }
 
  private:
     // Async handlers
     void AsyncReceiveUDP();
     void AsyncReceiveTCP();
     void HandleConnectAck(const std::vector<uint8_t> &data);
+    void HandleGameStart(const std::vector<uint8_t> &data);
 
     // ASIO components
     boost::asio::io_context &io_context_;
@@ -102,6 +125,7 @@ class ServerConnection {
     // State (atomic for thread-safe access from async handlers)
     std::atomic<bool> connected_;
     std::atomic<uint8_t> player_id_;
+    std::atomic<bool> game_started_;
     uint32_t current_tick_;
 
     // Buffers

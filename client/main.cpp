@@ -49,23 +49,7 @@ int main(int argc, char *argv[]) {
             return EXIT_FAILURE;
         }
 
-        // Main game loop - audio_manager remains valid throughout
-        while (game_world.window_.isOpen()) {
-            sf::Event event;
-            while (game_world.window_.pollEvent(event)) {
-                if (event.type == sf::Event::Closed)
-                    game_world.window_.close();
-            }
-            // Calculate delta time at the beginning of the frame
-            game_world.last_delta_ =
-                game_world.delta_time_clock_.restart().asSeconds();
-
-            game_world.window_.clear(sf::Color::Black);
-            game_world.registry_.RunSystems();
-            game_world.window_.display();
-        }
-
-        // Run the main game loop
+        // Run the main game loop (includes GAME_START handling)
         RC::ClientApplication::RunGameLoop(game_world);
 
         // Disconnect gracefully when closing
