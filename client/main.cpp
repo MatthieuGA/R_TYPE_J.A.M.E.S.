@@ -4,6 +4,7 @@
 
 #include "engine/GameWorld.hpp"
 #include "game/InitRegistry.hpp"
+#include "game/factory/factory_ennemies/FactoryActors.hpp"
 #include "game/scenes_management/InitScenes.hpp"
 
 namespace RC = Rtype::Client;
@@ -12,6 +13,7 @@ int main() {
     try {
         RC::GameWorld game_world;
 
+        RC::FactoryActors::GetInstance().InitializeEnemyInfoMap("assets/data");
         RC::InitRegistry(game_world);
         RC::InitSceneLevel(game_world.registry_);
         while (game_world.window_.isOpen()) {

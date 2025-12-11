@@ -33,9 +33,5 @@ class GameScene : public Scene_A {
     void InitBackgrounds(registry &reg);
     void AddBackgroundEntity(
         registry &reg, struct BackgroundInfo info, float initial_x);
-
-    void CreateEnemyProjectile(registry &reg, sf::Vector2f direction,
-        Component::EnemyShootTag &enemy_shoot, int ownerId,
-        Component::Transform const &transform);
 };
 }  // namespace Rtype::Client
