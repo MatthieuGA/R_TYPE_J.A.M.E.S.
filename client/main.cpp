@@ -5,10 +5,10 @@
 #include <SFML/Graphics.hpp>
 
 #include "engine/GameWorld.hpp"
-#include "game/ClientApplication.hpp"
-#include "game/CommandLineParser.hpp"
 #include "engine/audio/AudioManager.hpp"
 #include "engine/audio/SFMLAudioBackend.hpp"
+#include "game/ClientApplication.hpp"
+#include "game/CommandLineParser.hpp"
 #include "game/InitRegistry.hpp"
 #include "game/scenes_management/InitScenes.hpp"
 #include "include/registry.hpp"
@@ -32,6 +32,12 @@ int main(int argc, char *argv[]) {
         RC::GameWorld game_world(
             config.server_ip, config.tcp_port, config.udp_port);
 
+        // Initialize audio subsystem with proper lifetime
+        // AudioManager must outlive the game loop to prevent dangling pointer
+        auto audio_backend = std::make_unique<Audio::SFMLAudioBackend>();
+        Audio::AudioManager audio_manager(std::move(audio_backend));
+        game_world.audio_manager_ = &audio_manager;
+
         // Initialize application (registry and scenes)
         RC::ClientApplication::InitializeApplication(game_world);
 
@@ -39,15 +45,7 @@ int main(int argc, char *argv[]) {
         if (!RC::ClientApplication::ConnectToServerWithRetry(
                 game_world, config)) {
             return EXIT_FAILURE;
-
-        // Initialize audio subsystem with proper lifetime
-        // AudioManager must outlive the game loop to prevent dangling pointer
-        auto audio_backend = std::make_unique<Audio::SFMLAudioBackend>();
-        Audio::AudioManager audio_manager(std::move(audio_backend));
-        game_world.audio_manager_ = &audio_manager;
-
-        RC::InitRegistry(game_world, audio_manager);
-        RC::InitSceneLevel(game_world.registry_);
+        }
 
         // Main game loop - audio_manager remains valid throughout
         while (game_world.window_.isOpen()) {

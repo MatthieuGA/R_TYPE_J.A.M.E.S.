@@ -78,7 +78,7 @@ void ClientApplication::RunGameLoop(GameWorld &game_world) {
 }
 
 void ClientApplication::InitializeApplication(GameWorld &game_world) {
-    InitRegistry(game_world);
+    InitRegistry(game_world, *game_world.audio_manager_);
     InitSceneLevel(game_world.registry_);
 }
 
