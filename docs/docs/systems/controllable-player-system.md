@@ -1,23 +1,23 @@
 # Controllable Player System
 
-**Fichier source:** `client/engine/systems/SystemsFunctions/ControllablePlayerSystem.cpp`
+**Source:** `client/engine/systems/SystemsFunctions/ControllablePlayerSystem.cpp`
 
-**But:** Convertir les entrées du joueur en accélérations appliquées à la composante `Velocity`, en respectant un temps d'accélération pour atteindre la vitesse maximale.
+**Purpose:** Convert player inputs into accelerations applied to `Velocity`, respecting a ramp time to reach max speed.
 
-**Composants utilisés:**
+**Components used:**
 
 - `Inputs`
-- `Controllable` (indique si l'entité est contrôlable)
+- `Controllable` (marks whether the entity is controllable)
 - `Velocity`
-- `PlayerTag` (contient `speed_max`)
+- `PlayerTag` (contains `speed_max`)
 
-## Comportement
+## Behavior
 
-- Calcule la vitesse cible à partir des entrées (`input.horizontal * speed`).
-- Calcule l'accélération requise pour atteindre la vitesse cible en `time_to_max` secondes.
-- Clamp l'accélération entre `-max_accel` et `+max_accel`.
+- Compute target speed from inputs (`input.horizontal * speed`).
+- Compute required acceleration to reach target speed in `time_to_max` seconds.
+- Clamp acceleration between `-max_accel` and `+max_accel`.
 
-## Signature principale
+## Main signature
 
 ```cpp
 void ControllablePlayerSystem(Eng::registry &reg,
@@ -29,5 +29,5 @@ void ControllablePlayerSystem(Eng::registry &reg,
 
 ## Notes
 
-- `time_to_max` est fixé à `0.15f` dans l'implémentation actuelle.
-- Le système ne met à jour que les accélérations; la vélocité effective est appliquée par le `MovementSystem`.
+- `time_to_max` is set to `0.15f` in current implementation.
+- This system only updates accelerations; velocity is applied by `MovementSystem`.

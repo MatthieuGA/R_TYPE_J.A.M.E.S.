@@ -28,7 +28,7 @@ class TestScene : public Scene_A {
 
 TEST(GameStateSystem, NoTransitionWhenNextEmpty) {
     Eng::registry reg;
-    GameWorld game_world;
+    GameWorld game_world("127.0.0.1", 50000, 50000);
     Eng::sparse_array<Com::SceneManagement> scene_managements;
 
     auto menu_scene = std::make_shared<TestScene>();
@@ -50,7 +50,7 @@ TEST(GameStateSystem, NoTransitionWhenNextEmpty) {
 
 TEST(GameStateSystem, NoTransitionWhenNextEqualsCurrent) {
     Eng::registry reg;
-    GameWorld game_world;
+    GameWorld game_world("127.0.0.1", 50000, 50000);
     Eng::sparse_array<Com::SceneManagement> scene_managements;
 
     auto menu_scene = std::make_shared<TestScene>();
@@ -73,7 +73,7 @@ TEST(GameStateSystem, NoTransitionWhenNextEqualsCurrent) {
 TEST(GameStateSystem, TransitionInvokesDestroyAndInit) {
     Eng::registry reg;
     Eng::sparse_array<Com::SceneManagement> scene_managements;
-    GameWorld game_world;
+    GameWorld game_world("127.0.0.1", 50000, 50000);
 
     auto menu_scene = std::make_shared<TestScene>();
     auto game_scene = std::make_shared<TestScene>();
@@ -98,7 +98,7 @@ TEST(GameStateSystem, TransitionInvokesDestroyAndInit) {
 TEST(GameStateSystem, TransitionHandlesMissingCurrentScene) {
     Eng::registry reg;
     Eng::sparse_array<Com::SceneManagement> scene_managements;
-    GameWorld game_world;
+    GameWorld game_world("127.0.0.1", 50000, 50000);
 
     auto game_scene = std::make_shared<TestScene>();
 
@@ -120,7 +120,7 @@ TEST(GameStateSystem, TransitionHandlesMissingCurrentScene) {
 TEST(GameStateSystem, TransitionHandlesMissingNextScene) {
     Eng::registry reg;
     Eng::sparse_array<Com::SceneManagement> scene_managements;
-    GameWorld game_world;
+    GameWorld game_world("127.0.0.1", 50000, 50000);
 
     auto menu_scene = std::make_shared<TestScene>();
 
@@ -142,7 +142,7 @@ TEST(GameStateSystem, TransitionHandlesMissingNextScene) {
 TEST(GameStateSystem, ProcessesMultipleSceneEntries) {
     Eng::registry reg;
     Eng::sparse_array<Com::SceneManagement> scene_managements;
-    GameWorld game_world;
+    GameWorld game_world("127.0.0.1", 50000, 50000);
 
     auto menu_scene = std::make_shared<TestScene>();
     auto game_scene = std::make_shared<TestScene>();

@@ -16,17 +16,19 @@ namespace Rtype::Client {
  * @param transforms The sparse array of all transforms (to access parent).
  * @return The cumulative scale factor.
  */
-float CalculateCumulativeScale(const Com::Transform &transform,
+sf::Vector2f CalculateCumulativeScale(const Com::Transform &transform,
     const Eng::sparse_array<Com::Transform> &transforms) {
-    float cumulative_scale = transform.scale;
+    sf::Vector2f cumulative_scale = transform.scale;
 
     if (transform.parent_entity.has_value()) {
         std::size_t parent_id = transform.parent_entity.value();
         if (transforms.has(parent_id)) {
             const Com::Transform &parent_transform =
                 transforms[parent_id].value();
-            cumulative_scale *=
+            sf::Vector2f parent_scale =
                 CalculateCumulativeScale(parent_transform, transforms);
+            cumulative_scale.x *= parent_scale.x;
+            cumulative_scale.y *= parent_scale.y;
         }
     }
     return cumulative_scale;

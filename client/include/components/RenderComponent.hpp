@@ -73,42 +73,118 @@ struct Shader {
  * @brief Animated sprite component for frame-based animation.
  *
  * Works with Drawable component to animate sprite sheets.
+ * Animation rendering is handled by the plugin backend.
  */
 struct AnimatedSprite {
+    struct Animation {
+        std::string path;
+        std::string texture_id;  // Unique ID for texture resource
+        int frameWidth;
+        int frameHeight;
+        int totalFrames;
+        int current_frame;
+        float frameDuration;
+        bool loop;
+        Engine::Graphics::Vector2f first_frame_position{0.0f, 0.0f};
+        Engine::Graphics::Vector2f offset{0.0f, 0.0f};
+
+        bool isLoaded = false;
+
+        Animation()
+            : path(""),
+              texture_id(""),
+              frameWidth(0),
+              frameHeight(0),
+              totalFrames(0),
+              current_frame(0),
+              frameDuration(0.0f),
+              loop(false),
+              first_frame_position(0.0f, 0.0f),
+              offset(0.0f, 0.0f),
+              isLoaded(false) {}
+
+        Animation(const std::string &path, int frameWidth, int frameHeight,
+            int totalFrames, float frameDuration, bool loop,
+            Engine::Graphics::Vector2f first_frame_position =
+                Engine::Graphics::Vector2f(0.0f, 0.0f),
+            Engine::Graphics::Vector2f offset = Engine::Graphics::Vector2f(
+                0.0f, 0.0f))
+            : path(path.empty() ? "" : "assets/images/" + path),
+              texture_id(path),  // Use path as texture ID
+              frameWidth(frameWidth),
+              frameHeight(frameHeight),
+              totalFrames(totalFrames),
+              current_frame(0),
+              frameDuration(frameDuration),
+              loop(loop),
+              first_frame_position(first_frame_position),
+              offset(offset),
+              isLoaded(false) {}
+    };
+
+    std::map<std::string, Animation> animations;
+    std::string currentAnimation;
+    std::vector<std::pair<std::string, int>> animationQueue;
+
     bool animated = true;
-    int frame_width;
-    int frame_height;
-    int total_frames;
-    int current_frame = 0;
-    float frame_duration = 0.1f;
-    bool loop = true;
-    Engine::Graphics::Vector2f first_frame_position{0.0f, 0.0f};
-    float elapsed_time = 0.0f;
+    float elapsedTime = 0.0f;
 
     AnimatedSprite(int frame_width, int frame_height, float frame_duration,
         bool loop = true,
         Engine::Graphics::Vector2f first_frame_position =
             Engine::Graphics::Vector2f(0.0f, 0.0f),
-        int total_frames = 0)
-        : frame_width(frame_width),
-          frame_height(frame_height),
-          total_frames(total_frames),
-          current_frame(0),
-          frame_duration(frame_duration),
-          loop(loop),
-          elapsed_time(0.0f),
-          animated(true),
-          first_frame_position(first_frame_position) {}
+        int totalFrames = 0);
 
-    AnimatedSprite(int frame_width, int frame_height, int current_frame)
-        : frame_width(frame_width),
-          frame_height(frame_height),
-          total_frames(0),
-          current_frame(current_frame),
-          frame_duration(0.1f),
-          loop(true),
-          elapsed_time(0.0f),
-          animated(false) {}
+    AnimatedSprite(int frameWidth, int frameHeight, int current_frame);
+
+    /**
+     * @brief Add a new animation to the animation map.
+     *
+     * @param name The name/key for this animation
+     * @param path The path to the texture file (relative to assets/images/)
+     * @param frameWidth Width of a single frame
+     * @param frameHeight Height of a single frame
+     * @param totalFrames Total number of frames in the animation
+     * @param frameDuration Duration of each frame in seconds
+     * @param loop Whether the animation should loop
+     * @param first_frame_position Position of the first frame in the
+     * spritesheet
+     * @param offset Offset to apply to the sprite position when rendering
+     */
+    void AddAnimation(const std::string &name, const std::string &path,
+        int frameWidth, int frameHeight, int totalFrames, float frameDuration,
+        bool loop = true,
+        Engine::Graphics::Vector2f first_frame_position =
+            Engine::Graphics::Vector2f(0.0f, 0.0f),
+        Engine::Graphics::Vector2f offset = Engine::Graphics::Vector2f(
+            0.0f, 0.0f));
+
+    /**
+     * @brief Change the current playing animation.
+     *
+     * @param name The name of the animation to play
+     * @param reset If true, reset the animation to frame 0 and elapsed time to
+     * 0
+     * @param push_to_queue If true, store the currently playing animation to
+     * resume later when interrupted
+     * @return true if the animation exists and was changed, false otherwise
+     */
+    bool SetCurrentAnimation(
+        const std::string &name, bool reset = true, bool push_to_queue = true);
+
+    /**
+     * @brief Get the current animation object.
+     *
+     * @return Pointer to the current Animation, or nullptr if not found
+     */
+    Animation *GetCurrentAnimation();
+
+    /**
+     * @brief Get the current animation object (const version).
+     *
+     * @return Const pointer to the current Animation, or nullptr if not found
+     */
+    const Animation *GetCurrentAnimation() const;
 };
 
 /**
@@ -144,11 +220,97 @@ struct Text {
           offset(offset),
           is_loaded(false) {}
 
-    // Movable and copyable (no resource ownership issues)
-    Text(Text const &) = default;
-    Text &operator=(Text const &) = default;
-    Text(Text &&) noexcept = default;
-    Text &operator=(Text &&) noexcept = default;
+    // Non-copyable to avoid accidental font pointer mismatches
+    Text(Text const &) = delete;
+    Text &operator=(Text const &) = delete;
+
+    // Move constructor: rebind text to the moved font
+    Text(Text &&other) noexcept;
+
+    // Move assignment: similar to move ctor
+    Text &operator=(Text &&other) noexcept;
+};
+
+/**
+ * @brief Particle data for particle systems.
+ *
+ * Backend-agnostic particle representation.
+ */
+struct Particle {
+    Engine::Graphics::Vector2f position;
+    Engine::Graphics::Vector2f velocity;
+    float lifetime;     // remaining
+    float maxLifetime;  // initial lifetime
+};
+
+/**
+ * @brief Particle emitter component for particle effects.
+ *
+ * Particle rendering is handled by the plugin backend.
+ * No SFML types - completely backend-agnostic.
+ */
+struct ParticleEmitter {
+    bool active = true;
+    float duration_active = -1.f;
+    float duration_past = 0.0f;
+
+    std::vector<Particle> particles;
+    std::size_t maxParticles = 300;
+
+    float emissionRate = 200.f;  // particles / second
+    float emissionAccumulator = 0.f;
+
+    Engine::Graphics::Color startColor =
+        Engine::Graphics::Color(80, 80, 255, 255);  // blue
+    Engine::Graphics::Color endColor =
+        Engine::Graphics::Color(80, 80, 255, 0);  // transparent blue
+
+    Engine::Graphics::Vector2f offset{
+        0.f, 0.f};  // local offset from Transform
+
+    float particleLifetime = 1.0f;  // particle lifetime in seconds
+    float particleSpeed = 50.f;     // initial particle speed
+    Engine::Graphics::Vector2f direction{0.f, -1.f};  // initial direction
+    float spreadAngle = 30.f;    // spread angle in degrees
+    float gravity = 0.f;         // vertical acceleration
+    float emissionRadius = 0.f;  // emission radius for particles
+    float start_size = 1.0f;     // particle start size
+    float end_size = 1.0f;       // particle end size
+    int z_index = 0;             // rendering layer
+
+    bool emitting = true;  // Whether the emitter is emitting particles
+
+    ParticleEmitter(float emissionRate = 200.f, std::size_t maxParticles = 300,
+        Engine::Graphics::Color startColor = Engine::Graphics::Color(
+            80, 80, 255, 255),
+        Engine::Graphics::Color endColor = Engine::Graphics::Color(
+            80, 80, 255, 0),
+        Engine::Graphics::Vector2f offset = Engine::Graphics::Vector2f(
+            0.f, 0.f),
+        bool active = true, float particleLifetime = 1.0f,
+        float particleSpeed = 50.f,
+        Engine::Graphics::Vector2f direction = Engine::Graphics::Vector2f(
+            0.f, -1.f),
+        float spreadAngle = 30.f, float gravity = 0.f,
+        float emissionRadius = 0.f, float start_size = 1.0f,
+        float end_size = 1.0f, float duration = -1.f, int z_index = 0)
+        : active(active),
+          duration_active(duration),
+          duration_past(0.0f),
+          maxParticles(maxParticles),
+          emissionRate(emissionRate),
+          startColor(startColor),
+          endColor(endColor),
+          offset(offset),
+          particleLifetime(particleLifetime),
+          particleSpeed(particleSpeed),
+          direction(direction),
+          spreadAngle(spreadAngle),
+          gravity(gravity),
+          emissionRadius(emissionRadius),
+          start_size(start_size),
+          end_size(end_size),
+          z_index(z_index) {}
 };
 
 }  // namespace Rtype::Client::Component

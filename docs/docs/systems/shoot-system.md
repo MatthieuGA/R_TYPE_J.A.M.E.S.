@@ -1,22 +1,22 @@
 # Shoot System
 
-**Fichier source:** `client/engine/systems/SystemsFunctions/ShootPlayerSystem.cpp`
+**Source:** `client/engine/systems/SystemsFunctions/ShootPlayerSystem.cpp`
 
-**But:** Gérer la mécanique de tir du joueur et créer des entités projectile.
+**Purpose:** Handle player shooting mechanics and spawn projectile entities.
 
-**Composants utilisés:**
+**Components used:**
 
 - `Transform`
 - `Inputs`
 - `PlayerTag`
 
-## Comportement
+## Behavior
 
-- Pour chaque joueur, décrémente `shoot_cooldown` selon `game_world.last_delta_`.
-- Si l'entrée `shoot` est active et que le cooldown est écoulé, crée une nouvelle entité projectile via `createProjectile` et remet le cooldown à `shoot_cooldown_max`.
-- `createProjectile` ajoute les composants `Transform`, `Drawable`, `AnimatedSprite` et `Projectile` à la nouvelle entité.
+- For each player, decrement `shoot_cooldown` using `game_world.last_delta_`.
+- If `shoot` input is active and cooldown elapsed, create a projectile via `createProjectile` and reset cooldown to `shoot_cooldown_max`.
+- `createProjectile` adds `Transform`, `Drawable`, `AnimatedSprite`, and `Projectile` components to the new entity.
 
-## Signature principale
+## Main signature
 
 ```cpp
 void ShootPlayerSystem(Eng::registry &reg, GameWorld &game_world,
@@ -27,5 +27,5 @@ void ShootPlayerSystem(Eng::registry &reg, GameWorld &game_world,
 
 ## Notes
 
-- Le projectile est initialisé avec des valeurs par défaut (vitesse, sprite, etc.) codées en dur dans `createProjectile`.
-- La fonction `createProjectile` utilise `reg.SpawnEntity()` puis `reg.AddComponent<...>`.
+- Projectile defaults (speed, sprite, etc.) are hard-coded in `createProjectile`.
+- `createProjectile` uses `reg.SpawnEntity()` then `reg.AddComponent<...>`.

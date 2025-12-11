@@ -5,12 +5,11 @@
 
 namespace Rtype::Client {
 /**
- * @brief Sets the texture rectangle on the drawable according to the
- * current frame stored in the AnimatedSprite.
+ * @brief Set the texture rectangle for the current animation frame.
  *
  * This directly updates the drawable's texture_rect (IntRect) based on
  * the animation frame and layout. The actual drawing happens in
- * DrawableSystem.
+ * DrawableSystem using the backend.
  *
  * @param anim_sprite Animated sprite state (current_frame, frame_width/height)
  * @param drawable Drawable component to update texture_rect on
@@ -49,7 +48,39 @@ void SetFrame(Com::AnimatedSprite &anim_sprite, Com::Drawable &drawable,
 }
 
 /**
- * @brief Advance the animated sprite to the next frame and update the
+ * @brief Sets the texture rectangle on the drawable according to the
+ * current frame stored in the Animation.
+ *
+ * @param animation Animation state (current_frame, frameWidth/Height)
+ * @param drawable Drawable component containing the texture and sprite
+ */
+void SetFrame(
+    Com::AnimatedSprite::Animation &animation, Com::Drawable &drawable) {
+    // Determine which texture to use for calculating columns
+    sf::Vector2u textureSize;
+    if (animation.isLoaded) {
+        textureSize = animation.texture.getSize();
+    } else {
+        textureSize = drawable.texture.getSize();
+    }
+
+    if (textureSize.x == 0 || animation.frameWidth == 0)
+        return;
+    const int columns = textureSize.x / animation.frameWidth;
+    if (columns == 0)
+        return;
+    const int left =
+        animation.first_frame_position.x +
+        (animation.current_frame % columns) * animation.frameWidth;
+    const int top =
+        animation.first_frame_position.y +
+        (animation.current_frame / columns) * animation.frameHeight;
+    drawable.sprite.setTextureRect(
+        sf::IntRect(left, top, animation.frameWidth, animation.frameHeight));
+}
+
+/**
+ * @brief Advance the animation to the next frame and update the
  * drawable rectangle.
  *
  * @param anim_sprite Animated sprite state to advance

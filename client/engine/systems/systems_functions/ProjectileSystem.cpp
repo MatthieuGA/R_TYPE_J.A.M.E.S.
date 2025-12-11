@@ -1,3 +1,4 @@
+#include <cmath>
 #include <vector>
 
 #include <SFML/Graphics.hpp>
@@ -24,7 +25,19 @@ void ProjectileSystem(Eng::registry &reg, GameWorld &game_world,
 
     for (auto &&[i, transform, projectile] :
         make_indexed_zipper(transforms, projectiles)) {
-        transform.x += projectile.speed * game_world.last_delta_;
+        // normalize direction
+        float length =
+            std::sqrt(projectile.direction.x * projectile.direction.x +
+                      projectile.direction.y * projectile.direction.y);
+        if (length != 0.0f) {
+            projectile.direction.x /= length;
+            projectile.direction.y /= length;
+        }
+
+        transform.x +=
+            projectile.speed * game_world.last_delta_ * projectile.direction.x;
+        transform.y +=
+            projectile.speed * game_world.last_delta_ * projectile.direction.y;
 
         if (transform.x > game_world.window_size_.x + 100.f ||
             transform.x < -100.f ||

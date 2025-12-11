@@ -49,7 +49,7 @@ namespace server::converters {
 /**
  * @brief Create a SpawnEntity packet from ECS components
  */
-inline network::SpawnEntityPacket toSpawnEntityPacket(network::Tick tick,
+inline network::SpawnEntityPacket ToSpawnEntityPacket(network::Tick tick,
     network::EntityId entity_id, uint8_t entity_type,
     const Component::Position &pos, const Component::Velocity &vel) {
     network::SpawnEntityPacket packet;
@@ -66,7 +66,7 @@ inline network::SpawnEntityPacket toSpawnEntityPacket(network::Tick tick,
 /**
  * @brief Create a PlayerShoot packet from position component
  */
-inline network::PlayerShootPacket toPlayerShootPacket(network::Tick tick,
+inline network::PlayerShootPacket ToPlayerShootPacket(network::Tick tick,
     network::PlayerId player_id, const Component::Position &pos, float angle) {
     network::PlayerShootPacket packet;
     packet.tick = tick;
@@ -87,7 +87,7 @@ inline network::PlayerShootPacket toPlayerShootPacket(network::Tick tick,
  * Creates a new entity and adds Position and Velocity components.
  * The entity ID from the packet is used directly.
  */
-inline void applySpawnEntityPacket(
+inline void ApplySpawnEntityPacket(
     Engine::registry &reg, const network::SpawnEntityPacket &packet) {
     // Create entity with the network-provided ID
     auto entity = reg.entity_from_index(packet.entity_id);
@@ -96,22 +96,22 @@ inline void applySpawnEntityPacket(
     Component::Position pos;
     pos.x = packet.pos_x;
     pos.y = packet.pos_y;
-    reg.add_component(entity, std::move(pos));
+    reg.AddComponent(entity, std::move(pos));
 
     // Add Velocity component
     Component::Velocity vel;
     vel.vx = packet.vel_x;
     vel.vy = packet.vel_y;
-    reg.add_component(entity, std::move(vel));
+    reg.AddComponent(entity, std::move(vel));
 }
 
 /**
  * @brief Update an existing entity's position from a packet
  */
-inline void updatePositionFromPacket(Engine::registry &reg,
+inline void UpdatePositionFromPacket(Engine::registry &reg,
     network::EntityId entity_id, float pos_x, float pos_y) {
     auto entity = reg.entity_from_index(entity_id);
-    auto &positions = reg.get_components<Component::Position>();
+    auto &positions = reg.GetComponents<Component::Position>();
 
     if (positions.has(entity.getId())) {
         positions[entity.getId()]->x = pos_x;
@@ -125,10 +125,10 @@ inline void updatePositionFromPacket(Engine::registry &reg,
  * Returns nullopt if components don't exist.
  */
 inline std::optional<std::pair<Component::Position, Component::Velocity>>
-getEntityTransform(Engine::registry &reg, network::EntityId entity_id) {
+GetEntityTransform(Engine::registry &reg, network::EntityId entity_id) {
     auto entity = reg.entity_from_index(entity_id);
-    auto &positions = reg.get_components<Component::Position>();
-    auto &velocities = reg.get_components<Component::Velocity>();
+    auto &positions = reg.GetComponents<Component::Position>();
+    auto &velocities = reg.GetComponents<Component::Velocity>();
 
     if (positions.has(entity.getId()) && velocities.has(entity.getId())) {
         return std::make_pair(
@@ -143,16 +143,16 @@ getEntityTransform(Engine::registry &reg, network::EntityId entity_id) {
  *
  * Useful for sending initial game state to newly connected clients.
  */
-inline std::vector<network::SpawnEntityPacket> createSnapshotPackets(
+inline std::vector<network::SpawnEntityPacket> CreateSnapshotPackets(
     Engine::registry &reg, network::Tick current_tick) {
     std::vector<network::SpawnEntityPacket> packets;
 
-    auto &positions = reg.get_components<Component::Position>();
-    auto &velocities = reg.get_components<Component::Velocity>();
+    auto &positions = reg.GetComponents<Component::Position>();
+    auto &velocities = reg.GetComponents<Component::Velocity>();
 
     for (size_t i = 0; i < positions.size(); ++i) {
         if (positions.has(i) && velocities.has(i)) {
-            auto packet = toSpawnEntityPacket(current_tick,
+            auto packet = ToSpawnEntityPacket(current_tick,
                 network::EntityId{static_cast<uint32_t>(i)},
                 0,  // Default entity type, could be enhanced
                 *positions[i], *velocities[i]);

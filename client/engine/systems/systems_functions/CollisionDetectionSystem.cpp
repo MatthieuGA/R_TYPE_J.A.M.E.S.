@@ -1,5 +1,6 @@
 #include <algorithm>
 
+#include "engine/CollidingTools.hpp"
 #include "engine/OriginTool.hpp"
 #include "engine/events/EngineEvent.hpp"
 #include "engine/systems/InitRegistrySystems.hpp"
@@ -91,13 +92,13 @@ void ComputeCollision(Eng::sparse_array<Com::Solid> const &solids, int i,
         return;
 
     float width_computed_a =
-        hb_a.width * (hb_a.scaleWithTransform ? trans_a.scale : 1.0f);
+        hb_a.width * (hb_a.scaleWithTransform ? trans_a.scale.x : 1.0f);
     float height_computed_a =
-        hb_a.height * (hb_a.scaleWithTransform ? trans_a.scale : 1.0f);
+        hb_a.height * (hb_a.scaleWithTransform ? trans_a.scale.y : 1.0f);
     float width_computed_b =
-        hb_b.width * (hb_b.scaleWithTransform ? trans_b.scale : 1.0f);
+        hb_b.width * (hb_b.scaleWithTransform ? trans_b.scale.x : 1.0f);
     float height_computed_b =
-        hb_b.height * (hb_b.scaleWithTransform ? trans_b.scale : 1.0f);
+        hb_b.height * (hb_b.scaleWithTransform ? trans_b.scale.y : 1.0f);
 
     // Compute offsets and scaled hitboxes (same as is_colliding)
     Engine::Graphics::Vector2f off_a =
@@ -186,7 +187,7 @@ void CollisionDetectionSystem(Eng::registry &reg,
             make_indexed_zipper(transforms, hitBoxes)) {
             if (i >= j)
                 continue;
-            if (IsColliding(trans_a, hb_a, trans_b, hb_b, game_world)) {
+            if (IsColliding(trans_a, hb_a, trans_b, hb_b)) {
                 game_world.event_bus_.Publish(
                     CollisionEvent{i, j, game_world});
                 ComputeCollision(solids, i, j, trans_a, hb_a, trans_b, hb_b);

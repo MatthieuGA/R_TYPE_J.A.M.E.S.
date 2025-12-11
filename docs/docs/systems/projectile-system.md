@@ -1,20 +1,20 @@
 # Projectile System
 
-**Fichier source:** `client/engine/systems/SystemsFunctions/ProjectileSystem.cpp`
+**Source:** `client/engine/systems/SystemsFunctions/ProjectileSystem.cpp`
 
-**But:** Mettre à jour la position des projectiles et supprimer ceux qui sortent de la zone de jeu.
+**Purpose:** Update projectile positions and remove those leaving the play area.
 
-**Composants utilisés:**
+**Components used:**
 
 - `Transform`
 - `Projectile`
 
-## Comportement
+## Behavior
 
-- Avance la position X du projectile selon `projectile.speed * dt`.
-- Si le projectile sort d'un rectangle étendu autour de la fenêtre (`window_size_` ± 100px), il est marqué pour suppression (`reg.KillEntity`).
+- Move projectile X position by `projectile.speed * dt`.
+- If the projectile leaves an expanded rectangle around the window (`window_size_` ± 100px), mark it for removal (`reg.KillEntity`).
 
-## Signature principale
+## Main signature
 
 ```cpp
 void ProjectileSystem(Eng::registry &reg, GameWorld &game_world,
@@ -24,4 +24,4 @@ void ProjectileSystem(Eng::registry &reg, GameWorld &game_world,
 
 ## Notes
 
-- Le système collecte d'abord les entités à supprimer, puis appelle `KillEntity` pour éviter d'invalider les zippers en cours d'itération.
+- Collect entities to remove first, then call `KillEntity` to avoid invalidating zippers during iteration.

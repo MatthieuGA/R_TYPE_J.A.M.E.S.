@@ -53,7 +53,7 @@ TEST(Systems, PlayfieldLimitClampsPosition) {
     player_tags.insert_at(0, Com::PlayerTag{1});
 
     // Create a small window (headless CI may still support creation)
-    Rtype::Client::GameWorld game_world;
+    Rtype::Client::GameWorld game_world("127.0.0.1", 50000, 50000);
     sf::RenderWindow window(sf::VideoMode(200, 150), "test", sf::Style::None);
     game_world.window_size_ =
         Engine::Graphics::Vector2f(static_cast<float>(window.getSize().x),
@@ -107,11 +107,23 @@ TEST(Systems, AnimationSystemAdvancesFrame) {
     anim_sprites[0]->elapsed_time = anim_sprites[0]->frame_duration;
     AnimationSystem(reg, game_world, 0.0f, anim_sprites, drawables);
     EXPECT_EQ(anim_sprites[0]->current_frame, 2);
+
+    // First call should advance the current_frame because elapsedTime >=
+    // frameDuration
+    AnimationSystem(reg, 0.0f, anim_sprites, drawables);
+    EXPECT_EQ(anim_sprites[0]->GetCurrentAnimation()->current_frame, 1);
+
+    // Second call with zero delta will cause SetFrame to update the drawable
+    // rect
+    AnimationSystem(reg, 0.0f, anim_sprites, drawables);
+    sf::IntRect rect = drawables[0]->sprite.getTextureRect();
+    EXPECT_EQ(rect.left, anim_sprites[0]->GetCurrentAnimation()->frameWidth);
+>>>>>>> origin/feature/AI_client
 }
 
 TEST(Systems, CollisionDetectionPublishesAndResolves) {
     Eng::registry reg;
-    Rtype::Client::GameWorld gw;
+    Rtype::Client::GameWorld gw("127.0.0.1", 50000, 50000);
 
     Eng::sparse_array<Com::Transform> transforms;
     Eng::sparse_array<Com::HitBox> hitboxes;
@@ -149,13 +161,14 @@ TEST(Systems, CollisionDetectionPublishesAndResolves) {
 
 TEST(Systems, ProjectileSystemMovesTransform) {
     Eng::registry reg;
-    Rtype::Client::GameWorld gw;
+    Rtype::Client::GameWorld gw("127.0.0.1", 50000, 50000);
 
     Eng::sparse_array<Com::Transform> transforms;
     Eng::sparse_array<Com::Projectile> projectiles;
 
     transforms.insert_at(0, Com::Transform{0.0f, 0.0f, 0.0f, 1.0f});
-    projectiles.insert_at(0, Com::Projectile{5.0f, 200.0f, 1});
+    projectiles.insert_at(
+        0, Com::Projectile{10, sf::Vector2f{1.0f, 0.0f}, 200.0f, 1});
 
     gw.last_delta_ = 0.1f;  // 200 * 0.1 = 20
 
@@ -171,15 +184,19 @@ TEST(Systems, PlayerSystemSetsFrameBasedOnVelocity) {
     Eng::sparse_array<Com::PlayerTag> player_tags;
     Eng::sparse_array<Com::Velocity> velocities;
     Eng::sparse_array<Com::AnimatedSprite> animated_sprites;
+    Eng::sparse_array<Com::Inputs> inputs;
+    Eng::sparse_array<Com::ParticleEmitter> particle_emitters;
     Eng::sparse_array<Com::Transform> transforms;
 
     player_tags.insert_at(0, Com::PlayerTag{400.f, 0.5f, 0.0f, 1});
     velocities.insert_at(0, Com::Velocity{0.0f, 100.0f});
     animated_sprites.insert_at(0, Com::AnimatedSprite(16, 16, 0.1f));
     transforms.insert_at(0, Com::Transform(0.0f, 0.0f, 0.0f, 1.0f));
+    inputs.insert_at(0, Com::Inputs{0.0f, 0.0f, false});
+    particle_emitters.insert_at(0, Com::ParticleEmitter());
 
-    PlayerSystem(reg, player_tags, velocities, transforms, animated_sprites);
-
+    PlayerSystem(reg, player_tags, velocities, inputs, particle_emitters,
+        transforms, animated_sprites);
     ASSERT_TRUE(animated_sprites[0].has_value());
     // velocity.vy == 100 -> should map to current_frame == 1
     EXPECT_EQ(animated_sprites[0]->current_frame, 1);
@@ -187,7 +204,7 @@ TEST(Systems, PlayerSystemSetsFrameBasedOnVelocity) {
 
 TEST(Systems, ShootPlayerSystemCreatesProjectileAndResetsCooldown) {
     Eng::registry reg;
-    Rtype::Client::GameWorld gw;
+    Rtype::Client::GameWorld gw("127.0.0.1", 50000, 50000);
 
     // Register components that createProjectile will add
     reg.RegisterComponent<Com::Transform>();

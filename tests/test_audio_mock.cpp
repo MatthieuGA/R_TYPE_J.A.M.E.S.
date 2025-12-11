@@ -14,71 +14,15 @@
 #include <utility>
 #include <vector>
 
+#include "engine/audio/AudioManager.hpp"
 #include "include/audio/AudioTypes.hpp"
 #include "include/audio/IAudioBackend.hpp"
 
 namespace Rtype::Client::Audio {
 
-// Minimal AudioManager implementation for testing
-class AudioManager {
- public:
-    explicit AudioManager(std::unique_ptr<IAudioBackend> backend)
-        : backend_(std::move(backend)) {}
-
-    bool RegisterAsset(
-        const std::string &id, const std::string &path, bool is_music) {
-        if (is_music) {
-            return backend_->LoadMusic(id, path);
-        } else {
-            return backend_->LoadSound(id, path);
-        }
-    }
-
-    void PlaySound(const std::string &id, float volume = 1.0f) {
-        PlaybackRequest request;
-        request.id = id;
-        request.volume = volume;
-        request.loop = false;
-        request.category = SoundCategory::SFX;
-        backend_->Play(request);
-    }
-
-    void PlayMusic(const std::string &id, bool loop = true) {
-        PlaybackRequest request;
-        request.id = id;
-        request.volume = 1.0f;
-        request.loop = loop;
-        request.category = SoundCategory::MUSIC;
-        backend_->Play(request);
-    }
-
-    void StopMusic() {
-        backend_->StopMusic();
-    }
-
-    void SetSfxVolume(float volume) {
-        backend_->SetCategoryVolume(SoundCategory::SFX, volume);
-    }
-
-    void SetMusicVolume(float volume) {
-        backend_->SetCategoryVolume(SoundCategory::MUSIC, volume);
-    }
-
-    void MuteSfx(bool mute) {
-        backend_->SetCategoryMute(SoundCategory::SFX, mute);
-    }
-
-    void MuteMusic(bool mute) {
-        backend_->SetCategoryMute(SoundCategory::MUSIC, mute);
-    }
-
-    void Update() {
-        backend_->Update();
-    }
-
- private:
-    std::unique_ptr<IAudioBackend> backend_;
-};
+// Note: Using the real AudioManager implementation from
+// engine/audio/AudioManager.hpp instead of duplicating it here. This ensures
+// tests stay synchronized with production code changes.
 
 /**
  * @brief Mock audio backend for testing.

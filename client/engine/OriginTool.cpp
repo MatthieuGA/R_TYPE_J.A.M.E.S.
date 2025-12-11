@@ -51,9 +51,18 @@ Engine::Graphics::Vector2f GetOffsetFromTransform(
 Engine::Graphics::Vector2f GetOffsetFromAnimatedTransform(
     const Com::Transform &transform,
     const Com::AnimatedSprite &animated_sprite) {
-    return GetOffsetFromTransform(
-        transform, Engine::Graphics::Vector2f(
-                       static_cast<float>(animated_sprite.frame_width),
-                       static_cast<float>(animated_sprite.frame_height)));
+    auto it =
+        animated_sprite.animations.find(animated_sprite.currentAnimation);
+    if (it == animated_sprite.animations.end()) {
+        // Fallback to default animation
+        it = animated_sprite.animations.find("Default");
+        if (it == animated_sprite.animations.end())
+            return Engine::Graphics::Vector2f(0.0f, 0.0f);
+    }
+
+    const auto &animation = it->second;
+    return GetOffsetFromTransform(transform,
+        Engine::Graphics::Vector2f(static_cast<float>(animation.frameWidth),
+            static_cast<float>(animation.frameHeight)));
 }
 }  // namespace Rtype::Client

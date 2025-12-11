@@ -12,16 +12,28 @@
 #include "engine/GameWorld.hpp"
 #include "engine/audio/AudioManager.hpp"
 #include "engine/audio/PluginAudioBackend.hpp"
+#include "game/ClientApplication.hpp"
+#include "game/CommandLineParser.hpp"
 #include "game/InitRegistry.hpp"
+#include "game/factory/factory_ennemies/FactoryActors.hpp"
 #include "game/scenes_management/InitScenes.hpp"
-#include "include/WindowConst.hpp"
 #include "include/registry.hpp"
 
 namespace RC = Rtype::Client;
 namespace Audio = Rtype::Client::Audio;
 
-int main() {
+int main(int argc, char *argv[]) {
     try {
+        // Parse command-line arguments
+        RC::ClientConfig config = RC::CommandLineParser::Parse(argc, argv);
+
+        // Display connection parameters
+        std::cout << "[Client] Starting R-Type client...\n"
+                  << "[Client] Server IP: " << config.server_ip << "\n"
+                  << "[Client] TCP Port: " << config.tcp_port << "\n"
+                  << "[Client] UDP Port: " << config.udp_port << "\n"
+                  << "[Client] Username: " << config.username << std::endl;
+
         // Load engine configuration
         std::string config_path = "assets/config/engine_config.json";
         if (!Engine::ConfigLoader::Load(config_path)) {
@@ -30,7 +42,9 @@ int main() {
                       << std::endl;
         }
 
-        RC::GameWorld game_world;
+        // Initialize game world with network parameters
+        RC::GameWorld game_world(
+            config.server_ip, config.tcp_port, config.udp_port);
 
         // Load video plugin from config
         std::string video_plugin_path =
@@ -92,13 +106,16 @@ int main() {
 
         game_world.audio_manager_ = &audio_manager;
 
-        std::cout << "[Client] Initializing registry..." << std::endl;
-        RC::InitRegistry(game_world, audio_manager);
-        std::cout << "[Client] Registry initialized" << std::endl;
+        RC::FactoryActors::GetInstance().InitializeEnemyInfoMap("assets/data");
 
-        std::cout << "[Client] Initializing scenes..." << std::endl;
-        RC::InitSceneLevel(game_world.registry_);
-        std::cout << "[Client] Scenes initialized" << std::endl;
+        // Initialize application (registry and scenes)
+        RC::ClientApplication::InitializeApplication(game_world);
+
+        // Connect to server with retry mechanism
+        if (!RC::ClientApplication::ConnectToServerWithRetry(
+                game_world, config)) {
+            return EXIT_FAILURE;
+        }
 
         // Clear any spurious events from window creation
         std::cout << "[Client] Clearing spurious events..." << std::endl;
@@ -153,7 +170,14 @@ int main() {
         }
 
         rendering_engine->Shutdown();
-        return 0;
+
+        // Disconnect gracefully when closing
+        if (game_world.server_connection_) {
+            std::cout << "[Network] Disconnecting from server..." << std::endl;
+            game_world.server_connection_->Disconnect();
+        }
+
+        return EXIT_SUCCESS;
     } catch (const std::exception &e) {
         std::cerr << "Exception: " << e.what() << std::endl;
         return EXIT_FAILURE;

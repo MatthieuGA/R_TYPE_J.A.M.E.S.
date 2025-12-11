@@ -8,7 +8,7 @@ namespace Rtype::Client {
 namespace Com = Component;
 namespace Eng = Engine;
 
-float CalculateCumulativeScale(const Com::Transform &transform,
+sf::Vector2f CalculateCumulativeScale(const Com::Transform &transform,
     const Eng::sparse_array<Com::Transform> &transforms);
 
 Engine::Graphics::Vector2f CalculateWorldPositionWithHierarchy(

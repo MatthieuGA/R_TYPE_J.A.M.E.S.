@@ -30,10 +30,10 @@ void ButtonClickSystem(Eng::registry &reg, GameWorld &game_world,
         make_indexed_zipper(hit_boxes, clickables, drawables, transforms)) {
         const float width_computed =
             hit_box.width *
-            (hit_box.scaleWithTransform ? transform.scale : 1.0f);
+            (hit_box.scaleWithTransform ? transform.scale.x : 1.0f);
         const float height_computed =
             hit_box.height *
-            (hit_box.scaleWithTransform ? transform.scale : 1.0f);
+            (hit_box.scaleWithTransform ? transform.scale.y : 1.0f);
 
         const Engine::Graphics::Vector2f offsetOrigin =
             GetOffsetFromTransform(transform,

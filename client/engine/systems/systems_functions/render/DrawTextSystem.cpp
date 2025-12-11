@@ -60,9 +60,10 @@ void RenderOneTextEntity(Eng::sparse_array<Com::Transform> const &transforms,
     world_position.x += text->offset.x;
     world_position.y += text->offset.y;
 
-    // Apply cumulative scale
+    // Apply cumulative scale with font size scaling
     float world_scale =
         CalculateCumulativeScale(transform.value(), transforms);
+    world_scale /= FONT_SIZE_SCALE;
 
     // Apply color with opacity
     Engine::Graphics::Color final_color = text->color;

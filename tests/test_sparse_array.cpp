@@ -289,7 +289,7 @@ TEST(SparseArrayIntTest, GetIndex) {
     Engine::sparse_array<int> array;
     auto &ref = array.insert_at(5, 42);
 
-    auto idx = array.get_index(ref);
+    auto idx = array.GetIndex(ref);
 
     EXPECT_EQ(idx, 5);
 }
@@ -299,7 +299,7 @@ TEST(SparseArrayIntTest, GetIndexNotFound) {
     array.insert_at(0, 42);
 
     int external = 99;
-    auto idx = array.get_index(external);
+    auto idx = array.GetIndex(external);
 
     EXPECT_EQ(idx, static_cast<size_t>(-1));
 }

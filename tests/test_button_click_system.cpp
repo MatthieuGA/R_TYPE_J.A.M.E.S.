@@ -21,7 +21,7 @@ class ButtonClickSystemTest : public ::testing::Test {
         game_world.window_.close();
     }
 
-    Rtype::Client::GameWorld game_world;
+    Rtype::Client::GameWorld game_world{"127.0.0.1", 50000, 50000};
     Eng::registry reg;
     Eng::sparse_array<Com::HitBox> hit_boxes;
     Eng::sparse_array<Com::Clickable> clickables;

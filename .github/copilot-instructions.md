@@ -4,7 +4,7 @@
 
 When generating code for this repository:
 
-1. **Version Compatibility**: Strictly adhere to **C++23** standards and the specific library versions defined in `vcpkg.json` and `CMakeLists.txt`.
+1. **Version Compatibility**: Strictly adhere to **C++20** standards and the specific library versions defined in `vcpkg.json` and `CMakeLists.txt`.
 2. **Style Guide Compliance**: Follow the **Google C++ Style Guide** for naming and formatting, as explicitly defined in the Naming Conventions section below.
 3. **Architectural Consistency**: Respect the Entity-Component-System (ECS) architecture and the Authoritative Server model.
 4. **Code Quality**: Prioritize **Maintainability**, **Testability**, **Performance**, and **Security** in all generated code.
@@ -15,7 +15,7 @@ When generating code for this repository:
 
 Before generating code, ensure compatibility with:
 
-1. **Language**: **C++23**
+1. **Language**: **C++20**
 
    - Use modern features (concepts, ranges, smart pointers) where appropriate.
    - Avoid raw pointers unless strictly necessary (e.g., interacting with legacy C APIs).
