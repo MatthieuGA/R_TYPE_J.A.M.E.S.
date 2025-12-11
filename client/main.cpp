@@ -18,13 +18,16 @@ int main() {
     try {
         RC::GameWorld game_world;
 
-        // Initialize audio subsystem
+        // Initialize audio subsystem with proper lifetime
+        // AudioManager must outlive the game loop to prevent dangling pointer
         auto audio_backend = std::make_unique<Audio::SFMLAudioBackend>();
         Audio::AudioManager audio_manager(std::move(audio_backend));
         game_world.audio_manager_ = &audio_manager;
 
         RC::InitRegistry(game_world, audio_manager);
         RC::InitSceneLevel(game_world.registry_);
+
+        // Main game loop - audio_manager remains valid throughout
         while (game_world.window_.isOpen()) {
             sf::Event event;
             while (game_world.window_.pollEvent(event)) {
