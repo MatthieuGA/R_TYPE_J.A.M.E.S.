@@ -8,7 +8,7 @@ project(RTypeProject LANGUAGES CXX)
 option(ENABLE_COVERAGE "Enable code coverage" OFF)
 
 # Set C++ standard
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
 # Export compile commands for clang-tidy and other tools
@@ -30,6 +30,15 @@ find_package(SFML COMPONENTS system window graphics network audio CONFIG REQUIRE
 # Use CONFIG mode with vcpkg (CMP0167 compliance)
 find_package(Boost REQUIRED COMPONENTS system CONFIG)
 find_package(Threads REQUIRED)
+find_package(fmt CONFIG REQUIRED)
+
+# Explanation: vcpkg's OpenAL-soft has a missing dependency on fmt
+# Add fmt as an INTERFACE dependency to SFML::Audio so it's linked in correct order
+if (TARGET SFML::Audio)
+    target_link_libraries(SFML::Audio INTERFACE fmt::fmt)
+elseif (TARGET sfml-audio)
+    target_link_libraries(sfml-audio INTERFACE fmt::fmt)
+endif()
 
 # Provide compatibility aliases so code using SFML::Name targets works with
 # vcpkg-provided SFML 2.x (which exports sfml-name targets).
@@ -123,4 +132,5 @@ if(Boost_FOUND)
     message(STATUS "  Boost Include: ${Boost_INCLUDE_DIRS}")
 endif()
 message(STATUS "Coverage enabled: ${ENABLE_COVERAGE}")
+message(STATUS "Toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
 message(STATUS "==============================================")

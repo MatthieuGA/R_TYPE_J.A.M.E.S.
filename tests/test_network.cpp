@@ -13,11 +13,9 @@
 #include <gtest/gtest.h>
 
 #include <array>
-#include <chrono>
 #include <cstring>
 #include <memory>
 #include <string>
-#include <thread>
 #include <vector>
 
 #include <boost/asio.hpp>
@@ -263,6 +261,7 @@ TEST(NetworkTest, ConnectAckWithStatusOkSetsConnected) {
 
 TEST(NetworkTest, ConnectAckWithStatusFailureDisconnects) {
     boost::asio::io_context io;
+    std::vector<uint8_t> req(44);
 
     MockTcpServer server(io, 4245);
     server.AsyncAccept([&](boost::system::error_code ec) {
@@ -321,6 +320,7 @@ TEST(NetworkTest, SendInputWhenConnectedSendsUdpPacket) {
         });
 
     // Simulate connection by creating a connected network
+    std::vector<uint8_t> req(44);
     MockTcpServer tcp_server(io, 4248);
     tcp_server.AsyncAccept([&](boost::system::error_code ec) {
         if (ec)
@@ -414,15 +414,15 @@ TEST(NetworkTest, PollSnapshotReturnsReceivedData) {
 TEST(NetworkTest, DISABLED_DisconnectSendsDisconnectReqPacket) {
     boost::asio::io_context io;
     bool disconnect_received = false;
+    std::vector<uint8_t> req(44);
+    std::vector<uint8_t> disc(12);
 
     MockTcpServer server(io, 4250);
     server.AsyncAccept([&](boost::system::error_code ec) {
-        std::vector<uint8_t> req(44);
         server.AsyncRead(req, [&](boost::system::error_code ec, size_t) {
             auto ack = BuildConnectAckPacket(1, 0);
             server.AsyncWrite(ack, [&](boost::system::error_code ec) {
                 // Now read DISCONNECT_REQ
-                std::vector<uint8_t> disc(12);
                 server.AsyncRead(
                     disc, [&](boost::system::error_code ec, size_t bytes) {
                         if (!ec && bytes == 12) {
@@ -451,6 +451,7 @@ TEST(NetworkTest, DISABLED_DisconnectSendsDisconnectReqPacket) {
 
 TEST(NetworkTest, DisconnectClearsConnectionState) {
     boost::asio::io_context io;
+    std::vector<uint8_t> req(44);
 
     MockTcpServer server(io, 4251);
     server.AsyncAccept([&](boost::system::error_code ec) {
@@ -496,6 +497,7 @@ TEST(NetworkTest, ConnectionToInvalidHostDoesNotCrash) {
 
 TEST(NetworkTest, MalformedConnectAckIsHandledGracefully) {
     boost::asio::io_context io;
+    std::vector<uint8_t> req(44);
 
     MockTcpServer server(io, 4252);
     server.AsyncAccept([&](boost::system::error_code ec) {
@@ -519,6 +521,10 @@ TEST(NetworkTest, MalformedConnectAckIsHandledGracefully) {
     io.run_for(200ms);
 
     EXPECT_FALSE(net.is_connected());
+
+    // Ensure all async operations complete
+    server.Close();
+    io.poll();
 }
 
 // ============================================================================
@@ -551,7 +557,7 @@ TEST(NetworkTest, LongUsernameIsTruncatedTo32Bytes) {
             });
     });
 
-    client::ServerConnection net(io, "127.0.0.1", 4253, 4243);
+    client::ServerConnection net(io, "127.0.0.1", 4253, 4255);
     net.ConnectToServer(long_username);
 
     io.run_for(100ms);
@@ -579,7 +585,7 @@ TEST(NetworkTest, ShortUsernameIsPaddedWithNulls) {
             });
     });
 
-    client::ServerConnection net(io, "127.0.0.1", 4254, 4243);
+    client::ServerConnection net(io, "127.0.0.1", 4254, 4256);
     net.ConnectToServer("Hi");
 
     io.run_for(100ms);
