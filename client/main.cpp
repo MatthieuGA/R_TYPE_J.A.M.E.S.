@@ -5,6 +5,7 @@
 #include <utility>
 
 #include <audio/IAudioModule.hpp>
+#include <config/ConfigLoader.hpp>
 #include <loader/DLLoader.hpp>
 #include <video/IVideoModule.hpp>
 
@@ -22,10 +23,19 @@ namespace Audio = Rtype::Client::Audio;
 
 int main() {
     try {
+        // Load engine configuration
+        std::string config_path = "assets/config/engine_config.json";
+        if (!Engine::ConfigLoader::Load(config_path)) {
+            std::cerr << "[Client] Warning: Failed to load config, using "
+                         "defaults"
+                      << std::endl;
+        }
+
         RC::GameWorld game_world;
 
-        // Load video plugin dynamically
-        std::string video_plugin_path = "../lib/sfml_video_module.so";
+        // Load video plugin from config
+        std::string video_plugin_path =
+            Engine::ConfigLoader::GetVideoBackend();
         std::cout << "[Client] Loading video plugin: " << video_plugin_path
                   << std::endl;
 
@@ -44,15 +54,17 @@ int main() {
         auto video_backend =
             std::make_unique<Engine::Video::PluginVideoBackend>(video_module);
 
-        if (!video_backend->Initialize(
-                RC::WINDOW_WIDTH, RC::WINDOW_HEIGHT, RC::WINDOW_TITLE)) {
+        if (!video_backend->Initialize(Engine::ConfigLoader::GetWindowWidth(),
+                Engine::ConfigLoader::GetWindowHeight(),
+                Engine::ConfigLoader::GetWindowTitle())) {
             throw std::runtime_error("Failed to initialize video backend");
         }
 
         game_world.video_backend_ = video_backend.get();
 
-        // Load audio plugin dynamically
-        std::string audio_plugin_path = "../lib/sfml_audio_module.so";
+        // Load audio plugin from config
+        std::string audio_plugin_path =
+            Engine::ConfigLoader::GetAudioBackend();
         std::cout << "[Client] Loading audio plugin: " << audio_plugin_path
                   << std::endl;
 
@@ -71,6 +83,13 @@ int main() {
         auto audio_backend =
             std::make_unique<Audio::PluginAudioBackend>(audio_module);
         Audio::AudioManager audio_manager(std::move(audio_backend));
+
+        // Apply audio settings from config
+        audio_manager.SetSfxVolume(Engine::ConfigLoader::GetSfxVolume());
+        audio_manager.SetMusicVolume(Engine::ConfigLoader::GetMusicVolume());
+        audio_manager.MuteSfx(Engine::ConfigLoader::GetMuteSfx());
+        audio_manager.MuteMusic(Engine::ConfigLoader::GetMuteMusic());
+
         game_world.audio_manager_ = &audio_manager;
 
         std::cout << "[Client] Initializing registry..." << std::endl;
