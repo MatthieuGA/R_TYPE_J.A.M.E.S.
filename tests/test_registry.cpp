@@ -100,7 +100,7 @@ TEST(RegistryTest, SpawnEntity) {
 
     auto entity = reg.SpawnEntity();
 
-    EXPECT_EQ(entity.GetId(), 0);
+    EXPECT_EQ(entity.getId(), 0);
 }
 
 TEST(RegistryTest, SpawnMultipleEntities) {
@@ -110,17 +110,17 @@ TEST(RegistryTest, SpawnMultipleEntities) {
     auto e2 = reg.SpawnEntity();
     auto e3 = reg.SpawnEntity();
 
-    EXPECT_EQ(e1.GetId(), 0);
-    EXPECT_EQ(e2.GetId(), 1);
-    EXPECT_EQ(e3.GetId(), 2);
+    EXPECT_EQ(e1.getId(), 0);
+    EXPECT_EQ(e2.getId(), 1);
+    EXPECT_EQ(e3.getId(), 2);
 }
 
 TEST(RegistryTest, EntityFromIndex) {
     Engine::registry reg;
 
-    auto entity = reg.EntityFromIndex(42);
+    auto entity = reg.entity_from_index(42);
 
-    EXPECT_EQ(entity.GetId(), 42);
+    EXPECT_EQ(entity.getId(), 42);
 }
 
 TEST(RegistryTest, KillEntity) {
@@ -128,7 +128,7 @@ TEST(RegistryTest, KillEntity) {
     reg.RegisterComponent<Position>();
 
     auto entity = reg.SpawnEntity();
-    reg.AddComponent(entity, Position{10.0f, 20.0f});
+    reg.add_component(entity, Position{10.0f, 20.0f});
 
     EXPECT_NO_THROW(reg.KillEntity(entity));
 }
@@ -139,19 +139,19 @@ TEST(RegistryTest, KillEntityRemovesComponents) {
     reg.RegisterComponent<Velocity>();
 
     auto entity = reg.SpawnEntity();
-    reg.AddComponent(entity, Position{10.0f, 20.0f});
-    reg.AddComponent(entity, Velocity{1.0f, 2.0f});
+    reg.add_component(entity, Position{10.0f, 20.0f});
+    reg.add_component(entity, Velocity{1.0f, 2.0f});
 
     auto &positions = reg.GetComponents<Position>();
     auto &velocities = reg.GetComponents<Velocity>();
 
-    EXPECT_TRUE(positions.has(entity.GetId()));
-    EXPECT_TRUE(velocities.has(entity.GetId()));
+    EXPECT_TRUE(positions.has(entity.getId()));
+    EXPECT_TRUE(velocities.has(entity.getId()));
 
     reg.KillEntity(entity);
 
-    EXPECT_FALSE(positions.has(entity.GetId()));
-    EXPECT_FALSE(velocities.has(entity.GetId()));
+    EXPECT_FALSE(positions.has(entity.getId()));
+    EXPECT_FALSE(velocities.has(entity.getId()));
 }
 
 TEST(RegistryTest, ReuseDeadEntityId) {
@@ -160,13 +160,13 @@ TEST(RegistryTest, ReuseDeadEntityId) {
     auto e1 = reg.SpawnEntity();
     auto e2 = reg.SpawnEntity();
 
-    EXPECT_EQ(e1.GetId(), 0);
-    EXPECT_EQ(e2.GetId(), 1);
+    EXPECT_EQ(e1.getId(), 0);
+    EXPECT_EQ(e2.getId(), 1);
 
     reg.KillEntity(e1);
 
     auto e3 = reg.SpawnEntity();
-    EXPECT_EQ(e3.GetId(), 0);  // Should reuse ID 0
+    EXPECT_EQ(e3.getId(), 0);  // Should reuse ID 0
 }
 
 // ============================================================================
@@ -178,7 +178,7 @@ TEST(RegistryTest, AddComponentRvalue) {
     reg.RegisterComponent<Position>();
 
     auto entity = reg.SpawnEntity();
-    auto &pos = reg.AddComponent(entity, Position{10.0f, 20.0f});
+    auto &pos = reg.add_component(entity, Position{10.0f, 20.0f});
 
     EXPECT_TRUE(pos.has_value());
     EXPECT_EQ(pos->x, 10.0f);
@@ -191,7 +191,7 @@ TEST(RegistryTest, AddComponentLvalue) {
 
     auto entity = reg.SpawnEntity();
     Position pos_value{15.0f, 25.0f};
-    auto &pos = reg.AddComponent(entity, std::move(pos_value));
+    auto &pos = reg.add_component(entity, std::move(pos_value));
 
     EXPECT_TRUE(pos.has_value());
     EXPECT_EQ(pos->x, 15.0f);
@@ -206,17 +206,17 @@ TEST(RegistryTest, AddMultipleComponentsToEntity) {
 
     auto entity = reg.SpawnEntity();
 
-    reg.AddComponent(entity, Position{1.0f, 2.0f});
-    reg.AddComponent(entity, Velocity{3.0f, 4.0f});
-    reg.AddComponent(entity, Health{100});
+    reg.add_component(entity, Position{1.0f, 2.0f});
+    reg.add_component(entity, Velocity{3.0f, 4.0f});
+    reg.add_component(entity, Health{100});
 
     auto &positions = reg.GetComponents<Position>();
     auto &velocities = reg.GetComponents<Velocity>();
     auto &healths = reg.GetComponents<Health>();
 
-    EXPECT_TRUE(positions.has(entity.GetId()));
-    EXPECT_TRUE(velocities.has(entity.GetId()));
-    EXPECT_TRUE(healths.has(entity.GetId()));
+    EXPECT_TRUE(positions.has(entity.getId()));
+    EXPECT_TRUE(velocities.has(entity.getId()));
+    EXPECT_TRUE(healths.has(entity.getId()));
 }
 
 TEST(RegistryTest, AddComponentToMultipleEntities) {
@@ -227,19 +227,19 @@ TEST(RegistryTest, AddComponentToMultipleEntities) {
     auto e2 = reg.SpawnEntity();
     auto e3 = reg.SpawnEntity();
 
-    reg.AddComponent(e1, Position{1.0f, 1.0f});
-    reg.AddComponent(e2, Position{2.0f, 2.0f});
-    reg.AddComponent(e3, Position{3.0f, 3.0f});
+    reg.add_component(e1, Position{1.0f, 1.0f});
+    reg.add_component(e2, Position{2.0f, 2.0f});
+    reg.add_component(e3, Position{3.0f, 3.0f});
 
     auto &positions = reg.GetComponents<Position>();
 
-    EXPECT_TRUE(positions.has(e1.GetId()));
-    EXPECT_TRUE(positions.has(e2.GetId()));
-    EXPECT_TRUE(positions.has(e3.GetId()));
+    EXPECT_TRUE(positions.has(e1.getId()));
+    EXPECT_TRUE(positions.has(e2.getId()));
+    EXPECT_TRUE(positions.has(e3.getId()));
 
-    EXPECT_EQ(positions[e1.GetId()]->x, 1.0f);
-    EXPECT_EQ(positions[e2.GetId()]->x, 2.0f);
-    EXPECT_EQ(positions[e3.GetId()]->x, 3.0f);
+    EXPECT_EQ(positions[e1.getId()]->x, 1.0f);
+    EXPECT_EQ(positions[e2.getId()]->x, 2.0f);
+    EXPECT_EQ(positions[e3.getId()]->x, 3.0f);
 }
 
 TEST(RegistryTest, OverwriteComponent) {
@@ -248,12 +248,12 @@ TEST(RegistryTest, OverwriteComponent) {
 
     auto entity = reg.SpawnEntity();
 
-    reg.AddComponent(entity, Position{1.0f, 2.0f});
+    reg.add_component(entity, Position{1.0f, 2.0f});
     auto &positions = reg.GetComponents<Position>();
-    EXPECT_EQ(positions[entity.GetId()]->x, 1.0f);
+    EXPECT_EQ(positions[entity.getId()]->x, 1.0f);
 
-    reg.AddComponent(entity, Position{10.0f, 20.0f});
-    EXPECT_EQ(positions[entity.GetId()]->x, 10.0f);
+    reg.add_component(entity, Position{10.0f, 20.0f});
+    EXPECT_EQ(positions[entity.getId()]->x, 10.0f);
 }
 
 // ============================================================================
@@ -315,14 +315,14 @@ TEST(RegistryTest, RemoveComponent) {
     reg.RegisterComponent<Position>();
 
     auto entity = reg.SpawnEntity();
-    reg.AddComponent(entity, Position{1.0f, 2.0f});
+    reg.add_component(entity, Position{1.0f, 2.0f});
 
     auto &positions = reg.GetComponents<Position>();
-    EXPECT_TRUE(positions.has(entity.GetId()));
+    EXPECT_TRUE(positions.has(entity.getId()));
 
     reg.RemoveComponent<Position>(entity);
 
-    EXPECT_FALSE(positions.has(entity.GetId()));
+    EXPECT_FALSE(positions.has(entity.getId()));
 }
 
 TEST(RegistryTest, RemoveOneOfMultipleComponents) {
@@ -331,16 +331,16 @@ TEST(RegistryTest, RemoveOneOfMultipleComponents) {
     reg.RegisterComponent<Velocity>();
 
     auto entity = reg.SpawnEntity();
-    reg.AddComponent(entity, Position{1.0f, 2.0f});
-    reg.AddComponent(entity, Velocity{3.0f, 4.0f});
+    reg.add_component(entity, Position{1.0f, 2.0f});
+    reg.add_component(entity, Velocity{3.0f, 4.0f});
 
     auto &positions = reg.GetComponents<Position>();
     auto &velocities = reg.GetComponents<Velocity>();
 
     reg.RemoveComponent<Position>(entity);
 
-    EXPECT_FALSE(positions.has(entity.GetId()));
-    EXPECT_TRUE(velocities.has(entity.GetId()));
+    EXPECT_FALSE(positions.has(entity.getId()));
+    EXPECT_TRUE(velocities.has(entity.getId()));
 }
 
 TEST(RegistryTest, RemoveComponentFromMultipleEntities) {
@@ -351,17 +351,17 @@ TEST(RegistryTest, RemoveComponentFromMultipleEntities) {
     auto e2 = reg.SpawnEntity();
     auto e3 = reg.SpawnEntity();
 
-    reg.AddComponent(e1, Position{1.0f, 1.0f});
-    reg.AddComponent(e2, Position{2.0f, 2.0f});
-    reg.AddComponent(e3, Position{3.0f, 3.0f});
+    reg.add_component(e1, Position{1.0f, 1.0f});
+    reg.add_component(e2, Position{2.0f, 2.0f});
+    reg.add_component(e3, Position{3.0f, 3.0f});
 
     auto &positions = reg.GetComponents<Position>();
 
     reg.RemoveComponent<Position>(e2);
 
-    EXPECT_TRUE(positions.has(e1.GetId()));
-    EXPECT_FALSE(positions.has(e2.GetId()));
-    EXPECT_TRUE(positions.has(e3.GetId()));
+    EXPECT_TRUE(positions.has(e1.getId()));
+    EXPECT_FALSE(positions.has(e2.getId()));
+    EXPECT_TRUE(positions.has(e3.getId()));
 }
 
 // ============================================================================
@@ -380,7 +380,7 @@ TEST(RegistryTest, AddSystemLambda) {
             system_called = true;
         });
 
-    reg.RunSystems();
+    reg.run_systems();
 
     EXPECT_TRUE(system_called);
 }
@@ -391,8 +391,8 @@ TEST(RegistryTest, SystemModifiesComponents) {
     reg.RegisterComponent<Velocity>();
 
     auto entity = reg.SpawnEntity();
-    reg.AddComponent(entity, Position{0.0f, 0.0f});
-    reg.AddComponent(entity, Velocity{1.0f, 2.0f});
+    reg.add_component(entity, Position{0.0f, 0.0f});
+    reg.add_component(entity, Velocity{1.0f, 2.0f});
 
     // Movement system
     reg.AddSystem<Engine::sparse_array<Position>,
@@ -412,10 +412,10 @@ TEST(RegistryTest, SystemModifiesComponents) {
 
     auto &positions = reg.GetComponents<Position>();
 
-    reg.RunSystems();
+    reg.run_systems();
 
-    EXPECT_EQ(positions[entity.GetId()]->x, 1.0f);
-    EXPECT_EQ(positions[entity.GetId()]->y, 2.0f);
+    EXPECT_EQ(positions[entity.getId()]->x, 1.0f);
+    EXPECT_EQ(positions[entity.getId()]->y, 2.0f);
 }
 
 TEST(RegistryTest, MultipleSystemsRun) {
@@ -436,7 +436,7 @@ TEST(RegistryTest, MultipleSystemsRun) {
         [&call_count](Engine::registry &r,
             Engine::sparse_array<Position> &positions) { call_count++; });
 
-    reg.RunSystems();
+    reg.run_systems();
 
     EXPECT_EQ(call_count, 3);
 }
@@ -447,8 +447,8 @@ TEST(RegistryTest, SystemAccessesMultipleComponentTypes) {
     reg.RegisterComponent<Health>();
 
     auto entity = reg.SpawnEntity();
-    reg.AddComponent(entity, Position{10.0f, 10.0f});
-    reg.AddComponent(entity, Health{50});
+    reg.add_component(entity, Position{10.0f, 10.0f});
+    reg.add_component(entity, Health{50});
 
     bool system_ran = false;
 
@@ -468,7 +468,7 @@ TEST(RegistryTest, SystemAccessesMultipleComponentTypes) {
             }
         });
 
-    reg.RunSystems();
+    reg.run_systems();
 
     EXPECT_TRUE(system_ran);
 }
@@ -487,8 +487,8 @@ TEST(RegistryTest, CompleteEntityLifecycle) {
     auto entity = reg.SpawnEntity();
 
     // Add components
-    reg.AddComponent(entity, Position{0.0f, 0.0f});
-    reg.AddComponent(entity, Velocity{5.0f, 10.0f});
+    reg.add_component(entity, Position{0.0f, 0.0f});
+    reg.add_component(entity, Velocity{5.0f, 10.0f});
     reg.EmplaceComponent<Health>(entity, 100);
 
     // Verify components exist
@@ -496,27 +496,27 @@ TEST(RegistryTest, CompleteEntityLifecycle) {
     auto &velocities = reg.GetComponents<Velocity>();
     auto &healths = reg.GetComponents<Health>();
 
-    EXPECT_TRUE(positions.has(entity.GetId()));
-    EXPECT_TRUE(velocities.has(entity.GetId()));
-    EXPECT_TRUE(healths.has(entity.GetId()));
+    EXPECT_TRUE(positions.has(entity.getId()));
+    EXPECT_TRUE(velocities.has(entity.getId()));
+    EXPECT_TRUE(healths.has(entity.getId()));
 
     // Modify components
-    positions[entity.GetId()]->x = 100.0f;
-    healths[entity.GetId()]->hp = 75;
+    positions[entity.getId()]->x = 100.0f;
+    healths[entity.getId()]->hp = 75;
 
-    EXPECT_EQ(positions[entity.GetId()]->x, 100.0f);
-    EXPECT_EQ(healths[entity.GetId()]->hp, 75);
+    EXPECT_EQ(positions[entity.getId()]->x, 100.0f);
+    EXPECT_EQ(healths[entity.getId()]->hp, 75);
 
     // Remove one component
     reg.RemoveComponent<Velocity>(entity);
-    EXPECT_FALSE(velocities.has(entity.GetId()));
-    EXPECT_TRUE(positions.has(entity.GetId()));
-    EXPECT_TRUE(healths.has(entity.GetId()));
+    EXPECT_FALSE(velocities.has(entity.getId()));
+    EXPECT_TRUE(positions.has(entity.getId()));
+    EXPECT_TRUE(healths.has(entity.getId()));
 
     // Kill entity
     reg.KillEntity(entity);
-    EXPECT_FALSE(positions.has(entity.GetId()));
-    EXPECT_FALSE(healths.has(entity.GetId()));
+    EXPECT_FALSE(positions.has(entity.getId()));
+    EXPECT_FALSE(healths.has(entity.getId()));
 }
 
 TEST(RegistryTest, MultipleEntitiesWithDifferentComponents) {
@@ -530,36 +530,36 @@ TEST(RegistryTest, MultipleEntitiesWithDifferentComponents) {
     auto projectile = reg.SpawnEntity();
 
     // Player has all components
-    reg.AddComponent(player, Position{0.0f, 0.0f});
-    reg.AddComponent(player, Velocity{0.0f, 0.0f});
-    reg.AddComponent(player, Health{100});
+    reg.add_component(player, Position{0.0f, 0.0f});
+    reg.add_component(player, Velocity{0.0f, 0.0f});
+    reg.add_component(player, Health{100});
 
     // Enemy has position and health
-    reg.AddComponent(enemy, Position{50.0f, 50.0f});
-    reg.AddComponent(enemy, Health{50});
+    reg.add_component(enemy, Position{50.0f, 50.0f});
+    reg.add_component(enemy, Health{50});
 
     // Projectile has only position and velocity
-    reg.AddComponent(projectile, Position{10.0f, 10.0f});
-    reg.AddComponent(projectile, Velocity{15.0f, 0.0f});
+    reg.add_component(projectile, Position{10.0f, 10.0f});
+    reg.add_component(projectile, Velocity{15.0f, 0.0f});
 
     auto &positions = reg.GetComponents<Position>();
     auto &velocities = reg.GetComponents<Velocity>();
     auto &healths = reg.GetComponents<Health>();
 
     // Verify player
-    EXPECT_TRUE(positions.has(player.GetId()));
-    EXPECT_TRUE(velocities.has(player.GetId()));
-    EXPECT_TRUE(healths.has(player.GetId()));
+    EXPECT_TRUE(positions.has(player.getId()));
+    EXPECT_TRUE(velocities.has(player.getId()));
+    EXPECT_TRUE(healths.has(player.getId()));
 
     // Verify enemy
-    EXPECT_TRUE(positions.has(enemy.GetId()));
-    EXPECT_FALSE(velocities.has(enemy.GetId()));
-    EXPECT_TRUE(healths.has(enemy.GetId()));
+    EXPECT_TRUE(positions.has(enemy.getId()));
+    EXPECT_FALSE(velocities.has(enemy.getId()));
+    EXPECT_TRUE(healths.has(enemy.getId()));
 
     // Verify projectile
-    EXPECT_TRUE(positions.has(projectile.GetId()));
-    EXPECT_TRUE(velocities.has(projectile.GetId()));
-    EXPECT_FALSE(healths.has(projectile.GetId()));
+    EXPECT_TRUE(positions.has(projectile.getId()));
+    EXPECT_TRUE(velocities.has(projectile.getId()));
+    EXPECT_FALSE(healths.has(projectile.getId()));
 }
 
 TEST(RegistryTest, StressTestManyEntities) {
@@ -573,7 +573,7 @@ TEST(RegistryTest, StressTestManyEntities) {
     // Spawn many entities
     for (size_t i = 0; i < num_entities; ++i) {
         entities.push_back(reg.SpawnEntity());
-        reg.AddComponent(entities.back(),
+        reg.add_component(entities.back(),
             Position{static_cast<float>(i), static_cast<float>(i * 2)});
         reg.EmplaceComponent<Health>(
             entities.back(), static_cast<int>(i % 100));
@@ -584,8 +584,8 @@ TEST(RegistryTest, StressTestManyEntities) {
 
     // Verify all entities have components
     for (size_t i = 0; i < num_entities; ++i) {
-        EXPECT_TRUE(positions.has(entities[i].GetId()));
-        EXPECT_TRUE(healths.has(entities[i].GetId()));
+        EXPECT_TRUE(positions.has(entities[i].getId()));
+        EXPECT_TRUE(healths.has(entities[i].getId()));
     }
 
     // Kill half the entities
@@ -595,13 +595,13 @@ TEST(RegistryTest, StressTestManyEntities) {
 
     // Verify first half are dead
     for (size_t i = 0; i < num_entities / 2; ++i) {
-        EXPECT_FALSE(positions.has(entities[i].GetId()));
-        EXPECT_FALSE(healths.has(entities[i].GetId()));
+        EXPECT_FALSE(positions.has(entities[i].getId()));
+        EXPECT_FALSE(healths.has(entities[i].getId()));
     }
 
     // Verify second half are alive
     for (size_t i = num_entities / 2; i < num_entities; ++i) {
-        EXPECT_TRUE(positions.has(entities[i].GetId()));
-        EXPECT_TRUE(healths.has(entities[i].GetId()));
+        EXPECT_TRUE(positions.has(entities[i].getId()));
+        EXPECT_TRUE(healths.has(entities[i].getId()));
     }
 }

@@ -5,6 +5,7 @@
 #include <utility>
 #include <vector>
 
+#include "engine/audio/AudioManager.hpp"
 #include "game/factory/factory_ennemies/FactoryActors.hpp"
 #include "include/ColorsConst.hpp"
 #include "include/EnemiesConst.hpp"
@@ -91,6 +92,13 @@ void GameScene::InitPlayerLevel(Engine::registry &reg) {
 }
 
 void GameScene::InitScene(Engine::registry &reg, GameWorld &gameWorld) {
+    // Register and play game music
+    if (gameWorld.audio_manager_) {
+        gameWorld.audio_manager_->RegisterAsset(
+            "main_theme", "assets/sounds/main_theme.ogg", true);
+        gameWorld.audio_manager_->PlayMusic("main_theme", true);
+    }
+
     InitBackgrounds(reg);
     InitPlayerLevel(reg);
     std::random_device rd;

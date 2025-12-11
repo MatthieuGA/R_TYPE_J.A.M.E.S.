@@ -19,6 +19,7 @@ void InitRegistryComponents(Engine::registry &reg) {
     reg.RegisterComponent<Rtype::Client::Component::TimedEvents>();
     reg.RegisterComponent<Rtype::Client::Component::FrameEvents>();
     reg.RegisterComponent<Rtype::Client::Component::PatternMovement>();
+    reg.RegisterComponent<Rtype::Client::Component::SoundRequest>();
     // Register gameplay components
     reg.RegisterComponent<Rtype::Client::Component::PlayerTag>();
     reg.RegisterComponent<Rtype::Client::Component::EnemyTag>();
