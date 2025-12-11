@@ -66,17 +66,36 @@ The audio plugin system handles all sound effects and music playback. It provide
 
 **Interface:** `Engine::Video::IVideoModule`
 **Location:** `engine/include/video/IVideoModule.hpp`
+**Rendering Layer:** `Engine::Rendering::RenderingEngine`
 **Implementation:** SFML Video Module (`client/plugins/video/sfml/`)
 
-The video plugin system handles all graphics rendering and window management. It provides:
+The video plugin system uses a **3-layer architecture** for clean separation of concerns:
+
+```
+[Game Systems] → [RenderingEngine] → [IVideoModule Plugin] → [Graphics Library]
+```
+
+**RenderingEngine** provides game-level abstractions:
+- High-level sprite and text rendering methods
+- Automatic transform hierarchy handling
+- Frame lifecycle management (BeginFrame/EndFrame)
+- Camera system support (ready for future expansion)
+- Centralized rendering logic
+
+**IVideoModule Plugin** provides low-level graphics API:
 - Window creation and event handling
-- Sprite rendering with transforms (position, rotation, scale, origin)
-- Texture loading and management with caching
-- Font loading and text rendering
-- Shader loading and parameter setting
-- Backend-agnostic color, vector, and rect types
+- Primitive rendering operations (sprites, text, shapes)
+- Resource loading (textures, fonts, shaders)
+- Backend-agnostic types (Color, Vector2f, Transform)
+
+**Key Features:**
+- Plugin swapping at runtime via configuration
+- Game systems decoupled from graphics details
+- Simplified rendering code in systems (~90% less boilerplate)
+- Support for multiple backends (SFML, SDL2, Raylib, etc.)
 
 📘 **[Video Plugin Development Guide](./video-plugin-guide.md)**
+📘 **[RenderingEngine Migration Guide](../../RENDERING_ENGINE_MIGRATION.md)**
 
 ## Plugin Development Guides
 

@@ -11,14 +11,14 @@
 namespace Rtype::Client {
 
 /**
- * @brief Initialize a drawable by loading its texture via video backend.
+ * @brief Initialize a drawable by loading its texture via rendering engine.
  *
  * @param drawable Drawable component to initialize
- * @param game_world Game world containing video backend
+ * @param game_world Game world containing rendering engine
  */
 void InitializeDrawable(Com::Drawable &drawable, GameWorld &game_world) {
-    if (!game_world.video_backend_) {
-        std::cerr << "[DrawableSystem] ERROR: video_backend is null!"
+    if (!game_world.rendering_engine_) {
+        std::cerr << "[DrawableSystem] ERROR: rendering_engine is null!"
                   << std::endl;
         return;
     }
@@ -26,8 +26,8 @@ void InitializeDrawable(Com::Drawable &drawable, GameWorld &game_world) {
     std::cout << "[DrawableSystem] Loading texture: '" << drawable.sprite_path
               << "' with ID: '" << drawable.texture_id << "'" << std::endl;
 
-    // Load texture via video backend
-    bool loaded = game_world.video_backend_->LoadTexture(
+    // Load texture via rendering engine
+    bool loaded = game_world.rendering_engine_->LoadTexture(
         drawable.texture_id, drawable.sprite_path);
 
     if (!loaded) {
@@ -43,7 +43,7 @@ void InitializeDrawable(Com::Drawable &drawable, GameWorld &game_world) {
 }
 
 /**
- * @brief Render one drawable entity using video backend.
+ * @brief Render one drawable entity using rendering engine.
  */
 void RenderOneEntity(Eng::sparse_array<Com::Transform> const &transforms,
     Eng::sparse_array<Com::Drawable> &drawables,
@@ -51,7 +51,7 @@ void RenderOneEntity(Eng::sparse_array<Com::Transform> const &transforms,
     auto &transform = transforms[i];
     auto &drawable = drawables[i];
 
-    if (!game_world.video_backend_) {
+    if (!game_world.rendering_engine_) {
         return;
     }
 
@@ -61,13 +61,6 @@ void RenderOneEntity(Eng::sparse_array<Com::Transform> const &transforms,
 
     float world_scale =
         CalculateCumulativeScale(transform.value(), transforms);
-
-    // Build transform for video backend
-    Engine::Video::Transform render_transform;
-    render_transform.position = world_position;
-    render_transform.rotation = transform->rotationDegrees;
-    render_transform.scale =
-        Engine::Graphics::Vector2f(world_scale, world_scale);
 
     // Calculate origin based on sprite size (texture_rect or full texture)
     Engine::Graphics::Vector2f sprite_size;
@@ -80,12 +73,10 @@ void RenderOneEntity(Eng::sparse_array<Com::Transform> const &transforms,
     } else {
         // Use full texture size
         sprite_size =
-            game_world.video_backend_->GetTextureSize(drawable->texture_id);
+            game_world.rendering_engine_->GetTextureSize(drawable->texture_id);
     }
     Engine::Graphics::Vector2f origin_offset =
         GetOffsetFromTransform(transform.value(), sprite_size);
-    render_transform.origin =
-        Engine::Graphics::Vector2f(-origin_offset.x, -origin_offset.y);
 
     // Apply opacity to color
     Engine::Graphics::Color final_color = drawable->color;
@@ -113,20 +104,21 @@ void RenderOneEntity(Eng::sparse_array<Com::Transform> const &transforms,
 
         // Set time uniform for wave effects
         float time = game_world.total_time_clock_.GetElapsedTime().AsSeconds();
-        game_world.video_backend_->SetShaderParameter(
+        game_world.rendering_engine_->SetShaderParameter(
             shader_id_str, "time", time);
 
         // Set other shader uniforms from the shader component
         for (const auto &[uniform_name, uniform_value] :
             shaders[i]->uniforms_float) {
-            game_world.video_backend_->SetShaderParameter(
+            game_world.rendering_engine_->SetShaderParameter(
                 shader_id_str, uniform_name, uniform_value);
         }
     }
 
-    // Draw using video backend
-    game_world.video_backend_->DrawSprite(drawable->texture_id,
-        render_transform, texture_rect_ptr, final_color, shader_id_ptr);
+    // Use high-level RenderSprite method from RenderingEngine
+    game_world.rendering_engine_->RenderSprite(drawable->texture_id,
+        world_position, world_scale, transform->rotationDegrees,
+        texture_rect_ptr, final_color, origin_offset, shader_id_ptr);
 }
 
 void DrawableSystem(Eng::registry &reg, GameWorld &game_world,

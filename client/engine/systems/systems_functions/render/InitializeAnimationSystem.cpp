@@ -16,13 +16,13 @@ namespace Rtype::Client {
  */
 void InitializeDrawableAnimated(Com::Drawable &drawable,
     const Com::AnimatedSprite &animated_sprite, GameWorld &game_world) {
-    if (!game_world.video_backend_) {
+    if (!game_world.rendering_engine_) {
         std::cerr << "ERROR: video_backend is null!" << std::endl;
         return;
     }
 
     // Load texture via video backend
-    bool loaded = game_world.video_backend_->LoadTexture(
+    bool loaded = game_world.rendering_engine_->LoadTexture(
         drawable.texture_id, drawable.sprite_path);
 
     if (!loaded) {

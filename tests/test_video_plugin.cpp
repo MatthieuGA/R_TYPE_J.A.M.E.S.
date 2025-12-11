@@ -9,9 +9,8 @@
 #include <string>
 
 #include <loader/DLLoader.hpp>
+#include <rendering/RenderingEngine.hpp>
 #include <video/IVideoModule.hpp>
-
-#include "engine/video/PluginVideoBackend.hpp"
 
 namespace {
 
@@ -47,26 +46,27 @@ TEST(VideoPluginTest, InitializeModule) {
 }
 
 /**
- * @brief Test plugin video backend adapter.
+ * @brief Test rendering engine adapter.
  */
-TEST(VideoPluginTest, PluginBackendAdapter) {
+TEST(VideoPluginTest, RenderingEngineAdapter) {
     Engine::DLLoader<Engine::Video::IVideoModule> loader;
     loader.open(kPluginPath);
     auto module = loader.getInstance("entryPoint");
     ASSERT_NE(module, nullptr);
 
-    auto backend = std::make_unique<Engine::Video::PluginVideoBackend>(module);
+    auto rendering_engine =
+        std::make_unique<Engine::Rendering::RenderingEngine>(module);
 
-    EXPECT_TRUE(backend->Initialize(640, 480, "Backend Test"));
-    EXPECT_TRUE(backend->IsWindowOpen());
-    EXPECT_EQ(backend->GetModuleName(), "SFML Video Module");
+    EXPECT_TRUE(rendering_engine->Initialize(640, 480, "Engine Test"));
+    EXPECT_TRUE(rendering_engine->IsWindowOpen());
+    EXPECT_EQ(rendering_engine->GetModuleName(), "SFML Video Module");
 
-    auto size = backend->GetWindowSize();
+    auto size = rendering_engine->GetWindowSize();
     EXPECT_EQ(size.x, 640.0f);
     EXPECT_EQ(size.y, 480.0f);
 
-    backend->Shutdown();
-    EXPECT_FALSE(backend->IsWindowOpen());
+    rendering_engine->Shutdown();
+    EXPECT_FALSE(rendering_engine->IsWindowOpen());
 }
 
 /**

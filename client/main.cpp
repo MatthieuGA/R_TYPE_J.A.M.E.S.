@@ -12,7 +12,6 @@
 #include "engine/GameWorld.hpp"
 #include "engine/audio/AudioManager.hpp"
 #include "engine/audio/PluginAudioBackend.hpp"
-#include "engine/video/PluginVideoBackend.hpp"
 #include "game/InitRegistry.hpp"
 #include "game/scenes_management/InitScenes.hpp"
 #include "include/WindowConst.hpp"
@@ -50,17 +49,18 @@ int main() {
         std::cout << "[Client] Loaded video plugin: "
                   << video_module->GetModuleName() << std::endl;
 
-        // Initialize video subsystem with plugin adapter
-        auto video_backend =
-            std::make_unique<Engine::Video::PluginVideoBackend>(video_module);
+        // Initialize rendering engine with plugin
+        auto rendering_engine =
+            std::make_unique<Engine::Rendering::RenderingEngine>(video_module);
 
-        if (!video_backend->Initialize(Engine::ConfigLoader::GetWindowWidth(),
+        if (!rendering_engine->Initialize(
+                Engine::ConfigLoader::GetWindowWidth(),
                 Engine::ConfigLoader::GetWindowHeight(),
                 Engine::ConfigLoader::GetWindowTitle())) {
-            throw std::runtime_error("Failed to initialize video backend");
+            throw std::runtime_error("Failed to initialize rendering engine");
         }
 
-        game_world.video_backend_ = video_backend.get();
+        game_world.rendering_engine_ = rendering_engine.get();
 
         // Load audio plugin from config
         std::string audio_plugin_path =
@@ -104,7 +104,7 @@ int main() {
         std::cout << "[Client] Clearing spurious events..." << std::endl;
         Engine::Video::Event dummy_event;
         int event_count = 0;
-        while (video_backend->PollEvent(dummy_event)) {
+        while (rendering_engine->PollEvent(dummy_event)) {
             event_count++;
             std::cout << "[Client] Discarded event type: "
                       << static_cast<int>(dummy_event.type) << std::endl;
@@ -112,15 +112,15 @@ int main() {
         std::cout << "[Client] Cleared " << event_count << " spurious events"
                   << std::endl;
 
-        // Main game loop using video backend
+        // Main game loop using rendering engine
         std::cout << "[Client] Entering main loop..." << std::endl;
-        while (video_backend->IsWindowOpen()) {
+        while (rendering_engine->IsWindowOpen()) {
             Engine::Video::Event event;
-            while (video_backend->PollEvent(event)) {
+            while (rendering_engine->PollEvent(event)) {
                 if (event.type == Engine::Video::EventType::CLOSED) {
                     std::cout << "[Client] Window close event received"
                               << std::endl;
-                    video_backend->CloseWindow();
+                    rendering_engine->CloseWindow();
                 } else if (event.type ==
                            Engine::Video::EventType::MOUSE_MOVED) {
                     // Update mouse state
@@ -145,14 +145,14 @@ int main() {
             game_world.last_delta_ =
                 game_world.delta_time_clock_.Restart().AsSeconds();
 
-            video_backend->Clear(Engine::Video::Color(
+            rendering_engine->BeginFrame(Engine::Graphics::Color(
                 30, 30, 80, 255));  // Dark blue background
 
             game_world.registry_.RunSystems();
-            video_backend->Display();
+            rendering_engine->EndFrame();
         }
 
-        video_backend->Shutdown();
+        rendering_engine->Shutdown();
         return 0;
     } catch (const std::exception &e) {
         std::cerr << "Exception: " << e.what() << std::endl;

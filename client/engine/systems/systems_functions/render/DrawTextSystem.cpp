@@ -12,20 +12,20 @@ namespace Rtype::Client {
 const int FONT_SIZE_SCALE = 10;
 
 /**
- * @brief Initialize a text component by loading its font via video backend.
+ * @brief Initialize a text component by loading its font via rendering engine.
  *
  * @param text Text component to initialize
- * @param game_world Game world containing video backend
+ * @param game_world Game world containing rendering engine
  */
 void InitializeText(Com::Text &text, GameWorld &game_world) {
-    if (!game_world.video_backend_) {
-        std::cerr << "ERROR: video_backend is null!" << std::endl;
+    if (!game_world.rendering_engine_) {
+        std::cerr << "ERROR: rendering_engine is null!" << std::endl;
         return;
     }
 
-    // Load font via video backend
+    // Load font via rendering engine
     bool loaded =
-        game_world.video_backend_->LoadFont(text.font_id, text.font_path);
+        game_world.rendering_engine_->LoadFont(text.font_id, text.font_path);
 
     if (!loaded) {
         std::cerr << "ERROR: Failed to load font: " << text.font_path
@@ -48,7 +48,7 @@ void RenderOneTextEntity(Eng::sparse_array<Com::Transform> const &transforms,
     auto &transform = transforms[i];
     auto &text = texts[i];
 
-    if (!game_world.video_backend_) {
+    if (!game_world.rendering_engine_) {
         return;
     }
 
@@ -74,7 +74,7 @@ void RenderOneTextEntity(Eng::sparse_array<Com::Transform> const &transforms,
 
     // Get text bounds to calculate origin
     Engine::Graphics::FloatRect text_bounds =
-        game_world.video_backend_->GetTextBounds(
+        game_world.rendering_engine_->GetTextBounds(
             text->content, text->font_id, scaled_char_size);
 
     // Calculate origin based on transform's origin point
@@ -83,18 +83,10 @@ void RenderOneTextEntity(Eng::sparse_array<Com::Transform> const &transforms,
     Engine::Graphics::Vector2f origin_offset =
         GetOffsetFromTransform(transform.value(), text_size);
 
-    // Build transform for video backend
-    Engine::Video::Transform render_transform;
-    render_transform.position = world_position;
-    render_transform.rotation = transform->rotationDegrees;
-    render_transform.scale =
-        Engine::Graphics::Vector2f(1.0f, 1.0f);  // Scale already in char size
-    render_transform.origin =
-        Engine::Graphics::Vector2f(-origin_offset.x, -origin_offset.y);
-
-    // Draw using video backend
-    game_world.video_backend_->DrawText(text->content, text->font_id,
-        render_transform, scaled_char_size, final_color);
+    // Use high-level RenderText method from RenderingEngine
+    game_world.rendering_engine_->RenderText(text->content, text->font_id,
+        world_position, 1.0f, transform->rotationDegrees, scaled_char_size,
+        final_color, origin_offset);
 }
 
 /**

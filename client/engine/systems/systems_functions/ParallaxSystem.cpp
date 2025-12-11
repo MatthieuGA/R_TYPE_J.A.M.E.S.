@@ -20,7 +20,7 @@ void ParallaxSystem(Eng::registry &reg, const GameWorld &game_world,
     Eng::sparse_array<Com::Drawable> const &drawables) {
     (void)reg;
 
-    if (!game_world.video_backend_) {
+    if (!game_world.rendering_engine_) {
         return;
     }
 
@@ -36,7 +36,7 @@ void ParallaxSystem(Eng::registry &reg, const GameWorld &game_world,
 
         // Get texture size from video backend for wrapping
         Engine::Graphics::Vector2f texture_size =
-            game_world.video_backend_->GetTextureSize(drawable.texture_id);
+            game_world.rendering_engine_->GetTextureSize(drawable.texture_id);
 
         // Wrap around when the texture scrolls off screen
         if (transform.x <= -(texture_size.x * transform.scale)) {

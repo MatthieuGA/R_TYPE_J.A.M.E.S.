@@ -22,9 +22,28 @@ By the end of this guide, you'll have created a complete video plugin that:
 - Compiles to a shared library (`.so` or `.dll`)
 - Integrates seamlessly with the engine
 
+## Architecture Overview
+
+The R-TYPE J.A.M.E.S. video system uses a **3-layer architecture**:
+
+```
+[Game Systems] → [RenderingEngine] → [IVideoModule Plugin] → [Graphics Library]
+```
+
+- **Game Systems**: High-level game logic (DrawableSystem, DrawTextSystem)
+- **RenderingEngine**: Game-level rendering abstractions (sprite/text rendering, camera)
+- **IVideoModule Plugin**: Low-level graphics API (implemented by plugins)
+- **Graphics Library**: Backend implementation (SFML, SDL2, Raylib, etc.)
+
+**Key Benefits:**
+- Game systems are decoupled from graphics details
+- Plugins can be swapped at runtime via configuration
+- RenderingEngine provides game-oriented convenience methods
+- Low-level control still available when needed
+
 ## Step 1: Understanding the Interface
 
-The `IVideoModule` interface defines the contract for all video plugins:
+The `IVideoModule` interface defines the low-level contract for all video plugins:
 
 ```cpp
 namespace Engine::Video {
@@ -661,12 +680,13 @@ cmake --build . --target my_video_module
 
 The plugin will be output to `build/lib/my_video_module.so` (or `.dll` on Windows).
 
-## Step 8: Load and Use the Plugin
+## Step 8: Using the Plugin via RenderingEngine (Recommended)
 
-**In your application:**
+**The recommended way to use video plugins is through the RenderingEngine:**
 
 ```cpp
 #include <loader/DLLoader.hpp>
+#include <rendering/RenderingEngine.hpp>
 #include <video/IVideoModule.hpp>
 #include <iostream>
 
@@ -690,54 +710,90 @@ int main() {
 
     std::cout << "Loaded: " << video_module->GetModuleName() << std::endl;
 
-    // Initialize window
-    if (!video_module->Initialize(1920, 1080, "R-Type")) {
-        std::cerr << "Failed to initialize video module!" << std::endl;
+    // Create RenderingEngine with the plugin
+    auto rendering_engine = 
+        std::make_unique<Engine::Rendering::RenderingEngine>(video_module);
+
+    // Initialize
+    if (!rendering_engine->Initialize(1920, 1080, "R-Type")) {
+        std::cerr << "Failed to initialize rendering engine!" << std::endl;
         return 1;
     }
 
     // Load resources
-    video_module->LoadTexture("player", "assets/images/player.png");
-    video_module->LoadFont("main_font", "assets/fonts/arial.ttf");
+    rendering_engine->LoadTexture("player", "assets/images/player.png");
+    rendering_engine->LoadFont("main_font", "assets/fonts/arial.ttf");
 
     // Main game loop
-    while (video_module->IsOpen()) {
+    while (rendering_engine->IsWindowOpen()) {
         // Handle events
         Engine::Video::Event event;
-        while (video_module->PollEvent(event)) {
-            if (event.type == Engine::Video::EventType::Closed) {
-                video_module->Close();
+        while (rendering_engine->PollEvent(event)) {
+            if (event.type == Engine::Video::EventType::CLOSED) {
+                rendering_engine->CloseWindow();
             }
         }
 
-        // Render
-        video_module->Clear(Engine::Video::Color::Black);
+        // Begin frame (clears screen)
+        rendering_engine->BeginFrame(Engine::Graphics::Color(30, 30, 80, 255));
 
-        // Draw sprite
-        Engine::Video::Transform transform;
-        transform.position = {100.0f, 100.0f};
-        transform.scale = {2.0f, 2.0f};
-        transform.rotation = 45.0f;
-        transform.origin = {16.0f, 16.0f};  // Center of 32x32 sprite
-        
-        video_module->DrawSprite("player", transform);
+        // High-level sprite rendering with automatic transform handling
+        rendering_engine->RenderSprite(
+            "player",                          // texture_id
+            {100.0f, 100.0f},                 // world_position
+            2.0f,                              // world_scale
+            45.0f,                             // rotation
+            nullptr,                           // texture_rect (full texture)
+            {255, 255, 255, 255},             // color
+            {16.0f, 16.0f},                   // origin_offset
+            nullptr                            // shader_id (optional)
+        );
 
-        // Draw text
-        Engine::Video::Transform text_transform;
-        text_transform.position = {10.0f, 10.0f};
-        
-        video_module->DrawText("main_font", "Hello, World!", 
-                              text_transform, 24, Engine::Video::Color::White);
+        // High-level text rendering
+        rendering_engine->RenderText(
+            "Hello, World!",                   // text
+            "main_font",                       // font_id
+            {10.0f, 10.0f},                   // world_position
+            1.0f,                              // scale
+            0.0f,                              // rotation
+            24,                                // character_size
+            {255, 255, 255, 255},             // color
+            {0.0f, 0.0f}                      // origin_offset
+        );
 
-        video_module->Display();
+        // End frame (displays to screen)
+        rendering_engine->EndFrame();
     }
 
     // Cleanup
-    video_module->Shutdown();
+    rendering_engine->Shutdown();
     
     return 0;
 }
 ```
+
+### Direct Plugin Access (Advanced)
+
+For low-level control or custom rendering, you can still access the plugin directly:
+
+```cpp
+// Get direct plugin access from RenderingEngine
+Engine::Video::IVideoModule* plugin = rendering_engine->GetPlugin();
+
+// Use plugin directly for advanced features
+plugin->DrawVertices(vertices, count, primitive_type, render_states);
+
+// Or bypass RenderingEngine entirely
+Engine::DLLoader<Engine::Video::IVideoModule> loader;
+loader.open("lib/my_video_module.so");
+auto module = loader.getInstance("entryPoint");
+
+// Use module directly (not recommended for game code)
+module->Initialize(800, 600, "Direct Access");
+// ... manual rendering ...
+```
+
+**Note:** Direct plugin access is discouraged for game systems. Use RenderingEngine for cleaner, more maintainable code.
 
 ## Advanced Topics
 

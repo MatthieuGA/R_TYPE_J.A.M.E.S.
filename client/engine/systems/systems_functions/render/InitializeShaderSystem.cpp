@@ -14,7 +14,7 @@ namespace Rtype::Client {
  * @param game_world Game world containing video backend
  */
 void InitializeShader(Com::Shader &shader_comp, GameWorld &game_world) {
-    if (!game_world.video_backend_) {
+    if (!game_world.rendering_engine_) {
         std::cerr << "[InitializeShader] ERROR: video_backend is null!"
                   << std::endl;
         return;
@@ -25,7 +25,7 @@ void InitializeShader(Com::Shader &shader_comp, GameWorld &game_world) {
               << shader_comp.shader_id << "'" << std::endl;
 
     // Load shader via video backend (fragment shader only for now)
-    bool loaded = game_world.video_backend_->LoadShader(
+    bool loaded = game_world.rendering_engine_->LoadShader(
         shader_comp.shader_id, "", shader_comp.shader_path);
 
     if (!loaded) {

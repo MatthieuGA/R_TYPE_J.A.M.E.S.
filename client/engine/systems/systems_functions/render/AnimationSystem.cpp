@@ -18,13 +18,13 @@ namespace Rtype::Client {
  */
 void SetFrame(Com::AnimatedSprite &anim_sprite, Com::Drawable &drawable,
     GameWorld &game_world) {
-    if (!game_world.video_backend_ || anim_sprite.frame_width == 0) {
+    if (!game_world.rendering_engine_ || anim_sprite.frame_width == 0) {
         return;
     }
 
     // Get texture size from backend
     Engine::Graphics::Vector2f texture_size =
-        game_world.video_backend_->GetTextureSize(drawable.texture_id);
+        game_world.rendering_engine_->GetTextureSize(drawable.texture_id);
 
     if (texture_size.x == 0) {
         return;

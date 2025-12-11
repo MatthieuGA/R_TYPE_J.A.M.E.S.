@@ -53,8 +53,8 @@ void MainMenuScene::InitScene(Engine::registry &reg, GameWorld &gameWorld) {
     reg.AddComponent<Component::Clickable>(quit_button_entity,
         Component::Clickable{
             [&gameWorld]() {
-                if (gameWorld.video_backend_) {
-                    gameWorld.video_backend_->CloseWindow();
+                if (gameWorld.rendering_engine_) {
+                    gameWorld.rendering_engine_->CloseWindow();
                 }
             },
         });
