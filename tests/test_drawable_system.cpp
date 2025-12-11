@@ -15,6 +15,8 @@ TEST(DrawableSystem, LoadsAndAppliesTransform) {
     Eng::sparse_array<Com::Transform> transforms;
     Eng::sparse_array<Com::Drawable> drawables;
     Eng::sparse_array<Com::Shader> shaders;
+    Eng::sparse_array<Com::AnimatedSprite> animated_sprites;
+    Eng::sparse_array<Com::ParticleEmitter> emitters;
 
     Com::Transform transform{15.0f, -4.0f, 22.0f, 1.5f};
     Com::Drawable drawable{"Logo.png", 4, 0.6f};
@@ -27,7 +29,8 @@ TEST(DrawableSystem, LoadsAndAppliesTransform) {
     game_world.window_.create(
         sf::VideoMode({10u, 10u}), "drawable-test", sf::Style::None);
 
-    DrawableSystem(reg, game_world, transforms, drawables, shaders);
+    DrawableSystem(reg, game_world, transforms, drawables, shaders,
+        animated_sprites, emitters);
 
     ASSERT_TRUE(drawables[0].has_value());
     const auto &rendered = drawables[0].value();
@@ -62,7 +65,10 @@ TEST(DrawableSystem, HandlesMultipleEntitiesSortedByZIndex) {
     game_world.window_.create(
         sf::VideoMode({10u, 10u}), "drawable-test2", sf::Style::None);
 
-    DrawableSystem(reg, game_world, transforms, drawables, shaders);
+    Eng::sparse_array<Com::AnimatedSprite> animated_sprites;
+    Eng::sparse_array<Com::ParticleEmitter> emitters;
+    DrawableSystem(reg, game_world, transforms, drawables, shaders,
+        animated_sprites, emitters);
 
     ASSERT_TRUE(drawables[0].has_value());
     ASSERT_TRUE(drawables[1].has_value());

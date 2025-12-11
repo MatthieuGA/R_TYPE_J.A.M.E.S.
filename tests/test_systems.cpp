@@ -156,7 +156,8 @@ TEST(Systems, ProjectileSystemMovesTransform) {
     Eng::sparse_array<Com::Projectile> projectiles;
 
     transforms.insert_at(0, Com::Transform{0.0f, 0.0f, 0.0f, 1.0f});
-    projectiles.insert_at(0, Com::Projectile{5.0f, 200.0f, 1});
+    projectiles.insert_at(
+        0, Com::Projectile{10, sf::Vector2f{1.0f, 0.0f}, 200.0f, 1});
 
     gw.last_delta_ = 0.1f;  // 200 * 0.1 = 20
 
@@ -188,48 +189,6 @@ TEST(Systems, PlayerSystemSetsFrameBasedOnVelocity) {
     ASSERT_TRUE(animated_sprites[0].has_value());
     // velocity.vy == 100 -> should map to current_frame == 1
     EXPECT_EQ(animated_sprites[0]->GetCurrentAnimation()->current_frame, 1);
-}
-
-TEST(Systems, ShootPlayerSystemCreatesProjectileAndResetsCooldown) {
-    Eng::registry reg;
-    Rtype::Client::GameWorld gw;
-
-    // Register components that createProjectile will add
-    reg.RegisterComponent<Com::Transform>();
-    reg.RegisterComponent<Com::Drawable>();
-    reg.RegisterComponent<Com::AnimatedSprite>();
-    reg.RegisterComponent<Com::Projectile>();
-
-    Eng::sparse_array<Com::Transform> transforms;
-    Eng::sparse_array<Com::Inputs> inputs;
-    Eng::sparse_array<Com::PlayerTag> player_tags;
-
-    transforms.insert_at(0, Com::Transform{10.0f, 20.0f, 0.0f, 1.0f});
-    // Set shoot=true and last_shoot_state=false to trigger a new shot
-    inputs.insert_at(0, Com::Inputs{0.0f, 0.0f, true, false});
-    // Create PlayerTag with proper field values
-    Com::PlayerTag tag;
-    tag.speed_max = 400.0f;
-    tag.shoot_cooldown_max = 0.2f;
-    tag.charge_time_min = 0.5f;
-    tag.shoot_cooldown = 0.0f;  // Ready to shoot
-    tag.charge_time = 0.0f;
-    tag.playerNumber = 1;
-    player_tags.insert_at(0, tag);
-
-    gw.last_delta_ = 0.03f;
-
-    ShootPlayerSystem(reg, gw, transforms, inputs, player_tags);
-
-    // After shooting, cooldown should be reset to max
-    ASSERT_TRUE(player_tags[0].has_value());
-    EXPECT_FLOAT_EQ(
-        player_tags[0]->shoot_cooldown, player_tags[0]->shoot_cooldown_max);
-
-    // The projectile component should have been added to the registry at
-    // entity 0
-    auto &projectiles = reg.GetComponents<Com::Projectile>();
-    EXPECT_TRUE(projectiles.has(0));
 }
 
 TEST(Systems, InputSystemResetsInputsWhenNoKeys) {

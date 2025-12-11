@@ -65,8 +65,8 @@ TEST(ComponentsGameplay, TagsAndProjectile) {
 
     Com::EnemyTag e{};
 
-    Com::Projectile proj{12.5f, 250.0f, 1};
-    EXPECT_FLOAT_EQ(proj.damage, 12.5f);
+    Com::Projectile proj{12, {0.0f, -1.0f}, 250.0f, 1, true};
+    EXPECT_EQ(proj.damage, 12);
     EXPECT_FLOAT_EQ(proj.speed, 250.0f);
     EXPECT_EQ(proj.ownerId, 1);
 
