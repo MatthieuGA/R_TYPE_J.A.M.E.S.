@@ -8,23 +8,38 @@ namespace Rtype::Client {
  * edge to create a looping background.
  *
  * @param reg Engine registry (unused)
- * @param game_world Game world providing `last_delta_` and window size
+ * @param game_world Game world providing `last_delta_`, window size, and video
+ * backend
  * @param transforms Sparse array of Transform components
  * @param parallax_layers Sparse array of ParrallaxLayer components
- * @param drawables Sparse array of Drawable components (for texture size)
+ * @param drawables Sparse array of Drawable components (for texture ID)
  */
 void ParallaxSystem(Eng::registry &reg, const GameWorld &game_world,
     Eng::sparse_array<Com::Transform> &transforms,
     Eng::sparse_array<Com::ParrallaxLayer> const &parallax_layers,
     Eng::sparse_array<Com::Drawable> const &drawables) {
-    for (auto &&[i, transform, parallax_layers, drawable] :
+    (void)reg;
+
+    if (!game_world.video_backend_) {
+        return;
+    }
+
+    for (auto &&[i, transform, parallax_layer, drawable] :
         make_indexed_zipper(transforms, parallax_layers, drawables)) {
-        if (!drawable.isLoaded)
+        if (!drawable.is_loaded)
             continue;
+
         float dt = game_world.last_delta_;
+
         // Update position based on parallax scroll speed
-        transform.x += parallax_layers.scroll_speed * dt;
-        if (transform.x <= -(drawable.texture.getSize().x * transform.scale)) {
+        transform.x += parallax_layer.scroll_speed * dt;
+
+        // Get texture size from video backend for wrapping
+        Engine::Graphics::Vector2f texture_size =
+            game_world.video_backend_->GetTextureSize(drawable.texture_id);
+
+        // Wrap around when the texture scrolls off screen
+        if (transform.x <= -(texture_size.x * transform.scale)) {
             transform.x = game_world.window_size_.x - 2.f;
         }
     }

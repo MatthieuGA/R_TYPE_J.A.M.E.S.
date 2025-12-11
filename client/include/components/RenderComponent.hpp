@@ -5,204 +5,150 @@
 #include <utility>
 #include <vector>
 
-#include <SFML/Graphics.hpp>
+#include <graphics/Types.hpp>
 
 namespace Rtype::Client::Component {
+
+/**
+ * @brief Drawable component for sprite rendering.
+ *
+ * Stores a texture resource ID (loaded via video backend) and rendering
+ * properties. No SFML types - completely backend-agnostic.
+ */
 struct Drawable {
-    std::string spritePath;
+    std::string texture_id;   // Unique ID for texture resource
+    std::string sprite_path;  // File path (for loading)
     int z_index = 0;
     float opacity = 1.0f;
-    float rotation = 0.0f;
-    sf::Color color = sf::Color::White;
-    sf::Sprite sprite;
-    sf::Texture texture;
-    bool isLoaded = false;
+    Engine::Graphics::Color color = Engine::Graphics::Color::White;
+    Engine::Graphics::IntRect
+        texture_rect;  // Source rect in texture (for sprite sheets)
+    Engine::Graphics::Vector2f origin{0.0f, 0.0f};  // Sprite origin
+    Engine::Graphics::Vector2f scale{1.0f, 1.0f};   // Sprite scale
+    float rotation = 0.0f;                          // Rotation in degrees
+    bool is_loaded = false;
 
     explicit Drawable(
-        const std::string &spritePath, int z_index = 0, float opacity = 1.0f)
-        : spritePath("assets/images/" + spritePath),
+        const std::string &sprite_path, int z_index = 0, float opacity = 1.0f)
+        : sprite_path("assets/images/" + sprite_path),
+          texture_id(sprite_path),  // Use sprite_path as texture ID
           z_index(z_index),
-          texture(),
           opacity(opacity),
-          sprite(texture),
-          isLoaded(false),
-          color(sf::Color::White) {}
+          color(Engine::Graphics::Color::White),
+          texture_rect(),
+          origin(0.0f, 0.0f),
+          scale(1.0f, 1.0f),
+          rotation(0.0f),
+          is_loaded(false) {}
 
-    // Non-copyable to avoid accidental sprite/texture pointer mismatches
-    Drawable(Drawable const &) = delete;
-    Drawable &operator=(Drawable const &) = delete;
-
-    // Move constructor: ensure sprite is rebound to the moved texture and
-    // visual properties are preserved.
-    Drawable(Drawable &&other) noexcept
-        : spritePath(std::move(other.spritePath)),
-          z_index(other.z_index),
-          opacity(other.opacity),
-          texture(std::move(other.texture)),
-          sprite(),
-          isLoaded(other.isLoaded) {
-        // Rebind sprite to the moved texture and copy visual state
-        sprite.setTexture(texture, true);
-        sprite.setTextureRect(other.sprite.getTextureRect());
-        sprite.setScale(other.sprite.getScale());
-        sprite.setOrigin(other.sprite.getOrigin());
-        sprite.setPosition(other.sprite.getPosition());
-        sprite.setRotation(other.sprite.getRotation());
-        sprite.setColor(other.sprite.getColor());
-    }
-
-    // Move assignment: similar to move ctor
-    Drawable &operator=(Drawable &&other) noexcept {
-        if (this == &other)
-            return *this;
-        spritePath = std::move(other.spritePath);
-        z_index = other.z_index;
-        opacity = other.opacity;
-        texture = std::move(other.texture);
-        isLoaded = other.isLoaded;
-
-        sprite = sf::Sprite();
-        sprite.setTexture(texture, true);
-        sprite.setTextureRect(other.sprite.getTextureRect());
-        sprite.setScale(other.sprite.getScale());
-        sprite.setOrigin(other.sprite.getOrigin());
-        sprite.setPosition(other.sprite.getPosition());
-        sprite.setRotation(other.sprite.getRotation());
-        sprite.setColor(other.sprite.getColor());
-
-        return *this;
-    }
+    // Movable and copyable (no resource ownership issues)
+    Drawable(Drawable const &) = default;
+    Drawable &operator=(Drawable const &) = default;
+    Drawable(Drawable &&) noexcept = default;
+    Drawable &operator=(Drawable &&) noexcept = default;
 };
 
+/**
+ * @brief Shader component for shader effects.
+ *
+ * Stores a shader resource ID and uniform parameters.
+ */
 struct Shader {
-    std::string shaderPath;
-    std::shared_ptr<sf::Shader> shader;
-    bool isLoaded = false;
+    std::string shader_id;    // Unique ID for shader resource
+    std::string shader_path;  // File path (for loading)
+    bool is_loaded = false;
     std::map<std::string, float> uniforms_float = {};
 
     explicit Shader(const std::string &path,
         std::vector<std::pair<std::string, float>> uf = {})
-        : shaderPath("assets/shaders/" + path),
-          shader(nullptr),
-          isLoaded(false) {
+        : shader_path("assets/shaders/" + path),
+          shader_id(path),  // Use path as shader ID
+          is_loaded(false) {
         for (const auto &[name, value] : uf)
             uniforms_float[name] = value;
     }
 };
 
+/**
+ * @brief Animated sprite component for frame-based animation.
+ *
+ * Works with Drawable component to animate sprite sheets.
+ */
 struct AnimatedSprite {
     bool animated = true;
-    int frameWidth;
-    int frameHeight;
-    int totalFrames;
-    int currentFrame = 0;
-    float frameDuration = 0.1f;
+    int frame_width;
+    int frame_height;
+    int total_frames;
+    int current_frame = 0;
+    float frame_duration = 0.1f;
     bool loop = true;
-    sf::Vector2f first_frame_position = sf::Vector2f(0.0f, 0.0f);
-    float elapsedTime = 0.0f;
+    Engine::Graphics::Vector2f first_frame_position{0.0f, 0.0f};
+    float elapsed_time = 0.0f;
 
-    AnimatedSprite(int frameWidth, int frameHeight, float frameDuration,
+    AnimatedSprite(int frame_width, int frame_height, float frame_duration,
         bool loop = true,
-        sf::Vector2f first_frame_position = sf::Vector2f(0.0f, 0.0f),
-        int totalFrames = 0)
-        : frameWidth(frameWidth),
-          frameHeight(frameHeight),
-          totalFrames(totalFrames),
-          currentFrame(0),
-          frameDuration(frameDuration),
+        Engine::Graphics::Vector2f first_frame_position =
+            Engine::Graphics::Vector2f(0.0f, 0.0f),
+        int total_frames = 0)
+        : frame_width(frame_width),
+          frame_height(frame_height),
+          total_frames(total_frames),
+          current_frame(0),
+          frame_duration(frame_duration),
           loop(loop),
-          elapsedTime(0.0f),
+          elapsed_time(0.0f),
           animated(true),
           first_frame_position(first_frame_position) {}
 
-    AnimatedSprite(int frameWidth, int frameHeight, int current_frame)
-        : frameWidth(frameWidth),
-          frameHeight(frameHeight),
-          totalFrames(0),
-          currentFrame(current_frame),
-          frameDuration(0.1f),
+    AnimatedSprite(int frame_width, int frame_height, int current_frame)
+        : frame_width(frame_width),
+          frame_height(frame_height),
+          total_frames(0),
+          current_frame(current_frame),
+          frame_duration(0.1f),
           loop(true),
-          elapsedTime(0.0f),
+          elapsed_time(0.0f),
           animated(false) {}
 };
 
 /**
- * @brief Text component for rendering text with SFML.
+ * @brief Text component for rendering text.
  *
- * The text position, rotation, and scale are controlled by the Transform
- * component. This component only manages the text content, appearance,
- * font loading, per-entity opacity, and an optional local offset.
+ * Stores a font resource ID and text rendering properties.
+ * No SFML types - completely backend-agnostic.
  */
 struct Text {
     std::string content;
-    std::string fontPath;
-    unsigned int characterSize = 30;
-    sf::Color color = sf::Color::White;
+    std::string font_id;    // Unique ID for font resource
+    std::string font_path;  // File path (for loading)
+    unsigned int character_size = 30;
+    Engine::Graphics::Color color = Engine::Graphics::Color::White;
     float opacity = 1.0f;
     int z_index = 0;
-    sf::Vector2f offset = sf::Vector2f(0.0f, 0.0f);
-
-    sf::Text text;
-    sf::Font font;
+    Engine::Graphics::Vector2f offset{0.0f, 0.0f};
     bool is_loaded = false;
 
-    explicit Text(const std::string &fontPath, const std::string &content = "",
-        unsigned int characterSize = 30, int z_index = 0,
-        sf::Color color = sf::Color::White,
-        sf::Vector2f offset = sf::Vector2f(0.0f, 0.0f))
+    explicit Text(const std::string &font_path,
+        const std::string &content = "", unsigned int character_size = 30,
+        int z_index = 0,
+        Engine::Graphics::Color color = Engine::Graphics::Color::White,
+        Engine::Graphics::Vector2f offset = Engine::Graphics::Vector2f(
+            0.0f, 0.0f))
         : content(content),
-          fontPath("assets/fonts/" + fontPath),
-          characterSize(characterSize),
+          font_path("assets/fonts/" + font_path),
+          font_id(font_path),  // Use font_path as font ID
+          character_size(character_size),
           color(color),
           opacity(1.0f),
           z_index(z_index),
-          is_loaded(false),
-          offset(offset) {}
+          offset(offset),
+          is_loaded(false) {}
 
-    // Non-copyable to avoid accidental font pointer mismatches
-    Text(Text const &) = delete;
-    Text &operator=(Text const &) = delete;
-
-    // Move constructor: rebind text to the moved font
-    Text(Text &&other) noexcept
-        : content(std::move(other.content)),
-          fontPath(std::move(other.fontPath)),
-          characterSize(other.characterSize),
-          color(other.color),
-          opacity(other.opacity),
-          z_index(other.z_index),
-          offset(other.offset),
-          text(),
-          font(std::move(other.font)),
-          is_loaded(other.is_loaded) {
-        text.setFont(font);
-        text.setString(other.text.getString());
-        text.setCharacterSize(other.text.getCharacterSize());
-        text.setFillColor(other.text.getFillColor());
-    }
-
-    // Move assignment: similar to move ctor
-    Text &operator=(Text &&other) noexcept {
-        if (this == &other)
-            return *this;
-        content = std::move(other.content);
-        fontPath = std::move(other.fontPath);
-        characterSize = other.characterSize;
-        color = other.color;
-        opacity = other.opacity;
-        z_index = other.z_index;
-        offset = other.offset;
-        font = std::move(other.font);
-        is_loaded = other.is_loaded;
-
-        text = sf::Text();
-        text.setFont(font);
-        text.setString(other.text.getString());
-        text.setCharacterSize(other.text.getCharacterSize());
-        text.setFillColor(other.text.getFillColor());
-
-        return *this;
-    }
+    // Movable and copyable (no resource ownership issues)
+    Text(Text const &) = default;
+    Text &operator=(Text const &) = default;
+    Text(Text &&) noexcept = default;
+    Text &operator=(Text &&) noexcept = default;
 };
 
 }  // namespace Rtype::Client::Component

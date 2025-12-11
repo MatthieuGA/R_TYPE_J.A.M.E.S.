@@ -20,17 +20,26 @@ void InitRenderSystems(Rtype::Client::GameWorld &game_world) {
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
         Eng::sparse_array<Com::Drawable>,
         Eng::sparse_array<Com::AnimatedSprite>>(
-        InitializeDrawableAnimatedSystem);
+        [&game_world](Eng::registry &r,
+            Eng::sparse_array<Com::Transform> const &transforms,
+            Eng::sparse_array<Com::Drawable> &drawables,
+            Eng::sparse_array<Com::AnimatedSprite> const &animated_sprites) {
+            InitializeDrawableAnimatedSystem(
+                r, game_world, transforms, drawables, animated_sprites);
+        });
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Shader>>(
-        InitializeShaderSystem);
+        [&game_world](
+            Eng::registry &r, Eng::sparse_array<Com::Shader> &shaders) {
+            InitializeShaderSystem(r, game_world, shaders);
+        });
     // Main render system
     game_world.registry_.AddSystem<Eng::sparse_array<Com::AnimatedSprite>,
         Eng::sparse_array<Com::Drawable>>(
         [&game_world](Eng::registry &r,
             Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
             Eng::sparse_array<Com::Drawable> &drawables) {
-            AnimationSystem(
-                r, game_world.last_delta_, animated_sprites, drawables);
+            AnimationSystem(r, game_world, game_world.last_delta_,
+                animated_sprites, drawables);
         });
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
         Eng::sparse_array<Com::Drawable>, Eng::sparse_array<Com::Shader>>(
@@ -118,7 +127,8 @@ void InitControlsSystem(Rtype::Client::GameWorld &game_world) {
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Inputs>>(
         [&game_world](
             Eng::registry &r, Eng::sparse_array<Com::Inputs> &inputs) {
-            InputSystem(r, game_world.window_.hasFocus(), inputs);
+            // TODO(matt): Get window focus from video backend events
+            InputSystem(r, true, inputs);  // Temporarily always true
         });
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Inputs>,
         Eng::sparse_array<Com::Controllable>, Eng::sparse_array<Com::Velocity>,

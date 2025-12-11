@@ -7,13 +7,21 @@ namespace Rtype::Client {
 
 void createProjectile(Eng::registry &reg, float x, float y, int ownerId) {
     auto projectile_entity = reg.SpawnEntity();
+    // Spawn projectile from the front-right of the ship
+    // Ship is 33px * 4 scale = 132px wide, centered, so offset by half width
+    float spawn_x = x + 66.0f;  // Half of ship width to reach right edge
+    float spawn_y = y;          // Keep at center of ship
+
     // Add components to projectile entity
-    reg.AddComponent<Component::Transform>(projectile_entity,
-        Component::Transform{x, y, 0.0f, 3.0f, Com::Transform::CENTER});
+    reg.AddComponent<Component::Transform>(
+        projectile_entity, Component::Transform{spawn_x, spawn_y, 0.0f, 3.0f,
+                               Com::Transform::CENTER});
     reg.AddComponent<Component::Drawable>(projectile_entity,
-        Component::Drawable("original_rtype/r-typesheet2.gif", -1));
+        Component::Drawable("original_rtype/r-typesheet2.gif", 20));
+    // Use 3-param constructor for static frame (frame 10 is the projectile
+    // sprite)
     reg.AddComponent<Component::AnimatedSprite>(
-        projectile_entity, Component::AnimatedSprite{24, 32, 10});
+        projectile_entity, Component::AnimatedSprite(24, 32, 10));
     reg.AddComponent<Component::Projectile>(
         projectile_entity, Component::Projectile{PLAYER_DAMAGE_PROJECTILE,
                                PLAYER_SPEED_PROJECTILE, ownerId});
@@ -22,13 +30,20 @@ void createProjectile(Eng::registry &reg, float x, float y, int ownerId) {
 void createChargedProjectile(
     Eng::registry &reg, float x, float y, int ownerId) {
     auto projectile_entity = reg.SpawnEntity();
+    // Spawn projectile from the front-right of the ship
+    float spawn_x = x + 66.0f;
+    float spawn_y = y;
+
     // Add components to projectile entity
-    reg.AddComponent<Component::Transform>(projectile_entity,
-        Component::Transform{x, y, 0.0f, 3.0f, Com::Transform::CENTER});
+    reg.AddComponent<Component::Transform>(
+        projectile_entity, Component::Transform{spawn_x, spawn_y, 0.0f, 3.0f,
+                               Com::Transform::CENTER});
     reg.AddComponent<Component::Drawable>(projectile_entity,
-        Component::Drawable("original_rtype/r-typesheet1.gif", -1));
+        Component::Drawable("original_rtype/r-typesheet1.gif", 20));
+    // Use 3-param constructor for static frame (frame 25 is the charged
+    // projectile sprite)
     reg.AddComponent<Component::AnimatedSprite>(
-        projectile_entity, Component::AnimatedSprite{29, 22, 25});
+        projectile_entity, Component::AnimatedSprite(29, 22, 25));
     reg.AddComponent<Component::Projectile>(projectile_entity,
         Component::Projectile{PLAYER_DAMAGE_CHARGED_PROJECTILE,
             PLAYER_SPEED_CHARGED_PROJECTILE, ownerId});

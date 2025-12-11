@@ -10,6 +10,14 @@ echo "R-TYPE Build Script (vcpkg)"
 echo "=========================================="
 echo ""
 
+# Ensure we're in the project root
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$PROJECT_ROOT"
+
+echo "Project root: $PROJECT_ROOT"
+echo ""
+
 # Function to test exit status
 function testExitStatus() {
     if [ $1 -ne 0 ]; then
@@ -96,9 +104,16 @@ echo "========================================="
 echo "✓ Build completed successfully!"
 echo "========================================="
 echo ""
+echo "Build artifacts:"
+echo "  Client: build/client/r-type_client"
+echo "  Server: build/server/r-type_server"
+echo "  Video Plugin: build/lib/sfml_video_module.so"
+echo "  Audio Plugin: build/lib/sfml_audio_module.so"
+echo "  Assets: build/client/assets/"
+echo ""
 echo "To run the client:"
-echo "  ./build/client/r-type_client"
+echo "  cd build/client && ./r-type_client"
 echo ""
 echo "To run the server:"
-echo "  ./build/server/r-type_server"
+echo "  cd build/server && ./r-type_server"
 echo ""

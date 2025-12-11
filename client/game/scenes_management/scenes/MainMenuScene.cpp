@@ -39,7 +39,8 @@ void MainMenuScene::InitScene(Engine::registry &reg, GameWorld &gameWorld) {
         });
     reg.AddComponent<Component::Text>(
         play_button_entity, Component::Text("dogica.ttf", "Play", 10, 1,
-                                sf::Color::Black, sf::Vector2f(0.0f, -5.0f)));
+                                Engine::Graphics::Color(0, 0, 0, 255),
+                                Engine::Graphics::Vector2f(0.0f, -5.0f)));
 
     auto quit_button_entity = CreateEntityInScene(reg);
     reg.AddComponent<Component::Transform>(
@@ -49,13 +50,18 @@ void MainMenuScene::InitScene(Engine::registry &reg, GameWorld &gameWorld) {
         quit_button_entity, Component::Drawable{"ui/button.png", 0, 1.0f});
     reg.AddComponent<Component::HitBox>(
         quit_button_entity, Component::HitBox{64.0f, 16.0f});
-    reg.AddComponent<Component::Clickable>(
-        quit_button_entity, Component::Clickable{
-                                [&gameWorld]() { gameWorld.window_.close(); },
-                            });
+    reg.AddComponent<Component::Clickable>(quit_button_entity,
+        Component::Clickable{
+            [&gameWorld]() {
+                if (gameWorld.video_backend_) {
+                    gameWorld.video_backend_->CloseWindow();
+                }
+            },
+        });
     reg.AddComponent<Component::Text>(
         quit_button_entity, Component::Text("dogica.ttf", "Quit", 10, 1,
-                                sf::Color::Black, sf::Vector2f(0.0f, -5.0f)));
+                                Engine::Graphics::Color(0, 0, 0, 255),
+                                Engine::Graphics::Vector2f(0.0f, -5.0f)));
 }
 
 }  // namespace Rtype::Client

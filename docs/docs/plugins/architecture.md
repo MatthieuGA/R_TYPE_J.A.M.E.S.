@@ -14,6 +14,8 @@ The plugin system was designed with the following principles:
 
 ## Component Hierarchy
 
+### Audio Plugin Example
+
 ```
 ┌─────────────────────────────────────────┐
 │         Application (main.cpp)          │
@@ -40,6 +42,38 @@ The plugin system was designed with the following principles:
                 │
         ┌───────┴────────┐
         │ SFMLAudioModule│
+        │   (.so file)   │
+        └────────────────┘
+```
+
+### Video Plugin Example
+
+```
+┌─────────────────────────────────────────┐
+│         Application (main.cpp)          │
+│  - Loads plugin via DLLoader            │
+│  - Uses IVideoModule for rendering      │
+└───────────────┬─────────────────────────┘
+                │
+                ├─────────────────────────┐
+                │                         │
+        ┌───────▼────────┐        ┌──────▼──────────┐
+        │   DLLoader<T>  │        │   GameWorld     │
+        │  (Template)    │        │   (Client)      │
+        └───────┬────────┘        └──────┬──────────┘
+                │                        │
+                │ getInstance()          │ uses
+                │ returns shared_ptr     │
+                │                        │
+        ┌───────▼────────┐               │
+        │ IVideoModule   │◄──────────────┘
+        │  (Interface)   │
+        └───────△───────┘
+                │
+                │ implements
+                │
+        ┌───────┴────────┐
+        │ SFMLVideoModule│
         │   (.so file)   │
         └────────────────┘
 ```
@@ -121,9 +155,9 @@ The loader uses RAII principles:
 }  // Automatic cleanup here
 ```
 
-## Interface Design: IAudioModule
+## Interface Design
 
-### Contract Definition
+### Audio Interface: IAudioModule
 
 The `IAudioModule` interface defines the complete audio backend API:
 
@@ -199,20 +233,16 @@ Play({.id = "laser", .volume = 0.8f, .category = Category::SFX});
 Play("laser", 0.8f, false, SFX);
 ```
 
-## Plugin Implementation: SFMLAudioModule
+## Plugin Implementation Examples
 
-### Structure
+### Audio Plugin: SFMLAudioModule
 
 **Files:**
 - `client/plugins/audio/sfml/SFMLAudioModule.hpp` - Declaration
 - `client/plugins/audio/sfml/SFMLAudioModule.cpp` - Implementation
 - `client/plugins/audio/sfml/CMakeLists.txt` - Build configuration
 
-### Key Implementation Details
-
-#### Entry Point
-
-The C-style entry point avoids C++ name mangling:
+**Entry Point:**
 
 ```cpp
 extern "C" {
@@ -221,6 +251,27 @@ extern "C" {
     }
 }
 ```
+
+### Video Plugin: SFMLVideoModule
+
+**Files:**
+- `client/plugins/video/sfml/SFMLVideoModule.hpp` - Declaration
+- `client/plugins/video/sfml/SFMLVideoModule.cpp` - Implementation
+- `client/plugins/video/sfml/CMakeLists.txt` - Build configuration
+
+**Entry Point:**
+
+```cpp
+extern "C" {
+    std::shared_ptr<Engine::Graphics::IVideoModule> entryPoint() {
+        return std::make_shared<Engine::Graphics::SFMLVideoModule>();
+    }
+}
+```
+
+### Key Implementation Details
+
+#### Entry Point Pattern
 
 **Why `extern "C"`?**
 
@@ -260,14 +311,14 @@ This allows:
 - Category-wide volume control
 - Instant muting without losing volume settings
 
-## Adapter Pattern: PluginAudioBackend
+## Adapter Pattern
 
 ### Purpose
 
-The adapter bridges two interfaces:
+Adapters bridge plugin interfaces with legacy systems:
 
-- **`IAudioModule`**: Plugin interface (engine-side)
-- **`IAudioBackend`**: Legacy interface (client-side)
+- **Audio**: `PluginAudioBackend` adapts `IAudioModule` to `IAudioBackend`
+- **Video**: Direct usage of `IVideoModule` (no adapter needed in current design)
 
 This allows existing client code to use plugins without modification.
 

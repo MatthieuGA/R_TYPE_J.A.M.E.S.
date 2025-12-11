@@ -12,31 +12,27 @@ namespace Rtype::Client {
 const int FONT_SIZE_SCALE = 10;
 
 /**
- * @brief Initialize a text component with font loading.
- *
- * Loads the font and sets up the sf::Text object with the content,
- * character size, and color from the Text component.
+ * @brief Initialize a text component by loading its font via video backend.
  *
  * @param text Text component to initialize
- * @param transform Transform for origin calculation
+ * @param game_world Game world containing video backend
  */
-void InitializeText(Com::Text &text, const Com::Transform &transform) {
-    if (!text.font.loadFromFile(text.fontPath)) {
-        std::cerr << "ERROR: Failed to load font from " << text.fontPath
-                  << "\n";
-    } else {
-        text.text.setFont(text.font);
-        text.text.setString(text.content);
-        text.text.setCharacterSize(text.characterSize * FONT_SIZE_SCALE);
-        text.text.setFillColor(text.color);
-
-        // Set origin based on transform's origin point
-        sf::FloatRect bounds = text.text.getLocalBounds();
-        sf::Vector2f origin = GetOffsetFromTransform(
-            transform, sf::Vector2f(bounds.width, bounds.height));
-        text.text.setOrigin(-origin);
+void InitializeText(Com::Text &text, GameWorld &game_world) {
+    if (!game_world.video_backend_) {
+        std::cerr << "ERROR: video_backend is null!" << std::endl;
+        return;
     }
-    text.is_loaded = true;
+
+    // Load font via video backend
+    bool loaded =
+        game_world.video_backend_->LoadFont(text.font_id, text.font_path);
+
+    if (!loaded) {
+        std::cerr << "ERROR: Failed to load font: " << text.font_path
+                  << " (ID: " << text.font_id << ")" << std::endl;
+    }
+
+    text.is_loaded = loaded;
 }
 
 /**
@@ -52,29 +48,53 @@ void RenderOneTextEntity(Eng::sparse_array<Com::Transform> const &transforms,
     auto &transform = transforms[i];
     auto &text = texts[i];
 
+    if (!game_world.video_backend_) {
+        return;
+    }
+
     // Calculate world position with hierarchical rotation
-    sf::Vector2f world_position =
+    Engine::Graphics::Vector2f world_position =
         CalculateWorldPositionWithHierarchy(transform.value(), transforms);
+
+    // Apply text offset
     world_position.x += text->offset.x;
     world_position.y += text->offset.y;
-    text->text.setPosition(world_position);
 
     // Apply cumulative scale
     float world_scale =
         CalculateCumulativeScale(transform.value(), transforms);
-    text->text.setScale(sf::Vector2f(
-        world_scale / FONT_SIZE_SCALE, world_scale / FONT_SIZE_SCALE));
-
-    // Apply rotation
-    text->text.setRotation(transform->rotationDegrees);
 
     // Apply color with opacity
-    sf::Color color = text->color;
-    color.a = static_cast<sf::Uint8>(text->opacity * 255);
-    text->text.setFillColor(color);
+    Engine::Graphics::Color final_color = text->color;
+    final_color.a = static_cast<uint8_t>(text->opacity * 255);
 
-    // Draw text
-    game_world.window_.draw(text->text);
+    // Calculate character size with scale
+    unsigned int scaled_char_size =
+        static_cast<unsigned int>(text->character_size * world_scale);
+
+    // Get text bounds to calculate origin
+    Engine::Graphics::FloatRect text_bounds =
+        game_world.video_backend_->GetTextBounds(
+            text->content, text->font_id, scaled_char_size);
+
+    // Calculate origin based on transform's origin point
+    Engine::Graphics::Vector2f text_size(
+        text_bounds.width, text_bounds.height);
+    Engine::Graphics::Vector2f origin_offset =
+        GetOffsetFromTransform(transform.value(), text_size);
+
+    // Build transform for video backend
+    Engine::Video::Transform render_transform;
+    render_transform.position = world_position;
+    render_transform.rotation = transform->rotationDegrees;
+    render_transform.scale =
+        Engine::Graphics::Vector2f(1.0f, 1.0f);  // Scale already in char size
+    render_transform.origin =
+        Engine::Graphics::Vector2f(-origin_offset.x, -origin_offset.y);
+
+    // Draw using video backend
+    game_world.video_backend_->DrawText(text->content, text->font_id,
+        render_transform, scaled_char_size, final_color);
 }
 
 /**
@@ -96,9 +116,12 @@ void DrawTextRenderSystem(Eng::registry &reg, GameWorld &game_world,
     // Collect entities with Transform and Text components
     for (auto &&[i, transform, text] :
         make_indexed_zipper(transforms, texts)) {
-        if (!text.is_loaded)
-            InitializeText(text, transform);
-        draw_order.push_back(i);
+        if (!text.is_loaded) {
+            InitializeText(text, game_world);
+        }
+        if (text.is_loaded) {
+            draw_order.push_back(i);
+        }
     }
 
     // Sort by z_index

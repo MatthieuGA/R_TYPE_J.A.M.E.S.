@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 
-#include <SFML/Graphics.hpp>
+#include <graphics/Types.hpp>
 
 namespace Rtype::Client::Component {
 /**
@@ -35,7 +35,7 @@ struct Transform {
         BOTTOM_RIGHT
     } origin = CENTER;
 
-    sf::Vector2f customOrigin = sf::Vector2f(0.0f, 0.0f);
+    Engine::Graphics::Vector2f customOrigin{0.0f, 0.0f};
 
     // Parent entity ID (std::nullopt if no parent)
     std::optional<std::size_t> parent_entity = std::nullopt;
@@ -47,7 +47,8 @@ struct Transform {
 
     Transform(float x, float y, float rotationDegrees, float scale,
         OriginPoint origin = CENTER,
-        sf::Vector2f customOrigin = sf::Vector2f(0.0f, 0.0f),
+        Engine::Graphics::Vector2f customOrigin = Engine::Graphics::Vector2f(
+            0.0f, 0.0f),
         std::optional<std::size_t> parent_entity = std::nullopt)
         : x(x),
           y(y),
@@ -112,9 +113,11 @@ struct Inputs {
 struct Clickable {
     std::function<void()> onClick;
 
-    sf::Color idleColor = sf::Color::White;
-    sf::Color hoverColor = sf::Color(200, 200, 200);
-    sf::Color clickColor = sf::Color(150, 150, 150);
+    Engine::Graphics::Color idleColor = Engine::Graphics::Color::White;
+    Engine::Graphics::Color hoverColor =
+        Engine::Graphics::Color(200, 200, 200);
+    Engine::Graphics::Color clickColor =
+        Engine::Graphics::Color(150, 150, 150);
     bool isHovered = false;
     bool isClicked = false;
 };

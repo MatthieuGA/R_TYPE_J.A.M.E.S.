@@ -21,7 +21,7 @@ void SetOpacityChildren(Eng::sparse_array<Com::Drawable> &drawables,
     auto &animated_sprite = animated_sprites[child_id];
 
     if (drawable->opacity == 0.0f)
-        animated_sprite->currentFrame = 0;
+        animated_sprite->current_frame = 0;
     drawable->opacity =
         (player_tag.charge_time > player_tag.charge_time_min) ? 1.0f : 0.0f;
 }

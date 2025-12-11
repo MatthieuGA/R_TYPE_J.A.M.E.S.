@@ -1,6 +1,8 @@
 #pragma once
-#include <SFML/Graphics.hpp>
+#include <graphics/Types.hpp>
+#include <time/Clock.hpp>
 
+#include "engine/video/PluginVideoBackend.hpp"
 #include "include/WindowConst.hpp"
 #include "include/registry.hpp"
 
@@ -11,22 +13,34 @@ class AudioManager;
 }
 
 namespace Rtype::Client {
+/**
+ * @brief Central game state container.
+ *
+ * Holds the ECS registry, video/audio backends, timing, and event bus.
+ * Now completely backend-agnostic - no SFML types.
+ */
 struct GameWorld {
     Engine::registry registry_;
-    sf::RenderWindow window_;
-    sf::Vector2f window_size_;
-    sf::Clock delta_time_clock_;
-    sf::Clock total_time_clock_;
+    Engine::Video::PluginVideoBackend *video_backend_ = nullptr;
+    Engine::Graphics::Vector2f window_size_;
+    Engine::Time::Clock delta_time_clock_;
+    Engine::Time::Clock total_time_clock_;
     float last_delta_ = 0.0f;
     EventBus event_bus_;
     Audio::AudioManager *audio_manager_ = nullptr;
 
-    GameWorld()
-        : window_(sf::VideoMode({WINDOW_WIDTH, WINDOW_HEIGHT}), WINDOW_TITLE) {
+    // Input state
+    Engine::Graphics::Vector2f mouse_position_{0.0f, 0.0f};
+    bool mouse_button_pressed_ = false;
+
+    GameWorld() {
         registry_ = Engine::registry();
-        delta_time_clock_ = sf::Clock();
         event_bus_ = EventBus();
-        window_size_ = sf::Vector2f({WINDOW_WIDTH, WINDOW_HEIGHT});
+        window_size_ =
+            Engine::Graphics::Vector2f(static_cast<float>(WINDOW_WIDTH),
+                static_cast<float>(WINDOW_HEIGHT));
+        // Note: video_backend_ must be set externally after construction
     }
 };
+
 }  // namespace Rtype::Client

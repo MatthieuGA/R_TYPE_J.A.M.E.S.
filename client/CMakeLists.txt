@@ -19,8 +19,8 @@ target_link_libraries(r-type_client PRIVATE r-type_engine
     SFML::Window SFML::Graphics SFML::Network SFML::Audio SFML::System
     Boost::system Threads::Threads)
 
-# Build audio plugins
-add_subdirectory(plugins/audio/sfml)
+# Build plugins (audio and video)
+add_subdirectory(plugins)
 
 # Post build copy assets
 add_custom_command(TARGET r-type_client POST_BUILD

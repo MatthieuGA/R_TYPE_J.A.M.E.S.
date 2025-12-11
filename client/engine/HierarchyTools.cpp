@@ -42,11 +42,11 @@ float CalculateCumulativeScale(const Com::Transform &transform,
  * @param transforms The sparse array of all transforms (to access parent).
  * @return The world position with rotational hierarchy applied.
  */
-sf::Vector2f CalculateWorldPositionWithHierarchy(
+Engine::Graphics::Vector2f CalculateWorldPositionWithHierarchy(
     const Com::Transform &transform,
     const Eng::sparse_array<Com::Transform> &transforms) {
     if (!transform.parent_entity.has_value()) {
-        return sf::Vector2f(transform.x, transform.y);
+        return Engine::Graphics::Vector2f(transform.x, transform.y);
     }
 
     // Get parent entity ID
@@ -54,13 +54,13 @@ sf::Vector2f CalculateWorldPositionWithHierarchy(
 
     // Check if parent exists and has a Transform component
     if (!transforms.has(parent_id)) {
-        return sf::Vector2f(transform.x, transform.y);
+        return Engine::Graphics::Vector2f(transform.x, transform.y);
     }
 
     const Com::Transform &parent_transform = transforms[parent_id].value();
 
     // Recursively get parent's world position and rotation
-    sf::Vector2f parent_pos =
+    Engine::Graphics::Vector2f parent_pos =
         CalculateWorldPositionWithHierarchy(parent_transform, transforms);
     float parent_rotation_rad =
         parent_transform.rotationDegrees * std::numbers::pi / 180.0f;
@@ -87,7 +87,8 @@ sf::Vector2f CalculateWorldPositionWithHierarchy(
                       local_y * std::cos(parent_rotation_rad);
 
     // Apply parent's position
-    return sf::Vector2f(parent_pos.x + rotated_x, parent_pos.y + rotated_y);
+    return Engine::Graphics::Vector2f(
+        parent_pos.x + rotated_x, parent_pos.y + rotated_y);
 }
 
 }  // namespace Rtype::Client

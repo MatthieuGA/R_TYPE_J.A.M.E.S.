@@ -534,11 +534,207 @@ std::string MyAudioModule::GetModuleName() const {
 
 ---
 
-## Entry Point Function
+---
+
+## IVideoModule Interface
+
+**Header:** `engine/include/graphics/IVideoModule.hpp`
+
+**Namespace:** `Engine::Graphics`
+
+Pure virtual interface that all video/graphics plugins must implement.
+
+### Core Types
+
+#### `Color`
+
+RGBA color representation.
+
+```cpp
+struct Color {
+    uint8_t r, g, b, a;  // Red, Green, Blue, Alpha (0-255)
+};
+```
+
+**Examples:**
+```cpp
+Color red{255, 0, 0, 255};
+Color transparent_blue{0, 0, 255, 128};
+```
+
+#### `Vector2f`
+
+2D floating-point vector.
+
+```cpp
+struct Vector2f {
+    float x, y;
+};
+```
+
+#### `Transform`
+
+2D transformation matrix (position, rotation, scale).
+
+```cpp
+class Transform {
+    void SetPosition(const Vector2f& position);
+    void SetRotation(float angle);
+    void SetScale(const Vector2f& scale);
+    // Matrix operations...
+};
+```
+
+#### `Event`
+
+Window and input events.
+
+```cpp
+struct Event {
+    enum class Type {
+        Closed, KeyPressed, KeyReleased,
+        MouseButtonPressed, MouseButtonReleased,
+        MouseMoved, Resized
+    };
+    
+    Type type;
+    // Event-specific data...
+};
+```
+
+### Methods
+
+#### `virtual bool CreateWindow(uint32_t width, uint32_t height, const std::string &title) = 0`
+
+Creates the application window.
+
+**Parameters:**
+- `width` - Window width in pixels
+- `height` - Window height in pixels
+- `title` - Window title
+
+**Returns:**
+- `true` on success, `false` on failure
+
+**Example:**
+```cpp
+if (!videoModule->CreateWindow(1920, 1080, "R-Type J.A.M.E.S.")) {
+    std::cerr << "Failed to create window" << std::endl;
+}
+```
+
+---
+
+#### `virtual void Clear(const Color &color) = 0`
+
+Clears the window with a solid color.
+
+**Parameters:**
+- `color` - RGBA color to fill the window
+
+**Example:**
+```cpp
+videoModule->Clear(Color{0, 0, 0, 255});  // Black
+```
+
+---
+
+#### `virtual void Display() = 0`
+
+Displays rendered content (flips buffers).
+
+**Called:**
+- Once per frame after all drawing
+
+**Example:**
+```cpp
+videoModule->Clear(Color{0, 0, 0, 255});
+// ... draw calls ...
+videoModule->Display();
+```
+
+---
+
+#### `virtual bool IsWindowOpen() const = 0`
+
+Checks if the window is still open.
+
+**Returns:**
+- `true` if window is open, `false` if closed
+
+**Example:**
+```cpp
+while (videoModule->IsWindowOpen()) {
+    // Game loop...
+}
+```
+
+---
+
+#### `virtual bool PollEvent(Event &event) = 0`
+
+Retrieves the next pending event.
+
+**Parameters:**
+- `event` - Event structure to fill
+
+**Returns:**
+- `true` if event was retrieved, `false` if no more events
+
+**Example:**
+```cpp
+Event event;
+while (videoModule->PollEvent(event)) {
+    if (event.type == Event::Type::Closed) {
+        videoModule->CloseWindow();
+    }
+}
+```
+
+---
+
+#### `virtual bool LoadTexture(const std::string &id, const std::string &path) = 0`
+
+Loads a texture from file.
+
+**Parameters:**
+- `id` - Unique identifier
+- `path` - File path to image
+
+**Returns:**
+- `true` on success, `false` on failure
+
+**Example:**
+```cpp
+videoModule->LoadTexture("ship", "assets/sprites/r-typesheet42.gif");
+```
+
+---
+
+#### `virtual void DrawSprite(const std::string &texture_id, const Transform &transform, const Color &color) = 0`
+
+Draws a sprite with transformation and tint.
+
+**Parameters:**
+- `texture_id` - ID of loaded texture
+- `transform` - Position, rotation, scale
+- `color` - Color tint (255,255,255,255 for no tint)
+
+**Example:**
+```cpp
+Transform t;
+t.SetPosition({100.0f, 200.0f});
+t.SetRotation(45.0f);
+videoModule->DrawSprite("ship", t, Color{255, 255, 255, 255});
+```
+
+---
+
+## Entry Point Functions
 
 Every plugin must provide a C-style entry point function.
 
-### Signature
+### Audio Plugin Signature
 
 ```cpp
 extern "C" {
@@ -546,22 +742,45 @@ extern "C" {
 }
 ```
 
+### Video Plugin Signature
+
+```cpp
+extern "C" {
+    std::shared_ptr<Engine::Graphics::IVideoModule> entryPoint();
+}
+```
+
 ### Requirements
 
 - Must be declared with `extern "C"` linkage
-- Must return `std::shared_ptr<IAudioModule>`
+- Must return `std::shared_ptr` to the appropriate interface type
 - Must not throw exceptions
 - Default name is `"entryPoint"` (customizable)
 
-### Example Implementation
+### Example Implementations
 
+**Audio Plugin:**
 ```cpp
 extern "C" {
     std::shared_ptr<Engine::Audio::IAudioModule> entryPoint() {
         try {
-            return std::make_shared<MyAudioModule>();
+            return std::make_shared<SFMLAudioModule>();
         } catch (const std::exception &e) {
-            std::cerr << "Plugin creation failed: " << e.what() << std::endl;
+            std::cerr << "Audio plugin creation failed: " << e.what() << std::endl;
+            return nullptr;
+        }
+    }
+}
+```
+
+**Video Plugin:**
+```cpp
+extern "C" {
+    std::shared_ptr<Engine::Graphics::IVideoModule> entryPoint() {
+        try {
+            return std::make_shared<SFMLVideoModule>();
+        } catch (const std::exception &e) {
+            std::cerr << "Video plugin creation failed: " << e.what() << std::endl;
             return nullptr;
         }
     }
@@ -570,26 +789,37 @@ extern "C" {
 
 ### Custom Entry Point Names
 
-You can use a different name:
+You can use a different name for either plugin type:
 
+**Audio:**
 ```cpp
 extern "C" {
-    std::shared_ptr<Engine::Audio::IAudioModule> createMyPlugin() {
+    std::shared_ptr<Engine::Audio::IAudioModule> createMyAudioPlugin() {
         return std::make_shared<MyAudioModule>();
+    }
+}
+```
+
+**Video:**
+```cpp
+extern "C" {
+    std::shared_ptr<Engine::Graphics::IVideoModule> createMyVideoPlugin() {
+        return std::make_shared<MyVideoModule>();
     }
 }
 ```
 
 Load with custom name:
 ```cpp
-auto module = loader.getInstance("createMyPlugin");
+auto audioModule = audioLoader.getInstance("createMyAudioPlugin");
+auto videoModule = videoLoader.getInstance("createMyVideoPlugin");
 ```
 
 ---
 
 ## Usage Examples
 
-### Basic Plugin Loading
+### Basic Audio Plugin Loading
 
 ```cpp
 #include <loader/DLLoader.hpp>
@@ -616,34 +846,87 @@ module->Shutdown();
 loader.close();
 ```
 
-### Error Handling
+### Basic Video Plugin Loading
 
 ```cpp
-try {
-    Engine::DLLoader<IAudioModule> loader;
-    loader.open(plugin_path);
-    
-    auto module = loader.getInstance("entryPoint");
-    if (!module) {
-        throw std::runtime_error("Entry point returned null");
+#include <loader/DLLoader.hpp>
+#include <graphics/IVideoModule.hpp>
+
+// Load plugin
+Engine::DLLoader<Engine::Graphics::IVideoModule> loader;
+loader.open("lib/sfml_video_module.so");
+
+// Get instance
+auto module = loader.getInstance("entryPoint");
+
+// Initialize window
+if (!module->CreateWindow(1920, 1080, "My Game")) {
+    throw std::runtime_error("Failed to create window");
+}
+
+// Use plugin
+module->LoadTexture("ship", "assets/sprites/ship.png");
+
+// Game loop
+while (module->IsWindowOpen()) {
+    Event event;
+    while (module->PollEvent(event)) {
+        // Handle events...
     }
     
-    if (!module->Initialize()) {
-        throw std::runtime_error("Initialization failed");
+    module->Clear(Color{0, 0, 0, 255});
+    // Draw calls...
+    module->Display();
+}
+
+// Cleanup
+loader.close();
+```
+
+### Error Handling
+
+**Generic pattern (works for both audio and video):**
+
+```cpp
+template<typename T>
+std::shared_ptr<T> LoadPluginSafe(const std::string& plugin_path) {
+    try {
+        Engine::DLLoader<T> loader;
+        loader.open(plugin_path);
+        
+        auto module = loader.getInstance("entryPoint");
+        if (!module) {
+            throw std::runtime_error("Entry point returned null");
+        }
+        
+        return module;
+        
+    } catch (const Engine::DLLoaderException &e) {
+        std::cerr << "Plugin error: " << e.what() << std::endl;
+        // Fall back to default backend or null
+        return nullptr;
+    } catch (const std::exception &e) {
+        std::cerr << "Unexpected error: " << e.what() << std::endl;
+        return nullptr;
     }
-    
-    // Use module...
-    
-} catch (const Engine::DLLoaderException &e) {
-    std::cerr << "Plugin error: " << e.what() << std::endl;
-    // Fall back to default backend
-} catch (const std::exception &e) {
-    std::cerr << "Unexpected error: " << e.what() << std::endl;
+}
+
+// Usage:
+auto audioModule = LoadPluginSafe<Engine::Audio::IAudioModule>("lib/sfml_audio_module.so");
+auto videoModule = LoadPluginSafe<Engine::Graphics::IVideoModule>("lib/sfml_video_module.so");
+
+if (audioModule && audioModule->Initialize()) {
+    // Use audio module...
+}
+
+if (videoModule && videoModule->CreateWindow(800, 600, "Game")) {
+    // Use video module...
 }
 ```
 
 ### Using with RAII
 
+**Audio System Wrapper:**
 ```cpp
 class AudioSystem {
 public:
@@ -662,9 +945,38 @@ public:
     AudioSystem(const AudioSystem&) = delete;
     AudioSystem& operator=(const AudioSystem&) = delete;
     
+    Engine::Audio::IAudioModule* Get() { return module_.get(); }
+    
 private:
     Engine::DLLoader<Engine::Audio::IAudioModule> loader_;
     std::shared_ptr<Engine::Audio::IAudioModule> module_;
+};
+```
+
+**Graphics System Wrapper:**
+```cpp
+class GraphicsSystem {
+public:
+    GraphicsSystem(const std::string &plugin_path, uint32_t width, uint32_t height) {
+        loader_.open(plugin_path);
+        module_ = loader_.getInstance("entryPoint");
+        if (!module_->CreateWindow(width, height, "Game")) {
+            throw std::runtime_error("Failed to create window");
+        }
+    }
+    
+    ~GraphicsSystem() {
+        loader_.close();
+    }
+    
+    GraphicsSystem(const GraphicsSystem&) = delete;
+    GraphicsSystem& operator=(const GraphicsSystem&) = delete;
+    
+    Engine::Graphics::IVideoModule* Get() { return module_.get(); }
+    
+private:
+    Engine::DLLoader<Engine::Graphics::IVideoModule> loader_;
+    std::shared_ptr<Engine::Graphics::IVideoModule> module_;
 };
 ```
 
@@ -693,6 +1005,7 @@ private:
 
 ## See Also
 
-- [Plugin Development Guide](./audio-plugin-guide.md)
+- [Audio Plugin Development Guide](./audio-plugin-guide.md)
+- [Video Plugin Development Guide](./video-plugin-guide.md)
 - [Architecture Overview](./architecture.md)
 - [Troubleshooting](./troubleshooting.md)

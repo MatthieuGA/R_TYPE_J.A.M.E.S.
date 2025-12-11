@@ -1,5 +1,4 @@
 #pragma once
-#include <SFML/Graphics.hpp>
 
 namespace Rtype::Client::Component {
 struct PlayerTag {

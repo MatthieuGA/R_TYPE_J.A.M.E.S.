@@ -49,16 +49,43 @@ Concrete implementations of the interfaces, compiled as separate shared librarie
 
 ### Audio Plugin System
 
-The audio subsystem demonstrates the plugin architecture with a complete implementation:
+**Interface:** `Engine::Audio::IAudioModule`
+**Location:** `engine/include/audio/IAudioModule.hpp`
+**Implementation:** SFML Audio Module (`client/plugins/audio/sfml/`)
 
-- **Interface:** `IAudioModule` - Defines audio backend operations
-- **Implementation:** `SFMLAudioModule` - SFML-based audio backend
-- **Adapter:** `PluginAudioBackend` - Bridges plugin interface to engine API
+The audio plugin system handles all sound effects and music playback. It provides:
+- Sound effect loading and playback
+- Music streaming with loop support
+- Independent volume control for SFX and music
+- Mute functionality
+- Playback request system with categories
 
-See the detailed guides:
-- [Creating Audio Plugins](./audio-plugin-guide.md)
-- [Plugin Architecture Deep Dive](./architecture.md)
-- [API Reference](./api-reference.md)
+📘 **[Audio Plugin Development Guide](./audio-plugin-guide.md)**
+
+### Video Plugin System
+
+**Interface:** `Engine::Video::IVideoModule`
+**Location:** `engine/include/video/IVideoModule.hpp`
+**Implementation:** SFML Video Module (`client/plugins/video/sfml/`)
+
+The video plugin system handles all graphics rendering and window management. It provides:
+- Window creation and event handling
+- Sprite rendering with transforms (position, rotation, scale, origin)
+- Texture loading and management with caching
+- Font loading and text rendering
+- Shader loading and parameter setting
+- Backend-agnostic color, vector, and rect types
+
+📘 **[Video Plugin Development Guide](./video-plugin-guide.md)**
+
+## Plugin Development Guides
+
+Comprehensive step-by-step guides for creating custom plugins:
+
+- **[Audio Plugin Guide](./audio-plugin-guide.md)** - Create custom audio backends
+- **[Video Plugin Guide](./video-plugin-guide.md)** - Create custom rendering backends
+- **[Plugin Architecture](./architecture.md)** - Deep dive into the plugin system
+- **[API Reference](./api-reference.md)** - Complete interface documentation
 
 ## Benefits
 

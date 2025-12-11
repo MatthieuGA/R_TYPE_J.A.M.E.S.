@@ -23,15 +23,15 @@ void PlayerSystem(Eng::registry &reg,
         make_indexed_zipper(
             player_tags, velocities, animated_sprites, transforms)) {
         if (velocity.vy > 200.f)
-            animated_sprite.currentFrame = 0;
+            animated_sprite.current_frame = 0;
         else if (velocity.vy >= 75)
-            animated_sprite.currentFrame = 1;
+            animated_sprite.current_frame = 1;
         else if (velocity.vy < -200.f)
-            animated_sprite.currentFrame = 4;
+            animated_sprite.current_frame = 4;
         else if (velocity.vy <= -75)
-            animated_sprite.currentFrame = 3;
+            animated_sprite.current_frame = 3;
         else
-            animated_sprite.currentFrame = 2;
+            animated_sprite.current_frame = 2;
 
         float rotation = velocity.vx / player_tag.speed_max * 5.f;
         transform.rotationDegrees = rotation;

@@ -8,7 +8,7 @@ Common issues and solutions when working with the R-TYPE J.A.M.E.S. plugin syste
 
 **Symptom:**
 ```
-[DLLoader] Error: Failed to get symbol 'create': lib/my_audio_module.so: undefined symbol: entryPoint.
+[DLLoader] Error: Failed to get symbol 'create': lib/my_plugin_module.so: undefined symbol: entryPoint.
 ```
 
 **Cause:** Missing or incorrectly declared entry point function.
@@ -18,10 +18,17 @@ Common issues and solutions when working with the R-TYPE J.A.M.E.S. plugin syste
 Ensure your plugin has the correct entry point:
 
 ```cpp
-// ✅ Correct
+// ✅ Correct - Audio Plugin
 extern "C" {
     std::shared_ptr<Engine::Audio::IAudioModule> entryPoint() {
         return std::make_shared<MyAudioModule>();
+    }
+}
+
+// ✅ Correct - Video Plugin
+extern "C" {
+    std::shared_ptr<Engine::Graphics::IVideoModule> entryPoint() {
+        return std::make_shared<MyVideoModule>();
     }
 }
 
@@ -44,13 +51,13 @@ Check symbols in your plugin:
 
 ```bash
 # Linux
-nm -D lib/my_audio_module.so | grep entryPoint
+nm -D lib/my_plugin_module.so | grep entryPoint
 
 # Should show:
 # 0000000000001234 T entryPoint
 
 # Windows
-dumpbin /EXPORTS my_audio_module.dll
+dumpbin /EXPORTS my_plugin_module.dll
 ```
 
 ---
@@ -59,7 +66,7 @@ dumpbin /EXPORTS my_audio_module.dll
 
 **Symptom:**
 ```
-[DLLoader] Error: Failed to load library: lib/sfml_audio_module.so: cannot open shared object file: No such file or directory.
+[DLLoader] Error: Failed to load library: lib/my_plugin_module.so: cannot open shared object file: No such file or directory.
 ```
 
 **Cause:** Incorrect path or plugin not built.
@@ -69,26 +76,26 @@ dumpbin /EXPORTS my_audio_module.dll
 1. **Verify plugin exists:**
 ```bash
 ls -la build/lib/
-# Should show your_module.so
+# Should show your_module.so (e.g., sfml_audio_module.so, sfml_video_module.so)
 ```
 
 2. **Check path is relative to executable:**
 ```bash
 # If client is in build/client/
 # Plugin is in build/lib/
-# Use relative path: "../lib/my_audio_module.so"
+# Use relative path: "../lib/my_plugin_module.so"
 ```
 
 3. **Use absolute path for testing:**
 ```cpp
 std::filesystem::path plugin_path = 
-    std::filesystem::absolute("build/lib/my_audio_module.so");
+    std::filesystem::absolute("build/lib/my_plugin_module.so");
 loader.open(plugin_path.string());
 ```
 
 4. **Verify plugin was built:**
 ```bash
-cmake --build build --target my_audio_module -j$(nproc)
+cmake --build build --target my_plugin_module -j$(nproc)
 ```
 
 ---
@@ -137,11 +144,12 @@ set_target_properties(my_audio_module PROPERTIES
 
 ---
 
-### Error: "undefined reference to IAudioModule methods"
+### Error: "undefined reference to interface methods"
 
 **Symptom:**
 ```
 undefined reference to `Engine::Audio::IAudioModule::~IAudioModule()'
+undefined reference to `Engine::Graphics::IVideoModule::~IVideoModule()'
 ```
 
 **Cause:** Interface header not properly included or linked.
@@ -150,12 +158,16 @@ undefined reference to `Engine::Audio::IAudioModule::~IAudioModule()'
 
 1. **Include interface header:**
 ```cpp
+// Audio plugin
 #include <audio/IAudioModule.hpp>  // Note: angle brackets, not quotes
+
+// Video plugin
+#include <graphics/IVideoModule.hpp>
 ```
 
 2. **Add engine include path in CMakeLists.txt:**
 ```cmake
-target_include_directories(my_audio_module
+target_include_directories(my_plugin_module
     PRIVATE
         ${CMAKE_SOURCE_DIR}/engine/include  # Add this
 )
@@ -269,11 +281,11 @@ if (!module->Initialize()) {
 }
 ```
 
-**Cause:** Audio device initialization failed.
+**Cause:** Device or system initialization failed.
 
 **Solution:**
 
-1. **Check audio device availability:**
+1. **Check device availability (Audio):**
 ```cpp
 bool MyAudioModule::Initialize() {
     auto devices = GetAudioDevices();
@@ -282,7 +294,7 @@ bool MyAudioModule::Initialize() {
         return false;
     }
     
-    std::cout << "Available devices:" << std::endl;
+    std::cout << "Available audio devices:" << std::endl;
     for (const auto &device : devices) {
         std::cout << "  - " << device << std::endl;
     }
@@ -291,25 +303,37 @@ bool MyAudioModule::Initialize() {
 }
 ```
 
-2. **Test without audio hardware:**
+2. **Check display availability (Video):**
+```cpp
+bool MyVideoModule::Initialize() {
+    if (!CreateWindow(800, 600, "Test")) {
+        std::cerr << "Failed to create window" << std::endl;
+        return false;
+    }
+    return true;
+}
+```
+
+3. **Test without hardware (headless mode):**
 ```cpp
 // Add dummy mode for headless testing
-bool MyAudioModule::Initialize() {
+bool MyPluginModule::Initialize() {
     if (std::getenv("HEADLESS")) {
         std::cout << "Running in headless mode" << std::endl;
         return true;
     }
-    return InitializeAudioDevice();
+    return InitializeDevice();
 }
 ```
 
-3. **Check permissions:**
+4. **Check permissions (Linux):**
 ```bash
-# Linux: User must be in 'audio' group
+# Audio: User must be in 'audio' group
 groups $USER
-
-# Add user to audio group if needed
 sudo usermod -a -G audio $USER
+
+# Video: User must have access to display
+echo $DISPLAY  # Should show :0 or similar
 ```
 
 ---
@@ -318,7 +342,11 @@ sudo usermod -a -G audio $USER
 
 **Symptom:**
 ```cpp
-module->LoadSound("laser", "assets/sounds/laser.ogg");  // Returns false
+// Audio plugin
+audioModule->LoadSound("laser", "assets/sounds/laser.ogg");  // Returns false
+
+// Video plugin
+videoModule->LoadTexture("ship", "assets/sprites/ship.png");  // Returns false
 ```
 
 **Cause:** File not found or unsupported format.
@@ -327,7 +355,7 @@ module->LoadSound("laser", "assets/sounds/laser.ogg");  // Returns false
 
 1. **Verify file exists:**
 ```cpp
-bool MyAudioModule::LoadSound(const std::string &id, const std::string &path) {
+bool MyPluginModule::LoadAsset(const std::string &id, const std::string &path) {
     if (!std::filesystem::exists(path)) {
         std::cerr << "File not found: " << path << std::endl;
         std::cerr << "Current directory: " 
@@ -341,15 +369,23 @@ bool MyAudioModule::LoadSound(const std::string &id, const std::string &path) {
 2. **Use absolute paths:**
 ```cpp
 std::string assets_dir = std::filesystem::absolute("assets").string();
+
+// Audio
 module->LoadSound("laser", assets_dir + "/sounds/laser.ogg");
+
+// Video
+module->LoadTexture("ship", assets_dir + "/sprites/ship.png");
 ```
 
 3. **Check file format support:**
 ```cpp
-// List supported formats
-std::vector<std::string> supported = {".ogg", ".wav", ".mp3", ".flac"};
-auto ext = std::filesystem::path(path).extension().string();
+// Audio formats
+std::vector<std::string> audio_formats = {".ogg", ".wav", ".mp3", ".flac"};
 
+// Graphics formats
+std::vector<std::string> image_formats = {".png", ".jpg", ".bmp", ".tga"};
+
+auto ext = std::filesystem::path(path).extension().string();
 if (std::find(supported.begin(), supported.end(), ext) == supported.end()) {
     std::cerr << "Unsupported format: " << ext << std::endl;
     return false;
@@ -551,16 +587,23 @@ cmake --build . && ./build/client/r-type_client
 ### Enable verbose logging
 
 ```cpp
-#define AUDIO_PLUGIN_DEBUG 1
+#define PLUGIN_DEBUG 1
 
-#ifdef AUDIO_PLUGIN_DEBUG
-    #define AUDIO_LOG(msg) std::cout << "[AudioPlugin] " << msg << std::endl
+#ifdef PLUGIN_DEBUG
+    #define PLUGIN_LOG(module, msg) std::cout << "[" << module << "] " << msg << std::endl
 #else
-    #define AUDIO_LOG(msg)
+    #define PLUGIN_LOG(module, msg)
 #endif
 
+// Audio plugin
 void MyAudioModule::LoadSound(const std::string &id, const std::string &path) {
-    AUDIO_LOG("Loading sound: " << id << " from " << path);
+    PLUGIN_LOG("AudioPlugin", "Loading sound: " << id << " from " << path);
+    // ...
+}
+
+// Video plugin
+void MyVideoModule::LoadTexture(const std::string &id, const std::string &path) {
+    PLUGIN_LOG("VideoPlugin", "Loading texture: " << id << " from " << path);
     // ...
 }
 ```
@@ -597,11 +640,13 @@ dl_iterate_phdr(callback, nullptr);
 If you're still stuck:
 
 1. **Check examples:**
-   - Review `client/plugins/audio/sfml/` for reference implementation
-   - See `tests/test_audio_plugin.cpp` for usage examples
+   - Audio: Review `client/plugins/audio/sfml/` for reference implementation
+   - Video: Review `client/plugins/video/sfml/` for reference implementation
+   - Tests: See `tests/test_audio_plugin.cpp` and `tests/test_video_plugin.cpp`
 
 2. **Consult documentation:**
-   - [Plugin Development Guide](./audio-plugin-guide.md)
+   - [Audio Plugin Guide](./audio-plugin-guide.md)
+   - [Video Plugin Guide](./video-plugin-guide.md)
    - [Architecture Overview](./architecture.md)
    - [API Reference](./api-reference.md)
 
