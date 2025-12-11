@@ -1,13 +1,9 @@
 add_executable(r-type_server)
-target_sources(r-type_server PRIVATE
-    main.cpp
-    src/server/ClientConnectionManager.cpp
-    src/server/Config.cpp
-    src/server/Network.cpp
-    src/server/PacketHandler.cpp
-    src/server/PacketSender.cpp
-    src/server/Server.cpp
+file(GLOB_RECURSE SERVER_SOURCES 
+    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
 )
+
+target_sources(r-type_server PRIVATE ${SERVER_SOURCES})
 
 # Include directories
 target_include_directories(r-type_server PRIVATE 

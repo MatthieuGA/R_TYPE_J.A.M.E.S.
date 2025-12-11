@@ -3,8 +3,6 @@
 #include <iostream>
 #include <utility>
 
-#include "server/Components.hpp"
-
 namespace server {
 
 Server::Server(Config &config, boost::asio::io_context &io_context)
@@ -40,37 +38,6 @@ void Server::Initialize() {
         });
 
     std::cout << "Server initialized successfully" << std::endl;
-}
-
-void Server::RegisterComponents() {
-    registry_.RegisterComponent<Component::Position>();
-    registry_.RegisterComponent<Component::Velocity>();
-    registry_.RegisterComponent<Component::Health>();
-    registry_.RegisterComponent<Component::NetworkId>();
-    registry_.RegisterComponent<Component::Player>();
-    registry_.RegisterComponent<Component::Enemy>();
-
-    std::cout << "Registered all components" << std::endl;
-}
-
-void Server::RegisterSystems() {
-    registry_.AddSystem<Engine::sparse_array<Component::Position>,
-        Engine::sparse_array<Component::Velocity>>(
-        [](Engine::registry &reg,
-            Engine::sparse_array<Component::Position> &positions,
-            Engine::sparse_array<Component::Velocity> &velocities) {
-            for (size_t i = 0; i < positions.size() && i < velocities.size();
-                ++i) {
-                if (positions.has(i) && velocities.has(i)) {
-                    auto &pos = positions[i];
-                    auto &vel = velocities[i];
-                    pos->x += vel->vx;
-                    pos->y += vel->vy;
-                }
-            }
-        });
-
-    std::cout << "Registered all systems" << std::endl;
 }
 
 void Server::Start() {

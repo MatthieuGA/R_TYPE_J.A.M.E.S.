@@ -76,6 +76,10 @@ add_executable(server_tests
     ${CMAKE_SOURCE_DIR}/server/src/server/PacketHandler.cpp
     ${CMAKE_SOURCE_DIR}/server/src/server/PacketSender.cpp
     ${CMAKE_SOURCE_DIR}/server/src/server/Server.cpp
+    ${CMAKE_SOURCE_DIR}/server/src/server/CoreComponents.cpp
+    ${CMAKE_SOURCE_DIR}/server/src/server/GameplayComponents.cpp
+    ${CMAKE_SOURCE_DIR}/server/src/server/ServerRegisterComponents.cpp
+    ${CMAKE_SOURCE_DIR}/server/src/server/ServerRegisterSystems.cpp
 )
 
 # Include directories for server tests
