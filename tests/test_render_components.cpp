@@ -31,29 +31,6 @@ TEST(RenderComponents, ShaderPathAndUniforms) {
     EXPECT_FLOAT_EQ(shader.uniforms_float.at("amplitude"), 0.7f);
 }
 
-TEST(RenderComponents, AnimatedSpriteCtorLooping) {
-    Com::AnimatedSprite anim{32, 16, 0.2f, true, sf::Vector2f(4.0f, 2.0f), 6};
-    EXPECT_EQ(anim.frameWidth, 32);
-    EXPECT_EQ(anim.frameHeight, 16);
-    EXPECT_EQ(anim.totalFrames, 6);
-    EXPECT_EQ(anim.currentFrame, 0);
-    EXPECT_FLOAT_EQ(anim.frameDuration, 0.2f);
-    EXPECT_TRUE(anim.loop);
-    EXPECT_TRUE(anim.animated);
-    EXPECT_FLOAT_EQ(anim.first_frame_position.x, 4.0f);
-    EXPECT_FLOAT_EQ(anim.first_frame_position.y, 2.0f);
-}
-
-TEST(RenderComponents, AnimatedSpriteSingleFrame) {
-    Com::AnimatedSprite anim{64, 64, 5};
-    EXPECT_EQ(anim.frameWidth, 64);
-    EXPECT_EQ(anim.frameHeight, 64);
-    EXPECT_EQ(anim.currentFrame, 5);
-    EXPECT_FALSE(anim.animated);
-    EXPECT_EQ(anim.totalFrames, 0);
-    EXPECT_TRUE(anim.loop);
-}
-
 TEST(RenderComponents, TextDefaults) {
     Com::Text text{"dogica.ttf"};
     EXPECT_EQ(text.fontPath, std::string("assets/fonts/dogica.ttf"));

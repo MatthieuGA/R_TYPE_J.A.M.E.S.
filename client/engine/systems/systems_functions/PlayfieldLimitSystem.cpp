@@ -22,6 +22,8 @@ void PlayfieldLimitSystem(Eng::registry &reg, const GameWorld &game_world,
     Eng::sparse_array<Com::PlayerTag> const &player_tags) {
     for (auto &&[i, transform, player_tag] :
         make_indexed_zipper(transforms, player_tags)) {
+        if (player_tag.isInPlay == false)
+            continue;
         // Update position based on velocity
         if (transform.x < 0)
             transform.x = 0;

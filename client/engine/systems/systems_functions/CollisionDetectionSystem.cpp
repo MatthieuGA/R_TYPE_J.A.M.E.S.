@@ -1,64 +1,11 @@
 #include <algorithm>
 
+#include "engine/CollidingTools.hpp"
 #include "engine/OriginTool.hpp"
 #include "engine/events/EngineEvent.hpp"
 #include "engine/systems/InitRegistrySystems.hpp"
 
 namespace Rtype::Client {
-/**
- * @brief Check AABB collision using precomputed offsets and scaled hitboxes.
- *
- * @param trans_a Transform of entity A
- * @param hb_a HitBox of entity A
- * @param trans_b Transform of entity B
- * @param hb_b HitBox of entity B
- * @param off_a Offset for entity A (unscaled)
- * @param off_b Offset for entity B (unscaled)
- * @return true if the boxes overlap
- */
-bool IsCollidingFromOffset(const Com::Transform &trans_a,
-    const Com::HitBox &hb_a, const Com::Transform &trans_b,
-    const Com::HitBox &hb_b, sf::Vector2f off_a, sf::Vector2f off_b) {
-    sf::Vector2f scal_off_a = off_a * trans_a.scale;
-    sf::Vector2f scal_off_b = off_b * trans_b.scale;
-    sf::Vector2f scal_hb_a =
-        sf::Vector2f(hb_a.width * trans_a.scale, hb_a.height * trans_a.scale);
-    sf::Vector2f scal_hb_b =
-        sf::Vector2f(hb_b.width * trans_b.scale, hb_b.height * trans_b.scale);
-
-    if (trans_a.x + scal_off_a.x < trans_b.x + scal_hb_b.x + scal_off_b.x &&
-        trans_a.x + scal_hb_a.x + scal_off_a.x > trans_b.x + scal_off_b.x &&
-        trans_a.y + scal_off_a.y < trans_b.y + scal_hb_b.y + scal_off_b.y &&
-        trans_a.y + scal_hb_a.y + scal_off_a.y > trans_b.y + scal_off_b.y) {
-        return true;
-    }
-    return false;
-}
-
-/**
- * @brief Check AABB collision between two entities.
- *
- * This function computes the offsets based on the transforms and hitboxes,
- * then calls `IsCollidingFromOffset` to determine if a collision occurs.
- *
- * @param trans_a Transform of entity A
- * @param hb_a HitBox of entity A
- * @param trans_b Transform of entity B
- * @param hb_b HitBox of entity B
- * @param game_world Game world context (unused in current implementation)
- * @return true if the boxes overlap
- */
-bool IsColliding(const Com::Transform &trans_a, const Com::HitBox &hb_a,
-    const Com::Transform &trans_b, const Com::HitBox &hb_b,
-    Rtype::Client::GameWorld &game_world) {
-    sf::Vector2f off_a =
-        GetOffsetFromTransform(trans_a, {hb_a.width, hb_a.height});
-    sf::Vector2f off_b =
-        GetOffsetFromTransform(trans_b, {hb_b.width, hb_b.height});
-
-    return IsCollidingFromOffset(trans_a, hb_a, trans_b, hb_b, off_a, off_b);
-}
-
 /**
  * @brief Compute and resolve penetration between two colliding entities.
  *
@@ -90,13 +37,13 @@ void ComputeCollision(Eng::sparse_array<Com::Solid> const &solids, int i,
         return;
 
     float width_computed_a =
-        hb_a.width * (hb_a.scaleWithTransform ? trans_a.scale : 1.0f);
+        hb_a.width * (hb_a.scaleWithTransform ? trans_a.scale.x : 1.0f);
     float height_computed_a =
-        hb_a.height * (hb_a.scaleWithTransform ? trans_a.scale : 1.0f);
+        hb_a.height * (hb_a.scaleWithTransform ? trans_a.scale.y : 1.0f);
     float width_computed_b =
-        hb_b.width * (hb_b.scaleWithTransform ? trans_b.scale : 1.0f);
+        hb_b.width * (hb_b.scaleWithTransform ? trans_b.scale.x : 1.0f);
     float height_computed_b =
-        hb_b.height * (hb_b.scaleWithTransform ? trans_b.scale : 1.0f);
+        hb_b.height * (hb_b.scaleWithTransform ? trans_b.scale.y : 1.0f);
 
     // Compute offsets and scaled hitboxes (same as is_colliding)
     sf::Vector2f off_a =
@@ -104,12 +51,14 @@ void ComputeCollision(Eng::sparse_array<Com::Solid> const &solids, int i,
     sf::Vector2f off_b =
         GetOffsetFromTransform(trans_b, {width_computed_b, height_computed_b});
 
-    sf::Vector2f scal_off_a = off_a * trans_a.scale;
-    sf::Vector2f scal_off_b = off_b * trans_b.scale;
-    sf::Vector2f scaledA = sf::Vector2f(
-        width_computed_a * trans_a.scale, height_computed_a * trans_a.scale);
-    sf::Vector2f scaledB = sf::Vector2f(
-        width_computed_b * trans_b.scale, height_computed_b * trans_b.scale);
+    sf::Vector2f scal_off_a =
+        sf::Vector2f(off_a.x * trans_a.scale.x, off_a.y * trans_a.scale.y);
+    sf::Vector2f scal_off_b =
+        sf::Vector2f(off_b.x * trans_b.scale.x, off_b.y * trans_b.scale.y);
+    sf::Vector2f scaledA = sf::Vector2f(width_computed_a * trans_a.scale.x,
+        height_computed_a * trans_a.scale.y);
+    sf::Vector2f scaledB = sf::Vector2f(width_computed_b * trans_b.scale.x,
+        height_computed_b * trans_b.scale.y);
 
     float a_min_x = trans_a.x + scal_off_a.x;
     float a_max_x = a_min_x + scaledA.x;
@@ -185,7 +134,7 @@ void CollisionDetectionSystem(Eng::registry &reg,
             make_indexed_zipper(transforms, hitBoxes)) {
             if (i >= j)
                 continue;
-            if (IsColliding(trans_a, hb_a, trans_b, hb_b, game_world)) {
+            if (IsColliding(trans_a, hb_a, trans_b, hb_b)) {
                 game_world.event_bus_.Publish(
                     CollisionEvent{i, j, game_world});
                 ComputeCollision(solids, i, j, trans_a, hb_a, trans_b, hb_b);

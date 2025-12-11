@@ -10,7 +10,8 @@ TEST(TransformComponent, DefaultsAreCenterAndNoParent) {
     EXPECT_FALSE(t.parent_entity.has_value());
     EXPECT_TRUE(t.children.empty());
     EXPECT_FLOAT_EQ(t.rotationDegrees, 0.0f);
-    EXPECT_FLOAT_EQ(t.scale, 0.0f);  // uninitialized float left as-is
+    EXPECT_FLOAT_EQ(t.scale.x, 0.0f);  // uninitialized float left as-is
+    EXPECT_FLOAT_EQ(t.scale.y, 0.0f);  // uninitialized float left as-is
 }
 
 TEST(TransformComponent, CustomCtorSetsValues) {
@@ -19,7 +20,8 @@ TEST(TransformComponent, CustomCtorSetsValues) {
     EXPECT_FLOAT_EQ(t.x, 10.0f);
     EXPECT_FLOAT_EQ(t.y, -5.0f);
     EXPECT_FLOAT_EQ(t.rotationDegrees, 30.0f);
-    EXPECT_FLOAT_EQ(t.scale, 2.5f);
+    EXPECT_FLOAT_EQ(t.scale.x, 2.5f);
+    EXPECT_FLOAT_EQ(t.scale.y, 2.5f);
     EXPECT_EQ(t.origin, Com::Transform::TOP_LEFT);
     EXPECT_FLOAT_EQ(t.customOrigin.x, 1.0f);
     EXPECT_FLOAT_EQ(t.customOrigin.y, 2.0f);

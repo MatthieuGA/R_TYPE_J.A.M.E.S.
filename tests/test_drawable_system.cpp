@@ -15,6 +15,8 @@ TEST(DrawableSystem, LoadsAndAppliesTransform) {
     Eng::sparse_array<Com::Transform> transforms;
     Eng::sparse_array<Com::Drawable> drawables;
     Eng::sparse_array<Com::Shader> shaders;
+    Eng::sparse_array<Com::AnimatedSprite> animated_sprites;
+    Eng::sparse_array<Com::ParticleEmitter> emitters;
 
     Com::Transform transform{15.0f, -4.0f, 22.0f, 1.5f};
     Com::Drawable drawable{"Logo.png", 4, 0.6f};
@@ -27,15 +29,16 @@ TEST(DrawableSystem, LoadsAndAppliesTransform) {
     game_world.window_.create(
         sf::VideoMode({10u, 10u}), "drawable-test", sf::Style::None);
 
-    DrawableSystem(reg, game_world, transforms, drawables, shaders);
+    DrawableSystem(reg, game_world, transforms, drawables, shaders,
+        animated_sprites, emitters);
 
     ASSERT_TRUE(drawables[0].has_value());
     const auto &rendered = drawables[0].value();
     EXPECT_TRUE(rendered.isLoaded);
     EXPECT_FLOAT_EQ(rendered.sprite.getPosition().x, transform.x);
     EXPECT_FLOAT_EQ(rendered.sprite.getPosition().y, transform.y);
-    EXPECT_FLOAT_EQ(rendered.sprite.getScale().x, transform.scale);
-    EXPECT_FLOAT_EQ(rendered.sprite.getScale().y, transform.scale);
+    EXPECT_FLOAT_EQ(rendered.sprite.getScale().x, transform.scale.x);
+    EXPECT_FLOAT_EQ(rendered.sprite.getScale().y, transform.scale.y);
     EXPECT_FLOAT_EQ(rendered.sprite.getRotation(), transform.rotationDegrees);
     EXPECT_EQ(rendered.sprite.getColor().a,
         static_cast<sf::Uint8>(rendered.opacity * 255));
@@ -62,7 +65,10 @@ TEST(DrawableSystem, HandlesMultipleEntitiesSortedByZIndex) {
     game_world.window_.create(
         sf::VideoMode({10u, 10u}), "drawable-test2", sf::Style::None);
 
-    DrawableSystem(reg, game_world, transforms, drawables, shaders);
+    Eng::sparse_array<Com::AnimatedSprite> animated_sprites;
+    Eng::sparse_array<Com::ParticleEmitter> emitters;
+    DrawableSystem(reg, game_world, transforms, drawables, shaders,
+        animated_sprites, emitters);
 
     ASSERT_TRUE(drawables[0].has_value());
     ASSERT_TRUE(drawables[1].has_value());

@@ -60,10 +60,11 @@ void RenderOneTextEntity(Eng::sparse_array<Com::Transform> const &transforms,
     text->text.setPosition(world_position);
 
     // Apply cumulative scale
-    float world_scale =
+    sf::Vector2f world_scale =
         CalculateCumulativeScale(transform.value(), transforms);
-    text->text.setScale(sf::Vector2f(
-        world_scale / FONT_SIZE_SCALE, world_scale / FONT_SIZE_SCALE));
+    world_scale.x /= FONT_SIZE_SCALE;
+    world_scale.y /= FONT_SIZE_SCALE;
+    text->text.setScale(world_scale);
 
     // Apply rotation
     text->text.setRotation(transform->rotationDegrees);

@@ -10,6 +10,7 @@
 #include "game/ClientApplication.hpp"
 #include "game/CommandLineParser.hpp"
 #include "game/InitRegistry.hpp"
+#include "game/factory/factory_ennemies/FactoryActors.hpp"
 #include "game/scenes_management/InitScenes.hpp"
 #include "include/registry.hpp"
 
@@ -38,6 +39,7 @@ int main(int argc, char *argv[]) {
         Audio::AudioManager audio_manager(std::move(audio_backend));
         game_world.audio_manager_ = &audio_manager;
 
+        RC::FactoryActors::GetInstance().InitializeEnemyInfoMap("assets/data");
         // Initialize application (registry and scenes)
         RC::ClientApplication::InitializeApplication(game_world);
 

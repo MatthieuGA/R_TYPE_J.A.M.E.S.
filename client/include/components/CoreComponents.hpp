@@ -21,7 +21,7 @@ struct Transform {
     float x;
     float y;
     float rotationDegrees;
-    float scale;
+    sf::Vector2f scale;
 
     enum OriginPoint {
         TOP_LEFT,
@@ -45,7 +45,7 @@ struct Transform {
 
     Transform() = default;
 
-    Transform(float x, float y, float rotationDegrees, float scale,
+    Transform(float x, float y, float rotationDegrees, sf::Vector2f scale,
         OriginPoint origin = CENTER,
         sf::Vector2f customOrigin = sf::Vector2f(0.0f, 0.0f),
         std::optional<std::size_t> parent_entity = std::nullopt)
@@ -58,14 +58,25 @@ struct Transform {
           parent_entity(parent_entity),
           children() {}
 
+    Transform(float x, float y, float rotationDegrees, float scale,
+        OriginPoint origin = CENTER,
+        sf::Vector2f customOrigin = sf::Vector2f(0.0f, 0.0f),
+        std::optional<std::size_t> parent_entity = std::nullopt)
+        : x(x),
+          y(y),
+          rotationDegrees(rotationDegrees),
+          scale({scale, scale}),
+          origin(origin),
+          customOrigin(customOrigin),
+          parent_entity(parent_entity),
+          children() {}
+
     /**
      * @brief Gets the cumulative rotation including parent rotations.
      * @note This only uses local rotation; parent rotations must be added by
      * the render system.
      */
-    float GetWorldRotation() const {
-        return rotationDegrees;
-    }
+    float GetWorldRotation() const;
 };
 
 struct Velocity {

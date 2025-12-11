@@ -1,24 +1,24 @@
 # Collision Detection System
 
-**Fichier source:** `client/engine/systems/SystemsFunctions/CollisionDetectionSystem.cpp`
+**Source:** `client/engine/systems/SystemsFunctions/CollisionDetectionSystem.cpp`
 
-**But:** Détecter les collisions entre hitboxes et résoudre les pénétrations (séparation) pour les entités solides.
+**Purpose:** Detect collisions between hitboxes and resolve penetrations (separation) for solid entities.
 
-**Composants utilisés:**
+**Components used:**
 
 - `Transform`
 - `HitBox`
 - `Solid`
-- `GameWorld` (contexte)
+- `GameWorld` (context)
 
-## Comportement
+## Behavior
 
-- Calcul des offsets d'origine via `GetOffsetFromTransform`.
-- Test AABB (axis-aligned bounding box) pour déterminer l'intersection entre deux hitboxes (`IsCollidingFromOffset`).
-- Si collision, calcule la pénétration en X et Y et sépare les entités le long de l'axe de pénétration le plus faible.
-- Gère des flags `isSolid` et `isLocked` pour savoir quelles entités peuvent être déplacées pour résoudre la collision.
+- Compute origin offsets via `GetOffsetFromTransform`.
+- Perform AABB tests to detect intersection between two hitboxes (`IsCollidingFromOffset`).
+- On collision, compute penetration in X and Y and separate along the smallest penetration axis.
+- Use `isSolid` and `isLocked` flags to decide which entities can be moved to resolve the collision.
 
-## Signature principale
+## Main signature
 
 ```cpp
 void CollisionDetectionSystem(Eng::registry &reg,
@@ -30,6 +30,6 @@ void CollisionDetectionSystem(Eng::registry &reg,
 
 ## Notes
 
-- La résolution de collision prend en compte l'échelle (`trans.scale`) et les offsets calculés.
-- Si les deux entités sont `isLocked`, la collision n'est pas résolue (aucun mouvement).
-- Si les deux entités sont solides et mobiles, la séparation peut être partagée (implémentation selon la logique interne).
+- Collision resolution accounts for scale (`trans.scale`) and computed offsets.
+- If both entities are `isLocked`, no resolution occurs.
+- If both are solid and movable, separation can be shared (implementation-specific).

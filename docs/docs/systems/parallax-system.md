@@ -1,21 +1,21 @@
 # Parallax System
 
-**Fichier source:** `client/engine/systems/SystemsFunctions/ParallaxSystem.cpp`
+**Source:** `client/engine/systems/SystemsFunctions/ParallaxSystem.cpp`
 
-**But:** Gérer le défilement parallax des couches d'arrière-plan.
+**Purpose:** Scroll parallax background layers.
 
-**Composants utilisés:**
+**Components used:**
 
 - `ParrallaxLayer` (scroll_speed)
 - `Transform`
-- `Drawable` (pour la taille de la texture)
+- `Drawable` (for texture size)
 
-## Comportement
+## Behavior
 
-- Avance la position X de la couche selon `scroll_speed * dt`.
-- Réinitialise la position X lorsqu'elle dépasse la largeur négative de la texture, créant une boucle.
+- Advance the layer X position by `scroll_speed * dt`.
+- Reset X position when it exceeds the negative texture width to create a loop.
 
-## Signature principale
+## Main signature
 
 ```cpp
 void ParallaxSystem(Eng::registry &reg, const GameWorld &game_world,
@@ -26,5 +26,5 @@ void ParallaxSystem(Eng::registry &reg, const GameWorld &game_world,
 
 ## Notes
 
-- Le système s'appuie sur `game_world.window_size_` et `game_world.last_delta_`.
-- On vérifie `drawable.isLoaded` avant d'utiliser la taille de la texture.
+- Relies on `game_world.window_size_` and `game_world.last_delta_`.
+- Checks `drawable.isLoaded` before using texture size.
