@@ -1,24 +1,24 @@
 # Input System
 
-**Fichier source:** `client/engine/systems/SystemsFunctions/InputSystem.cpp`
+**Source:** `client/engine/systems/SystemsFunctions/InputSystem.cpp`
 
-**But:** Lire l'état des touches du clavier et remplir le composant `Inputs`.
+**Purpose:** Read keyboard state and populate the `Inputs` component.
 
-**Composants utilisés:**
+**Components used:**
 
 - `Inputs` (horizontal, vertical, shoot)
 
-## Comportement
+## Behavior
 
-- Réinitialise `horizontal`, `vertical` et `shoot` à 0/false au début de la passe.
-- Lit les touches suivantes (mappage local) :
-  - `Q` = gauche (-1.0f)
-  - `D` = droite (+1.0f)
-  - `Z` = haut (-1.0f)
-  - `S` = bas (+1.0f)
-  - `Space` = tir (`shoot = true`)
+- Reset `horizontal`, `vertical`, and `shoot` to 0/false at the start of the pass.
+- Read keys (local mapping):
+  - `Q` = left (-1.0f)
+  - `D` = right (+1.0f)
+  - `Z` = up (-1.0f)
+  - `S` = down (+1.0f)
+  - `Space` = shoot (`shoot = true`)
 
-## Signature principale
+## Main signature
 
 ```cpp
 void InputSystem(Eng::registry &reg,
@@ -27,5 +27,5 @@ void InputSystem(Eng::registry &reg,
 
 ## Notes
 
-- Le système utilise `sf::Keyboard::isKeyPressed` et fonctionne côté client.
-- Remapper les touches doit se faire dans le code si nécessaire.
+- Uses `sf::Keyboard::isKeyPressed` and runs on the client.
+- Key remapping requires code changes if needed.

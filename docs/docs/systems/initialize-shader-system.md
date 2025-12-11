@@ -1,20 +1,20 @@
 # Initialize Shader System
 
-**Fichier source:** `client/engine/systems/SystemsFunctions/InitializeShaderSystem.cpp`
+**Source:** `client/engine/systems/SystemsFunctions/InitializeShaderSystem.cpp`
 
-**But:** Charger et initialiser les shaders (fragment shaders) pour les composants `Shader`.
+**Purpose:** Load and initialize fragment shaders for `Shader` components.
 
-**Composants utilisés:**
+**Components used:**
 
-- `Shader` (contient `shaderPath`, `uniforms_float`, `isLoaded`, `shader` shared_ptr)
+- `Shader` (contains `shaderPath`, `uniforms_float`, `isLoaded`, `shader` shared_ptr)
 
-## Comportement
+## Behavior
 
-- Pour chaque composant `Shader` non chargé et avec un `shaderPath`, charge un `sf::Shader` en mémoire.
-- Initialise l'uniform `texture` à `sf::Shader::CurrentTexture` et applique les uniforms float fournis.
-- En cas d'échec, affiche un message d'erreur et remet le pointeur `shader` à `nullptr`.
+- For each `Shader` not yet loaded and with a valid `shaderPath`, load an `sf::Shader` into memory.
+- Initialize the `texture` uniform to `sf::Shader::CurrentTexture` and apply provided float uniforms.
+- On failure, log an error and reset the `shader` pointer to `nullptr`.
 
-## Signature principale
+## Main signature
 
 ```cpp
 void InitializeShaderSystem(Eng::registry &reg,
@@ -23,5 +23,5 @@ void InitializeShaderSystem(Eng::registry &reg,
 
 ## Notes
 
-- Les shaders sont des `std::shared_ptr<sf::Shader>`.
-- Le système est idempotent : il n'essaiera pas de recharger un shader déjà marqué `isLoaded`.
+- Shaders are stored as `std::shared_ptr<sf::Shader>`.
+- Idempotent: the system will not reload a shader already marked `isLoaded`.

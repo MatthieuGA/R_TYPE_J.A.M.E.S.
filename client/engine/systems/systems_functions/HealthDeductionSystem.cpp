@@ -5,7 +5,16 @@
 #include "engine/systems/InitRegistrySystems.hpp"
 
 namespace Rtype::Client {
-
+/**
+ * @brief Handle the death of an entity.
+ *
+ * Marks the entity for death animation and removes relevant components.
+ *
+ * @param reg The registry.
+ * @param animated_sprites Sparse array of AnimatedSprite components.
+ * @param entity The entity to handle death for.
+ * @param i The index of the entity in the registry.
+ */
 void DeathHandling(Eng::registry &reg,
     Eng::sparse_array<Component::AnimatedSprite> &animated_sprites,
     Engine::entity entity, std::size_t i) {
@@ -33,6 +42,21 @@ void DeathHandling(Eng::registry &reg,
     }
 }
 
+/**
+ * @brief Handle collision between an entity and a projectile.
+ *
+ * Deducts health, updates health bar, triggers hit animation,
+ * and handles projectile removal.
+ *
+ * @param reg The registry.
+ * @param health The Health component of the entity.
+ * @param health_bars Sparse array of HealthBar components.
+ * @param animated_sprites Sparse array of AnimatedSprite components.
+ * @param i Index of the entity in the registry.
+ * @param projEntity The entity ID of the projectile.
+ * @param j Index of the projectile in the registry.
+ * @param projectile The Projectile component of the projectile.
+ */
 void HandleCollision(Eng::registry &reg, Component::Health &health,
     Eng::sparse_array<Component::HealthBar> &health_bars,
     Eng::sparse_array<Component::AnimatedSprite> &animated_sprites,

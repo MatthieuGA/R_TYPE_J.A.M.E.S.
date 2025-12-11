@@ -1,20 +1,20 @@
 # Playfield Limit System
 
-**Fichier source:** `client/engine/systems/SystemsFunctions/PlayfieldLimitSystem.cpp`
+**Source:** `client/engine/systems/SystemsFunctions/PlayfieldLimitSystem.cpp`
 
-**But:** Empêcher les entités (typiquement le joueur) de sortir de la fenêtre de jeu.
+**Purpose:** Prevent entities (typically the player) from leaving the game window.
 
-**Composants utilisés:**
+**Components used:**
 
 - `Transform`
 - `PlayerTag`
 
-## Comportement
+## Behavior
 
-- Clamp les coordonnées `x` et `y` entre `0` et la taille de la fenêtre (`window.getSize()`).
-- Agit directement sur `Transform` pour corriger les positions hors-limites.
+- Clamp `x` and `y` between `0` and the window size (`window.getSize()`).
+- Directly adjust `Transform` to correct out-of-bounds positions.
 
-## Signature principale
+## Main signature
 
 ```cpp
 void PlayfieldLimitSystem(Eng::registry &reg, const sf::RenderWindow &window,
@@ -24,5 +24,5 @@ void PlayfieldLimitSystem(Eng::registry &reg, const sf::RenderWindow &window,
 
 ## Notes
 
-- Utilise la taille de la fenêtre SFML fournie comme argument.
-- Cette logique est simple et peut être étendue (marges, wrap, etc.).
+- Uses the provided SFML window size.
+- Simple bounds logic; can be extended (margins, wrap, etc.).

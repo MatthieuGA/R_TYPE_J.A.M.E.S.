@@ -212,6 +212,19 @@ void DrawSprite(GameWorld &game_world, sf::Sprite &sprite,
     }
 }
 
+/**
+ * @brief Render a single entity with its drawable component.
+ *
+ * Applies transform properties and draws the sprite, considering
+ * any associated shader.
+ *
+ * @param transforms Sparse array of Transform components.
+ * @param drawables Sparse array of Drawable components.
+ * @param shaders Sparse array of Shader components.
+ * @param animated_sprites Sparse array of AnimatedSprite components.
+ * @param game_world The game world containing the render window.
+ * @param i The index of the entity to render.
+ */
 void RenderOneEntity(Eng::sparse_array<Com::Transform> const &transforms,
     Eng::sparse_array<Com::Drawable> &drawables,
     Eng::sparse_array<Com::Shader> &shaders,
@@ -249,6 +262,20 @@ void RenderOneEntity(Eng::sparse_array<Com::Transform> const &transforms,
     DrawSprite(game_world, drawable->sprite, &drawable.value(), shaderCompOpt);
 }
 
+/**
+ * @brief System to render all drawable entities and particle emitters.
+ *
+ * Collects all drawable entities and active particle emitters,
+ * sorts them by z-index, and renders them in order.
+ *
+ * @param reg Engine registry.
+ * @param game_world The game world containing the render window.
+ * @param transforms Sparse array of Transform components.
+ * @param drawables Sparse array of Drawable components.
+ * @param shaders Sparse array of Shader components.
+ * @param animated_sprites Sparse array of AnimatedSprite components.
+ * @param emitters Sparse array of ParticleEmitter components.
+ */
 void DrawableSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> const &transforms,
     Eng::sparse_array<Com::Drawable> &drawables,

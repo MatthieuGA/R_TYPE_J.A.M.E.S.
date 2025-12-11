@@ -1,15 +1,15 @@
-# Animation System - Guide d'utilisation
+# Animation System - Usage Guide
 
-Ce guide explique comment utiliser le nouveau système d'animations pour gérer facilement plusieurs animations par entité.
+This guide explains how to use the animation system to manage multiple animations per entity.
 
-## Ajouter une animation
+## Add an animation
 
-Pour ajouter une nouvelle animation à un `AnimatedSprite`, utilisez la méthode `AddAnimation()` :
+To add a new animation to an `AnimatedSprite`, call `AddAnimation()`:
 
 ```cpp
 auto& animated_sprite = registry.get_components<Component::AnimatedSprite>()[entity_id];
 
-// Ajouter une animation de course
+// Add a running animation
 animated_sprite->AddAnimation(
     "run",                          // Nom de l'animation
     "player_run.png",               // Chemin de la texture (relatif à assets/images/)
@@ -21,14 +21,14 @@ animated_sprite->AddAnimation(
     sf::Vector2f(0.0f, 0.0f)       // Position de la première frame (optionnel)
 );
 
-// Ajouter une animation d'attaque
+// Add an attack animation
 animated_sprite->AddAnimation(
     "attack",
     "player_attack.png",
     64, 64, 5, 0.08f, false  // Ne boucle pas
 );
 
-// Ajouter une animation idle
+// Add an idle animation
 animated_sprite->AddAnimation(
     "idle",
     "player_idle.png",
@@ -36,21 +36,21 @@ animated_sprite->AddAnimation(
 );
 ```
 
-## Charger les animations
+## Load animations
 
-Le système `LoadAnimationSystem` charge automatiquement toutes les animations qui n'ont pas encore été chargées.
+`LoadAnimationSystem` automatically loads any animations that are not yet loaded.
 
-Ajoutez-le à votre registre de systèmes :
+Add it to your system registry:
 
 ```cpp
 // Dans InitRegistrySystems.cpp
 void InitRegistrySystems(GameWorld &game_world) {
-    // ... autres systèmes ...
-    
-    // Ajouter le système de chargement d'animations
+    // ... other systems ...
+
+    // Add the animation loading system
     game_world.registry.add_system<Com::AnimatedSprite>(LoadAnimationSystem);
     
-    // Ajouter le système d'animation (déjà existant)
+    // Add the animation system (already present)
     game_world.registry.add_system<Com::AnimatedSprite, Com::Drawable>(
         [](Eng::registry &reg, Eng::sparse_array<Com::AnimatedSprite> &anim_sprites,
            Eng::sparse_array<Com::Drawable> &drawables) {
@@ -59,58 +59,58 @@ void InitRegistrySystems(GameWorld &game_world) {
 }
 ```
 
-## Changer l'animation en cours
+## Change the current animation
 
-Pour changer l'animation jouée, utilisez `SetCurrentAnimation()` :
+To change the active animation, use `SetCurrentAnimation()`:
 
 ```cpp
 auto& animated_sprite = registry.get_components<Component::AnimatedSprite>()[entity_id];
 
-// Changer vers l'animation "run" et la réinitialiser (par défaut)
+// Switch to "run" and reset it (default behavior)
 if (animated_sprite->SetCurrentAnimation("run")) {
     // L'animation a été changée avec succès
 }
 
-// Changer vers "attack" sans réinitialiser (continuer où elle était)
+// Switch to "attack" without resetting (keep current frame)
 animated_sprite->SetCurrentAnimation("attack", false);
 
-// Exemple dans un système de gameplay
+// Example inside a gameplay system
 void PlayerMovementSystem(...) {
     for (auto &&[i, player, velocity, animated_sprite] : 
          make_indexed_zipper(players, velocities, animated_sprites)) {
         
         if (velocity.vx != 0 || velocity.vy != 0) {
-            // Le joueur bouge -> animation de course
+            // Player is moving -> run animation
             animated_sprite.SetCurrentAnimation("run");
         } else {
-            // Le joueur est immobile -> animation idle
+            // Player is idle -> idle animation
             animated_sprite.SetCurrentAnimation("idle");
         }
     }
 }
 ```
 
-## Obtenir l'animation courante
+## Get the current animation
 
-Utilisez `GetCurrentAnimation()` pour accéder aux propriétés de l'animation :
+Use `GetCurrentAnimation()` to inspect animation properties:
 
 ```cpp
 auto& animated_sprite = registry.get_components<Component::AnimatedSprite>()[entity_id];
 
 auto* current_anim = animated_sprite->GetCurrentAnimation();
 if (current_anim != nullptr) {
-    std::cout << "Frame actuelle: " << current_anim->current_frame 
+    std::cout << "Current frame: " << current_anim->current_frame
               << "/" << current_anim->totalFrames << std::endl;
-    
-    // Vérifier si l'animation est terminée (pour les animations non-looping)
-    if (!current_anim->loop && 
+
+    // Check if a non-looping animation has finished
+    if (!current_anim->loop &&
         current_anim->current_frame == current_anim->totalFrames - 1) {
-        std::cout << "Animation terminée!" << std::endl;
+        std::cout << "Animation finished!" << std::endl;
     }
 }
 ```
 
-## Exemple complet : Système de combat
+## Full example: Combat system
 
 ```cpp
 void PlayerCombatSystem(Eng::registry &reg,
@@ -121,13 +121,13 @@ void PlayerCombatSystem(Eng::registry &reg,
     for (auto &&[i, player, input, anim_sprite] : 
          make_indexed_zipper(players, inputs, animated_sprites)) {
         
-        // Vérifier si le joueur attaque
+        // Check if player starts an attack
         if (input.attack_pressed && !player.is_attacking) {
             player.is_attacking = true;
             anim_sprite.SetCurrentAnimation("attack", true);
         }
         
-        // Vérifier si l'animation d'attaque est terminée
+        // Check if the attack animation is finished
         if (player.is_attacking) {
             auto* anim = anim_sprite.GetCurrentAnimation();
             if (anim != nullptr && anim->current_frame == anim->totalFrames - 1) {
@@ -139,16 +139,16 @@ void PlayerCombatSystem(Eng::registry &reg,
 }
 ```
 
-## Ordre d'exécution recommandé
+## Recommended execution order
 
-1. **LoadAnimationSystem** - Charge les nouvelles animations
-2. **Systèmes de gameplay** - Changent l'animation courante selon la logique
-3. **AnimationSystem** - Met à jour les frames de l'animation
-4. **DrawableSystem** - Affiche le sprite
+1. **LoadAnimationSystem** – load new animations
+2. **Gameplay systems** – switch current animation based on logic
+3. **AnimationSystem** – advance animation frames
+4. **DrawableSystem** – render the sprite
 
-## Notes importantes
+## Important notes
 
-- Les animations sont chargées automatiquement la première fois qu'elles sont utilisées
-- `SetCurrentAnimation()` retourne `false` si l'animation n'existe pas
-- Par défaut, changer d'animation réinitialise la frame à 0
-- L'animation "Default" sert de fallback si l'animation courante n'existe pas
+- Animations are auto-loaded the first time they are used.
+- `SetCurrentAnimation()` returns `false` if the animation name does not exist.
+- By default, switching animation resets the frame to 0.
+- The "Default" animation acts as a fallback if the requested animation is missing.

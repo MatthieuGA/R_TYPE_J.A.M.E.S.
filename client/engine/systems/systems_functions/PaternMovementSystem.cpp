@@ -5,7 +5,16 @@
 #include "engine/systems/InitRegistrySystems.hpp"
 
 namespace Rtype::Client {
-
+/**
+ * @brief Straight movement function.
+ *
+ * @param reg The registry.
+ * @param entityId The ID of the entity.
+ * @param transform The Transform component of the entity.
+ * @param velocity The Velocity component of the entity.
+ * @param patternMovement The PatternMovement component of the entity.
+ * @param dt Delta time (seconds).
+ */
 void StraightMovementFunction(Eng::registry &reg, std::size_t entityId,
     Com::Transform &transform, Com::Velocity &velocity,
     Com::PatternMovement &patternMovement, float dt) {
@@ -25,6 +34,16 @@ void StraightMovementFunction(Eng::registry &reg, std::size_t entityId,
     }
 }
 
+/**
+ * @brief Sine horizontal movement function.
+ *
+ * @param reg The registry.
+ * @param entityId The ID of the entity.
+ * @param transform The Transform component of the entity.
+ * @param velocity The Velocity component of the entity.
+ * @param patternMovement The PatternMovement component of the entity.
+ * @param dt Delta time (seconds).
+ */
 void SineHorizontalMovementFunction(Eng::registry &reg, std::size_t entityId,
     Com::Transform &transform, Com::Velocity &velocity,
     Com::PatternMovement &patternMovement, float dt) {
@@ -42,6 +61,16 @@ void SineHorizontalMovementFunction(Eng::registry &reg, std::size_t entityId,
     }
 }
 
+/**
+ * @brief Zig-zag horizontal movement function.
+ *
+ * @param reg The registry.
+ * @param entityId The ID of the entity.
+ * @param transform The Transform component of the entity.
+ * @param velocity The Velocity component of the entity.
+ * @param patternMovement The PatternMovement component of the entity.
+ * @param dt Delta time (seconds).
+ */
 void ZigZagHorizontalMovementFunction(Eng::registry &reg, std::size_t entityId,
     Com::Transform &transform, Com::Velocity &velocity,
     Com::PatternMovement &patternMovement, float dt) {
@@ -60,6 +89,16 @@ void ZigZagHorizontalMovementFunction(Eng::registry &reg, std::size_t entityId,
     }
 }
 
+/**
+ * @brief Sine vertical movement function.
+ *
+ * @param reg The registry.
+ * @param entityId The ID of the entity.
+ * @param transform The Transform component of the entity.
+ * @param velocity The Velocity component of the entity.
+ * @param patternMovement The PatternMovement component of the entity.
+ * @param dt Delta time (seconds).
+ */
 void SineVerticalMovementFunction(Eng::registry &reg, std::size_t entityId,
     Com::Transform &transform, Com::Velocity &velocity,
     Com::PatternMovement &patternMovement, float dt) {
@@ -77,6 +116,16 @@ void SineVerticalMovementFunction(Eng::registry &reg, std::size_t entityId,
     }
 }
 
+/**
+ * @brief Zig-zag vertical movement function.
+ *
+ * @param reg The registry.
+ * @param entityId The ID of the entity.
+ * @param transform The Transform component of the entity.
+ * @param velocity The Velocity component of the entity.
+ * @param patternMovement The PatternMovement component of the entity.
+ * @param dt Delta time (seconds).
+ */
 void ZigZagVerticalMovementFunction(Eng::registry &reg, std::size_t entityId,
     Com::Transform &transform, Com::Velocity &velocity,
     Com::PatternMovement &patternMovement, float dt) {
@@ -95,6 +144,16 @@ void ZigZagVerticalMovementFunction(Eng::registry &reg, std::size_t entityId,
     }
 }
 
+/**
+ * @brief Wave movement function.
+ *
+ * @param reg The registry.
+ * @param entityId The ID of the entity.
+ * @param transform The Transform component of the entity.
+ * @param velocity The Velocity component of the entity.
+ * @param patternMovement The PatternMovement component of the entity.
+ * @param dt Delta time (seconds).
+ */
 void WaveMovementFunction(Eng::registry &reg, std::size_t entityId,
     Com::Transform &transform, Com::Velocity &velocity,
     Com::PatternMovement &patternMovement, float dt) {
@@ -122,6 +181,16 @@ void WaveMovementFunction(Eng::registry &reg, std::size_t entityId,
     }
 }
 
+/**
+ * @brief Waypoints movement function.
+ *
+ * @param reg The registry.
+ * @param entityId The ID of the entity.
+ * @param transform The Transform component of the entity.
+ * @param velocity The Velocity component of the entity.
+ * @param patternMovement The PatternMovement component of the entity.
+ * @param dt Delta time (seconds).
+ */
 void WaypointsMovementFunction(Eng::registry &reg, std::size_t entityId,
     Com::Transform &transform, Com::Velocity &velocity,
     Com::PatternMovement &patternMovement, float dt) {
@@ -152,6 +221,16 @@ void WaypointsMovementFunction(Eng::registry &reg, std::size_t entityId,
     }
 }
 
+/**
+ * @brief Follow player movement function.
+ *
+ * @param reg The registry.
+ * @param entityId The ID of the entity.
+ * @param transform The Transform component of the entity.
+ * @param velocity The Velocity component of the entity.
+ * @param patternMovement The PatternMovement component of the entity.
+ * @param dt Delta time (seconds).
+ */
 void FollowPlayerMovementFunction(Eng::registry &reg, std::size_t entityId,
     Com::Transform &transform, Com::Velocity &velocity,
     Com::PatternMovement &patternMovement, float dt) {
@@ -206,6 +285,16 @@ void FollowPlayerMovementFunction(Eng::registry &reg, std::size_t entityId,
     }
 }
 
+/**
+ * @brief Circular movement function.
+ *
+ * @param reg The registry.
+ * @param entityId The ID of the entity.
+ * @param transform The Transform component of the entity.
+ * @param velocity The Velocity component of the entity.
+ * @param patternMovement The PatternMovement component of the entity.
+ * @param dt Delta time (seconds).
+ */
 void CircularMovementFunction(Eng::registry &reg, std::size_t entityId,
     Com::Transform &transform, Com::Velocity &velocity,
     Com::PatternMovement &patternMovement, float dt) {
@@ -221,6 +310,12 @@ void CircularMovementFunction(Eng::registry &reg, std::size_t entityId,
                   patternMovement.radius * std::sin(patternMovement.angle);
 }
 
+/**
+ * @brief Get the movement function corresponding to the pattern type.
+ *
+ * @param type The PatternMovement type.
+ * @return A function that applies the movement logic for the given type.
+ */
 std::function<void(Eng::registry &, std::size_t, Com::Transform &,
     Com::Velocity &, Com::PatternMovement &, float)>
 GetNextMovementFunction(Com::PatternMovement::PatternType type) {
@@ -251,6 +346,18 @@ GetNextMovementFunction(Com::PatternMovement::PatternType type) {
     return movementFunctionMap[type];
 }
 
+/**
+ * @brief System to apply pattern-based movement to entities.
+ *
+ * Updates entity velocities and positions based on their assigned movement
+ * patterns.
+ *
+ * @param reg Engine registry (unused)
+ * @param dt Delta time (seconds)
+ * @param transforms Sparse array of Transform components
+ * @param velocities Sparse array of Velocity components
+ * @param patern_movements Sparse array of PatternMovement components
+ */
 void PaternMovementSystem(Eng::registry &reg, const float dt,
     Eng::sparse_array<Com::Transform> &transforms,
     Eng::sparse_array<Com::Velocity> &velocities,

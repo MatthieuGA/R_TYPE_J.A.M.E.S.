@@ -1,44 +1,44 @@
 # Player System
 
-**Fichier source:** `client/engine/systems/SystemsFunctions/PlayerSystem.cpp`
+**Source:** `client/engine/systems/SystemsFunctions/PlayerSystem.cpp`
 
-**But:** Mettre à jour l'état d'animation du joueur en fonction de sa vélocité verticale et synchroniser la rotation du joueur et de ses enfants en fonction de la vélocité horizontale.
+**Purpose:** Update player animation based on vertical velocity and sync rotation of the player and its children based on horizontal velocity.
 
-**Composants utilisés:**
+**Components used:**
 
-- `PlayerTag` (contient `speed_max` et autres propriétés de joueur)
-- `Velocity` (lecture de `vx` et `vy`)
-- `AnimatedSprite` (mise à jour de `current_frame`)
-- `Transform` (mise à jour de `rotationDegrees` pour le joueur et ses enfants)
+- `PlayerTag` (contains `speed_max` and other player properties)
+- `Velocity` (reads `vx` and `vy`)
+- `AnimatedSprite` (updates `current_frame`)
+- `Transform` (updates `rotationDegrees` for player and children)
 
-## Comportement
+## Behavior
 
-### Animation Verticale
+### Vertical animation
 
-Le système définit `animated_sprite.current_frame` selon la vélocité verticale (`velocity.vy`):
+`animated_sprite.current_frame` is set according to vertical velocity (`velocity.vy`):
 
 | Condition | Frame | Animation |
 |-----------|-------|-----------|
-| `vy > 200.f` | 0 | Mouvement rapide vers le bas |
-| `vy >= 75` | 1 | Mouvement modéré vers le bas |
-| `vy < -200.f` | 4 | Mouvement rapide vers le haut |
-| `vy <= -75` | 3 | Mouvement modéré vers le haut |
-| Sinon | 2 | Position neutre |
+| `vy > 200.f` | 0 | Fast downward |
+| `vy >= 75` | 1 | Moderate downward |
+| `vy < -200.f` | 4 | Fast upward |
+| `vy <= -75` | 3 | Moderate upward |
+| Else | 2 | Neutral |
 
-### Rotation Horizontale
+### Horizontal rotation
 
-Le système calcule un angle de rotation basé sur la vélocité horizontale:
+The system computes a rotation angle based on horizontal velocity:
 
 ```cpp
 float rotation = velocity.vx / player_tag.speed_max * 5.f;
 transform.rotationDegrees = rotation;
 ```
 
-Cette rotation donne un effet d'inclinaison proportionnel à la vitesse de déplacement horizontal.
+This gives a tilt proportional to horizontal speed.
 
-### Synchronisation des Enfants
+### Child sync
 
-Le système propage la rotation à toutes les entités enfants du joueur:
+Rotation propagates to all child entities:
 
 ```cpp
 for (auto &&[j, child_transform] : make_indexed_zipper(transforms)) {
@@ -49,9 +49,9 @@ for (auto &&[j, child_transform] : make_indexed_zipper(transforms)) {
 }
 ```
 
-Cela garantit que les assets attachés au joueur (comme l'effet de charge) suivent la même rotation.
+Child assets (e.g., the charge effect) follow the same tilt.
 
-## Signature principale
+## Main signature
 
 ```cpp
 void PlayerSystem(Eng::registry &reg,
@@ -63,14 +63,14 @@ void PlayerSystem(Eng::registry &reg,
 
 ## Notes
 
-- Les seuils numériques pour l'animation (200.f, 75) sont codés en dur dans la logique actuelle.
-- Le facteur de rotation (5.f) détermine l'amplitude maximale de l'inclinaison.
-- Ce système n'applique pas de physique, il synchronise uniquement les visuels à la vélocité.
-- La recherche d'enfants parcourt tous les transforms - pourrait être optimisé avec `Transform.children` (similaire au `ChargingShowAssetPlayerSystem`).
+- Animation thresholds (200.f, 75) are hard-coded in current logic.
+- The rotation factor (5.f) sets the max tilt amplitude.
+- This system does not apply physics; it only syncs visuals to velocity.
+- Child lookup scans all transforms; could be optimized with `Transform.children` (like `ChargingShowAssetPlayerSystem`).
 
-## Améliorations Potentielles
+## Possible improvements
 
-1. **Optimisation**: Utiliser `transform.children` au lieu de parcourir tous les transforms pour trouver les enfants.
-2. **Configuration**: Externaliser les seuils d'animation et le facteur de rotation dans des constantes ou dans `PlayerTag`.
-3. **Interpolation**: Ajouter une transition douce entre les frames d'animation.
-4. **Rotation Verticale**: Ajouter une légère rotation verticale basée sur `vy` pour plus de dynamisme.
+1. **Optimization:** Use `transform.children` instead of scanning all transforms for children.
+2. **Configuration:** Externalize animation thresholds and rotation factor into constants or `PlayerTag`.
+3. **Interpolation:** Smoothly transition between animation frames.
+4. **Vertical rotation:** Add slight pitch based on `vy` for more dynamism.
