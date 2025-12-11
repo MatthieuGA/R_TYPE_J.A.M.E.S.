@@ -20,7 +20,8 @@ namespace server {
 struct ClientConnection {
     uint32_t client_id_;  // Internal unique ID (never sent over network)
     uint8_t player_id_;   // Network player ID (1-255, 0 if not authenticated)
-    boost::asio::ip::tcp::socket tcp_socket_;
+    mutable boost::asio::ip::tcp::socket
+        tcp_socket_;  // Mutable to allow async operations on const references
     boost::asio::ip::udp::endpoint udp_endpoint_;
     std::chrono::steady_clock::time_point last_activity_;
     std::string username_;
