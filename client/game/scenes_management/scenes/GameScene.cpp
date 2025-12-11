@@ -60,6 +60,15 @@ void GameScene::InitPlayerLevel(Engine::registry &reg) {
     auto player_entity = CreateEntityInScene(reg);
     FactoryActors::GetInstance().CreateActor(player_entity, reg, "player");
 
+    try {
+        Component::Transform &transform =
+            reg.GetComponent<Component::Transform>(player_entity);
+        transform.x = -100.0f;
+        transform.y = 300.0f;
+    } catch (const std::exception &e) {
+        return;
+    }
+
     auto player_charging_entity = CreateEntityInScene(reg);
     reg.AddComponent<Component::Transform>(
         player_charging_entity, Component::Transform(100.0f, 0.0f, 0.0f, 1.0f,

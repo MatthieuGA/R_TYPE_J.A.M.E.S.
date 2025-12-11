@@ -18,5 +18,5 @@ if %ERRORLEVEL%==0 (
 	)
 )
 
-powershell -NoProfile -Command "Get-ChildItem -Path client,engine,server,src -Recurse -Include '*.cpp','*.hpp' -File -ErrorAction SilentlyContinue | Where-Object { $_.FullName -notmatch '\\(build|vcpkg_installed|tests|\\.vscode|\\.github)\\' -and $_.Name -ne 'json.hpp' } | ForEach-Object { & %PYEXEC% %PYARGS% -W ignore::DeprecationWarning -m cpplint --repository=. --quiet --output=vs7 --filter='-legal/copyright,-build/c++17,+build/c++23,-runtime/references' $_.FullName }"
+powershell -NoProfile -Command "Get-ChildItem -Path client,engine,server,src -Recurse -Include '*.cpp','*.hpp' -File -ErrorAction SilentlyContinue | Where-Object { $_.FullName -notmatch '\\(build|vcpkg_installed|tests|\\.vscode|\\.github)\\' } | ForEach-Object { & %PYEXEC% %PYARGS% -W ignore::DeprecationWarning -m cpplint --repository=. --quiet --output=vs7 --filter='-legal/copyright,-build/c++17,+build/c++23,-runtime/references' $_.FullName }"
 exit /b %ERRORLEVEL%

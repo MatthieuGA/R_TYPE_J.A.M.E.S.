@@ -8,10 +8,10 @@
 #include "include/components/CoreComponents.hpp"
 #include "include/components/GameplayComponents.hpp"
 #include "include/components/RenderComponent.hpp"
-#include "include/json.hpp"
 #include "include/registry.hpp"
+#include "json/json.hpp"
 
-namespace json = nlohmann;
+using json = nlohmann::json;
 
 namespace Rtype::Client {
 

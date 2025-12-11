@@ -8,7 +8,10 @@ file(GLOB_RECURSE R_TYPE_CLIENT_SOURCES CONFIGURE_DEPENDS
 find_package(Threads REQUIRED)
 
 target_sources(r-type_client PRIVATE ${R_TYPE_CLIENT_SOURCES})
-target_include_directories(r-type_client PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${Boost_INCLUDE_DIRS})
+target_include_directories(r-type_client PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/external
+    ${Boost_INCLUDE_DIRS})
 target_link_libraries(r-type_client PRIVATE r-type_engine
     SFML::Window SFML::Graphics SFML::Network SFML::Audio SFML::System
     Boost::system Threads::Threads)
