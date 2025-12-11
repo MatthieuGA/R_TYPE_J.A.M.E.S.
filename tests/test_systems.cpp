@@ -53,7 +53,7 @@ TEST(Systems, PlayfieldLimitClampsPosition) {
     player_tags.insert_at(0, Com::PlayerTag{1});
 
     // Create a small window (headless CI may still support creation)
-    Rtype::Client::GameWorld game_world;
+    Rtype::Client::GameWorld game_world("127.0.0.1", 50000, 50000);
     sf::RenderWindow window(sf::VideoMode(200, 150), "test", sf::Style::None);
     game_world.window_size_ =
         sf::Vector2f(static_cast<float>(window.getSize().x),
@@ -111,7 +111,7 @@ TEST(Systems, AnimationSystemAdvancesFrame) {
 
 TEST(Systems, CollisionDetectionPublishesAndResolves) {
     Eng::registry reg;
-    Rtype::Client::GameWorld gw;
+    Rtype::Client::GameWorld gw("127.0.0.1", 50000, 50000);
 
     Eng::sparse_array<Com::Transform> transforms;
     Eng::sparse_array<Com::HitBox> hitboxes;
@@ -149,7 +149,7 @@ TEST(Systems, CollisionDetectionPublishesAndResolves) {
 
 TEST(Systems, ProjectileSystemMovesTransform) {
     Eng::registry reg;
-    Rtype::Client::GameWorld gw;
+    Rtype::Client::GameWorld gw("127.0.0.1", 50000, 50000);
 
     Eng::sparse_array<Com::Transform> transforms;
     Eng::sparse_array<Com::Projectile> projectiles;
@@ -187,7 +187,7 @@ TEST(Systems, PlayerSystemSetsFrameBasedOnVelocity) {
 
 TEST(Systems, ShootPlayerSystemCreatesProjectileAndResetsCooldown) {
     Eng::registry reg;
-    Rtype::Client::GameWorld gw;
+    Rtype::Client::GameWorld gw("127.0.0.1", 50000, 50000);
 
     // Register components that createProjectile will add
     reg.RegisterComponent<Com::Transform>();
