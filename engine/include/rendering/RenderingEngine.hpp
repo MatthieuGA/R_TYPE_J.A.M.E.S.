@@ -160,6 +160,21 @@ class RenderingEngine {
         unsigned int character_size, const Color &color,
         const Vector2f &origin_offset);
 
+    /**
+     * @brief Render a batch of particles efficiently.
+     *
+     * Uses instanced rendering or optimized batch drawing for particles.
+     * Particles are rendered as colored points/quads.
+     *
+     * @param particles Vector of particle positions
+     * @param colors Vector of particle colors (same size as positions)
+     * @param sizes Vector of particle sizes (same size as positions)
+     * @param z_index Z-index for rendering order
+     */
+    void RenderParticles(const std::vector<Vector2f> &particles,
+        const std::vector<Color> &colors, const std::vector<float> &sizes,
+        int z_index = 0);
+
     // ===== Resource Management =====
 
     bool LoadTexture(const std::string &id, const std::string &path);

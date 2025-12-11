@@ -8,6 +8,7 @@
 #include <iostream>
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace Engine {
 namespace Rendering {
@@ -154,6 +155,25 @@ void RenderingEngine::RenderText(const std::string &text,
 
     // Draw text using the plugin
     plugin_->DrawText(text, font_id, render_transform, character_size, color);
+}
+
+void RenderingEngine::RenderParticles(const std::vector<Vector2f> &particles,
+    const std::vector<Color> &colors, const std::vector<float> &sizes,
+    int z_index) {
+    if (!plugin_ || particles.empty()) {
+        return;
+    }
+
+    // For now, render each particle as a small circle
+    // TODO(copilot): Implement batched particle rendering in video plugins
+    // for better performance
+    for (size_t i = 0; i < particles.size(); ++i) {
+        const float size = (i < sizes.size()) ? sizes[i] : 2.0f;
+        const Color &color =
+            (i < colors.size()) ? colors[i] : Color(255, 255, 255, 255);
+
+        plugin_->DrawCircle(particles[i], size, color, nullptr, 0.0f);
+    }
 }
 
 // ===== Resource Management =====

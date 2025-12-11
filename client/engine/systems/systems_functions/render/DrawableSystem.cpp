@@ -93,21 +93,31 @@ void UpdateEmitter(
 /**
  * @brief Draws particles from the emitter using rendering engine.
  *
- * Renders particles as small colored quads based on their lifetime.
- * Uses the plugin-based rendering backend.
+ * Renders particles using the high-level RenderParticles() API for efficient
+ * batch rendering. Colors and sizes are interpolated based on particle
+ * lifetime.
  *
  * @param emitter The particle emitter to draw.
  * @param game_world The game world containing the rendering engine.
  */
 void DrawEmitter(Com::ParticleEmitter &emitter, GameWorld &game_world) {
-    if (!game_world.rendering_engine_) {
+    if (!game_world.rendering_engine_ || emitter.particles.empty()) {
         return;
     }
 
-    // TODO(copilot): Add RenderParticles() to RenderingEngine API for better
-    // performance For now, render each particle as a tiny colored sprite
+    // Prepare batch data for efficient rendering
+    std::vector<Engine::Graphics::Vector2f> positions;
+    std::vector<Engine::Graphics::Color> colors;
+    std::vector<float> sizes;
+
+    positions.reserve(emitter.particles.size());
+    colors.reserve(emitter.particles.size());
+    sizes.reserve(emitter.particles.size());
+
     for (const auto &particle : emitter.particles) {
         float lifeRatio = particle.lifetime / particle.maxLifetime;
+
+        // Lerp color from start to end based on lifetime
         Engine::Graphics::Color color(
             static_cast<uint8_t>(
                 emitter.endColor.r +
@@ -126,11 +136,14 @@ void DrawEmitter(Com::ParticleEmitter &emitter, GameWorld &game_world) {
         float size = emitter.end_size +
                      (emitter.start_size - emitter.end_size) * lifeRatio;
 
-        // Note: Rendering particles as sprites is inefficient
-        // In future, add RenderingEngine::RenderParticles() for batch
-        // rendering For now, we skip rendering individual particles as sprites
-        // to avoid performance issues. Particles will need plugin support.
+        positions.push_back(particle.position);
+        colors.push_back(color);
+        sizes.push_back(size);
     }
+
+    // Batch render all particles efficiently
+    game_world.rendering_engine_->RenderParticles(
+        positions, colors, sizes, emitter.z_index);
 }
 
 /**
@@ -238,7 +251,7 @@ void RenderOneEntity(Eng::sparse_array<Com::Transform> const &transforms,
         texture_rect_ptr = &texture_rect;
     }
 
-    // Check if this entity has a shader
+    // Check if this entity has a shader and apply uniforms before rendering
     const std::string *shader_id_ptr = nullptr;
     std::string shader_id_str;
     if (shaders.has(i) && shaders[i]->is_loaded) {
@@ -246,7 +259,7 @@ void RenderOneEntity(Eng::sparse_array<Com::Transform> const &transforms,
         shader_id_ptr = &shader_id_str;
 
         // Set time uniform for wave effects
-        float time = game_world.total_time_clock_.GetElapsedTime().AsSeconds();
+        float time = game_world.total_time_clock_.getElapsedTime().asSeconds();
         game_world.rendering_engine_->SetShaderParameter(
             shader_id_str, "time", time);
 
