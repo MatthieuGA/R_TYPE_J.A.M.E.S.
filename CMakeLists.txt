@@ -8,7 +8,7 @@ project(RTypeProject LANGUAGES CXX)
 option(ENABLE_COVERAGE "Enable code coverage" OFF)
 
 # Set C++ standard
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
 # Export compile commands for clang-tidy and other tools
@@ -123,4 +123,5 @@ if(Boost_FOUND)
     message(STATUS "  Boost Include: ${Boost_INCLUDE_DIRS}")
 endif()
 message(STATUS "Coverage enabled: ${ENABLE_COVERAGE}")
+message(STATUS "Toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
 message(STATUS "==============================================")

@@ -5,55 +5,62 @@
 
 namespace server {
 Network::Network(Config &config, boost::asio::io_context &io)
-    : _tcp(config, io), _udp(config, io) {
-    std::cout << "Waiting for TCP connections on port " << _tcp.port() << "..."
+    : tcp_(config, io), udp_(config, io) {
+    std::cout << "Waiting for TCP connections on port " << tcp_.Port() << "..."
               << std::endl;
-    std::cout << "Waiting for UDP packets on port " << _udp.port() << "..."
+    std::cout << "Waiting for UDP packets on port " << udp_.Port() << "..."
               << std::endl;
-    _tcp.accept();
-    _udp.receive();
+    tcp_.Accept();
+    udp_.Receive();
 }
 
 Network::UDP::UDP(Config &config, boost::asio::io_context &io)
-: socket(io, boost::asio::ip::udp::endpoint(
-                        boost::asio::ip::make_address(config.getUdpAddress()),
-                        config.getUdpPort())) {}
+    : socket(io, boost::asio::ip::udp::endpoint(
+                     boost::asio::ip::make_address(config.GetUdpAddress()),
+                     config.GetUdpPort())) {}
 
 Network::TCP::TCP(Config &config, boost::asio::io_context &io)
-: acceptor(io, boost::asio::ip::tcp::endpoint(
-                        boost::asio::ip::make_address(config.getTcpAddress()),
-                        config.getTcpPort())) {}
+    : acceptor_(io, boost::asio::ip::tcp::endpoint(
+                        boost::asio::ip::make_address(config.GetTcpAddress()),
+                        config.GetTcpPort())) {}
 
-boost::asio::ip::port_type Network::UDP::port() const {
+boost::asio::ip::port_type Network::UDP::Port() const {
     return socket.local_endpoint().port();
 }
 
-boost::asio::ip::port_type Network::TCP::port() const {
-    return acceptor.local_endpoint().port();
+boost::asio::ip::port_type Network::TCP::Port() const {
+    return acceptor_.local_endpoint().port();
 }
 
-void Network::TCP::accept() {
+void Network::TCP::Accept() {
     try {
-        acceptor.async_accept([this](boost::system::error_code ec,
-                                  boost::asio::ip::tcp::socket socket) {
+        acceptor_.async_accept([this](boost::system::error_code ec,
+                                   boost::asio::ip::tcp::socket socket) {
             if (!ec) {
                 std::cout << "New TCP connection from "
                           << socket.remote_endpoint().address().to_string()
-                          << ":" << port() << std::endl;
-                sockets.push_back(std::move(socket));
-                // Async receive and send will be handled elsewhere
+                          << ":" << socket.remote_endpoint().port()
+                          << std::endl;
+
+                // Transfer socket ownership to Server class via callback
+                if (on_accept_) {
+                    on_accept_(std::move(socket));
+                } else {
+                    std::cerr << "Warning: No TCP accept callback registered, "
+                              << "closing connection" << std::endl;
+                }
             } else {
                 std::cerr << "Error accepting TCP connection: " << ec.message()
                           << std::endl;
             }
-            accept();  // Accept next connection (async chain)
+            Accept();  // Accept next connection (async chain)
         });
     } catch (const std::exception &e) {
         std::cerr << "Exception in async_accept: " << e.what() << std::endl;
     }
 }
 
-void Network::UDP::receive() {
+void Network::UDP::Receive() {
     try {
         socket.async_receive_from(boost::asio::buffer(buffer), remote_endpoint,
             [this](boost::system::error_code ec, std::size_t bytes_recvd) {
@@ -70,7 +77,7 @@ void Network::UDP::receive() {
                     std::cerr << "Error receiving UDP packet: " << ec.message()
                               << std::endl;
                 }
-                receive();  // Receive next UDP packet (async chain)
+                Receive();  // Receive next UDP packet (async chain)
             });
     } catch (const std::exception &e) {
         std::cerr << "Exception in async_receive_from: " << e.what()

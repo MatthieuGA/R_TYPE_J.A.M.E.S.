@@ -142,7 +142,7 @@ void sparse_array<Component>::erase(size_type pos) {
 }
 
 template <typename Component>
-typename sparse_array<Component>::size_type sparse_array<Component>::get_index(
+typename sparse_array<Component>::size_type sparse_array<Component>::GetIndex(
     value_type const &value) const {
     const auto *ptr = &value;
     const auto *base = data_.data();
