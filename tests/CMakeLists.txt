@@ -10,6 +10,9 @@ file(GLOB_RECURSE R_TYPE_TEST_SOURCES CONFIGURE_DEPENDS
 list(REMOVE_ITEM R_TYPE_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/test_server.cpp")
 list(REMOVE_ITEM R_TYPE_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/test_packets.cpp")
 list(REMOVE_ITEM R_TYPE_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/test_config.cpp")
+list(REMOVE_ITEM R_TYPE_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/test_client_connection_manager.cpp")
+list(REMOVE_ITEM R_TYPE_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/test_packet_handler.cpp")
+list(REMOVE_ITEM R_TYPE_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/test_packet_sender.cpp")
 
 if (R_TYPE_TEST_SOURCES)
     add_executable(engine_tests ${R_TYPE_TEST_SOURCES})
@@ -59,9 +62,15 @@ add_executable(server_tests
     test_server.cpp
     test_packets.cpp
     test_config.cpp
-    ${CMAKE_SOURCE_DIR}/server/src/server/Server.cpp
+    test_client_connection_manager.cpp
+    test_packet_handler.cpp
+    test_packet_sender.cpp
+    ${CMAKE_SOURCE_DIR}/server/src/server/ClientConnectionManager.cpp
     ${CMAKE_SOURCE_DIR}/server/src/server/Config.cpp
     ${CMAKE_SOURCE_DIR}/server/src/server/Network.cpp
+    ${CMAKE_SOURCE_DIR}/server/src/server/PacketHandler.cpp
+    ${CMAKE_SOURCE_DIR}/server/src/server/PacketSender.cpp
+    ${CMAKE_SOURCE_DIR}/server/src/server/Server.cpp
 )
 
 # Include directories for server tests

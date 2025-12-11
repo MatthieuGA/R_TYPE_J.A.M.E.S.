@@ -122,7 +122,12 @@ inline T FromLittleEndian(T value) {
  * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  * Total size: 12 bytes (packed, no padding)
  */
+#ifdef _MSC_VER
+#pragma pack(push, 1)
+struct CommonHeader {
+#else
 struct __attribute__((packed)) CommonHeader {
+#endif
     uint8_t op_code;        // Command identifier (TCP: 0x01-0x07, UDP: 0x10+)
     uint16_t payload_size;  // Size of payload following this header
     uint8_t packet_index;   // Fragment index (0 to packet_count-1)
@@ -147,6 +152,9 @@ struct __attribute__((packed)) CommonHeader {
           packet_count(count),
           reserved{0, 0, 0} {}
 };
+#ifdef _MSC_VER
+#pragma pack(pop)
+#endif
 
 /**
  * @brief Low-level buffer for packet serialization/deserialization

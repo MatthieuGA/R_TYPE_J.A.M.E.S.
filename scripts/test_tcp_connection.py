@@ -76,6 +76,37 @@ def build_connect_req(username: str) -> bytes:
     return header + username_bytes
 
 
+def build_ready_status(is_ready: bool) -> bytes:
+    """
+    Build a READY_STATUS packet (OpCode 0x07).
+
+    Packet format (16 bytes total):
+    - Header (12 bytes): op_code(u8) + payload_size(u16) + packet_index(u8) +
+                         tick_id(u32) + packet_count(u8) + reserved(3)
+    - Payload (4 bytes): ready(u8) + reserved(3)
+
+    Args:
+        is_ready: Whether the player is ready (True) or not ready (False)
+
+    Returns:
+        Complete packet as bytes
+    """
+    # Pack header (little-endian, 12 bytes)
+    header = struct.pack(
+        '<BHBIB',
+        0x07,  # op_code: READY_STATUS (1 byte)
+        4,     # payload_size: 4 bytes (2 bytes)
+        0,     # packet_index: 0 (1 byte)
+        0,     # tick_id: 0 (4 bytes)
+        1      # packet_count: 1 (1 byte)
+    ) + b'\x00\x00\x00'  # reserved: 3 bytes
+
+    # Pack payload: ready flag + 3 reserved bytes
+    payload = struct.pack('<B', 1 if is_ready else 0) + b'\x00\x00\x00'
+
+    return header + payload
+
+
 def parse_connect_ack(response: bytes) -> tuple[int, int, int]:
     """
     Parse CONNECT_ACK packet (OpCode 0x02).
@@ -100,6 +131,30 @@ def parse_connect_ack(response: bytes) -> tuple[int, int, int]:
     player_id, status = struct.unpack('<BB', response[12:14])
 
     return op_code, player_id, status
+
+
+def parse_game_start(response: bytes) -> int:
+    """
+    Parse GAME_START packet (OpCode 0x05).
+
+    Packet format (16 bytes):
+    - Header (12 bytes): op_code(u8) + payload_size(u16) + packet_index(u8) +
+                         tick_id(u32) + packet_count(u8) + reserved(3)
+    - Payload (4 bytes): controlled_entity_id(u32)
+
+    Args:
+        response: Raw packet bytes
+
+    Returns:
+        OpCode (should be 0x05)
+    """
+    if len(response) < 12:
+        raise ValueError(f"Response too short: {len(response)} bytes")
+
+    # Parse header
+    op_code = struct.unpack('<B', response[0:1])[0]
+
+    return op_code
 
 
 def send_connect_req(host: str, port: int, username: str,
@@ -589,28 +644,31 @@ def test_rapid_reconnections(host: str, port: int) -> bool:
     print("=" * 60)
 
     cycles = 5
-    username_base = "RapidTest"
-
+    username = "RapidReconnect"
+    
     try:
         for i in range(cycles):
-            sock, player_id, status = send_connect_req(
-                host, port, f"{username_base}{i}"
-            )
-
+            # Connect
+            sock, player_id, status = send_connect_req(host, port, username)
+            
             if status != 0:
-                print(f"{Color.RED}✗{Color.RESET} Cycle {i+1} failed")
+                print(f"{Color.RED}✗ Cycle {i + 1}/{cycles} failed to connect (Status={status}){Color.RESET}")
+                if sock:
+                    sock.close()
                 return False
-
-            if sock:
-                sock.close()
-
+            
+            # Immediately disconnect
+            sock.close()
+            
+            # Small delay to let server process disconnect
+            time.sleep(0.05)
+        
         print(f"{Color.GREEN}✓{Color.RESET} Completed {cycles} rapid reconnection cycles")
         return True
-
+        
     except Exception as e:
-        print(f"{Color.RED}✗{Color.RESET} Error: {e}")
+        print(f"{Color.RED}✗{Color.RESET} Exception during rapid reconnections: {e}")
         return False
-
 
 def test_concurrent_connections(host: str, port: int, count: int = 4) -> bool:
     """Test multiple clients connecting simultaneously."""
@@ -660,6 +718,86 @@ def test_concurrent_connections(host: str, port: int, count: int = 4) -> bool:
         return False
 
 
+def test_ready_and_game_start(host: str, port: int, num_clients: int = 2) -> bool:
+    """Test that server sends GAME_START when all clients are ready."""
+    print(f"\n{Color.BOLD}Test 17: Ready Status and Game Start ({num_clients} clients){Color.RESET}")
+    print("=" * 60)
+
+    sockets = []
+    player_ids = []
+
+    try:
+        # Connect all clients
+        for i in range(1, num_clients + 1):
+            username = f"Ready{i}"
+            sock, player_id, status = send_connect_req(host, port, username, timeout=5.0)
+            
+            if status != 0:
+                print(f"{Color.RED}✗{Color.RESET} {username} connection failed: {status_name(status)}")
+                for s in sockets:
+                    s.close()
+                return False
+            
+            sockets.append(sock)
+            player_ids.append(player_id)
+            print(f"{Color.GREEN}✓{Color.RESET} {username:12s} connected (ID={player_id})")
+            time.sleep(0.1)
+
+        # Mark all clients as ready
+        print(f"\nMarking all {num_clients} clients as ready...")
+        for i, sock in enumerate(sockets):
+            ready_packet = build_ready_status(True)
+            sock.send(ready_packet)
+            print(f"  Sent READY_STATUS to Player {player_ids[i]}")
+            time.sleep(0.1)
+
+        # Wait for GAME_START from server
+        print("\nWaiting for GAME_START from server...")
+        game_start_received = [False] * num_clients
+        
+        for i, sock in enumerate(sockets):
+            sock.settimeout(3.0)
+            try:
+                response = sock.recv(1024)
+                if len(response) >= 12:
+                    op_code = parse_game_start(response)
+                    if op_code == 0x05:
+                        game_start_received[i] = True
+                        print(f"{Color.GREEN}✓{Color.RESET} Player {player_ids[i]} received GAME_START")
+                    else:
+                        print(f"{Color.YELLOW}!{Color.RESET} Player {player_ids[i]} received OpCode 0x{op_code:02x} (expected 0x05)")
+                else:
+                    print(f"{Color.YELLOW}!{Color.RESET} Player {player_ids[i]} received incomplete packet ({len(response)} bytes)")
+            except socket.timeout:
+                print(f"{Color.RED}✗{Color.RESET} Player {player_ids[i]} timeout waiting for GAME_START")
+
+        # Check results
+        all_received = all(game_start_received)
+        
+        if all_received:
+            print(f"\n{Color.GREEN}✓{Color.RESET} All {num_clients} clients received GAME_START packet")
+            result = True
+        else:
+            received_count = sum(game_start_received)
+            print(f"\n{Color.RED}✗{Color.RESET} Only {received_count}/{num_clients} clients received GAME_START")
+            result = False
+
+        # Cleanup
+        for sock in sockets:
+            sock.close()
+
+        return result
+
+    except Exception as e:
+        print(f"{Color.RED}✗{Color.RESET} Error: {e}")
+        for sock in sockets:
+            try:
+                sock.close()
+            except:
+                pass
+        return False
+
+
 def main():
     """Run all tests."""
     parser = argparse.ArgumentParser(
@@ -673,7 +811,7 @@ def main():
                         help='Server TCP port (default: 50000)')
     parser.add_argument('--test',
                         choices=['basic', 'multi', 'full', 'duplicate', 'empty',
-                                'edge', 'all'],
+                                'edge', 'ready', 'all'],
                         default='all',
                         help='Test category to run (default: all)')
 
@@ -704,6 +842,10 @@ def main():
 
         if args.test in ('empty', 'all'):
             results['empty'] = test_empty_username(args.host, args.port)
+
+        # Ready status and game start test
+        if args.test in ('ready', 'all'):
+            results['ready_game_start'] = test_ready_and_game_start(args.host, args.port, 2)
 
         # Edge case tests
         if args.test in ('edge', 'all'):

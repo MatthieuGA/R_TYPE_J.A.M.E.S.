@@ -108,6 +108,9 @@ TEST(ByteSwapTest, DoubleSwap) {
         val64);
 }
 
+#if defined(__GNUC__) || defined(__clang__)
+// MSVC's intrinsics (_byteswap_*) are not constexpr, so this test
+// only runs on GCC/Clang where __builtin_bswap* are constexpr
 TEST(ByteSwapTest, ConstexprEvaluation) {
     // Verify ByteSwap can be used in constant expressions
     constexpr uint16_t swapped16 =
@@ -118,6 +121,7 @@ TEST(ByteSwapTest, ConstexprEvaluation) {
         server::network::detail::ByteSwap(static_cast<uint32_t>(0x12345678));
     EXPECT_EQ(swapped32, 0x78563412);
 }
+#endif
 
 // ============================================================================
 // RFC COMPLIANCE VERIFICATION TESTS
