@@ -171,18 +171,39 @@ void InitSceneManagementSystem(Rtype::Client::GameWorld &game_world) {
 }
 
 /**
+ * @brief Initialize audio system in the registry.
+ *
+ * This function sets up the audio system responsible for processing
+ * sound requests and playing audio through the audio manager.
+ *
+ * @param game_world The game world containing the registry.
+ * @param audio_manager The audio manager for handling audio playback.
+ */
+void InitAudioSystem(
+    Rtype::Client::GameWorld &game_world, Audio::AudioManager &audio_manager) {
+    game_world.registry_.AddSystem<Com::SoundRequest>(
+        [&audio_manager](Eng::registry &reg,
+            Eng::sparse_array<Com::SoundRequest> &sound_requests) {
+            AudioSystem(reg, audio_manager, sound_requests);
+        });
+}
+
+/**
  * @brief Initialize all registry systems for the game world.
  *
- * This function sets up control, movement, and rendering systems
+ * This function sets up control, movement, audio, and rendering systems
  * within the provided game world's registry.
  *
  * @param game_world The game world containing the registry.
+ * @param audio_manager The audio manager for the audio system.
  */
-void InitRegistrySystems(Rtype::Client::GameWorld &game_world) {
+void InitRegistrySystems(
+    Rtype::Client::GameWorld &game_world, Audio::AudioManager &audio_manager) {
     // Set up systems
     InitSceneManagementSystem(game_world);
     InitControlsSystem(game_world);
     InitMovementSystem(game_world);
+    InitAudioSystem(game_world, audio_manager);
     InitRenderSystems(game_world);
 }
 }  // namespace Rtype::Client

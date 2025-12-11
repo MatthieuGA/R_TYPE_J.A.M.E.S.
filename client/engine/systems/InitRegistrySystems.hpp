@@ -3,6 +3,7 @@
 
 #include "engine/GameWorld.hpp"
 #include "engine/InitRegistryComponent.hpp"
+#include "engine/audio/AudioManager.hpp"
 #include "include/indexed_zipper.hpp"
 #include "include/registry.hpp"
 
@@ -10,7 +11,8 @@ namespace Eng = Engine;
 
 namespace Rtype::Client {
 namespace Com = Component;
-void InitRegistrySystems(Rtype::Client::GameWorld &game_world);
+void InitRegistrySystems(
+    Rtype::Client::GameWorld &game_world, Audio::AudioManager &audio_manager);
 void InitRegistrySystemsEvents(Rtype::Client::GameWorld &game_world);
 
 // System function declarations
@@ -100,5 +102,10 @@ void ButtonClickSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Clickable> &clickables,
     Eng::sparse_array<Com::Drawable> &drawables,
     Eng::sparse_array<Com::Transform> &transforms);
+
+// AUDIO SYSTEM
+
+void AudioSystem(Eng::registry &reg, Audio::AudioManager &audio_manager,
+    Eng::sparse_array<Com::SoundRequest> &sound_requests);
 
 }  // namespace Rtype::Client

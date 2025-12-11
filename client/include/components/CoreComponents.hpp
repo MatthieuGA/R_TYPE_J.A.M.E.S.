@@ -1,6 +1,11 @@
 #pragma once
+#include <cstdint>
 #include <functional>
+#include <map>
+#include <memory>
 #include <optional>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include <SFML/Graphics.hpp>
@@ -112,6 +117,12 @@ struct Clickable {
     sf::Color clickColor = sf::Color(150, 150, 150);
     bool isHovered = false;
     bool isClicked = false;
+};
+
+struct SoundRequest {
+    std::string sound_id;
+    float volume = 1.0f;
+    bool loop = false;
 };
 
 }  // namespace Rtype::Client::Component

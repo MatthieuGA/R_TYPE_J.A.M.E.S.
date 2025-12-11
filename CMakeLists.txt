@@ -30,6 +30,15 @@ find_package(SFML COMPONENTS system window graphics network audio CONFIG REQUIRE
 # Use CONFIG mode with vcpkg (CMP0167 compliance)
 find_package(Boost REQUIRED COMPONENTS system CONFIG)
 find_package(Threads REQUIRED)
+find_package(fmt CONFIG REQUIRED)
+
+# Explanation: vcpkg's OpenAL-soft has a missing dependency on fmt
+# Add fmt as an INTERFACE dependency to SFML::Audio so it's linked in correct order
+if (TARGET SFML::Audio)
+    target_link_libraries(SFML::Audio INTERFACE fmt::fmt)
+elseif (TARGET sfml-audio)
+    target_link_libraries(sfml-audio INTERFACE fmt::fmt)
+endif()
 
 # Provide compatibility aliases so code using SFML::Name targets works with
 # vcpkg-provided SFML 2.x (which exports sfml-name targets).
