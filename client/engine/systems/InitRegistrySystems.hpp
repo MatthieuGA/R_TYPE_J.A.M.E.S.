@@ -149,6 +149,11 @@ void HealthBarSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> const &transforms,
     Eng::sparse_array<Com::HealthBar> &health_bars,
     Eng::sparse_array<Com::Health> const &healths);
+void NetworkInputSystem(Eng::registry &reg, GameWorld &game_world,
+    Eng::sparse_array<Com::Inputs> const &inputs,
+    Eng::sparse_array<Com::PlayerTag> const &player_tags);
+
+uint8_t InputToBitfield(const Com::Inputs &input);
 // AUDIO SYSTEM
 
 void AudioSystem(Eng::registry &reg, Audio::AudioManager &audio_manager,

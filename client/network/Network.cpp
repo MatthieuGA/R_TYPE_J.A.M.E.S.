@@ -99,26 +99,37 @@ void ServerConnection::ConnectToServer(const std::string &username) {
                         << std::endl;
                     return;
                 }
-                // Build CONNECT_REQ packet
+                std::cout << "[Network] TCP connection established"
+                          << std::endl;
+
+                // Build CONNECT_REQ packet: 12 byte header + 32 byte username
                 auto pkt =
                     std::make_shared<std::vector<uint8_t>>(kHeaderSize + 32);
                 WriteHeader(pkt->data(), kOpConnectReq, 32,
                     static_cast<uint32_t>(current_tick_));
+
                 // Username padded/truncated to 32 bytes
                 std::array<uint8_t, 32> uname{};
                 std::memcpy(uname.data(), username.data(),
                     std::min<size_t>(username.size(), 32));
                 std::memcpy(pkt->data() + kHeaderSize, uname.data(), 32);
 
+                std::cout << "[Network] Sending CONNECT_REQ (" << pkt->size()
+                          << " bytes, username: " << username << ")"
+                          << std::endl;
+
                 boost::asio::async_write(tcp_socket_,
                     boost::asio::buffer(*pkt),
-                    [this, pkt](
-                        const boost::system::error_code &wec, std::size_t) {
+                    [this, pkt](const boost::system::error_code &wec,
+                        std::size_t bytes_sent) {
                         if (wec) {
                             std::cerr << "[Network] CONNECT_REQ send failed: "
                                       << wec.message() << std::endl;
                             return;
                         }
+                        std::cout
+                            << "[Network] CONNECT_REQ sent (" << bytes_sent
+                            << " bytes). Waiting for ACK..." << std::endl;
                         AsyncReceiveTCP();
                     });
             });
@@ -134,10 +145,16 @@ void ServerConnection::AsyncReceiveTCP() {
         boost::asio::buffer(tcp_buffer_.data(), kHeaderSize),
         [this](const boost::system::error_code &ec, std::size_t bytes_read) {
             if (ec) {
-                if (ec != boost::asio::error::eof)
+                if (ec == boost::asio::error::eof) {
+                    std::cerr << "[Network] Server closed connection (EOF)"
+                              << std::endl;
+                    connected_.store(false);
+                } else if (ec != boost::asio::error::operation_aborted) {
                     std::cerr
                         << "[Network] TCP header read error: " << ec.message()
                         << std::endl;
+                    connected_.store(false);
+                }
                 return;
             }
             // Ensure we read the full header before accessing buffer fields
@@ -149,6 +166,11 @@ void ServerConnection::AsyncReceiveTCP() {
             }
             uint8_t opcode = tcp_buffer_[0];
             uint16_t payload_size = ReadLe16(tcp_buffer_.data() + 1);
+
+            std::cout << "[Network] Received TCP packet: opcode=0x" << std::hex
+                      << static_cast<int>(opcode) << std::dec
+                      << ", payload_size=" << payload_size << std::endl;
+
             if (payload_size > tcp_buffer_.size() - kHeaderSize) {
                 std::cerr << "[Network] TCP payload too large: "
                           << payload_size << " bytes (max: "
@@ -164,8 +186,16 @@ void ServerConnection::AsyncReceiveTCP() {
                 [this, opcode, payload_size](
                     const boost::system::error_code &pec, std::size_t /*pn*/) {
                     if (pec) {
-                        std::cerr << "[Network] TCP payload read error: "
-                                  << pec.message() << std::endl;
+                        if (pec == boost::asio::error::eof) {
+                            std::cerr
+                                << "[Network] Server closed connection (EOF)"
+                                << std::endl;
+                            connected_.store(false);
+                        } else {
+                            std::cerr << "[Network] TCP payload read error: "
+                                      << pec.message() << std::endl;
+                            connected_.store(false);
+                        }
                         return;
                     }
                     std::vector<uint8_t> data(payload_size);
@@ -174,7 +204,9 @@ void ServerConnection::AsyncReceiveTCP() {
                     if (opcode == kOpConnectAck) {
                         HandleConnectAck(data);
                     } else {
-                        // Unknown opcode on TCP in Phase 0, ignore
+                        std::cout << "[Network] Unhandled TCP opcode: 0x"
+                                  << std::hex << static_cast<int>(opcode)
+                                  << std::dec << std::endl;
                     }
                     // Keep listening for next messages
                     AsyncReceiveTCP();

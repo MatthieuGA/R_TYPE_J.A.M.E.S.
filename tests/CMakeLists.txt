@@ -10,6 +10,12 @@ file(GLOB_RECURSE R_TYPE_TEST_SOURCES CONFIGURE_DEPENDS
 list(REMOVE_ITEM R_TYPE_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/test_server.cpp")
 list(REMOVE_ITEM R_TYPE_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/test_packets.cpp")
 list(REMOVE_ITEM R_TYPE_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/test_config.cpp")
+list(REMOVE_ITEM R_TYPE_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/test_client_connection_manager.cpp")
+list(REMOVE_ITEM R_TYPE_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/test_packet_handler.cpp")
+list(REMOVE_ITEM R_TYPE_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/test_packet_sender.cpp")
+
+# Exclude command-line parser tests (compiled separately without network dependencies)
+list(REMOVE_ITEM R_TYPE_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/test_command_line_parser.cpp")
 
 if (R_TYPE_TEST_SOURCES)
     add_executable(engine_tests ${R_TYPE_TEST_SOURCES})
@@ -61,9 +67,15 @@ add_executable(server_tests
     test_server.cpp
     test_packets.cpp
     test_config.cpp
-    ${CMAKE_SOURCE_DIR}/server/src/server/Server.cpp
+    test_client_connection_manager.cpp
+    test_packet_handler.cpp
+    test_packet_sender.cpp
+    ${CMAKE_SOURCE_DIR}/server/src/server/ClientConnectionManager.cpp
     ${CMAKE_SOURCE_DIR}/server/src/server/Config.cpp
     ${CMAKE_SOURCE_DIR}/server/src/server/Network.cpp
+    ${CMAKE_SOURCE_DIR}/server/src/server/PacketHandler.cpp
+    ${CMAKE_SOURCE_DIR}/server/src/server/PacketSender.cpp
+    ${CMAKE_SOURCE_DIR}/server/src/server/Server.cpp
 )
 
 # Include directories for server tests
@@ -83,3 +95,26 @@ target_link_libraries(server_tests
 
 # Discover server tests for CTest
 gtest_discover_tests(server_tests)
+
+# Create separate test executable for command-line parser (no network dependencies)
+# This avoids thread safety issues with death tests + Boost.Asio threads
+add_executable(cli_parser_tests
+    test_command_line_parser.cpp
+    ${CMAKE_SOURCE_DIR}/client/game/CommandLineParser.cpp
+)
+
+# Include directories for CLI parser tests
+target_include_directories(cli_parser_tests
+    PRIVATE
+        ${CMAKE_SOURCE_DIR}/client
+        ${CMAKE_SOURCE_DIR}/client/include
+)
+
+# Link with Google Test only (no network libraries)
+target_link_libraries(cli_parser_tests
+    PRIVATE
+        GTest::gtest_main
+)
+
+# Discover CLI parser tests for CTest
+gtest_discover_tests(cli_parser_tests)

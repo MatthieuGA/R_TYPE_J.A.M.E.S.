@@ -25,7 +25,7 @@ TEST(DrawableSystem, LoadsAndAppliesTransform) {
     transforms.insert_at(0, transform);
     drawables.insert_at(0, std::move(drawable));
 
-    Rtype::Client::GameWorld game_world;
+    Rtype::Client::GameWorld game_world("127.0.0.1", 50000, 50000);
     game_world.window_.create(
         sf::VideoMode({10u, 10u}), "drawable-test", sf::Style::None);
 
@@ -61,7 +61,7 @@ TEST(DrawableSystem, HandlesMultipleEntitiesSortedByZIndex) {
     drawables.insert_at(0, std::move(d0));
     drawables.insert_at(1, std::move(d1));
 
-    Rtype::Client::GameWorld game_world;
+    Rtype::Client::GameWorld game_world("127.0.0.1", 50000, 50000);
     game_world.window_.create(
         sf::VideoMode({10u, 10u}), "drawable-test2", sf::Style::None);
 
