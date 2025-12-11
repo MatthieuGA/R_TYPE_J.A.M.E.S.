@@ -12,7 +12,7 @@
 using server::network::CommonHeader;
 using server::network::ConnectAckPacket;
 using server::network::ConnectReqPacket;
-using server::network::deserialize_packet;
+using server::network::DeserializePacket;
 using server::network::DisconnectReqPacket;
 using server::network::EntityId;
 using server::network::EntityState;
@@ -24,8 +24,100 @@ using server::network::PacketVariant;
 using server::network::PlayerId;
 using server::network::PlayerInputPacket;
 using server::network::PlayerStatsPacket;
-using server::network::serialize_packet;
+using server::network::SerializePacket;
 using server::network::WorldSnapshotPacket;
+
+// ============================================================================
+// BYTE SWAP TESTS
+// ============================================================================
+
+TEST(ByteSwapTest, Uint8NoSwap) {
+    // 1-byte values should not be swapped
+    EXPECT_EQ(
+        server::network::detail::ByteSwap(static_cast<uint8_t>(0x12)), 0x12);
+    EXPECT_EQ(
+        server::network::detail::ByteSwap(static_cast<uint8_t>(0xFF)), 0xFF);
+    EXPECT_EQ(
+        server::network::detail::ByteSwap(static_cast<uint8_t>(0x00)), 0x00);
+}
+
+TEST(ByteSwapTest, Uint16Swap) {
+    // 2-byte swap: 0x1234 -> 0x3412
+    EXPECT_EQ(server::network::detail::ByteSwap(static_cast<uint16_t>(0x1234)),
+        0x3412);
+    EXPECT_EQ(server::network::detail::ByteSwap(static_cast<uint16_t>(0xABCD)),
+        0xCDAB);
+    EXPECT_EQ(server::network::detail::ByteSwap(static_cast<uint16_t>(0x0000)),
+        0x0000);
+    EXPECT_EQ(server::network::detail::ByteSwap(static_cast<uint16_t>(0xFFFF)),
+        0xFFFF);
+    EXPECT_EQ(server::network::detail::ByteSwap(static_cast<uint16_t>(0x00FF)),
+        0xFF00);
+}
+
+TEST(ByteSwapTest, Uint32Swap) {
+    // 4-byte swap: 0x12345678 -> 0x78563412
+    EXPECT_EQ(
+        server::network::detail::ByteSwap(static_cast<uint32_t>(0x12345678)),
+        0x78563412);
+    EXPECT_EQ(
+        server::network::detail::ByteSwap(static_cast<uint32_t>(0xABCDEF01)),
+        0x01EFCDAB);
+    EXPECT_EQ(
+        server::network::detail::ByteSwap(static_cast<uint32_t>(0x00000000)),
+        0x00000000);
+    EXPECT_EQ(
+        server::network::detail::ByteSwap(static_cast<uint32_t>(0xFFFFFFFF)),
+        0xFFFFFFFF);
+    EXPECT_EQ(
+        server::network::detail::ByteSwap(static_cast<uint32_t>(0x000000FF)),
+        0xFF000000);
+}
+
+TEST(ByteSwapTest, Uint64Swap) {
+    // 8-byte swap: 0x123456789ABCDEF0 -> 0xF0DEBC9A78563412
+    EXPECT_EQ(server::network::detail::ByteSwap(
+                  static_cast<uint64_t>(0x123456789ABCDEF0)),
+        0xF0DEBC9A78563412);
+    EXPECT_EQ(server::network::detail::ByteSwap(
+                  static_cast<uint64_t>(0x0000000000000000)),
+        0x0000000000000000);
+    EXPECT_EQ(server::network::detail::ByteSwap(
+                  static_cast<uint64_t>(0xFFFFFFFFFFFFFFFF)),
+        0xFFFFFFFFFFFFFFFF);
+    EXPECT_EQ(server::network::detail::ByteSwap(
+                  static_cast<uint64_t>(0x00000000000000FF)),
+        0xFF00000000000000);
+}
+
+TEST(ByteSwapTest, DoubleSwap) {
+    // Verify double swap returns original value
+    uint16_t val16 = 0x1234;
+    EXPECT_EQ(server::network::detail::ByteSwap(
+                  server::network::detail::ByteSwap(val16)),
+        val16);
+
+    uint32_t val32 = 0x12345678;
+    EXPECT_EQ(server::network::detail::ByteSwap(
+                  server::network::detail::ByteSwap(val32)),
+        val32);
+
+    uint64_t val64 = 0x123456789ABCDEF0;
+    EXPECT_EQ(server::network::detail::ByteSwap(
+                  server::network::detail::ByteSwap(val64)),
+        val64);
+}
+
+TEST(ByteSwapTest, ConstexprEvaluation) {
+    // Verify ByteSwap can be used in constant expressions
+    constexpr uint16_t swapped16 =
+        server::network::detail::ByteSwap(static_cast<uint16_t>(0x1234));
+    EXPECT_EQ(swapped16, 0x3412);
+
+    constexpr uint32_t swapped32 =
+        server::network::detail::ByteSwap(static_cast<uint32_t>(0x12345678));
+    EXPECT_EQ(swapped32, 0x78563412);
+}
 
 // ============================================================================
 // RFC COMPLIANCE VERIFICATION TESTS
@@ -77,48 +169,48 @@ TEST(RFCComplianceTest, InputFlagBitmask) {
 
 TEST(PacketBufferTest, WriteAndReadUint8) {
     PacketBuffer buffer;
-    buffer.write_uint8(42);
-    buffer.write_uint8(255);
+    buffer.WriteUint8(42);
+    buffer.WriteUint8(255);
 
-    EXPECT_EQ(buffer.size(), 2);
-    EXPECT_EQ(buffer.read_uint8(), 42);
-    EXPECT_EQ(buffer.read_uint8(), 255);
+    EXPECT_EQ(buffer.Size(), 2);
+    EXPECT_EQ(buffer.ReadUint8(), 42);
+    EXPECT_EQ(buffer.ReadUint8(), 255);
 }
 
 TEST(PacketBufferTest, WriteAndReadUint16) {
     PacketBuffer buffer;
-    buffer.write_uint16(0x1234);
-    buffer.write_uint16(0xFFFF);
+    buffer.WriteUint16(0x1234);
+    buffer.WriteUint16(0xFFFF);
 
-    EXPECT_EQ(buffer.read_uint16(), 0x1234);
-    EXPECT_EQ(buffer.read_uint16(), 0xFFFF);
+    EXPECT_EQ(buffer.ReadUint16(), 0x1234);
+    EXPECT_EQ(buffer.ReadUint16(), 0xFFFF);
 }
 
 TEST(PacketBufferTest, WriteAndReadUint32) {
     PacketBuffer buffer;
-    buffer.write_uint32(0x12345678);
-    buffer.write_uint32(0xFFFFFFFF);
+    buffer.WriteUint32(0x12345678);
+    buffer.WriteUint32(0xFFFFFFFF);
 
-    EXPECT_EQ(buffer.read_uint32(), 0x12345678);
-    EXPECT_EQ(buffer.read_uint32(), 0xFFFFFFFF);
+    EXPECT_EQ(buffer.ReadUint32(), 0x12345678);
+    EXPECT_EQ(buffer.ReadUint32(), 0xFFFFFFFF);
 }
 
 TEST(PacketBufferTest, ReadBeyondBoundsThrows) {
     PacketBuffer buffer;
-    buffer.write_uint8(42);
+    buffer.WriteUint8(42);
 
-    buffer.read_uint8();  // OK
-    EXPECT_THROW(buffer.read_uint8(), std::out_of_range);
+    buffer.ReadUint8();  // OK
+    EXPECT_THROW(buffer.ReadUint8(), std::out_of_range);
 }
 
 TEST(PacketBufferTest, ResetReadOffset) {
     PacketBuffer buffer;
-    buffer.write_uint8(42);
-    buffer.write_uint8(100);
+    buffer.WriteUint8(42);
+    buffer.WriteUint8(100);
 
-    EXPECT_EQ(buffer.read_uint8(), 42);
-    buffer.reset_read_offset();
-    EXPECT_EQ(buffer.read_uint8(), 42);
+    EXPECT_EQ(buffer.ReadUint8(), 42);
+    buffer.ResetReadOffset();
+    EXPECT_EQ(buffer.ReadUint8(), 42);
 }
 
 // ============================================================================
@@ -142,12 +234,11 @@ TEST(CommonHeaderTest, SerializeDeserialize) {
     CommonHeader original(0x05, 128, 9999, 2, 5);
 
     PacketBuffer buffer;
-    buffer.write_header(original);
+    buffer.WriteHeader(original);
 
-    EXPECT_EQ(buffer.size(), 12);
+    EXPECT_EQ(buffer.Size(), 12);
 
-    CommonHeader deserialized = buffer.read_header();
-
+    CommonHeader deserialized = buffer.ReadHeader();
     EXPECT_EQ(deserialized.op_code, original.op_code);
     EXPECT_EQ(deserialized.payload_size, original.payload_size);
     EXPECT_EQ(deserialized.packet_index, original.packet_index);
@@ -200,29 +291,29 @@ TEST(StrongTypesTest, InputFlags) {
 
 TEST(TCPPacketTest, ConnectReqPacketSize) {
     ConnectReqPacket packet;
-    packet.set_username("TestPlayer");
+    packet.SetUsername("TestPlayer");
 
     PacketBuffer buffer;
-    packet.serialize(buffer);
+    packet.Serialize(buffer);
 
     // 12 byte header + 32 byte payload = 44 bytes
-    EXPECT_EQ(buffer.size(), 44);
+    EXPECT_EQ(buffer.Size(), 44);
 }
 
 TEST(TCPPacketTest, ConnectReqRoundTrip) {
     ConnectReqPacket original;
-    original.set_username("Alice");
+    original.SetUsername("Alice");
 
     PacketBuffer buffer;
-    original.serialize(buffer);
+    original.Serialize(buffer);
 
-    buffer.reset_read_offset();
-    CommonHeader header = buffer.read_header();
+    buffer.ResetReadOffset();
+    CommonHeader header = buffer.ReadHeader();
     EXPECT_EQ(header.op_code, 0x01);
     EXPECT_EQ(header.tick_id, 0);  // TCP packets have tick_id = 0
 
-    auto deserialized = ConnectReqPacket::deserialize(buffer);
-    EXPECT_EQ(deserialized.get_username(), "Alice");
+    auto deserialized = ConnectReqPacket::Deserialize(buffer);
+    EXPECT_EQ(deserialized.GetUsername(), "Alice");
 }
 
 TEST(TCPPacketTest, ConnectAckStatusCodes) {
@@ -236,10 +327,10 @@ TEST(TCPPacketTest, DisconnectReqPacketSize) {
     DisconnectReqPacket packet;
 
     PacketBuffer buffer;
-    packet.serialize(buffer);
+    packet.Serialize(buffer);
 
     // 12 byte header + 0 byte payload = 12 bytes
-    EXPECT_EQ(buffer.size(), 12);
+    EXPECT_EQ(buffer.Size(), 12);
 }
 
 TEST(TCPPacketTest, GameEndDrawScenario) {
@@ -248,12 +339,12 @@ TEST(TCPPacketTest, GameEndDrawScenario) {
     packet.reserved = {0, 0, 0};
 
     PacketBuffer buffer;
-    packet.serialize(buffer);
+    packet.Serialize(buffer);
 
-    buffer.reset_read_offset();
-    buffer.read_header();
+    buffer.ResetReadOffset();
+    buffer.ReadHeader();
 
-    auto deserialized = GameEndPacket::deserialize(buffer);
+    auto deserialized = GameEndPacket::Deserialize(buffer);
     EXPECT_EQ(deserialized.winning_player_id.value, 0);
 }
 
@@ -267,10 +358,10 @@ TEST(UDPPacketTest, PlayerInputWithTickId) {
     packet.reserved = {0, 0, 0};
 
     PacketBuffer buffer;
-    packet.serialize(buffer, 99999);
+    packet.Serialize(buffer, 99999);
 
-    buffer.reset_read_offset();
-    CommonHeader header = buffer.read_header();
+    buffer.ResetReadOffset();
+    CommonHeader header = buffer.ReadHeader();
     EXPECT_EQ(header.op_code, 0x10);
     EXPECT_EQ(header.tick_id, 99999);
 }
@@ -299,15 +390,15 @@ TEST(UDPPacketTest, WorldSnapshotWithEntities) {
     packet.entities.push_back(e2);
 
     PacketBuffer buffer;
-    packet.serialize(buffer, 5000);
+    packet.Serialize(buffer, 5000);
 
     // 12 header + 4 payload header + (2 * 12 entity) = 40 bytes
-    EXPECT_EQ(buffer.size(), 40);
+    EXPECT_EQ(buffer.Size(), 40);
 
-    buffer.reset_read_offset();
-    buffer.read_header();
+    buffer.ResetReadOffset();
+    buffer.ReadHeader();
 
-    auto deserialized = WorldSnapshotPacket::deserialize(buffer);
+    auto deserialized = WorldSnapshotPacket::Deserialize(buffer);
     EXPECT_EQ(deserialized.entity_count, 2);
     ASSERT_EQ(deserialized.entities.size(), 2);
     EXPECT_EQ(deserialized.entities[0].entity_id.value, 100);
@@ -326,10 +417,10 @@ TEST(UDPPacketTest, PlayerStatsPacketSize) {
     packet.score = 12345;
 
     PacketBuffer buffer;
-    packet.serialize(buffer, 3000);
+    packet.Serialize(buffer, 3000);
 
     // 12 byte header + 8 byte payload = 20 bytes
-    EXPECT_EQ(buffer.size(), 20);
+    EXPECT_EQ(buffer.Size(), 20);
 }
 
 // ============================================================================
@@ -338,24 +429,24 @@ TEST(UDPPacketTest, PlayerStatsPacketSize) {
 
 TEST(PacketFactoryTest, DeserializeConnectReq) {
     ConnectReqPacket original;
-    original.set_username("Player1");
+    original.SetUsername("Player1");
 
     PacketBuffer buffer;
-    original.serialize(buffer);
+    original.Serialize(buffer);
 
-    auto result = deserialize_packet(buffer.data());
+    auto result = DeserializePacket(buffer.Data());
     EXPECT_TRUE(result.success);
     EXPECT_TRUE(std::holds_alternative<ConnectReqPacket>(result.packet));
 
     auto &deserialized = std::get<ConnectReqPacket>(result.packet);
-    EXPECT_EQ(deserialized.get_username(), "Player1");
+    EXPECT_EQ(deserialized.GetUsername(), "Player1");
     EXPECT_EQ(result.header.op_code, 0x01);
 }
 
 TEST(PacketFactoryTest, TooSmallPacket) {
     std::vector<uint8_t> data = {0x01};  // Only 1 byte
 
-    auto result = deserialize_packet(data);
+    auto result = DeserializePacket(data);
     EXPECT_FALSE(result.success);
     EXPECT_NE(result.error.find("12 bytes"), std::string::npos);
 }
@@ -363,22 +454,22 @@ TEST(PacketFactoryTest, TooSmallPacket) {
 TEST(PacketFactoryTest, UnknownOpCode) {
     PacketBuffer buffer;
     CommonHeader header(0xFF, 0);  // Invalid opcode
-    buffer.write_header(header);
+    buffer.WriteHeader(header);
 
-    auto result = deserialize_packet(buffer.data());
+    auto result = DeserializePacket(buffer.Data());
     EXPECT_FALSE(result.success);
 }
 
 TEST(PacketFactoryTest, SerializePacketVariant) {
     ConnectReqPacket packet;
-    packet.set_username("TestUser");
+    packet.SetUsername("TestUser");
 
     PacketVariant variant = packet;
-    PacketBuffer buffer = serialize_packet(variant);
+    PacketBuffer buffer = SerializePacket(variant);
 
-    EXPECT_EQ(buffer.size(), 44);  // 12 header + 32 payload
+    EXPECT_EQ(buffer.Size(), 44);  // 12 header + 32 payload
 
-    auto result = deserialize_packet(buffer.data());
+    auto result = DeserializePacket(buffer.Data());
     EXPECT_TRUE(result.success);
 }
 
@@ -392,9 +483,9 @@ TEST(FragmentationTest, MultipleFragmentHeaders) {
     packet1.reserved = {0, 0};
 
     PacketBuffer buffer1;
-    packet1.serialize(buffer1, 1000, 0, 3);
+    packet1.Serialize(buffer1, 1000, 0, 3);
 
-    auto result1 = deserialize_packet(buffer1.data());
+    auto result1 = DeserializePacket(buffer1.Data());
     EXPECT_TRUE(result1.success);
     EXPECT_EQ(result1.header.tick_id, 1000);
     EXPECT_EQ(result1.header.packet_index, 0);
@@ -410,21 +501,21 @@ TEST(StressTest, ManyTCPPackets) {
 
     for (int i = 0; i < 1000; ++i) {
         ConnectReqPacket packet;
-        packet.set_username("Player" + std::to_string(i));
+        packet.SetUsername("Player" + std::to_string(i));
 
         PacketBuffer buffer;
-        packet.serialize(buffer);
+        packet.Serialize(buffer);
         buffers.push_back(std::move(buffer));
     }
 
     EXPECT_EQ(buffers.size(), 1000);
 
     for (size_t i = 0; i < buffers.size(); ++i) {
-        auto result = deserialize_packet(buffers[i].data());
+        auto result = DeserializePacket(buffers[i].Data());
         ASSERT_TRUE(result.success);
 
         auto &packet = std::get<ConnectReqPacket>(result.packet);
-        EXPECT_EQ(packet.get_username(), "Player" + std::to_string(i));
+        EXPECT_EQ(packet.GetUsername(), "Player" + std::to_string(i));
     }
 }
 
@@ -445,12 +536,12 @@ TEST(StressTest, LargeSnapshot) {
     }
 
     PacketBuffer buffer;
-    packet.serialize(buffer, 50000);
+    packet.Serialize(buffer, 50000);
 
     // 12 header + 4 payload header + (100 * 12) = 1216 bytes
-    EXPECT_EQ(buffer.size(), 1216);
+    EXPECT_EQ(buffer.Size(), 1216);
 
-    auto result = deserialize_packet(buffer.data());
+    auto result = DeserializePacket(buffer.Data());
     ASSERT_TRUE(result.success);
 
     auto &deserialized = std::get<WorldSnapshotPacket>(result.packet);

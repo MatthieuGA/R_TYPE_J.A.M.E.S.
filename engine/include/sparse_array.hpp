@@ -43,7 +43,7 @@ class sparse_array {
     template <class... Params>
     reference_type emplace_at(size_type pos, Params &&...);
     void erase(size_type pos);
-    size_type get_index(value_type const &) const;
+    size_type GetIndex(value_type const &) const;
 
  private:
     container_t data_;

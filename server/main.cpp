@@ -7,12 +7,11 @@
 int main(int argc, char *argv[]) {
     try {
         boost::asio::io_context io;
-        server::Config &cfg = server::Config::fromCommandLine(argc, argv);
+        server::Config &cfg = server::Config::FromCommandLine(argc, argv);
         server::Server game_server(cfg, io);
 
-        game_server.initialize();
-        game_server.start();
-
+        game_server.Initialize();
+        game_server.Start();
         std::cout << "Server started, running io_context..." << std::endl;
         io.run();
     } catch (const std::exception &e) {

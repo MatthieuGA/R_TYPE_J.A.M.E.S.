@@ -1,5 +1,7 @@
 #include "engine/events/Event.h"
 
+#include <algorithm>
+
 void EventBus::Unsubscribe(SubId id) {
     for (auto &[type, handlers] : subscribers_) {
         handlers.erase(std::remove_if(handlers.begin(), handlers.end(),
