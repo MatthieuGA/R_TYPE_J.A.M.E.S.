@@ -261,8 +261,7 @@ void InitGameplaySystems(Rtype::Client::GameWorld &game_world) {
 
     // Health deduction system
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Health>,
-        Eng::sparse_array<Com::HealthBar>, Eng::sparse_array<Com::EnemyTag>,
-        Eng::sparse_array<Com::PlayerTag>,
+        Eng::sparse_array<Com::HealthBar>,
         Eng::sparse_array<Com::AnimatedSprite>, Eng::sparse_array<Com::HitBox>,
         Eng::sparse_array<Com::Transform>, Eng::sparse_array<Com::Projectile>>(
         HealthDeductionSystem);

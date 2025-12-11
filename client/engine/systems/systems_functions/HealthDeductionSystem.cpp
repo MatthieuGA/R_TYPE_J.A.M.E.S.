@@ -81,8 +81,6 @@ void HandleCollision(Eng::registry &reg, Component::Health &health,
 void HealthDeductionSystem(Eng::registry &reg,
     Eng::sparse_array<Component::Health> &healths,
     Eng::sparse_array<Component::HealthBar> &health_bars,
-    Eng::sparse_array<Component::EnemyTag> const &enemyTags,
-    Eng::sparse_array<Component::PlayerTag> const &playerTags,
     Eng::sparse_array<Component::AnimatedSprite> &animated_sprites,
     Eng::sparse_array<Component::HitBox> const &hitBoxes,
     Eng::sparse_array<Component::Transform> const &transforms,
@@ -95,10 +93,14 @@ void HealthDeductionSystem(Eng::registry &reg,
         for (auto &&[j, projectile, projHitBox, projTransform] :
             make_indexed_zipper(projectiles, hitBoxes, transforms)) {
             Engine::entity projEntity = reg.EntityFromIndex(j);
-            if (projectile.isEnemyProjectile && enemyTags.has(i))
-                continue;  // Enemy projectiles don't hit enemies
-            if (!projectile.isEnemyProjectile && playerTags.has(i))
-                continue;  // Player projectiles don't hit players
+            try {
+                if (projectile.isEnemyProjectile &&
+                    reg.GetComponents<Component::EnemyTag>().has(i))
+                    continue;  // Enemy projectiles don't hit enemies
+                if (!projectile.isEnemyProjectile &&
+                    reg.GetComponents<Component::PlayerTag>().has(i))
+                    continue;  // Player projectiles don't hit players
+            } catch (...) {}
 
             // Simple AABB collision detection
             if (IsColliding(transform, hitBox, projTransform, projHitBox)) {
