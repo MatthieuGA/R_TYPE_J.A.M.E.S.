@@ -62,6 +62,11 @@ target_link_libraries(engine_tests PRIVATE Boost::system)
 # Discover tests for CTest
 gtest_discover_tests(engine_tests)
 
+# Gather server source files recursively
+file(GLOB_RECURSE SERVER_SOURCES CONFIGURE_DEPENDS
+    "${CMAKE_SOURCE_DIR}/server/src/**/*.cpp"
+)
+
 # Create test executable for server
 add_executable(server_tests
     test_server.cpp
@@ -70,16 +75,7 @@ add_executable(server_tests
     test_client_connection_manager.cpp
     test_packet_handler.cpp
     test_packet_sender.cpp
-    ${CMAKE_SOURCE_DIR}/server/src/server/ClientConnectionManager.cpp
-    ${CMAKE_SOURCE_DIR}/server/src/server/Config.cpp
-    ${CMAKE_SOURCE_DIR}/server/src/server/Network.cpp
-    ${CMAKE_SOURCE_DIR}/server/src/server/PacketHandler.cpp
-    ${CMAKE_SOURCE_DIR}/server/src/server/PacketSender.cpp
-    ${CMAKE_SOURCE_DIR}/server/src/server/Server.cpp
-    ${CMAKE_SOURCE_DIR}/server/src/server/CoreComponents.cpp
-    ${CMAKE_SOURCE_DIR}/server/src/server/GameplayComponents.cpp
-    ${CMAKE_SOURCE_DIR}/server/src/server/ServerRegisterComponents.cpp
-    ${CMAKE_SOURCE_DIR}/server/src/server/ServerRegisterSystems.cpp
+    ${SERVER_SOURCES}
 )
 
 # Include directories for server tests
