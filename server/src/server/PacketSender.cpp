@@ -110,8 +110,8 @@ void PacketSender::SendSnapshot(network::EntityState entity_state) {
         std::copy(data.begin(), data.end(), udp_buffer.begin());
         network_.SendUdp(udp_buffer, data.size(), client_ref.udp_endpoint_);
 
-        std::cout << "Sent SNAPSHOT to Player "
-                  << static_cast<int>(client_ref.player_id_) << std::endl;
+        // std::cout << "Sent SNAPSHOT to Player "
+        //           << static_cast<int>(client_ref.player_id_) << std::endl;
     }
 }
 

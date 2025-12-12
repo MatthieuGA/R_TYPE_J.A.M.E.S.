@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 
 #include <boost/asio.hpp>
 
@@ -106,6 +107,15 @@ class Server {
      * @param socket Newly accepted TCP socket (ownership transferred)
      */
     void HandleTcpAccept(boost::asio::ip::tcp::socket socket);
+    /**
+     * @brief Handle UDP PLAYER_INPUT packets (discovery or input bitfield)
+     *
+     * @param endpoint UDP endpoint the packet came from
+     * @param data Raw packet bytes
+     * @return true if the packet was handled (discovery or input applied)
+     */
+    bool HandleUdpPlayerInput(const boost::asio::ip::udp::endpoint &endpoint,
+        const std::vector<uint8_t> &data);
 
     // ========================================================================
     // Member Variables

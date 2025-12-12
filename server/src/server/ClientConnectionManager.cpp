@@ -182,9 +182,10 @@ void ClientConnectionManager::UpdateClientUdpEndpoint(
     auto it = clients_.find(client_id);
     if (it != clients_.end()) {
         it->second.udp_endpoint_ = endpoint;
-        std::cout << "Updated UDP endpoint for client " << client_id << " to "
-                  << endpoint.address().to_string() << ":" << endpoint.port()
-                  << std::endl;
+        // std::cout << "Updat UDP endpoint for client " << client_id << " to "
+        //           << endpoint.address().to_string() << ":" <<
+        //           endpoint.port()
+        //           << std::endl;
     }
 }
 

@@ -67,11 +67,12 @@ void Network::UDP::Receive() {
         socket.async_receive_from(boost::asio::buffer(buffer), remote_endpoint,
             [this](boost::system::error_code ec, std::size_t bytes_recvd) {
                 if (!ec && bytes_recvd > 0) {
-                    std::cout << "Received UDP packet from "
-                              << remote_endpoint.address().to_string() << ":"
-                              << remote_endpoint.port()
-                              << ", size: " << bytes_recvd << " bytes"
-                              << std::endl;
+                    // std::cout << "Received UDP packet from "
+                    //           << remote_endpoint.address().to_string() <<
+                    //           ":"
+                    //           << remote_endpoint.port()
+                    //           << ", size: " << bytes_recvd << " bytes"
+                    //           << std::endl;
 
                     // Call receive callback to update client endpoint
                     if (on_receive_) {
@@ -112,10 +113,10 @@ void Network::UDP::Send(
                                   << std::endl;
                     }
                 } else {
-                    std::cout << "Sent UDP packet to "
-                              << endpoint.address().to_string() << ":"
-                              << endpoint.port() << ": " << bytes_sent
-                              << " bytes" << std::endl;
+                    // std::cout << "Sent UDP packet to "
+                    //           << endpoint.address().to_string() << ":"
+                    //           << endpoint.port() << ": " << bytes_sent
+                    //           << " bytes" << std::endl;
                 }
             });
     } catch (const std::exception &e) {
