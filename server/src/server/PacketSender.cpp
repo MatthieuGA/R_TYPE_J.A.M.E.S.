@@ -46,21 +46,22 @@ void PacketSender::SendGameStart() {
     // Send to all authenticated players
     // Note: We need non-const access to use tcp_socket_.async_send()
 
-    // Serialize packet once before the loop (same for all clients)
-    network::GameStartPacket game_start;
-    // TODO(Matthieu-GA): Assign actual controlled entity ID from ECS
-    game_start.controlled_entity_id = network::EntityId{0};
-
-    network::PacketBuffer buffer;
-    game_start.Serialize(buffer);
-    const auto &data = buffer.Data();
-
     auto &clients = connection_manager_.GetClients();
     for (auto &[client_id, client_ref] : clients) {
         if (client_ref.player_id_ == 0) {
             continue;  // Skip unauthenticated clients
         }
-        // Use non-const reference to the client for socket operations
+
+        // Build GAME_START packet per-client so we can include the
+        // controlled entity id specific to that player.
+        network::GameStartPacket game_start;
+        // Use the player's assigned id as the controlled entity network id
+        game_start.controlled_entity_id =
+            network::EntityId{static_cast<uint32_t>(client_ref.player_id_)};
+
+        network::PacketBuffer buffer;
+        game_start.Serialize(buffer);
+        const auto &data = buffer.Data();
 
         auto data_copy = std::make_shared<std::vector<uint8_t>>(data);
 

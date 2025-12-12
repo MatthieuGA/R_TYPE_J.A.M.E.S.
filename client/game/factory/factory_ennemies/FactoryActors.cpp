@@ -13,8 +13,8 @@ namespace fs = std::filesystem;
 
 namespace Rtype::Client {
 
-void FactoryActors::CreateActor(
-    Engine::entity &entity, Engine::registry &reg, std::string const &tag) {
+void FactoryActors::CreateActor(Engine::entity &entity, Engine::registry &reg,
+    std::string const &tag, bool is_local) {
     auto it = enemy_info_map_.find(tag);
     if (it == enemy_info_map_.end()) {
         std::cerr << "Enemy tag not found: " << tag << std::endl;
@@ -24,7 +24,7 @@ void FactoryActors::CreateActor(
 
     CreateBasicActor(entity, reg, info);
     if (info.tag == "player") {
-        CreatePlayerActor(entity, reg, info);
+        CreatePlayerActor(entity, reg, info, is_local);
         return;
     }
 

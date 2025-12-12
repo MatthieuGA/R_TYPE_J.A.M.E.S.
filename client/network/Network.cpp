@@ -308,6 +308,8 @@ void ServerConnection::HandleGameStart(const std::vector<uint8_t> &data) {
     std::cout << "[Network] GAME_START received! Controlled EntityId="
               << controlled_entity_id << std::endl;
 
+    // Store controlled entity id for local input mapping
+    controlled_entity_id_ = controlled_entity_id;
     game_started_.store(true);
 }
 

@@ -59,7 +59,8 @@ void GameScene::InitBackgrounds(Engine::registry &reg) {
 
 void GameScene::InitPlayerLevel(Engine::registry &reg) {
     auto player_entity = CreateEntityInScene(reg);
-    FactoryActors::GetInstance().CreateActor(player_entity, reg, "player");
+    FactoryActors::GetInstance().CreateActor(
+        player_entity, reg, "player", true);
 
     try {
         Component::Transform &transform =

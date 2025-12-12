@@ -36,8 +36,8 @@ class FactoryActors {
         return instance;
     }
 
-    void CreateActor(
-        Engine::entity &entity, Engine::registry &reg, std::string const &tag);
+    void CreateActor(Engine::entity &entity, Engine::registry &reg,
+        std::string const &tag, bool is_local = false);
     void InitializeEnemyInfoMap(const std::string &jsonFolder);
 
  private:
@@ -46,8 +46,8 @@ class FactoryActors {
 
     void CreateBasicActor(
         Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
-    void CreatePlayerActor(
-        Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
+    void CreatePlayerActor(Engine::entity &entity, Engine::registry &reg,
+        EnnemyInfo info, bool is_local);
 
     void CreateBasicEnnemy(
         Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);

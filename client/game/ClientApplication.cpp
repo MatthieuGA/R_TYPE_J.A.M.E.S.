@@ -172,8 +172,17 @@ static void CreateNewEntity(GameWorld &game_world,
     auto new_entity = game_world.registry_.SpawnEntity();
     if (entity_data.entity_type == 0x00) {
         // Player entity
+        bool is_local = false;
+        if (game_world.server_connection_ &&
+            game_world.server_connection_->is_connected()) {
+            uint32_t controlled =
+                game_world.server_connection_->controlled_entity_id();
+            if (controlled != 0 && controlled == entity_data.entity_id)
+                is_local = true;
+        }
+
         FactoryActors::GetInstance().CreateActor(
-            new_entity, game_world.registry_, "player");
+            new_entity, game_world.registry_, "player", is_local);
     } else {
         printf("[Snapshot] Unknown entity type 0x%02X for entity ID %u\n",
             entity_data.entity_type, entity_data.entity_id);

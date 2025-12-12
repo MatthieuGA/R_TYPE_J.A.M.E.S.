@@ -8,8 +8,8 @@
 
 namespace Rtype::Client {
 
-void FactoryActors::CreatePlayerActor(
-    Engine::entity &entity, Engine::registry &reg, EnnemyInfo info) {
+void FactoryActors::CreatePlayerActor(Engine::entity &entity,
+    Engine::registry &reg, EnnemyInfo info, bool is_local) {
     // Add basic enemy components
     Component::AnimatedSprite animated_sprite(34, 18, 2);
     animated_sprite.AddAnimation("Hit", "original_rtype/players_hit.png", 34,
@@ -19,7 +19,10 @@ void FactoryActors::CreatePlayerActor(
         sf::Vector2f(0.0f, -10.0f));
     reg.AddComponent<Component::AnimatedSprite>(
         entity, std::move(animated_sprite));
-    // reg.AddComponent<Component::Inputs>(entity, Component::Inputs{});
+    // Add Inputs component only for the local player entity
+    if (is_local) {
+        reg.AddComponent<Component::Inputs>(entity, Component::Inputs{});
+    }
     reg.AddComponent<Component::PlayerTag>(entity,
         Component::PlayerTag{info.speed, Rtype::Client::PLAYER_SHOOT_COOLDOWN,
             Rtype::Client::PLAYER_CHARGE_TIME, false, id_player_});

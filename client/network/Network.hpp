@@ -102,6 +102,14 @@ class ServerConnection {
     }
 
     /**
+     * @brief Controlled entity id accessor (set by GAME_START)
+     * @return Network entity id assigned to this client, or 0 if unknown
+     */
+    uint32_t controlled_entity_id() const {
+        return controlled_entity_id_;
+    }
+
+    /**
      * @brief Reset the game started flag.
      * Useful after handling the GAME_START event.
      */
@@ -127,6 +135,8 @@ class ServerConnection {
     std::atomic<uint8_t> player_id_;
     std::atomic<bool> game_started_;
     uint32_t current_tick_;
+    // Entity id the server told us we control (from GAME_START packet)
+    uint32_t controlled_entity_id_{0};
 
     // Buffers
     std::array<uint8_t, 1472> udp_buffer_{};
