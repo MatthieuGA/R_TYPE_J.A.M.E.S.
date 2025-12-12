@@ -60,5 +60,6 @@ class FactoryActors {
         Component::Transform const &transform);
 
     std::map<std::string, EnnemyInfo> enemy_info_map_ = {};
+    int id_player_ = 0;
 };
 }  // namespace Rtype::Client

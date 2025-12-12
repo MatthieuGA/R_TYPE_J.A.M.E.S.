@@ -48,8 +48,6 @@ void FactoryActors::CreateBasicActor(
     reg.AddComponent<Component::Velocity>(entity, Component::Velocity{});
     reg.AddComponent<Component::Drawable>(
         entity, Component::Drawable{info.spritePath, LAYER_ACTORS});
-    reg.AddComponent<Component::Drawable>(
-        entity, Component::Drawable{info.spritePath, LAYER_ACTORS});
 }
 
 void FactoryActors::CreateBasicEnnemy(

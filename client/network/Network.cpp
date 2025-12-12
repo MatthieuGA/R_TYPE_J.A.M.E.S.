@@ -261,7 +261,10 @@ void ServerConnection::HandleConnectAck(const std::vector<uint8_t> &data) {
                 std::make_shared<std::vector<uint8_t>>(kHeaderSize + 4);
             WriteHeader(discovery_pkt->data(), 0x10, 4,
                 static_cast<uint32_t>(current_tick_));
-            (*discovery_pkt)[kHeaderSize + 0] = 0;  // inputs
+            // Include player id in discovery payload so server can map
+            // this UDP endpoint to the correct authenticated client.
+            (*discovery_pkt)[kHeaderSize + 0] = static_cast<uint8_t>(
+                player_id_.load());                 // player id (discovery)
             (*discovery_pkt)[kHeaderSize + 1] = 0;  // reserved[0]
             (*discovery_pkt)[kHeaderSize + 2] = 0;  // reserved[1]
             (*discovery_pkt)[kHeaderSize + 3] = 0;  // reserved[2]

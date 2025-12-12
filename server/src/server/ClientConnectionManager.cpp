@@ -205,4 +205,14 @@ ClientConnection *ClientConnectionManager::FindClientByIp(
     return nullptr;
 }
 
+ClientConnection *ClientConnectionManager::FindClientByPlayerId(
+    uint8_t player_id) {
+    for (auto &[client_id, connection] : clients_) {
+        if (connection.player_id_ == player_id) {
+            return &connection;
+        }
+    }
+    return nullptr;
+}
+
 }  // namespace server

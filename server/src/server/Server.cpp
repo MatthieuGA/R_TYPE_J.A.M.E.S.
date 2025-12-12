@@ -39,10 +39,31 @@ void Server::Initialize() {
         });
 
     // Register UDP receive callback to update client endpoints
+    // Prefer using player_id carried in PLAYER_INPUT (discovery) packets
     network_.SetUdpReceiveCallback(
         [this](const boost::asio::ip::udp::endpoint &endpoint,
             const std::vector<uint8_t> &data) {
-            // Update the client's UDP endpoint when we receive from them
+            // Basic validation: need at least header + 1 payload byte
+            if (data.size() >= 13) {
+                uint8_t opcode = data[0];
+                // PLAYER_INPUT opcode is 0x10, discovery packet contains
+                // player_id as first payload byte (offset 12)
+                if (opcode == 0x10) {
+                    uint8_t player_id = data[12];
+                    if (player_id != 0) {
+                        ClientConnection *conn =
+                            connection_manager_.FindClientByPlayerId(
+                                player_id);
+                        if (conn) {
+                            connection_manager_.UpdateClientUdpEndpoint(
+                                conn->client_id_, endpoint);
+                            return;
+                        }
+                    }
+                }
+            }
+
+            // Fallback: match by IP address (legacy behavior)
             ClientConnection *client =
                 connection_manager_.FindClientByIp(endpoint.address());
             if (client) {

@@ -217,6 +217,14 @@ class ClientConnectionManager {
     ClientConnection *FindClientByIp(
         const boost::asio::ip::address &ip_addres);
 
+    /**
+     * @brief Find client by assigned network player id
+     *
+     * @param player_id Player id assigned during authentication
+     * @return ClientConnection* Pointer to client if found, nullptr otherwise
+     */
+    ClientConnection *FindClientByPlayerId(uint8_t player_id);
+
  private:
     /**
      * @brief Assign unique internal client ID

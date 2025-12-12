@@ -1,6 +1,7 @@
 #include "game/ClientApplication.hpp"
 
 #include <algorithm>
+#include <cstdio>
 #include <iomanip>
 #include <iostream>
 #include <vector>
@@ -8,9 +9,12 @@
 #include <SFML/Graphics.hpp>
 
 #include "game/InitRegistry.hpp"
+#include "game/factory/factory_ennemies/FactoryActors.hpp"
 #include "game/scenes_management/InitScenes.hpp"
+#include "include/LayersConst.hpp"
 #include "include/components/CoreComponents.hpp"
 #include "include/components/NetworkingComponents.hpp"
+#include "include/components/RenderComponent.hpp"
 #include "include/components/ScenesComponents.hpp"
 #include "include/indexed_zipper.hpp"
 #include "network/Network.hpp"
@@ -163,6 +167,42 @@ static void DisplaySnapshotData(const client::SnapshotPacket &snapshot) {
     std::cout << std::flush;
 }
 
+static void CreateNewEntity(GameWorld &game_world,
+    const ParsedEntity &entity_data, std::optional<size_t> &entity_index) {
+    auto new_entity = game_world.registry_.SpawnEntity();
+    if (entity_data.entity_type == 0x00) {
+        // Player entity
+        FactoryActors::GetInstance().CreateActor(
+            new_entity, game_world.registry_, "player");
+    } else {
+        printf("[Snapshot] Unknown entity type 0x%02X for entity ID %u\n",
+            entity_data.entity_type, entity_data.entity_id);
+    }
+
+    game_world.registry_.AddComponent<Component::NetworkId>(new_entity,
+        Component::NetworkId{static_cast<int>(entity_data.entity_id)});
+    size_t entity_id = new_entity.GetId();
+    entity_index = entity_id;
+
+    std::cout << "[Snapshot] Created entity #" << entity_id
+              << " for NetworkId=" << entity_data.entity_id << std::endl;
+}
+
+static void UpdateExistingEntityTransform(GameWorld &game_world,
+    size_t entity_index, const ParsedEntity &entity_data) {
+    // Update existing entity's transform
+    if (!game_world.registry_.GetComponents<Component::Transform>().has(
+            entity_index))
+        return;
+    auto &transform = game_world.registry_
+                          .GetComponents<Component::Transform>()[entity_index];
+    if (transform.has_value()) {
+        transform->x = static_cast<float>(entity_data.pos_x);
+        transform->y = static_cast<float>(entity_data.pos_y);
+        transform->rotationDegrees = static_cast<float>(entity_data.angle);
+    }
+}
+
 /**
  * @brief Apply snapshot data to the ECS registry.
  *
@@ -176,16 +216,14 @@ static void ApplySnapshotToRegistry(
     GameWorld &game_world, const client::SnapshotPacket &snapshot) {
     auto entities = ParseSnapshotData(snapshot);
 
-    auto &network_ids =
-        game_world.registry_.GetComponents<Component::NetworkId>();
-    auto &transforms =
-        game_world.registry_.GetComponents<Component::Transform>();
+    auto &net_ids = game_world.registry_.GetComponents<Component::NetworkId>();
 
     for (const auto &entity_data : entities) {
         // Find entity with matching NetworkId
         std::optional<size_t> entity_index;
 
-        for (auto &&[idx, net_id] : make_indexed_zipper(network_ids)) {
+        // Search for existing entity with this NetworkId
+        for (auto &&[idx, net_id] : make_indexed_zipper(net_ids)) {
             if (net_id.id == static_cast<int>(entity_data.entity_id)) {
                 entity_index = idx;
                 break;
@@ -194,31 +232,10 @@ static void ApplySnapshotToRegistry(
 
         // If entity doesn't exist, create it
         if (!entity_index.has_value()) {
-            auto new_entity = game_world.registry_.SpawnEntity();
-            size_t entity_id = new_entity.GetId();
-
-            game_world.registry_.AddComponent<Component::NetworkId>(new_entity,
-                Component::NetworkId{static_cast<int>(entity_data.entity_id)});
-
-            game_world.registry_.AddComponent<Component::Transform>(new_entity,
-                Component::Transform(static_cast<float>(entity_data.pos_x),
-                    static_cast<float>(entity_data.pos_y),
-                    static_cast<float>(entity_data.angle), 1.0f));
-
-            entity_index = entity_id;
-
-            std::cout << "[Snapshot] Created entity #" << entity_id
-                      << " for NetworkId=" << entity_data.entity_id
-                      << std::endl;
+            CreateNewEntity(game_world, entity_data, entity_index);
         } else {
-            // Update existing entity's transform
-            auto &transform = transforms[entity_index.value()];
-            if (transform.has_value()) {
-                transform->x = static_cast<float>(entity_data.pos_x);
-                transform->y = static_cast<float>(entity_data.pos_y);
-                transform->rotationDegrees =
-                    static_cast<float>(entity_data.angle);
-            }
+            UpdateExistingEntityTransform(
+                game_world, entity_index.value(), entity_data);
         }
     }
 }
@@ -344,7 +361,7 @@ void ClientApplication::RunGameLoop(GameWorld &game_world) {
                 ApplySnapshotToRegistry(game_world, *snapshot);
 
                 // Display snapshot data for debugging (optional)
-                DisplaySnapshotData(*snapshot);
+                // DisplaySnapshotData(*snapshot);
             }
         }
 
