@@ -34,8 +34,8 @@ struct ClientConnection {
      * @param pid Assigned player ID (1-255, 0 if not yet authenticated)
      * @param socket TCP socket (ownership transferred)
      */
-    ClientConnection(
-        uint32_t cid, uint8_t pid, boost::asio::ip::tcp::socket socket)
+    ClientConnection(uint32_t cid, uint8_t pid,
+        boost::asio::ip::tcp::socket socket, uint16_t default_udp_port)
         : client_id_(cid),
           player_id_(pid),
           tcp_socket_(std::move(socket)),
@@ -44,12 +44,13 @@ struct ClientConnection {
         username_.reserve(32);  // Match CONNECT_REQ username size
 
         // Initialize UDP endpoint with client's IP from TCP connection
-        // Use a default UDP port; will be updated when receiving UDP packets
+        // Use the same port as server; will be update when receiving UDP
+        // packet
         try {
             auto tcp_remote_endpoint = tcp_socket_.remote_endpoint();
-            udp_endpoint_ = boost::asio::ip::udp::endpoint(
-                tcp_remote_endpoint.address(),
-                8000);  // Default UDP port for clients; will be updated later
+            udp_endpoint_ =
+                boost::asio::ip::udp::endpoint(tcp_remote_endpoint.address(),
+                    default_udp_port);  // Use server's UDP port
         } catch (const std::exception &e) {
             // Fallback: create invalid endpoint that will be updated later
             udp_endpoint_ = boost::asio::ip::udp::endpoint();
@@ -89,8 +90,10 @@ class ClientConnectionManager {
      * @brief Construct a new ClientConnectionManager
      *
      * @param max_clients Maximum number of authenticated players allowed
+     * @param server_udp_port The UDP port used by the server
      */
-    explicit ClientConnectionManager(uint8_t max_clients);
+    explicit ClientConnectionManager(
+        uint8_t max_clients, uint16_t server_udp_port = 8080);
 
     /**
      * @brief Add a new unauthenticated client connection
@@ -243,6 +246,9 @@ class ClientConnectionManager {
 
     // Maximum number of authenticated players allowed
     uint8_t max_clients_;
+
+    // UDP port used by the server (for client endpoint initialization)
+    uint16_t server_udp_port_;
 };
 
 }  // namespace server

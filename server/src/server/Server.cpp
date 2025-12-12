@@ -13,7 +13,7 @@ Server::Server(Config &config, boost::asio::io_context &io_context)
       registry_(),
       tick_timer_(io_context),
       running_(false),
-      connection_manager_(config.GetMaxPlayers()),
+      connection_manager_(config.GetMaxPlayers(), config.GetUdpPort()),
       packet_sender_(connection_manager_, network_),
       packet_handler_(connection_manager_, packet_sender_, network_) {
     // Set game start callback

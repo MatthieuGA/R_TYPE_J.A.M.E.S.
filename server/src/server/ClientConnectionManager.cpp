@@ -9,8 +9,12 @@
 
 namespace server {
 
-ClientConnectionManager::ClientConnectionManager(uint8_t max_clients)
-    : next_client_id_(1), next_player_id_(1), max_clients_(max_clients) {}
+ClientConnectionManager::ClientConnectionManager(
+    uint8_t max_clients, uint16_t server_udp_port)
+    : next_client_id_(1),
+      next_player_id_(1),
+      max_clients_(max_clients),
+      server_udp_port_(server_udp_port) {}
 
 uint32_t ClientConnectionManager::AddClient(
     boost::asio::ip::tcp::socket socket) {
@@ -19,7 +23,8 @@ uint32_t ClientConnectionManager::AddClient(
               << client_id << std::endl;
 
     // Create unauthenticated connection (player_id=0 until authenticated)
-    ClientConnection connection(client_id, 0, std::move(socket));
+    ClientConnection connection(
+        client_id, 0, std::move(socket), server_udp_port_);
     clients_.emplace(client_id, std::move(connection));
 
     return client_id;

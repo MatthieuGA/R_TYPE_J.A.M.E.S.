@@ -70,9 +70,16 @@ ServerConnection::ServerConnection(boost::asio::io_context &io,
       tcp_port_(tcp_port),
       udp_port_(udp_port) {
     try {
+        // Bind to an auto-assigned port (0 = let OS choose)
+        // The server will discover the actual port from the first UDP packet
         boost::asio::ip::udp::endpoint local_ep(boost::asio::ip::udp::v4(), 0);
         udp_socket_.open(boost::asio::ip::udp::v4());
         udp_socket_.bind(local_ep);
+
+        // Display the auto-assigned port
+        uint16_t bound_port = udp_socket_.local_endpoint().port();
+        std::cout << "[Network] UDP socket bound to auto-assigned port "
+                  << bound_port << std::endl;
 
         server_udp_endpoint_ = boost::asio::ip::udp::endpoint(
             boost::asio::ip::make_address(server_ip_), udp_port_);
@@ -238,6 +245,44 @@ void ServerConnection::HandleConnectAck(const std::vector<uint8_t> &data) {
 
         std::cout << "[Network] Connected. PlayerId=" << static_cast<int>(pid)
                   << ", ServerUdpPort=" << server_udp_port << std::endl;
+
+        // Get the local UDP port assigned by OS and send discovery packet
+        try {
+            boost::asio::ip::udp::endpoint local_ep =
+                udp_socket_.local_endpoint();
+            uint16_t local_udp_port = local_ep.port();
+            std::cout << "[Network] Local UDP port: " << local_udp_port
+                      << std::endl;
+
+            // Send a discovery packet to inform server of our UDP port
+            // Format: opcode (0x10 = PLAYER_INPUT) + inputs + reserved
+            // This also serves as endpoint discovery
+            auto discovery_pkt =
+                std::make_shared<std::vector<uint8_t>>(kHeaderSize + 4);
+            WriteHeader(discovery_pkt->data(), 0x10, 4,
+                static_cast<uint32_t>(current_tick_));
+            (*discovery_pkt)[kHeaderSize + 0] = 0;  // inputs
+            (*discovery_pkt)[kHeaderSize + 1] = 0;  // reserved[0]
+            (*discovery_pkt)[kHeaderSize + 2] = 0;  // reserved[1]
+            (*discovery_pkt)[kHeaderSize + 3] = 0;  // reserved[2]
+
+            udp_socket_.async_send_to(boost::asio::buffer(*discovery_pkt),
+                server_udp_endpoint_,
+                [this, discovery_pkt, local_udp_port](
+                    const boost::system::error_code &ec, std::size_t) {
+                    if (!ec) {
+                        std::cout
+                            << "[Network] UDP discovery packet sent from port "
+                            << local_udp_port << std::endl;
+                    } else {
+                        std::cerr << "[Network] Failed to send UDP discovery: "
+                                  << ec.message() << std::endl;
+                    }
+                });
+        } catch (const std::exception &e) {
+            std::cerr << "[Network] Error getting local UDP endpoint: "
+                      << e.what() << std::endl;
+        }
     } else {
         std::cerr << "[Network] CONNECT_ACK failed. Status="
                   << static_cast<int>(status) << std::endl;
@@ -331,10 +376,22 @@ void ServerConnection::AsyncReceiveUDP() {
                 return;
             }
 
+            // Debug: log first 10 received packets with opcode
+            static int udp_recv_count = 0;
+            udp_recv_count++;
+
             if (bytes >= kHeaderSize) {
                 uint8_t opcode = udp_buffer_[0];
                 uint16_t payload_size = ReadLe16(udp_buffer_.data() + 1);
                 uint32_t tick_id = ReadLe32(udp_buffer_.data() + 4);
+
+                if (udp_recv_count <= 10) {
+                    std::cout << "[Network] UDP packet #" << udp_recv_count
+                              << ": " << bytes << " bytes, opcode=0x"
+                              << std::hex << static_cast<int>(opcode)
+                              << std::dec << ", payload_size=" << payload_size
+                              << ", tick=" << tick_id << std::endl;
+                }
                 // Defensive check: Ensure payload_size doesn't exceed buffer
                 // capacity (should never happen with proper MTU, but good
                 // practice)
@@ -359,7 +416,16 @@ void ServerConnection::AsyncReceiveUDP() {
                     if (!snapshot_queue_.push(snap)) {
                         std::cerr << "[Network] Snapshot queue full, "
                                   << "dropping packet" << std::endl;
+                    } else if (udp_recv_count <= 10) {
+                        std::cout << "[Network] Snapshot added to queue (tick="
+                                  << tick_id << ")" << std::endl;
                     }
+                } else if (udp_recv_count <= 10) {
+                    std::cout << "[Network] Packet ignored: opcode=0x"
+                              << std::hex << static_cast<int>(opcode)
+                              << std::dec << ", expected=0x" << std::hex
+                              << static_cast<int>(kOpWorldSnapshot) << std::dec
+                              << std::endl;
                 }
             }
 

@@ -85,7 +85,19 @@ void PacketSender::SendGameStart() {
 void PacketSender::SendSnapshot(network::EntityState entity_state) {
     // Send entity state snapshot to all authenticated players via UDP
     network::PacketBuffer buffer;
+
+    // Write WORLD_SNAPSHOT header (opcode 0x20 with entity data as payload)
+    network::CommonHeader header(
+        static_cast<uint8_t>(network::PacketType::WorldSnapshot),
+        12,  // payload_size = 12 bytes (one EntityState)
+        0,   // tick_id = 0 (TODO: use actual tick)
+        0,   // packet_index = 0
+        1);  // packet_count = 1
+    buffer.WriteHeader(header);
+
+    // Serialize entity state into the payload
     entity_state.Serialize(buffer);
+
     const auto &data = buffer.Data();
     auto &clients = connection_manager_.GetClients();
     for (auto &[client_id, client_ref] : clients) {
