@@ -6,36 +6,6 @@
 #include "engine/systems/InitRegistrySystems.hpp"
 
 namespace Rtype::Client {
-/**
- * @brief Check AABB collision using precomputed offsets and scaled hitboxes.
- *
- * @param trans_a Transform of entity A
- * @param hb_a HitBox of entity A
- * @param trans_b Transform of entity B
- * @param hb_b HitBox of entity B
- * @param off_a Offset for entity A (unscaled)
- * @param off_b Offset for entity B (unscaled)
- * @return true if the boxes overlap
- */
-bool IsCollidingFromOffset(const Com::Transform &trans_a,
-    const Com::HitBox &hb_a, const Com::Transform &trans_b,
-    const Com::HitBox &hb_b, Engine::Graphics::Vector2f off_a,
-    Engine::Graphics::Vector2f off_b) {
-    Engine::Graphics::Vector2f scal_off_a = off_a * trans_a.scale;
-    Engine::Graphics::Vector2f scal_off_b = off_b * trans_b.scale;
-    Engine::Graphics::Vector2f scal_hb_a = Engine::Graphics::Vector2f(
-        hb_a.width * trans_a.scale, hb_a.height * trans_a.scale);
-    Engine::Graphics::Vector2f scal_hb_b = Engine::Graphics::Vector2f(
-        hb_b.width * trans_b.scale, hb_b.height * trans_b.scale);
-
-    if (trans_a.x + scal_off_a.x < trans_b.x + scal_hb_b.x + scal_off_b.x &&
-        trans_a.x + scal_hb_a.x + scal_off_a.x > trans_b.x + scal_off_b.x &&
-        trans_a.y + scal_off_a.y < trans_b.y + scal_hb_b.y + scal_off_b.y &&
-        trans_a.y + scal_hb_a.y + scal_off_a.y > trans_b.y + scal_off_b.y) {
-        return true;
-    }
-    return false;
-}
 
 /**
  * @brief Check AABB collision between two entities.
@@ -108,20 +78,20 @@ void ComputeCollision(Eng::sparse_array<Com::Solid> const &solids, int i,
 
     Engine::Graphics::Vector2f scal_off_a = off_a * trans_a.scale;
     Engine::Graphics::Vector2f scal_off_b = off_b * trans_b.scale;
-    Engine::Graphics::Vector2f scaledA = Engine::Graphics::Vector2f(
-        width_computed_a * trans_a.scale, height_computed_a * trans_a.scale);
-    Engine::Graphics::Vector2f scaledB = Engine::Graphics::Vector2f(
-        width_computed_b * trans_b.scale, height_computed_b * trans_b.scale);
+    Engine::Graphics::Vector2f hb_scal_a = Engine::Graphics::Vector2f(
+        width_computed_a * trans_a.scale.x, height_computed_a * trans_a.scale.y);
+    Engine::Graphics::Vector2f hb_scal_b = Engine::Graphics::Vector2f(
+        width_computed_b * trans_b.scale.x, height_computed_b * trans_b.scale.y);
 
     float a_min_x = trans_a.x + scal_off_a.x;
-    float a_max_x = a_min_x + scaledA.x;
+    float a_max_x = a_min_x + hb_scal_a.x;
     float a_min_y = trans_a.y + scal_off_a.y;
-    float a_max_y = a_min_y + scaledA.y;
+    float a_max_y = a_min_y + hb_scal_a.y;
 
     float b_min_x = trans_b.x + scal_off_b.x;
-    float b_max_x = b_min_x + scaledB.x;
+    float b_max_x = b_min_x + hb_scal_b.x;
     float b_min_y = trans_b.y + scal_off_b.y;
-    float b_max_y = b_min_y + scaledB.y;
+    float b_max_y = b_min_y + hb_scal_b.y;
 
     float overlap_x = std::min(a_max_x, b_max_x) - std::max(a_min_x, b_min_x);
     float overlap_y = std::min(a_max_y, b_max_y) - std::max(a_min_y, b_min_y);

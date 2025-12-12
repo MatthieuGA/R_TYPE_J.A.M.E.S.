@@ -78,9 +78,32 @@ void GameScene::InitPlayerLevel(Engine::registry &reg) {
     reg.AddComponent<Component::Drawable>(player_charging_entity,
         Component::Drawable{
             "original_rtype/r-typesheet1.gif", LAYER_ACTORS - 1, 0.0f});
-    reg.AddComponent<Component::AnimatedSprite>(player_charging_entity,
-        Component::AnimatedSprite(
-            33, 33, 0.1f, true, Engine::Graphics::Vector2f(0.0f, 50.0f), 8));
+    
+    Component::AnimatedSprite charging_anim(
+        33, 33, 0.1f, true, Engine::Graphics::Vector2f(0.0f, 50.0f), 8);
+    
+    std::cout << "\n=== CHARGING ENTITY CREATION ===" << std::endl;
+    std::cout << "AnimatedSprite settings:" << std::endl;
+    std::cout << "  - animated flag: " << charging_anim.animated << std::endl;
+    std::cout << "  - currentAnimation: " << charging_anim.currentAnimation << std::endl;
+    
+    auto* default_anim = charging_anim.GetCurrentAnimation();
+    if (default_anim) {
+        std::cout << "Default animation details:" << std::endl;
+        std::cout << "  - path: '" << default_anim->path << "'" << std::endl;
+        std::cout << "  - texture_id: '" << default_anim->texture_id << "'" << std::endl;
+        std::cout << "  - isLoaded: " << default_anim->isLoaded << std::endl;
+        std::cout << "  - frameWidth: " << default_anim->frameWidth << std::endl;
+        std::cout << "  - frameHeight: " << default_anim->frameHeight << std::endl;
+        std::cout << "  - totalFrames: " << default_anim->totalFrames << std::endl;
+        std::cout << "  - frameDuration: " << default_anim->frameDuration << std::endl;
+        std::cout << "  - loop: " << default_anim->loop << std::endl;
+        std::cout << "  - first_frame_position: (" << default_anim->first_frame_position.x 
+                  << ", " << default_anim->first_frame_position.y << ")" << std::endl;
+    }
+    std::cout << "===================================\n" << std::endl;
+    
+    reg.AddComponent<Component::AnimatedSprite>(player_charging_entity, std::move(charging_anim));
 
     // Add the charging entity to the player's children list
     try {
@@ -104,14 +127,14 @@ void GameScene::InitScene(Engine::registry &reg, GameWorld &gameWorld) {
     std::random_device rd;
     std::mt19937 gen(rd());
     for (int i = 0; i < 4; i++) {
-        std::vector<sf::Vector2f> enemy_positions = {{1400.f, 700.f},
+        std::vector<Engine::Graphics::Vector2f> enemy_positions = {{1400.f, 700.f},
             {1100.f, 700.f}, {1100.f, 400.f}, {1400.f, 400.f}};
         AddEnemyLevel(reg, enemy_positions[i], i);
     }
 }
 
 void GameScene::AddEnemyLevel(
-    Engine::registry &reg, sf::Vector2f position, int i) {
+    Engine::registry &reg, Engine::Graphics::Vector2f position, int i) {
     auto enemy_entity = CreateEntityInScene(reg);
     FactoryActors::GetInstance().CreateActor(enemy_entity, reg, "mermaid");
     try {

@@ -37,17 +37,14 @@ void FactoryActors::CreateBasicActor(
     Engine::entity &entity, Engine::registry &reg, EnnemyInfo info) {
     // Add basic enemy components
     reg.AddComponent<Component::Transform>(
-        entity, {0.f, 0.f, 0.0f, info.scale, Component::Transform::CENTER});
+        entity, Component::Transform(0.f, 0.f, 0.0f, info.scale, Component::Transform::CENTER));
     reg.AddComponent<Component::Health>(
         entity, Component::Health(info.health));
     reg.AddComponent<Component::HealthBar>(entity,
-        Component::HealthBar{
-            sf::Vector2f(info.offset_healthbar.x, info.offset_healthbar.y)});
+        Component::HealthBar{info.offset_healthbar});
     reg.AddComponent<Component::HitBox>(
         entity, Component::HitBox{info.hitbox.x, info.hitbox.y});
     reg.AddComponent<Component::Velocity>(entity, Component::Velocity{});
-    reg.AddComponent<Component::Drawable>(
-        entity, Component::Drawable{info.spritePath, LAYER_ACTORS});
     reg.AddComponent<Component::Drawable>(
         entity, Component::Drawable{info.spritePath, LAYER_ACTORS});
 }
@@ -60,7 +57,10 @@ void FactoryActors::CreateBasicEnnemy(
 
     // Add drawable and animated sprite components
     Component::AnimatedSprite animated_sprite(
-        48, 48, 0.2f, true, sf::Vector2f(0.0f, 0.0f), 4);
+        48, 48, 0.2f, true, Engine::Graphics::Vector2f(0.0f, 0.0f), 4);
+    // Set Default animation to use the sprite path from config
+    animated_sprite.AddAnimation(
+        "Default", info.spritePath, 48, 48, 4, 0.2f, true);
     animated_sprite.AddAnimation(
         "Hit", "ennemies/4/Hurt.png", 48, 48, 2, 0.1f, false);
     animated_sprite.AddAnimation(
@@ -73,7 +73,7 @@ void FactoryActors::CreateBasicEnnemy(
 }
 
 void FactoryActors::CreateEnemyProjectile(Engine::registry &reg,
-    sf::Vector2f direction, Component::EnemyShootTag &enemy_shoot, int ownerId,
+    Engine::Graphics::Vector2f direction, Component::EnemyShootTag &enemy_shoot, int ownerId,
     Component::Transform const &transform) {
     auto projectile_entity = reg.SpawnEntity();
     // Add components to projectile entity
@@ -95,7 +95,7 @@ void FactoryActors::CreateEnemyProjectile(Engine::registry &reg,
         projectile_entity, Component::Velocity{direction.x, direction.y});
     reg.AddComponent<Component::ParticleEmitter>(projectile_entity,
         Component::ParticleEmitter(50, 50, RED_HIT, RED_HIT,
-            sf::Vector2f(0.f, 0.f), true, 0.3f, 4.f, sf::Vector2f(-1.f, 0.f),
+            Engine::Graphics::Vector2f(0.f, 0.f), true, 0.3f, 4.f, Engine::Graphics::Vector2f(-1.f, 0.f),
             45.f, 0, 8, 3.0f, 2.0f, -1.0f, LAYER_PARTICLE));
 }
 }  // namespace Rtype::Client

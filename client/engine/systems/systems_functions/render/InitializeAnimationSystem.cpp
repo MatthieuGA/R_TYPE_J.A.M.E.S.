@@ -33,11 +33,25 @@ void InitializeDrawableAnimated(Com::Drawable &drawable,
     }
 
     // Set initial texture rect to first frame
+    // Get the current animation from the animations map
+    auto it = animated_sprite.animations.find(animated_sprite.currentAnimation);
+    if (it == animated_sprite.animations.end()) {
+        // Fallback to "Default" if current animation not found
+        it = animated_sprite.animations.find("Default");
+        if (it == animated_sprite.animations.end() || animated_sprite.animations.empty()) {
+            std::cerr << "ERROR: No animations found for AnimatedSprite" << std::endl;
+            return;
+        }
+        // Use the first available animation as fallback
+        it = animated_sprite.animations.begin();
+    }
+    
+    const auto& anim = it->second;
     drawable.texture_rect = Engine::Graphics::IntRect(
-        static_cast<int>(animated_sprite.first_frame_position.x) +
-            (animated_sprite.current_frame * animated_sprite.frame_width),
-        static_cast<int>(animated_sprite.first_frame_position.y),
-        animated_sprite.frame_width, animated_sprite.frame_height);
+        static_cast<int>(anim.first_frame_position.x) +
+            (anim.current_frame * anim.frameWidth),
+        static_cast<int>(anim.first_frame_position.y),
+        anim.frameWidth, anim.frameHeight);
 
     drawable.is_loaded = true;
 }

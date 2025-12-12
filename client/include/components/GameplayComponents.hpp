@@ -87,7 +87,7 @@ struct FrameEvents {
 struct EnemyShootTag {
     float speed_projectile = 200.0f;
     int damage_projectile = 10;
-    sf::Vector2f offset_shoot_position = sf::Vector2f(0.0f, 0.0f);
+    Engine::Graphics::Vector2f offset_shoot_position = Engine::Graphics::Vector2f(0.0f, 0.0f);
 
     /**
      * @brief Constructor for EnemyShootTag.
@@ -98,12 +98,12 @@ struct EnemyShootTag {
      * @param offset Offset position for shooting
      */
     EnemyShootTag(float speed = 200.0f, int damage = 10,
-        sf::Vector2f offset = sf::Vector2f(0.0f, 0.0f));
+        Engine::Graphics::Vector2f offset = Engine::Graphics::Vector2f(0.0f, 0.0f));
 };
 
 struct Projectile {
     int damage;
-    sf::Vector2f direction;
+    Engine::Graphics::Vector2f direction;
     float speed;
     int ownerId;  // ID of the entity that fired the projectile
     bool isEnemyProjectile = false;
@@ -178,8 +178,8 @@ struct PatternMovement {
           targetEntityId(0) {}
 
     // Constructor for Sine / Wave movement
-    PatternMovement(PatternType type, sf::Vector2f amplitude,
-        sf::Vector2f frequency, sf::Vector2f baseDir, float baseSpeed,
+    PatternMovement(PatternType type, Engine::Graphics::Vector2f amplitude,
+        Engine::Graphics::Vector2f frequency, Engine::Graphics::Vector2f baseDir, float baseSpeed,
         bool loop = true)
         : currentWaypoint(0),
           type(type),
@@ -195,7 +195,7 @@ struct PatternMovement {
           targetEntityId(0) {}
 
     // Constructor for Waypoints movement
-    PatternMovement(std::vector<sf::Vector2f> waypoints, sf::Vector2f baseDir,
+    PatternMovement(std::vector<Engine::Graphics::Vector2f> waypoints, Engine::Graphics::Vector2f baseDir,
         float baseSpeed, std::size_t currentWaypoint = 0, bool loop = true)
         : type(PatternType::Waypoints),
           elapsed(0.f),
@@ -224,7 +224,7 @@ struct PatternMovement {
           waypointThreshold(4.f) {}
 
     // Constructor for Circular movement
-    PatternMovement(float baseSpeed, float radius, sf::Vector2f centerPos)
+    PatternMovement(float baseSpeed, float radius, Engine::Graphics::Vector2f centerPos)
         : currentWaypoint(0),
           type(PatternType::Circular),
           elapsed(0.f),
@@ -246,16 +246,16 @@ struct PatternMovement {
     float elapsed = 0.f;  // Times since pattern started
 
     // Base movement
-    sf::Vector2f spawnPos;  // Spawn position of the entity
-    sf::Vector2f baseDir;   // Base movement direction (normalized)
+    Engine::Graphics::Vector2f spawnPos;  // Spawn position of the entity
+    Engine::Graphics::Vector2f baseDir;   // Base movement direction (normalized)
     float baseSpeed = 0.f;  // Base movement speed
 
     // Sine / Wave parameters
-    sf::Vector2f amplitude;  // Amplitude of the sine wave
-    sf::Vector2f frequency;  // Frequency of the sine wave
+    Engine::Graphics::Vector2f amplitude;  // Amplitude of the sine wave
+    Engine::Graphics::Vector2f frequency;  // Frequency of the sine wave
 
     // Waypoints
-    std::vector<sf::Vector2f> waypoints;
+    std::vector<Engine::Graphics::Vector2f> waypoints;
     std::size_t currentWaypoint = 0;
     float waypointSpeed = 0.f;
     float waypointThreshold = 4.f;  // Distance to consider waypoint reached
@@ -269,19 +269,18 @@ struct PatternMovement {
 };
 
 struct HealthBar {
-    sf::Vector2f offset = {0.f, -10.f};
+    Engine::Graphics::Vector2f offset = {0.f, -10.f};
     float percent = 100.f;
     float percent_delay = 100.f;
     bool is_taking_damage = false;
 
     float timer_damage = 0.f;
 
-    sf::Sprite green_bar;
-    sf::Sprite yellow_bar;
-    sf::Sprite foreground_bar;
-    sf::Texture green_texture;
-    sf::Texture yellow_texture;
-    sf::Texture foreground_texture;
+    // Texture IDs for backend-agnostic rendering
+    std::string green_texture_id = "ui/health_bar/green_bar.png";
+    std::string yellow_texture_id = "ui/health_bar/yellow_bar.png";
+    std::string foreground_texture_id = "ui/health_bar/foreground_bar.png";
+    
     bool is_loaded = false;
 };
 

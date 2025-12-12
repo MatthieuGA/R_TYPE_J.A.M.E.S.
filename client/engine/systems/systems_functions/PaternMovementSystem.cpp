@@ -199,9 +199,9 @@ void WaypointsMovementFunction(Eng::registry &reg, std::size_t entityId,
         return;
     if (patternMovement.currentWaypoint >= patternMovement.waypoints.size())
         patternMovement.currentWaypoint = 0;
-    sf::Vector2f targetWaypoint =
+    Engine::Graphics::Vector2f targetWaypoint =
         patternMovement.waypoints[patternMovement.currentWaypoint];
-    sf::Vector2f direction = {
+    Engine::Graphics::Vector2f direction = {
         targetWaypoint.x - transform.x, targetWaypoint.y - transform.y};
     float distance =
         std::sqrt(direction.x * direction.x + direction.y * direction.y);
@@ -245,7 +245,7 @@ void FollowPlayerMovementFunction(Eng::registry &reg, std::size_t entityId,
             auto &playerTransform = reg.GetComponents<Com::Transform>();
             for (auto &&[i, playerTag, pTransform] :
                 make_indexed_zipper(playerTags, playerTransform)) {
-                sf::Vector2f direction = {
+                Engine::Graphics::Vector2f direction = {
                     pTransform.x - transform.x, pTransform.y - transform.y};
                 float distance = std::sqrt(
                     direction.x * direction.x + direction.y * direction.y);
@@ -264,7 +264,7 @@ void FollowPlayerMovementFunction(Eng::registry &reg, std::size_t entityId,
                 auto &targetTransform = reg.GetComponent<Com::Transform>(
                     reg.EntityFromIndex(patternMovement.targetEntityId));
 
-                sf::Vector2f direction = {targetTransform.x - transform.x,
+                Engine::Graphics::Vector2f direction = {targetTransform.x - transform.x,
                     targetTransform.y - transform.y};
                 float distance = std::sqrt(
                     direction.x * direction.x + direction.y * direction.y);

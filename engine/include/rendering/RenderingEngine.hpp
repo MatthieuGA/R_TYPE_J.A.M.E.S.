@@ -33,11 +33,12 @@ struct Camera {
 
     /**
      * @brief Convert world coordinates to screen coordinates.
+     * Uses top-left origin (no centering offset) to match original coordinate system.
      */
     Vector2f WorldToScreen(const Vector2f &world_pos) const {
         Vector2f screen;
-        screen.x = (world_pos.x - position.x) * zoom + size.x / 2.0f;
-        screen.y = (world_pos.y - position.y) * zoom + size.y / 2.0f;
+        screen.x = (world_pos.x - position.x) * zoom;
+        screen.y = (world_pos.y - position.y) * zoom;
         return screen;
     }
 };
@@ -139,9 +140,9 @@ class RenderingEngine {
      * @param shader_id Optional shader to apply
      */
     void RenderSprite(const std::string &texture_id,
-        const Vector2f &world_position, float world_scale, float rotation,
+        const Vector2f &world_position, const Vector2f &world_scale, float rotation,
         const FloatRect *texture_rect, const Color &color,
-        const Vector2f &origin_offset, const std::string *shader_id = nullptr);
+        const Vector2f &origin_offset, const std::string *shader_id);
 
     /**
      * @brief Render text with transform.
@@ -178,6 +179,7 @@ class RenderingEngine {
     // ===== Resource Management =====
 
     bool LoadTexture(const std::string &id, const std::string &path);
+    bool UnloadTexture(const std::string &id);  // Reference-counted unload
     bool LoadFont(const std::string &id, const std::string &path);
     bool LoadShader(const std::string &id, const std::string &vertex_path,
         const std::string &fragment_path);

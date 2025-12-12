@@ -1,8 +1,11 @@
 #include "game/ClientApplication.hpp"
 
+#include <chrono>
 #include <iostream>
+#include <thread>
 
-#include <SFML/Graphics.hpp>
+#include <graphics/Types.hpp>
+#include <video/IVideoModule.hpp>
 
 #include "game/InitRegistry.hpp"
 #include "game/scenes_management/InitScenes.hpp"
@@ -30,7 +33,10 @@ bool ClientApplication::ConnectToServerWithRetry(
                         !game_world.server_connection_->is_connected();
             ++i) {
             game_world.io_context_.poll();
-            sf::sleep(sf::milliseconds(kPollDelayMs));
+            // TODO(copilot): Replace SFML sleep with backend-agnostic sleep
+            // sf::sleep(sf::milliseconds(kPollDelayMs));
+            std::this_thread::sleep_for(
+                std::chrono::milliseconds(kPollDelayMs));
         }
 
         connected = game_world.server_connection_->is_connected();
@@ -40,7 +46,8 @@ bool ClientApplication::ConnectToServerWithRetry(
                       << " failed. Retrying..." << std::endl;
             // Reset io_context for next attempt
             game_world.io_context_.restart();
-            sf::sleep(sf::milliseconds(kRetryDelayMs));
+            std::this_thread::sleep_for(
+                std::chrono::milliseconds(kRetryDelayMs));
         }
     }
 
@@ -57,23 +64,30 @@ bool ClientApplication::ConnectToServerWithRetry(
 }
 
 void ClientApplication::RunGameLoop(GameWorld &game_world) {
-    while (game_world.window_.isOpen()) {
+    if (!game_world.rendering_engine_) {
+        std::cerr << "[ClientApplication] ERROR: rendering_engine is null!"
+                  << std::endl;
+        return;
+    }
+
+    while (game_world.rendering_engine_->IsWindowOpen()) {
         // Handle window events
-        sf::Event event;
-        while (game_world.window_.pollEvent(event)) {
-            if (event.type == sf::Event::Closed) {
-                game_world.window_.close();
+        Engine::Video::Event event;
+        while (game_world.rendering_engine_->PollEvent(event)) {
+            if (event.type == Engine::Video::EventType::CLOSED) {
+                game_world.rendering_engine_->CloseWindow();
             }
         }
 
         // Calculate delta time at the beginning of the frame
         game_world.last_delta_ =
-            game_world.delta_time_clock_.restart().asSeconds();
+            game_world.delta_time_clock_.Restart().AsSeconds();
 
-        // Clear, update, and render
-        game_world.window_.clear(sf::Color::Black);
+        // Begin frame, update systems, end frame
+        game_world.rendering_engine_->BeginFrame(
+            Engine::Graphics::Color(0, 0, 0, 255));
         game_world.registry_.RunSystems();
-        game_world.window_.display();
+        game_world.rendering_engine_->EndFrame();
     }
 }
 

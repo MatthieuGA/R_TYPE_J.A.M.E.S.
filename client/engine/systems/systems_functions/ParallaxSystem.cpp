@@ -39,7 +39,7 @@ void ParallaxSystem(Eng::registry &reg, const GameWorld &game_world,
             game_world.rendering_engine_->GetTextureSize(drawable.texture_id);
 
         // Wrap around when the texture scrolls off screen
-        if (transform.x <= -(texture_size.x * transform.scale)) {
+        if (transform.x <= -(texture_size.x * transform.scale.x)) {
             transform.x = game_world.window_size_.x - 2.f;
         }
     }

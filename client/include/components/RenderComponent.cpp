@@ -7,7 +7,7 @@ namespace Rtype::Client::Component {
 
 // AnimatedSprite constructors
 AnimatedSprite::AnimatedSprite(int frameWidth, int frameHeight,
-    float frameDuration, bool loop, sf::Vector2f first_frame_position,
+    float frameDuration, bool loop, Engine::Graphics::Vector2f first_frame_position,
     int totalFrames)
     : currentAnimation("Default"), animated(true), elapsedTime(0.0f) {
     Animation defaultAnimation("", frameWidth, frameHeight, totalFrames,
@@ -26,8 +26,8 @@ AnimatedSprite::AnimatedSprite(
 // AnimatedSprite methods
 void AnimatedSprite::AddAnimation(const std::string &name,
     const std::string &path, int frameWidth, int frameHeight, int totalFrames,
-    float frameDuration, bool loop, sf::Vector2f first_frame_position,
-    sf::Vector2f offset) {
+    float frameDuration, bool loop, Engine::Graphics::Vector2f first_frame_position,
+    Engine::Graphics::Vector2f offset) {
     animations[name] = Animation(path, frameWidth, frameHeight, totalFrames,
         frameDuration, loop, first_frame_position, offset);
 }
@@ -76,42 +76,35 @@ const AnimatedSprite::Animation *AnimatedSprite::GetCurrentAnimation() const {
 }
 
 // Text move constructor
+// TODO(copilot): Reimplement using RenderingEngine API - text/font members
+// no longer exist in backend-agnostic Text component
 Text::Text(Text &&other) noexcept
     : content(std::move(other.content)),
-      fontPath(std::move(other.fontPath)),
-      characterSize(other.characterSize),
+      font_path(std::move(other.font_path)),
+      font_id(std::move(other.font_id)),
+      character_size(other.character_size),
       color(other.color),
       opacity(other.opacity),
       z_index(other.z_index),
       offset(other.offset),
-      text(),
-      font(std::move(other.font)),
       is_loaded(other.is_loaded) {
-    text.setFont(font);
-    text.setString(other.text.getString());
-    text.setCharacterSize(other.text.getCharacterSize());
-    text.setFillColor(other.text.getFillColor());
+    // No SFML-specific setup needed
 }
 
 // Text move assignment
+// TODO(copilot): Reimplement using RenderingEngine API
 Text &Text::operator=(Text &&other) noexcept {
     if (this == &other)
         return *this;
     content = std::move(other.content);
-    fontPath = std::move(other.fontPath);
-    characterSize = other.characterSize;
+    font_path = std::move(other.font_path);
+    font_id = std::move(other.font_id);
+    character_size = other.character_size;
     color = other.color;
     opacity = other.opacity;
     z_index = other.z_index;
     offset = other.offset;
-    font = std::move(other.font);
     is_loaded = other.is_loaded;
-
-    text = sf::Text();
-    text.setFont(font);
-    text.setString(other.text.getString());
-    text.setCharacterSize(other.text.getCharacterSize());
-    text.setFillColor(other.text.getFillColor());
 
     return *this;
 }

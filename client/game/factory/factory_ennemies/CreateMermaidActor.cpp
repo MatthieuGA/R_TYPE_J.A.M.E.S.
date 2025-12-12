@@ -13,13 +13,13 @@ void FactoryActors::CreateMermaidActor(
     reg.AddComponent<Component::PatternMovement>(
         entity, Component::PatternMovement(
                     Component::PatternMovement::PatternType::SineHorizontal,
-                    sf::Vector2f(0.f, 50.f), sf::Vector2f(0.f, 1.f),
-                    sf::Vector2f(0.f, 0.f), Rtype::Client::MERMAID_SPEED));
+                    Engine::Graphics::Vector2f(0.f, 50.f), Engine::Graphics::Vector2f(0.f, 1.f),
+                    Engine::Graphics::Vector2f(0.f, 0.f), Rtype::Client::MERMAID_SPEED));
 
     // Add enemy shooting component
     Component::EnemyShootTag enemy_shoot_tag(
         Rtype::Client::MERMAID_PROJECTILE_SPEED,
-        Rtype::Client::MERMAID_PROJECTILE_DAMAGE, sf::Vector2f(-3.0f, -15.0f));
+        Rtype::Client::MERMAID_PROJECTILE_DAMAGE, Engine::Graphics::Vector2f(-3.0f, -15.0f));
 
     // Add frame event with custom action
     reg.AddComponent<Component::FrameEvents>(entity,
@@ -31,7 +31,7 @@ void FactoryActors::CreateMermaidActor(
                 auto &enemy_shoot = reg.GetComponent<Component::EnemyShootTag>(
                     reg.EntityFromIndex(entity_id));
 
-                sf::Vector2f shoot_direction = sf::Vector2f(-1.0f, 0.0f);
+                Engine::Graphics::Vector2f shoot_direction = Engine::Graphics::Vector2f(-1.0f, 0.0f);
                 CreateEnemyProjectile(
                     reg, shoot_direction, enemy_shoot, entity_id, transform);
             } catch (const std::exception &e) {

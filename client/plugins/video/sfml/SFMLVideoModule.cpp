@@ -3,7 +3,7 @@
  * @brief Implementation of SFML video backend.
  */
 
-#include "plugins/video/sfml/SFMLVideoModule.hpp"
+#include "SFMLVideoModule.hpp"
 
 #include <iostream>
 #include <memory>
@@ -149,6 +149,7 @@ bool SFMLVideoModule::LoadTexture(
     const std::string &id, const std::string &path) {
     // Check if texture is already loaded
     if (textures_.find(id) != textures_.end()) {
+        texture_ref_counts_[id]++;  // Increment reference count
         return true;  // Already loaded, no need to reload
     }
 
@@ -159,8 +160,9 @@ bool SFMLVideoModule::LoadTexture(
         return false;
     }
     textures_[id] = texture;
+    texture_ref_counts_[id] = 1;  // Initialize reference count
     std::cout << "[SFMLVideoModule] Loaded texture: " << id << " from " << path
-              << std::endl;
+              << " (refs: 1)" << std::endl;
     return true;
 }
 
@@ -182,10 +184,44 @@ Engine::Video::Vector2f SFMLVideoModule::GetTextureSize(
     return {static_cast<float>(size.x), static_cast<float>(size.y)};
 }
 
+bool SFMLVideoModule::UnloadTexture(const std::string &id) {
+    auto it = textures_.find(id);
+    if (it == textures_.end()) {
+        return false;  // Texture not found
+    }
+
+    // Decrement reference count
+    auto ref_it = texture_ref_counts_.find(id);
+    if (ref_it != texture_ref_counts_.end()) {
+        ref_it->second--;
+        
+        // Only unload if no more references
+        if (ref_it->second <= 0) {
+            std::cout << "[SFMLVideoModule] Unloading texture: " << id << std::endl;
+            textures_.erase(it);
+            texture_ref_counts_.erase(ref_it);
+            return true;
+        } else {
+            std::cout << "[SFMLVideoModule] Decremented texture ref: " << id
+                      << " (refs: " << ref_it->second << ")" << std::endl;
+            return false;  // Still has references
+        }
+    }
+
+    // No ref count tracking (shouldn't happen), unload anyway
+    textures_.erase(it);
+    return true;
+}
+
 // ===== Font Management =====
 
 bool SFMLVideoModule::LoadFont(
     const std::string &id, const std::string &path) {
+    // Check if font is already loaded
+    if (fonts_.find(id) != fonts_.end()) {
+        return true;  // Already loaded, no need to reload
+    }
+
     auto font = std::make_shared<sf::Font>();
     if (!font->loadFromFile(path)) {
         std::cerr << "[SFMLVideoModule] Failed to load font: " << path
@@ -343,10 +379,17 @@ void SFMLVideoModule::DrawCircle(const Engine::Video::Vector2f &center,
 void SFMLVideoModule::DrawVertices(const Engine::Video::Vertex *vertices,
     size_t vertex_count, int primitive_type,
     const Engine::Video::RenderStates &states) {
+    std::cout << "[DEBUG] SFMLVideoModule::DrawVertices called with " << vertex_count 
+              << " vertices, type=" << primitive_type << std::endl;
+    
     if (!window_ || !vertices || vertex_count == 0) {
+        std::cout << "[DEBUG] DrawVertices: Early return (window=" << (window_ ? "valid" : "null")
+                  << ", vertices=" << (vertices ? "valid" : "null")
+                  << ", count=" << vertex_count << ")" << std::endl;
         return;
     }
 
+    std::cout << "[DEBUG] DrawVertices: Converting vertices..." << std::endl;
     // Convert to SFML vertices
     std::vector<sf::Vertex> sf_vertices(vertex_count);
     for (size_t i = 0; i < vertex_count; ++i) {
@@ -376,17 +419,26 @@ void SFMLVideoModule::DrawVertices(const Engine::Video::Vertex *vertices,
             break;
     }
 
+    std::cout << "[DEBUG] DrawVertices: Conversion complete, creating render states" << std::endl;
+    
     // Create render states
     sf::RenderStates sf_states;
     if (states.texture) {
         sf_states.texture =
             reinterpret_cast<const sf::Texture *>(states.texture);
+        std::cout << "[DEBUG] DrawVertices: Texture set" << std::endl;
     }
     if (states.shader) {
         sf_states.shader = reinterpret_cast<const sf::Shader *>(states.shader);
+        std::cout << "[DEBUG] DrawVertices: Shader set" << std::endl;
     }
 
+    std::cout << "[DEBUG] DrawVertices: Calling window_->draw with " << vertex_count 
+              << " vertices, type=" << sf_type << std::endl;
+    
     window_->draw(sf_vertices.data(), vertex_count, sf_type, sf_states);
+    
+    std::cout << "[DEBUG] DrawVertices: Draw completed successfully" << std::endl;
 }
 
 // ===== Shader Management =====

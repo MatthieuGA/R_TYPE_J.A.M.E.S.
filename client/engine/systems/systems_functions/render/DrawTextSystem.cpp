@@ -60,18 +60,19 @@ void RenderOneTextEntity(Eng::sparse_array<Com::Transform> const &transforms,
     world_position.x += text->offset.x;
     world_position.y += text->offset.y;
 
-    // Apply cumulative scale with font size scaling
-    float world_scale =
+    // Apply cumulative scale with font size scaling (use x component for uniform)
+    Engine::Graphics::Vector2f cumulative_scale =
         CalculateCumulativeScale(transform.value(), transforms);
-    world_scale /= FONT_SIZE_SCALE;
+    float world_scale = cumulative_scale.x / FONT_SIZE_SCALE;
 
     // Apply color with opacity
     Engine::Graphics::Color final_color = text->color;
     final_color.a = static_cast<uint8_t>(text->opacity * 255);
 
     // Calculate character size with scale
-    unsigned int scaled_char_size =
-        static_cast<unsigned int>(text->character_size * world_scale);
+    // First multiply by FONT_SIZE_SCALE to match old system behavior
+    unsigned int scaled_char_size = static_cast<unsigned int>(
+        text->character_size * FONT_SIZE_SCALE * world_scale);
 
     // Get text bounds to calculate origin
     Engine::Graphics::FloatRect text_bounds =

@@ -44,7 +44,7 @@ FrameEvents::FrameEvents(std::vector<FrameEvent> events)
 
 // ------------------------------ EnemyShootTag -----------------------------
 
-EnemyShootTag::EnemyShootTag(float speed, int damage, sf::Vector2f offset)
+EnemyShootTag::EnemyShootTag(float speed, int damage, Engine::Graphics::Vector2f offset)
     : speed_projectile(speed),
       damage_projectile(damage),
       offset_shoot_position(offset) {}

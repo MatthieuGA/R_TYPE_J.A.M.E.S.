@@ -159,8 +159,10 @@ void InitializeDrawable(Com::Drawable &drawable, GameWorld &game_world) {
         return;
     }
 
-    std::cout << "[DrawableSystem] Loading texture: '" << drawable.sprite_path
-              << "' with ID: '" << drawable.texture_id << "'" << std::endl;
+    // Ensure texture_id is set (use sprite_path if empty)
+    if (drawable.texture_id.empty() && !drawable.sprite_path.empty()) {
+        drawable.texture_id = drawable.sprite_path;
+    }
 
     // Load texture via rendering engine
     bool loaded = game_world.rendering_engine_->LoadTexture(
@@ -171,8 +173,6 @@ void InitializeDrawable(Com::Drawable &drawable, GameWorld &game_world) {
                   << drawable.sprite_path << " (ID: " << drawable.texture_id
                   << ")" << std::endl;
     } else {
-        std::cout << "[DrawableSystem] Successfully loaded texture: "
-                  << drawable.texture_id << std::endl;
     }
 
     drawable.is_loaded = loaded;
@@ -189,12 +189,13 @@ void InitializeDrawable(Com::Drawable &drawable, GameWorld &game_world) {
  * @param animated_sprites Sparse array of AnimatedSprite components.
  * @param game_world The game world containing the rendering engine.
  * @param i The index of the entity to render.
+ * @param culled_count Reference to counter for culled entities.
  */
 void RenderOneEntity(Eng::sparse_array<Com::Transform> const &transforms,
     Eng::sparse_array<Com::Drawable> &drawables,
     Eng::sparse_array<Com::Shader> &shaders,
     Eng::sparse_array<Com::AnimatedSprite> const &animated_sprites,
-    GameWorld &game_world, int i) {
+    GameWorld &game_world, int i, size_t &culled_count) {
     auto &transform = transforms[i];
     auto &drawable = drawables[i];
 
@@ -215,10 +216,10 @@ void RenderOneEntity(Eng::sparse_array<Com::Transform> const &transforms,
         }
     }
 
-    float world_scale =
+    Engine::Graphics::Vector2f world_scale =
         CalculateCumulativeScale(transform.value(), transforms);
 
-    // Calculate origin based on sprite size (texture_rect or full texture)
+    // Calculate sprite size for culling and origin
     Engine::Graphics::Vector2f sprite_size;
     if (drawable->texture_rect.width > 0 &&
         drawable->texture_rect.height > 0) {
@@ -231,6 +232,17 @@ void RenderOneEntity(Eng::sparse_array<Com::Transform> const &transforms,
         sprite_size =
             game_world.rendering_engine_->GetTextureSize(drawable->texture_id);
     }
+
+    // TODO: Re-enable frustum culling when Camera::IsVisible is implemented
+    // For now, render all entities
+    // Engine::Graphics::Vector2f scaled_size(
+    //     sprite_size.x * world_scale.x, sprite_size.y * world_scale.y);
+    // if (!game_world.rendering_engine_->GetCamera().IsVisible(
+    //         world_position, scaled_size)) {
+    //     culled_count++;  // Track culled entities for statistics
+    //     return;  // Entity is off-screen, skip rendering
+    // }
+
     Engine::Graphics::Vector2f origin_offset =
         GetOffsetFromTransform(transform.value(), sprite_size);
 
@@ -259,7 +271,7 @@ void RenderOneEntity(Eng::sparse_array<Com::Transform> const &transforms,
         shader_id_ptr = &shader_id_str;
 
         // Set time uniform for wave effects
-        float time = game_world.total_time_clock_.getElapsedTime().asSeconds();
+        float time = game_world.total_time_clock_.GetElapsedTime().AsSeconds();
         game_world.rendering_engine_->SetShaderParameter(
             shader_id_str, "time", time);
 
@@ -301,30 +313,53 @@ void DrawableSystem(Eng::registry &reg, GameWorld &game_world,
         int index;
         int z_index;
         bool is_particle;
+        std::string texture_id;  // For texture-based sorting
     };
 
     std::vector<RenderItem> render_order;
     static int frame_count = 0;
     bool debug = (frame_count++ % 60 == 0);
 
+    // Render statistics
+    static size_t total_entities = 0;
+    static size_t culled_entities = 0;
+    static size_t rendered_sprites = 0;
+    static size_t rendered_particles = 0;
+    total_entities = 0;
+    culled_entities = 0;
+    rendered_sprites = 0;
+    rendered_particles = 0;
+
     // Initialize and collect drawable entities
     for (auto &&[i, transform, drawable] :
         make_indexed_zipper(transforms, drawables)) {
-        if (!drawable.is_loaded) {
+        // Skip initialization for animated sprites (handled by InitializeDrawableAnimatedSystem)
+        if (!drawable.is_loaded && !animated_sprites.has(i)) {
             InitializeDrawable(drawable, game_world);
         }
+        
+        // Debug: Check if enemies are being skipped
+        if (animated_sprites.has(i) && !drawable.is_loaded && debug) {
+            std::cout << "[DrawableSystem] WARNING: Entity " << i 
+                      << " has AnimatedSprite but drawable NOT loaded! texture_id='" 
+                      << drawable.texture_id << "'" << std::endl;
+        }
+        
         if (drawable.is_loaded) {
             RenderItem item;
             item.index = i;
             item.z_index = drawable.z_index;
             item.is_particle = false;
+            item.texture_id = drawable.texture_id;
             render_order.push_back(item);
+            total_entities++;
 
-            if (debug && drawable.texture_id.find("r-typesheet2") !=
-                             std::string::npos) {
+            if (debug && (drawable.texture_id.find("r-typesheet2") != std::string::npos ||
+                         drawable.texture_id.find("Idle") != std::string::npos)) {
                 std::cout << "[DrawableSystem] Entity " << i
-                          << " projectile ready to draw: pos=(" << transform.x
-                          << "," << transform.y << "), z=" << drawable.z_index
+                          << " ready to draw: texture_id='" << drawable.texture_id 
+                          << "', pos=(" << transform.x << "," << transform.y 
+                          << "), z=" << drawable.z_index
                           << ", rect=(" << drawable.texture_rect.width << "x"
                           << drawable.texture_rect.height << ")" << std::endl;
             }
@@ -339,14 +374,20 @@ void DrawableSystem(Eng::registry &reg, GameWorld &game_world,
             item.index = i;
             item.z_index = emitter.z_index;
             item.is_particle = true;
+            item.texture_id = "";  // Particles don't have texture
             render_order.push_back(item);
+            total_entities++;
         }
     }
 
-    // Sort by z_index (unified rendering order)
+    // Sort by z_index first, then by texture_id to reduce texture binding overhead
     std::sort(render_order.begin(), render_order.end(),
         [](const RenderItem &a, const RenderItem &b) {
-            return a.z_index < b.z_index;
+            if (a.z_index != b.z_index) {
+                return a.z_index < b.z_index;
+            }
+            // Within same z_index, sort by texture to batch draws
+            return a.texture_id < b.texture_id;
         });
 
     // Render in sorted order
@@ -354,6 +395,7 @@ void DrawableSystem(Eng::registry &reg, GameWorld &game_world,
         if (item.is_particle) {
             auto &transform = transforms[item.index];
             auto &emitter = emitters[item.index];
+            rendered_particles++;
 
             // Handle duration logic
             if (emitter->duration_active != -1.0f) {
@@ -369,8 +411,18 @@ void DrawableSystem(Eng::registry &reg, GameWorld &game_world,
             DrawEmitter(emitter.value(), game_world);
         } else {
             RenderOneEntity(transforms, drawables, shaders, animated_sprites,
-                game_world, item.index);
+                game_world, item.index, culled_entities);
+            rendered_sprites++;
         }
+    }
+
+    // Print render statistics every 120 frames (~2 seconds at 60fps)
+    if (frame_count % 120 == 0) {
+        std::cout << "[RenderStats] Total: " << total_entities
+                  << " | Rendered: " << rendered_sprites << " sprites + "
+                  << rendered_particles << " particles | Culled: " << culled_entities
+                  << " (" << (total_entities > 0 ? (culled_entities * 100 / total_entities) : 0)
+                  << "%)" << std::endl;
     }
 }
 

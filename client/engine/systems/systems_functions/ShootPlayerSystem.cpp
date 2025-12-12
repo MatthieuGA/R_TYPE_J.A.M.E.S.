@@ -72,9 +72,11 @@ void createChargedProjectile(
     reg.AddComponent<Component::Drawable>(projectile_entity,
         Component::Drawable(
             "original_rtype/r-typesheet1.gif", LAYER_PROJECTILE));
+    // Use frame 25 like old engine - InitializeAnimationSystem now calculates 2D grid
     Component::AnimatedSprite animSprite(29, 22, 25);
     animSprite.AddAnimation("Death", "original_rtype/r-typesheet1.gif", 33, 31,
         6, 0.03f, false, Engine::Graphics::Vector2f(68.0f, 342.0f));
+    
     reg.AddComponent<Component::AnimatedSprite>(
         projectile_entity, std::move(animSprite));
     reg.AddComponent<Component::Projectile>(projectile_entity,

@@ -4,47 +4,57 @@
 #include "engine/systems/InitRegistrySystems.hpp"
 
 namespace Rtype::Client {
+
 /**
- * @brief Set the texture rectangle for the current animation frame.
+ * @brief Load and apply an animation's texture if not already loaded.
  *
- * This directly updates the drawable's texture_rect (IntRect) based on
- * the animation frame and layout. The actual drawing happens in
- * DrawableSystem using the backend.
- *
- * @param anim_sprite Animated sprite state (current_frame, frame_width/height)
- * @param drawable Drawable component to update texture_rect on
- * @param game_world Game world for accessing video backend
+ * @param animation Animation to load texture for
+ * @param drawable Drawable component to update
+ * @param game_world Game world for backend access
+ * @return true if texture is loaded, false otherwise
  */
-void SetFrame(Com::AnimatedSprite &anim_sprite, Com::Drawable &drawable,
-    GameWorld &game_world) {
-    if (!game_world.rendering_engine_ || anim_sprite.frame_width == 0) {
-        return;
+bool ApplyAnimationTexture(Com::AnimatedSprite::Animation &animation,
+    Com::Drawable &drawable, GameWorld &game_world) {
+    if (!game_world.rendering_engine_) {
+        return false;
     }
 
-    // Get texture size from backend
-    Engine::Graphics::Vector2f texture_size =
-        game_world.rendering_engine_->GetTextureSize(drawable.texture_id);
-
-    if (texture_size.x == 0) {
-        return;
+    // If animation has no path, use the drawable's original texture
+    if (animation.path.empty()) {
+        // Fallback to drawable's sprite_path (for Default animation)
+        if (!drawable.sprite_path.empty() && !drawable.texture_id.empty()) {
+            return drawable.is_loaded;
+        }
+        return false;
     }
 
-    const int columns =
-        static_cast<int>(texture_size.x) / anim_sprite.frame_width;
-    if (columns == 0) {
-        return;
+    // If animation isn't loaded yet, load it now
+    if (!animation.isLoaded) {
+        std::string texture_id = animation.texture_id.empty() 
+            ? animation.path 
+            : animation.texture_id;
+        
+        bool loaded = game_world.rendering_engine_->LoadTexture(
+            texture_id, animation.path);
+        
+        if (!loaded) {
+            std::cerr << "[AnimationSystem] ERROR: Failed to load animation texture: "
+                      << animation.path << " (ID: " << texture_id << ")" << std::endl;
+            return false;
+        }
+        
+        animation.texture_id = texture_id;
+        animation.isLoaded = true;
+        std::cout << "[AnimationSystem] Loaded animation texture: " << texture_id << std::endl;
     }
 
-    const int left =
-        static_cast<int>(anim_sprite.first_frame_position.x) +
-        (anim_sprite.current_frame % columns) * anim_sprite.frame_width;
-    const int top =
-        static_cast<int>(anim_sprite.first_frame_position.y) +
-        (anim_sprite.current_frame / columns) * anim_sprite.frame_height;
+    // Update drawable to use this animation's texture
+    if (animation.isLoaded) {
+        drawable.texture_id = animation.texture_id;
+        return true;
+    }
 
-    // Update drawable's texture_rect (will be used by DrawableSystem)
-    drawable.texture_rect = Engine::Graphics::IntRect(
-        left, top, anim_sprite.frame_width, anim_sprite.frame_height);
+    return false;
 }
 
 /**
@@ -52,59 +62,70 @@ void SetFrame(Com::AnimatedSprite &anim_sprite, Com::Drawable &drawable,
  * current frame stored in the Animation.
  *
  * @param animation Animation state (current_frame, frameWidth/Height)
- * @param drawable Drawable component containing the texture and sprite
+ * @param drawable Drawable component to update texture_rect
+ * @param game_world Game world for accessing rendering engine
  */
-void SetFrame(
-    Com::AnimatedSprite::Animation &animation, Com::Drawable &drawable) {
-    // Determine which texture to use for calculating columns
-    sf::Vector2u textureSize;
-    if (animation.isLoaded) {
-        textureSize = animation.texture.getSize();
-    } else {
-        textureSize = drawable.texture.getSize();
+void SetFrame(Com::AnimatedSprite::Animation &animation,
+    Com::Drawable &drawable, GameWorld &game_world) {
+    if (!game_world.rendering_engine_ || animation.frameWidth == 0) {
+        return;
     }
 
-    if (textureSize.x == 0 || animation.frameWidth == 0)
+    // Use animation's texture_id if it has one, otherwise fall back to drawable's texture_id
+    std::string texture_id = !animation.texture_id.empty() 
+        ? animation.texture_id 
+        : drawable.texture_id;
+
+    // Get texture size from rendering engine
+    Engine::Graphics::Vector2f texture_size =
+        game_world.rendering_engine_->GetTextureSize(texture_id);
+
+    if (texture_size.x == 0) {
         return;
-    const int columns = textureSize.x / animation.frameWidth;
-    if (columns == 0)
+    }
+
+    const int columns =
+        static_cast<int>(texture_size.x) / animation.frameWidth;
+    if (columns == 0) {
         return;
-    const int left =
-        animation.first_frame_position.x +
-        (animation.current_frame % columns) * animation.frameWidth;
-    const int top =
-        animation.first_frame_position.y +
-        (animation.current_frame / columns) * animation.frameHeight;
-    drawable.sprite.setTextureRect(
-        sf::IntRect(left, top, animation.frameWidth, animation.frameHeight));
+    }
+
+    const int left = static_cast<int>(animation.first_frame_position.x) +
+                     (animation.current_frame % columns) * animation.frameWidth;
+    const int top = static_cast<int>(animation.first_frame_position.y) +
+                    (animation.current_frame / columns) * animation.frameHeight;
+
+    // Update drawable's texture_rect (will be used by DrawableSystem)
+    drawable.texture_rect = Engine::Graphics::IntRect(
+        left, top, animation.frameWidth, animation.frameHeight);
 }
 
 /**
  * @brief Advance the animation to the next frame and update the
  * drawable rectangle.
  *
- * @param anim_sprite Animated sprite state to advance
+ * @param animation Animation state to advance
  * @param drawable Drawable component to update
  * @param game_world Game world for backend access
  */
-void NextFrame(Com::AnimatedSprite &anim_sprite, Com::Drawable &drawable,
-    GameWorld &game_world) {
-    anim_sprite.current_frame++;
-    if (anim_sprite.current_frame >= anim_sprite.total_frames) {
-        if (anim_sprite.loop) {
-            anim_sprite.current_frame = 0;
+void NextFrame(Com::AnimatedSprite::Animation &animation,
+    Com::Drawable &drawable, GameWorld &game_world) {
+    animation.current_frame++;
+    if (animation.current_frame >= animation.totalFrames) {
+        if (animation.loop) {
+            animation.current_frame = 0;
         } else {
-            anim_sprite.current_frame = anim_sprite.total_frames - 1;
+            animation.current_frame = animation.totalFrames - 1;
         }
     }
-    SetFrame(anim_sprite, drawable, game_world);
+    SetFrame(animation, drawable, game_world);
 }
 
 /**
  * @brief System that updates all animated sprites each frame.
  *
  * Accumulates elapsed time and advances frames according to each
- * AnimatedSprite::frame_duration. If an animation is not looping it will
+ * animation's frameDuration. If an animation is not looping it will
  * remain on the last frame.
  *
  * @param reg Engine registry (unused in current implementation)
@@ -116,32 +137,82 @@ void NextFrame(Com::AnimatedSprite &anim_sprite, Com::Drawable &drawable,
 void AnimationSystem(Eng::registry &reg, GameWorld &game_world, const float dt,
     Eng::sparse_array<Com::AnimatedSprite> &anim_sprites,
     Eng::sparse_array<Com::Drawable> &drawables) {
-    static int frame_count = 0;
-    bool debug = (frame_count++ % 60 == 0);
+    static int debug_counter = 0;
+    bool debug = (debug_counter++ % 60 == 0);
+    
     for (auto &&[i, anim_sprite, drawable] :
         make_indexed_zipper(anim_sprites, drawables)) {
-        if (debug &&
-            drawable.texture_id.find("r-typesheet2") != std::string::npos) {
-            std::cout << "[AnimationSystem] Entity " << i
-                      << ": animated=" << anim_sprite.animated
-                      << ", loaded=" << drawable.is_loaded
-                      << ", frame=" << anim_sprite.current_frame << std::endl;
+        // Get current animation
+        auto *animation = anim_sprite.GetCurrentAnimation();
+        if (animation == nullptr) {
+            continue;
         }
-        if (!drawable.is_loaded || !anim_sprite.animated) {
-            SetFrame(anim_sprite, drawable, game_world);
+        
+        // Debug charging animation (opacity changes, 8 frames)
+        static int frame_counter = 0;
+        bool is_charging = (animation->totalFrames == 8 && animation->frameWidth == 33);
+        if (is_charging && (frame_counter++ % 60 == 0 || drawable.opacity > 0.0f)) {
+            std::cout << "[AnimationSystem] Charging entity " << i 
+                      << ": animated=" << anim_sprite.animated
+                      << ", is_loaded=" << drawable.is_loaded
+                      << ", opacity=" << drawable.opacity
+                      << ", current_frame=" << animation->current_frame
+                      << ", path='" << animation->path << "'"
+                      << ", texture_id='" << animation->texture_id << "'" << std::endl;
+        }
+
+        // Load animation texture if not loaded yet (handles both animated and static)
+        if (!ApplyAnimationTexture(*animation, drawable, game_world)) {
             continue;
         }
 
-        anim_sprite.elapsed_time += dt;
-        if (anim_sprite.frame_duration > 0.0f) {
-            while (anim_sprite.elapsed_time >= anim_sprite.frame_duration) {
-                anim_sprite.elapsed_time -= anim_sprite.frame_duration;
-                NextFrame(anim_sprite, drawable, game_world);
-                if (!anim_sprite.loop &&
-                    anim_sprite.current_frame == anim_sprite.total_frames - 1)
+        // Always set the frame to ensure correct texture rect (even for static sprites)
+        SetFrame(*animation, drawable, game_world);
+
+        // Only advance frames if drawable is loaded AND animated flag is true
+        if (!drawable.is_loaded || !anim_sprite.animated) {
+            continue;
+        }
+
+        // Update animation timing
+        anim_sprite.elapsedTime += dt;
+        if (animation->frameDuration > 0.0f) {
+            while (anim_sprite.elapsedTime >= animation->frameDuration) {
+                anim_sprite.elapsedTime -= animation->frameDuration;
+                
+                // Check if animation finished before advancing
+                if (!animation->loop &&
+                    animation->current_frame == animation->totalFrames - 1) {
+                    // Animation finished, switch back to default or next queued animation
+                    std::cout << "[AnimationSystem] Animation '" << anim_sprite.currentAnimation 
+                              << "' finished for entity " << i << ", switching to Default" << std::endl;
+                    
+                    if (anim_sprite.animationQueue.empty()) {
+                        anim_sprite.SetCurrentAnimation("Default", true);
+                    } else {
+                        // Handle animation queue
+                        auto [nextAnim, frame] = anim_sprite.animationQueue.back();
+                        anim_sprite.animationQueue.erase(anim_sprite.animationQueue.end() - 1);
+                        anim_sprite.SetCurrentAnimation(nextAnim, false, false);
+                        auto *newAnim = anim_sprite.GetCurrentAnimation();
+                        if (newAnim != nullptr) {
+                            newAnim->current_frame = frame;
+                        }
+                    }
+                    
+                    // Re-apply the new animation texture and frame
+                    auto *newAnimation = anim_sprite.GetCurrentAnimation();
+                    if (newAnimation != nullptr && newAnimation->isLoaded) {
+                        drawable.texture_id = newAnimation->texture_id;
+                        SetFrame(*newAnimation, drawable, game_world);
+                    }
                     break;
+                } else {
+                    NextFrame(*animation, drawable, game_world);
+                }
             }
         }
     }
 }
+
 }  // namespace Rtype::Client

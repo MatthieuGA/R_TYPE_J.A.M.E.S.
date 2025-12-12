@@ -28,6 +28,9 @@ int main(int argc, char *argv[]) {
         RC::ClientConfig config = RC::CommandLineParser::Parse(argc, argv);
 
         // Display connection parameters
+        std::cout << "[DEBUG] =================================" << std::endl;
+        std::cout << "[DEBUG] Starting R-Type Client with Debug" << std::endl;
+        std::cout << "[DEBUG] =================================" << std::endl;
         std::cout << "[Client] Starting R-Type client...\n"
                   << "[Client] Server IP: " << config.server_ip << "\n"
                   << "[Client] TCP Port: " << config.tcp_port << "\n"

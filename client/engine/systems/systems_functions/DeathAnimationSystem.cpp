@@ -25,13 +25,19 @@ void DeathAnimationSystem(Eng::registry &reg,
         // Check if entity has animated sprite and death animation
         if (animated_sprites.has(i)) {
             auto &anim_sprite = animated_sprites[i];
+            
+            std::cout << "[DeathAnimSystem] Entity " << i 
+                      << " current anim: " << anim_sprite->currentAnimation
+                      << ", animated: " << anim_sprite->animated << std::endl;
 
             if (anim_sprite->currentAnimation == "Default") {
                 // Remove the entity entirely
+                std::cout << "[DeathAnimSystem] Killing entity " << i << std::endl;
                 reg.KillEntity(entity);
             }
         } else {
             // If no animated sprite, remove immediately
+            std::cout << "[DeathAnimSystem] Killing entity " << i << " (no anim sprite)" << std::endl;
             reg.KillEntity(entity);
         }
     }

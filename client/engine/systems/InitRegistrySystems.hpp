@@ -39,7 +39,7 @@ void AnimationSystem(Eng::registry &reg, GameWorld &game_world, const float dt,
     Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
     Eng::sparse_array<Com::Drawable> &drawables);
 
-void LoadAnimationSystem(Eng::registry &reg,
+void LoadAnimationSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::AnimatedSprite> &animated_sprites);
 
 void InitializeShaderSystem(Eng::registry &reg, GameWorld &game_world,
