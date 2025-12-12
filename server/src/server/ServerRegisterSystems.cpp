@@ -20,8 +20,6 @@ void Server::RegisterSystems() {
                 auto &vel = velocities[i];
                 pos->x += vel->vx * TICK_RATE_MS / 1000.0f;
                 pos->y += vel->vy * TICK_RATE_MS / 1000.0f;
-                printf(
-                    "Entity %zu moved to (%.2f, %.2f)\n", i, pos->x, pos->y);
             }
         });
 

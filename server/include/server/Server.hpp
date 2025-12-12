@@ -78,6 +78,8 @@ class Server {
      */
     Engine::registry &GetRegistry();
 
+    void SetupEntityiesGame();
+
  private:
     /**
      * @brief Register all ECS components
