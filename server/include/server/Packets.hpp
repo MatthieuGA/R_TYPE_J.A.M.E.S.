@@ -58,15 +58,15 @@ struct ConnectReqPacket {
 /**
  * @brief TCP 0x02: CONNECT_ACK - Server responds to login
  * RFC Section 5.2
- * Payload: 4 bytes (PlayerId u8 + Status u8 + Reserved u8[2])
+ * Payload: 4 bytes (PlayerId u8 + Status u8 + UdpPort u16)
  */
 struct ConnectAckPacket {
     static constexpr PacketType type = PacketType::ConnectAck;
     static constexpr size_t PAYLOAD_SIZE = 4;
 
     PlayerId player_id;
-    uint8_t status;  // 0=OK, 1=ServerFull, 2=BadUsername, 3=InGame
-    std::array<uint8_t, 2> reserved;
+    uint8_t status;     // 0=OK, 1=ServerFull, 2=BadUsername, 3=InGame
+    uint16_t udp_port;  // Server's UDP port (for client to send to)
 
     enum Status : uint8_t {
         OK = 0,
@@ -83,16 +83,14 @@ struct ConnectAckPacket {
         buffer.WriteHeader(MakeHeader());
         buffer.WriteUint8(player_id.value);
         buffer.WriteUint8(status);
-        buffer.WriteUint8(reserved[0]);
-        buffer.WriteUint8(reserved[1]);
+        buffer.WriteUint16(udp_port);
     }
 
     static ConnectAckPacket Deserialize(PacketBuffer &buffer) {
         ConnectAckPacket packet;
         packet.player_id = PlayerId{buffer.ReadUint8()};
         packet.status = buffer.ReadUint8();
-        packet.reserved[0] = buffer.ReadUint8();
-        packet.reserved[1] = buffer.ReadUint8();
+        packet.udp_port = buffer.ReadUint16();
         return packet;
     }
 };

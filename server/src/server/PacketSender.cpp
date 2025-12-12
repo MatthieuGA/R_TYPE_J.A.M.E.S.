@@ -1,22 +1,26 @@
 #include "server/PacketSender.hpp"
 
+#include <algorithm>
 #include <iostream>
 #include <memory>
 #include <vector>
 
+#include "server/Network.hpp"
 #include "server/PacketBuffer.hpp"
 
 namespace server {
 
-PacketSender::PacketSender(ClientConnectionManager &connection_manager)
-    : connection_manager_(connection_manager) {}
+PacketSender::PacketSender(
+    ClientConnectionManager &connection_manager, Network &network)
+    : connection_manager_(connection_manager), network_(network) {}
 
 void PacketSender::SendConnectAck(ClientConnection &client,
-    network::ConnectAckPacket::Status status, uint8_t assigned_player_id) {
+    network::ConnectAckPacket::Status status, uint8_t assigned_player_id,
+    uint16_t udp_port) {
     network::ConnectAckPacket ack;
     ack.player_id = network::PlayerId{assigned_player_id};
     ack.status = status;
-    ack.reserved = {0, 0};
+    ack.udp_port = udp_port;
 
     network::PacketBuffer buffer;
     ack.Serialize(buffer);
@@ -24,7 +28,7 @@ void PacketSender::SendConnectAck(ClientConnection &client,
     auto data_copy = std::make_shared<std::vector<uint8_t>>(data);
 
     client.tcp_socket_.async_send(boost::asio::buffer(*data_copy),
-        [data_copy, assigned_player_id, status](
+        [data_copy, assigned_player_id, status, udp_port](
             boost::system::error_code ec, std::size_t) {
             if (ec) {
                 std::cerr << "Error sending CONNECT_ACK: " << ec.message()
@@ -33,7 +37,7 @@ void PacketSender::SendConnectAck(ClientConnection &client,
                 std::cout << "Sent CONNECT_ACK: PlayerId="
                           << static_cast<int>(assigned_player_id)
                           << ", Status=" << static_cast<int>(status)
-                          << std::endl;
+                          << ", UdpPort=" << udp_port << std::endl;
             }
         });
 }
@@ -76,6 +80,26 @@ void PacketSender::SendGameStart() {
 
     std::cout << "GAME_START packet sent to all authenticated players"
               << std::endl;
+}
+
+void PacketSender::SendSnapshot(network::EntityState entity_state) {
+    // Send entity state snapshot to all authenticated players via UDP
+    network::PacketBuffer buffer;
+    entity_state.Serialize(buffer);
+    const auto &data = buffer.Data();
+    auto &clients = connection_manager_.GetClients();
+    for (auto &[client_id, client_ref] : clients) {
+        if (client_ref.player_id_ == 0) {
+            continue;  // Skip unauthenticated clients
+        }
+        // Use UDP for snapshots (unreliable but fast gameplay data)
+        std::array<uint8_t, Network::MAX_UDP_PACKET_SIZE> udp_buffer{};
+        std::copy(data.begin(), data.end(), udp_buffer.begin());
+        network_.SendUdp(udp_buffer, data.size(), client_ref.udp_endpoint_);
+
+        std::cout << "Sent SNAPSHOT to Player "
+                  << static_cast<int>(client_ref.player_id_) << std::endl;
+    }
 }
 
 }  // namespace server

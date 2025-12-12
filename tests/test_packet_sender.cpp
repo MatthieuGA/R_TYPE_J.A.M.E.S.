@@ -13,10 +13,13 @@
 #include <memory>
 #include <string>
 #include <thread>
+#include <utility>
 
 #include <boost/asio.hpp>
 
 #include "server/ClientConnectionManager.hpp"
+#include "server/Config.hpp"
+#include "server/Network.hpp"
 #include "server/PacketSender.hpp"
 #include "server/Packets.hpp"
 
@@ -27,15 +30,25 @@ class PacketSenderTest : public ::testing::Test {
  protected:
     void SetUp() override {
         io_context_ = std::make_unique<boost::asio::io_context>();
+        config_ = std::make_unique<server::Config>();
+        config_->SetUdpAddress("127.0.0.1");
+        config_->SetUdpPort(0);  // Use random available port
+        config_->SetTcpAddress("127.0.0.1");
+        config_->SetTcpPort(0);  // Use random available port
+        config_->SetMaxPlayers(4);
+
+        network_ = std::make_unique<server::Network>(*config_, *io_context_);
         connection_manager_ =
             std::make_unique<server::ClientConnectionManager>(4);
-        packet_sender_ =
-            std::make_unique<server::PacketSender>(*connection_manager_);
+        packet_sender_ = std::make_unique<server::PacketSender>(
+            *connection_manager_, *network_);
     }
 
     void TearDown() override {
         packet_sender_.reset();
         connection_manager_.reset();
+        network_.reset();
+        config_.reset();
         io_context_.reset();
     }
 
@@ -64,6 +77,8 @@ class PacketSenderTest : public ::testing::Test {
     }
 
     std::unique_ptr<boost::asio::io_context> io_context_;
+    std::unique_ptr<server::Config> config_;
+    std::unique_ptr<server::Network> network_;
     std::unique_ptr<server::ClientConnectionManager> connection_manager_;
     std::unique_ptr<server::PacketSender> packet_sender_;
 };
@@ -73,7 +88,8 @@ class PacketSenderTest : public ::testing::Test {
 // ============================================================================
 
 TEST_F(PacketSenderTest, ConstructorSucceeds) {
-    EXPECT_NO_THROW(server::PacketSender sender(*connection_manager_));
+    EXPECT_NO_THROW(
+        server::PacketSender sender(*connection_manager_, *network_));
 }
 
 // ============================================================================

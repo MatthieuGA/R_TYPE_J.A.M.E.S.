@@ -5,14 +5,16 @@
 #include <string>
 #include <vector>
 
+#include "server/Network.hpp"
 #include "server/PacketSender.hpp"
 
 namespace server {
 
-PacketHandler::PacketHandler(
-    ClientConnectionManager &connection_manager, PacketSender &packet_sender)
+PacketHandler::PacketHandler(ClientConnectionManager &connection_manager,
+    PacketSender &packet_sender, Network &network)
     : connection_manager_(connection_manager),
       packet_sender_(packet_sender),
+      network_(network),
       on_game_start_(nullptr) {}
 
 void PacketHandler::RegisterHandlers() {
@@ -148,8 +150,8 @@ void PacketHandler::HandleConnectReq(
     if (username.empty() ||
         username.find_first_not_of('\0') == std::string::npos) {
         std::cerr << "Rejected: Empty username" << std::endl;
-        packet_sender_.SendConnectAck(
-            client, network::ConnectAckPacket::BadUsername);
+        packet_sender_.SendConnectAck(client,
+            network::ConnectAckPacket::BadUsername, 0, network_.GetUdpPort());
         return;  // Keep connection alive for retry
     }
 
@@ -157,8 +159,8 @@ void PacketHandler::HandleConnectReq(
     if (connection_manager_.IsUsernameTaken(username)) {
         std::cerr << "Rejected: Username '" << username << "' already taken"
                   << std::endl;
-        packet_sender_.SendConnectAck(
-            client, network::ConnectAckPacket::BadUsername);
+        packet_sender_.SendConnectAck(client,
+            network::ConnectAckPacket::BadUsername, 0, network_.GetUdpPort());
         return;  // Keep connection alive for retry
     }
 
@@ -168,8 +170,8 @@ void PacketHandler::HandleConnectReq(
                   << connection_manager_.GetAuthenticatedCount() << "/"
                   << static_cast<int>(connection_manager_.GetMaxClients())
                   << " players)" << std::endl;
-        packet_sender_.SendConnectAck(
-            client, network::ConnectAckPacket::ServerFull);
+        packet_sender_.SendConnectAck(client,
+            network::ConnectAckPacket::ServerFull, 0, network_.GetUdpPort());
         return;  // Keep connection alive for retry
     }
 
@@ -180,14 +182,14 @@ void PacketHandler::HandleConnectReq(
     if (player_id == 0) {
         std::cerr << "Failed to authenticate client " << client.client_id_
                   << std::endl;
-        packet_sender_.SendConnectAck(
-            client, network::ConnectAckPacket::BadUsername);
+        packet_sender_.SendConnectAck(client,
+            network::ConnectAckPacket::BadUsername, 0, network_.GetUdpPort());
         return;
     }
 
-    // Send success response with assigned player_id
-    packet_sender_.SendConnectAck(
-        client, network::ConnectAckPacket::OK, player_id);
+    // Send success response with assigned player_id and server's UDP port
+    packet_sender_.SendConnectAck(client, network::ConnectAckPacket::OK,
+        player_id, network_.GetUdpPort());
 }
 
 void PacketHandler::HandleReadyStatus(

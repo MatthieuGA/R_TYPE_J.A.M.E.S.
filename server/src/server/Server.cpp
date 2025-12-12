@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <utility>
+#include <vector>
 
 namespace server {
 
@@ -13,8 +14,8 @@ Server::Server(Config &config, boost::asio::io_context &io_context)
       tick_timer_(io_context),
       running_(false),
       connection_manager_(config.GetMaxPlayers()),
-      packet_sender_(connection_manager_),
-      packet_handler_(connection_manager_, packet_sender_) {
+      packet_sender_(connection_manager_, network_),
+      packet_handler_(connection_manager_, packet_sender_, network_) {
     // Set game start callback
     packet_handler_.SetGameStartCallback([this]() { Start(); });
 }
@@ -35,6 +36,19 @@ void Server::Initialize() {
     network_.GetTcp().SetAcceptCallback(
         [this](boost::asio::ip::tcp::socket socket) {
             HandleTcpAccept(std::move(socket));
+        });
+
+    // Register UDP receive callback to update client endpoints
+    network_.SetUdpReceiveCallback(
+        [this](const boost::asio::ip::udp::endpoint &endpoint,
+            const std::vector<uint8_t> &data) {
+            // Update the client's UDP endpoint when we receive from them
+            ClientConnection *client =
+                connection_manager_.FindClientByIp(endpoint.address());
+            if (client) {
+                connection_manager_.UpdateClientUdpEndpoint(
+                    client->client_id_, endpoint);
+            }
         });
 
     std::cout << "Server initialized successfully" << std::endl;
@@ -83,6 +97,7 @@ void Server::SetupGameTick() {
 void Server::Update() {
     registry_.run_systems();
 
+    SendSnapshotsToAllClients();
     // TODO(someone): Process network messages from the SPSC queue
     // TODO(someone): Send state updates to clients
 }

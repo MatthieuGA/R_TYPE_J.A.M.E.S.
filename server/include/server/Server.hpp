@@ -78,8 +78,6 @@ class Server {
      */
     Engine::registry &GetRegistry();
 
-    void SetupEntityiesGame();
-
  private:
     /**
      * @brief Register all ECS components
@@ -95,6 +93,10 @@ class Server {
      * @brief Setup the game tick timer
      */
     void SetupGameTick();
+
+    void SendSnapshotsToAllClients();
+
+    void SetupEntityiesGame();
 
     /**
      * @brief Handle new TCP connection from acceptor

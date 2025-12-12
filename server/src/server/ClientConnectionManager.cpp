@@ -172,4 +172,32 @@ uint8_t ClientConnectionManager::AssignPlayerId() {
     throw std::runtime_error("All player IDs exhausted");
 }
 
+void ClientConnectionManager::UpdateClientUdpEndpoint(
+    uint32_t client_id, const boost::asio::ip::udp::endpoint &endpoint) {
+    auto it = clients_.find(client_id);
+    if (it != clients_.end()) {
+        it->second.udp_endpoint_ = endpoint;
+        std::cout << "Updated UDP endpoint for client " << client_id << " to "
+                  << endpoint.address().to_string() << ":" << endpoint.port()
+                  << std::endl;
+    }
+}
+
+ClientConnection *ClientConnectionManager::FindClientByIp(
+    const boost::asio::ip::address &ip_address) {
+    for (auto &[client_id, connection] : clients_) {
+        try {
+            auto tcp_remote_endpoint =
+                connection.tcp_socket_.remote_endpoint();
+            if (tcp_remote_endpoint.address() == ip_address) {
+                return &connection;
+            }
+        } catch (const std::exception &e) {
+            // Socket might be disconnected
+            continue;
+        }
+    }
+    return nullptr;
+}
+
 }  // namespace server

@@ -3,6 +3,7 @@
 
 #include "server/CoreComponents.hpp"
 #include "server/GameplayComponents.hpp"
+#include "server/NetworkComponents.hpp"
 #include "server/Server.hpp"
 
 namespace server {
@@ -14,6 +15,7 @@ void Server::SetupEntityiesGame() {
         registry_.add_component(
             entity, Component::Transform{50.0f, 400.0f, 0.0f, {1.0f, 1.0f}});
         registry_.add_component(entity, Component::Velocity{0.0f, 0.0f});
+        registry_.add_component(entity, Component::NetworkId{i});
         std::cout << "Created entity for Player" << static_cast<int>(i)
                   << std::endl;
     }

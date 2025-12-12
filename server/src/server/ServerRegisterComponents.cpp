@@ -2,6 +2,7 @@
 
 #include "server/CoreComponents.hpp"
 #include "server/GameplayComponents.hpp"
+#include "server/NetworkComponents.hpp"
 #include "server/Server.hpp"
 
 namespace server {
@@ -25,6 +26,7 @@ void Server::RegisterComponents() {
     registry_.RegisterComponent<Component::StatsGame>();
     registry_.RegisterComponent<Component::ParrallaxLayer>();
     registry_.RegisterComponent<Component::AnimationDeath>();
+    registry_.RegisterComponent<Component::NetworkId>();
 
     std::cout << "Registered all components" << std::endl;
 }

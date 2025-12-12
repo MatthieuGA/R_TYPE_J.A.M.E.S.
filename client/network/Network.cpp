@@ -219,17 +219,25 @@ void ServerConnection::AsyncReceiveTCP() {
 
 void ServerConnection::HandleConnectAck(const std::vector<uint8_t> &data) {
     if (data.size() <
-        4) {  // Payload is 4 bytes: PlayerId + Status + Reserved[2]
+        4) {  // Payload is 4 bytes: PlayerId + Status + UdpPort(u16)
         std::cerr << "[Network] CONNECT_ACK malformed" << std::endl;
         return;
     }
     uint8_t pid = data[0];     // PlayerId is first
     uint8_t status = data[1];  // Status is second
+    uint16_t server_udp_port =
+        ReadLe16(data.data() + 2);  // Server's UDP port (little-endian)
+
     if (status == 0x00) {
         player_id_.store(pid);
         connected_.store(true);
+
+        // Update server UDP endpoint with the port from CONNECT_ACK
+        server_udp_endpoint_ = boost::asio::ip::udp::endpoint(
+            boost::asio::ip::make_address(server_ip_), server_udp_port);
+
         std::cout << "[Network] Connected. PlayerId=" << static_cast<int>(pid)
-                  << std::endl;
+                  << ", ServerUdpPort=" << server_udp_port << std::endl;
     } else {
         std::cerr << "[Network] CONNECT_ACK failed. Status="
                   << static_cast<int>(status) << std::endl;

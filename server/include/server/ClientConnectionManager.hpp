@@ -39,10 +39,21 @@ struct ClientConnection {
         : client_id_(cid),
           player_id_(pid),
           tcp_socket_(std::move(socket)),
-          udp_endpoint_(boost::asio::ip::udp::endpoint()),
           last_activity_(std::chrono::steady_clock::now()),
           ready_(false) {
         username_.reserve(32);  // Match CONNECT_REQ username size
+
+        // Initialize UDP endpoint with client's IP from TCP connection
+        // Use a default UDP port; will be updated when receiving UDP packets
+        try {
+            auto tcp_remote_endpoint = tcp_socket_.remote_endpoint();
+            udp_endpoint_ = boost::asio::ip::udp::endpoint(
+                tcp_remote_endpoint.address(),
+                8000);  // Default UDP port for clients; will be updated later
+        } catch (const std::exception &e) {
+            // Fallback: create invalid endpoint that will be updated later
+            udp_endpoint_ = boost::asio::ip::udp::endpoint();
+        }
     }
 
     /**
@@ -182,6 +193,26 @@ class ClientConnectionManager {
      * @return const std::unordered_map<uint32_t, ClientConnection>&
      */
     const std::unordered_map<uint32_t, ClientConnection> &GetClients() const;
+
+    /**
+     * @brief Update a client's UDP endpoint based on their IP and receiving
+     * port
+     *
+     * @param client_id Internal client ID
+     * @param endpoint The UDP endpoint (IP and port) the client is sending
+     * from
+     */
+    void UpdateClientUdpEndpoint(
+        uint32_t client_id, const boost::asio::ip::udp::endpoint &endpoint);
+
+    /**
+     * @brief Find client by IP address (to update UDP endpoint)
+     *
+     * @param ip_address Client's IP address
+     * @return ClientConnection* Pointer to client if found, nullptr otherwise
+     */
+    ClientConnection *FindClientByIp(
+        const boost::asio::ip::address &ip_addres);
 
  private:
     /**

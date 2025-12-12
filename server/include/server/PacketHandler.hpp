@@ -13,8 +13,9 @@
 
 namespace server {
 
-// Forward declaration
+// Forward declarations
 class PacketSender;
+class Network;
 
 /**
  * @brief Handles receiving, dispatching and processing of incoming TCP packets
@@ -53,9 +54,10 @@ class PacketHandler {
      *
      * @param connection_manager Reference to the connection manager
      * @param packet_sender Reference to the packet sender for responses
+     * @param network Reference to network handler for UDP port info
      */
     PacketHandler(ClientConnectionManager &connection_manager,
-        PacketSender &packet_sender);
+        PacketSender &packet_sender, Network &network);
 
     /**
      * @brief Register all packet type handlers
@@ -160,6 +162,7 @@ class PacketHandler {
     // References to other components (not owned)
     ClientConnectionManager &connection_manager_;
     PacketSender &packet_sender_;
+    Network &network_;
 
     // Callback for game start
     GameStartCallback on_game_start_;
