@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# R-TYPE Build Script for Linux
+# R-TYPE Debug Build Script for Linux
 # Requires: CMake, C++ Compiler (GCC/Clang), Git
 
 set -e  # Exit on error
 
 echo "=========================================="
-echo "R-TYPE Build Script (vcpkg)"
+echo "R-TYPE Debug Build Script (vcpkg)"
 echo "=========================================="
 echo ""
 
@@ -130,8 +130,14 @@ mkdir -p build
 cd build
 
 echo "=========================================="
-echo "Configuring with CMake..."
+echo "Configuring with CMake (DEBUG MODE)..."
 echo "=========================================="
+echo ""
+echo "Debug flags enabled:"
+echo "  ✓ DEBUG_PARTICLES=ON"
+echo "  ✓ DEBUG_RENDERING=ON"
+echo "  ✓ DEBUG_NETWORK=ON"
+echo "  ✓ CMAKE_BUILD_TYPE=Debug"
 echo ""
 
 # Check that a build program (make or ninja) exists for CMake's default generators
@@ -141,19 +147,19 @@ if ! command -v make &> /dev/null && ! command -v ninja &> /dev/null; then
     exit 1
 fi
 
-# Configure with CMake (Production build - no debug flags)
+# Configure with CMake (Debug build with all debug flags enabled)
 cmake .. \
     -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN_FILE" \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DDEBUG_PARTICLES=OFF \
-    -DDEBUG_RENDERING=OFF \
-    -DDEBUG_NETWORK=OFF
+    -DCMAKE_BUILD_TYPE=Debug \
+    -DDEBUG_PARTICLES=ON \
+    -DDEBUG_RENDERING=ON \
+    -DDEBUG_NETWORK=ON
 
 testExitStatus $? "CMake configuration"
 
 echo ""
 echo "=========================================="
-echo "Building..."
+echo "Building (Debug)..."
 echo "=========================================="
 echo ""
 
@@ -165,15 +171,20 @@ echo "Building with $NUM_JOBS parallel jobs (CPU cores: $NUM_CORES)"
 echo ""
 
 # Build with maximum parallelization
-cmake --build . --config Release -j${NUM_JOBS}
+cmake --build . --config Debug -j${NUM_JOBS}
 testExitStatus $? "Build"
 
 cd ..
 
 echo ""
 echo "========================================="
-echo "✓ Build completed successfully!"
+echo "✓ Debug Build completed successfully!"
 echo "========================================="
+echo ""
+echo "Debug flags enabled:"
+echo "  ✓ Particle rendering debug output"
+echo "  ✓ General rendering debug output"
+echo "  ✓ Network debug output"
 echo ""
 echo "Build artifacts:"
 echo "  Client: build/client/r-type_client"
@@ -187,4 +198,7 @@ echo "  cd build/client && ./r-type_client"
 echo ""
 echo "To run the server:"
 echo "  cd build/server && ./r-type_server"
+echo ""
+echo "Note: Debug builds include extensive console output."
+echo "For production builds without debug output, use ./scripts/build.sh"
 echo ""
