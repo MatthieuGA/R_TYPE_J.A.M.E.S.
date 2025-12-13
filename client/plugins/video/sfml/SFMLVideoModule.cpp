@@ -3,7 +3,7 @@
  * @brief Implementation of SFML video backend.
  */
 
-#include "SFMLVideoModule.hpp"
+#include "video/sfml/SFMLVideoModule.hpp"
 
 #include <iostream>
 #include <memory>
@@ -35,12 +35,18 @@ bool SFMLVideoModule::Initialize(
 
         std::cout << "[SFMLVideoModule] Initialized: " << width << "x"
                   << height << " - " << title << std::endl;
+        is_initialized_ = true;
         return true;
     } catch (const std::exception &e) {
         std::cerr << "[SFMLVideoModule] Initialization failed: " << e.what()
                   << std::endl;
+        is_initialized_ = false;
         return false;
     }
+}
+
+bool SFMLVideoModule::IsInitialized() const {
+    return is_initialized_ && window_ && window_->isOpen();
 }
 
 void SFMLVideoModule::Shutdown() {
@@ -51,6 +57,7 @@ void SFMLVideoModule::Shutdown() {
     textures_.clear();
     fonts_.clear();
     shaders_.clear();
+    is_initialized_ = false;
     std::cout << "[SFMLVideoModule] Shutdown complete" << std::endl;
 }
 
@@ -150,7 +157,7 @@ bool SFMLVideoModule::LoadTexture(
     // Check if texture is already loaded
     if (textures_.find(id) != textures_.end()) {
         texture_ref_counts_[id]++;  // Increment reference count
-        return true;  // Already loaded, no need to reload
+        return true;                // Already loaded, no need to reload
     }
 
     auto texture = std::make_shared<sf::Texture>();
@@ -194,10 +201,11 @@ bool SFMLVideoModule::UnloadTexture(const std::string &id) {
     auto ref_it = texture_ref_counts_.find(id);
     if (ref_it != texture_ref_counts_.end()) {
         ref_it->second--;
-        
+
         // Only unload if no more references
         if (ref_it->second <= 0) {
-            std::cout << "[SFMLVideoModule] Unloading texture: " << id << std::endl;
+            std::cout << "[SFMLVideoModule] Unloading texture: " << id
+                      << std::endl;
             textures_.erase(it);
             texture_ref_counts_.erase(ref_it);
             return true;
@@ -258,6 +266,17 @@ Engine::Video::FloatRect SFMLVideoModule::GetTextBounds(
     sf::FloatRect bounds = sf_text.getLocalBounds();
     return Engine::Video::FloatRect(
         bounds.left, bounds.top, bounds.width, bounds.height);
+}
+
+bool SFMLVideoModule::UnloadFont(const std::string &id) {
+    auto it = fonts_.find(id);
+    if (it == fonts_.end()) {
+        return false;  // Font not found
+    }
+
+    std::cout << "[SFMLVideoModule] Unloading font: " << id << std::endl;
+    fonts_.erase(it);
+    return true;
 }
 
 // ===== Sprite Drawing =====
@@ -379,11 +398,13 @@ void SFMLVideoModule::DrawCircle(const Engine::Video::Vector2f &center,
 void SFMLVideoModule::DrawVertices(const Engine::Video::Vertex *vertices,
     size_t vertex_count, int primitive_type,
     const Engine::Video::RenderStates &states) {
-    std::cout << "[DEBUG] SFMLVideoModule::DrawVertices called with " << vertex_count 
-              << " vertices, type=" << primitive_type << std::endl;
-    
+    std::cout << "[DEBUG] SFMLVideoModule::DrawVertices called with "
+              << vertex_count << " vertices, type=" << primitive_type
+              << std::endl;
+
     if (!window_ || !vertices || vertex_count == 0) {
-        std::cout << "[DEBUG] DrawVertices: Early return (window=" << (window_ ? "valid" : "null")
+        std::cout << "[DEBUG] DrawVertices: Early return (window="
+                  << (window_ ? "valid" : "null")
                   << ", vertices=" << (vertices ? "valid" : "null")
                   << ", count=" << vertex_count << ")" << std::endl;
         return;
@@ -419,8 +440,10 @@ void SFMLVideoModule::DrawVertices(const Engine::Video::Vertex *vertices,
             break;
     }
 
-    std::cout << "[DEBUG] DrawVertices: Conversion complete, creating render states" << std::endl;
-    
+    std::cout
+        << "[DEBUG] DrawVertices: Conversion complete, creating render states"
+        << std::endl;
+
     // Create render states
     sf::RenderStates sf_states;
     if (states.texture) {
@@ -433,12 +456,13 @@ void SFMLVideoModule::DrawVertices(const Engine::Video::Vertex *vertices,
         std::cout << "[DEBUG] DrawVertices: Shader set" << std::endl;
     }
 
-    std::cout << "[DEBUG] DrawVertices: Calling window_->draw with " << vertex_count 
-              << " vertices, type=" << sf_type << std::endl;
-    
+    std::cout << "[DEBUG] DrawVertices: Calling window_->draw with "
+              << vertex_count << " vertices, type=" << sf_type << std::endl;
+
     window_->draw(sf_vertices.data(), vertex_count, sf_type, sf_states);
-    
-    std::cout << "[DEBUG] DrawVertices: Draw completed successfully" << std::endl;
+
+    std::cout << "[DEBUG] DrawVertices: Draw completed successfully"
+              << std::endl;
 }
 
 // ===== Shader Management =====
@@ -476,19 +500,24 @@ void SFMLVideoModule::SetShaderParameter(
     it->second->setUniform(name, value);
 }
 
+bool SFMLVideoModule::UnloadShader(const std::string &id) {
+    auto it = shaders_.find(id);
+    if (it == shaders_.end()) {
+        return false;  // Shader not found
+    }
+
+    std::cout << "[SFMLVideoModule] Unloading shader: " << id << std::endl;
+    shaders_.erase(it);
+    return true;
+}
+
 // ===== Metadata =====
 
 std::string SFMLVideoModule::GetModuleName() const {
     return "SFML Video Module";
 }
 
-// ===== Compatibility Bridge =====
-
-void *SFMLVideoModule::GetNativeWindow() const {
-    return static_cast<void *>(window_.get());
-}
-
-// ===== Helper Functions =====
+// ===== Helper Functions ===
 
 sf::Color SFMLVideoModule::ToSFMLColor(
     const Engine::Video::Color &color) const {

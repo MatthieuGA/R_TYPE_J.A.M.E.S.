@@ -33,8 +33,6 @@ bool ClientApplication::ConnectToServerWithRetry(
                         !game_world.server_connection_->is_connected();
             ++i) {
             game_world.io_context_.poll();
-            // TODO(copilot): Replace SFML sleep with backend-agnostic sleep
-            // sf::sleep(sf::milliseconds(kPollDelayMs));
             std::this_thread::sleep_for(
                 std::chrono::milliseconds(kPollDelayMs));
         }
@@ -65,29 +63,47 @@ bool ClientApplication::ConnectToServerWithRetry(
 
 void ClientApplication::RunGameLoop(GameWorld &game_world) {
     if (!game_world.rendering_engine_) {
-        std::cerr << "[ClientApplication] ERROR: rendering_engine is null!"
-                  << std::endl;
-        return;
+        std::cerr
+            << "[ClientApplication] CRITICAL ERROR: rendering_engine is null!"
+            << std::endl;
+        throw std::runtime_error(
+            "ClientApplication: Cannot run game loop with null "
+            "rendering_engine");
     }
 
-    while (game_world.rendering_engine_->IsWindowOpen()) {
-        // Handle window events
-        Engine::Video::Event event;
-        while (game_world.rendering_engine_->PollEvent(event)) {
-            if (event.type == Engine::Video::EventType::CLOSED) {
-                game_world.rendering_engine_->CloseWindow();
+    if (!game_world.rendering_engine_->IsInitialized()) {
+        std::cerr << "[ClientApplication] CRITICAL ERROR: rendering_engine is "
+                     "not initialized!"
+                  << std::endl;
+        throw std::runtime_error(
+            "ClientApplication: Cannot run game loop with uninitialized "
+            "rendering_engine");
+    }
+
+    try {
+        while (game_world.rendering_engine_->IsWindowOpen()) {
+            // Handle window events
+            Engine::Video::Event event;
+            while (game_world.rendering_engine_->PollEvent(event)) {
+                if (event.type == Engine::Video::EventType::CLOSED) {
+                    game_world.rendering_engine_->CloseWindow();
+                }
             }
+
+            // Calculate delta time at the beginning of the frame
+            game_world.last_delta_ =
+                game_world.delta_time_clock_.Restart().AsSeconds();
+
+            // Begin frame, update systems, end frame
+            game_world.rendering_engine_->BeginFrame(
+                Engine::Graphics::Color(0, 0, 0, 255));
+            game_world.registry_.RunSystems();
+            game_world.rendering_engine_->EndFrame();
         }
-
-        // Calculate delta time at the beginning of the frame
-        game_world.last_delta_ =
-            game_world.delta_time_clock_.Restart().AsSeconds();
-
-        // Begin frame, update systems, end frame
-        game_world.rendering_engine_->BeginFrame(
-            Engine::Graphics::Color(0, 0, 0, 255));
-        game_world.registry_.RunSystems();
-        game_world.rendering_engine_->EndFrame();
+    } catch (const std::exception &e) {
+        std::cerr << "[ClientApplication] ERROR in game loop: " << e.what()
+                  << std::endl;
+        throw;  // Re-throw to be caught by main
     }
 }
 

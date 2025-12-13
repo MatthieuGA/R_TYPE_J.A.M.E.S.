@@ -44,6 +44,7 @@ class SFMLVideoModule : public Engine::Video::IVideoModule {
     const void *GetTexture(const std::string &id) const override;
     Engine::Video::Vector2f GetTextureSize(
         const std::string &id) const override;
+    bool UnloadTexture(const std::string &id) override;
 
     // Font Management
     bool LoadFont(const std::string &id, const std::string &path) override;
@@ -51,6 +52,7 @@ class SFMLVideoModule : public Engine::Video::IVideoModule {
     Engine::Video::FloatRect GetTextBounds(const std::string &text,
         const std::string &font_id,
         unsigned int character_size) const override;
+    bool UnloadFont(const std::string &id) override;
 
     // Sprite Drawing
     void DrawSprite(const std::string &texture_id,
@@ -85,18 +87,21 @@ class SFMLVideoModule : public Engine::Video::IVideoModule {
         const std::string &fragment_path) override;
     void SetShaderParameter(const std::string &shader_id,
         const std::string &name, float value) override;
+    bool UnloadShader(const std::string &id) override;
+
+    // Lifecycle Query
+    bool IsInitialized() const override;
 
     // Metadata
     std::string GetModuleName() const override;
 
-    // Compatibility Bridge
-    void *GetNativeWindow() const override;
-
  private:
+    bool is_initialized_ = false;
     std::unique_ptr<sf::RenderWindow> window_;
     std::unordered_map<std::string, std::shared_ptr<sf::Texture>> textures_;
     std::unordered_map<std::string, std::shared_ptr<sf::Font>> fonts_;
     std::unordered_map<std::string, std::shared_ptr<sf::Shader>> shaders_;
+    std::unordered_map<std::string, size_t> texture_ref_counts_;
 
     // Helper conversion functions
     sf::Color ToSFMLColor(const Engine::Video::Color &color) const;

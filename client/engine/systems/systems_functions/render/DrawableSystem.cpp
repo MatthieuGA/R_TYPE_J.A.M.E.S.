@@ -233,15 +233,15 @@ void RenderOneEntity(Eng::sparse_array<Com::Transform> const &transforms,
             game_world.rendering_engine_->GetTextureSize(drawable->texture_id);
     }
 
-    // TODO: Re-enable frustum culling when Camera::IsVisible is implemented
-    // For now, render all entities
-    // Engine::Graphics::Vector2f scaled_size(
-    //     sprite_size.x * world_scale.x, sprite_size.y * world_scale.y);
-    // if (!game_world.rendering_engine_->GetCamera().IsVisible(
-    //         world_position, scaled_size)) {
-    //     culled_count++;  // Track culled entities for statistics
-    //     return;  // Entity is off-screen, skip rendering
-    // }
+    // Frustum culling: skip rendering if off-screen
+    Engine::Graphics::Vector2f scaled_size(
+        sprite_size.x * std::abs(world_scale.x),
+        sprite_size.y * std::abs(world_scale.y));
+    if (!game_world.rendering_engine_->GetCamera().IsVisible(
+            world_position, scaled_size)) {
+        culled_count++;  // Track culled entities for statistics
+        return;          // Entity is off-screen, skip rendering
+    }
 
     Engine::Graphics::Vector2f origin_offset =
         GetOffsetFromTransform(transform.value(), sprite_size);
@@ -333,18 +333,20 @@ void DrawableSystem(Eng::registry &reg, GameWorld &game_world,
     // Initialize and collect drawable entities
     for (auto &&[i, transform, drawable] :
         make_indexed_zipper(transforms, drawables)) {
-        // Skip initialization for animated sprites (handled by InitializeDrawableAnimatedSystem)
+        // Skip initialization for animated sprites (handled by
+        // InitializeDrawableAnimatedSystem)
         if (!drawable.is_loaded && !animated_sprites.has(i)) {
             InitializeDrawable(drawable, game_world);
         }
-        
+
         // Debug: Check if enemies are being skipped
         if (animated_sprites.has(i) && !drawable.is_loaded && debug) {
-            std::cout << "[DrawableSystem] WARNING: Entity " << i 
-                      << " has AnimatedSprite but drawable NOT loaded! texture_id='" 
-                      << drawable.texture_id << "'" << std::endl;
+            std::cout
+                << "[DrawableSystem] WARNING: Entity " << i
+                << " has AnimatedSprite but drawable NOT loaded! texture_id='"
+                << drawable.texture_id << "'" << std::endl;
         }
-        
+
         if (drawable.is_loaded) {
             RenderItem item;
             item.index = i;
@@ -354,12 +356,14 @@ void DrawableSystem(Eng::registry &reg, GameWorld &game_world,
             render_order.push_back(item);
             total_entities++;
 
-            if (debug && (drawable.texture_id.find("r-typesheet2") != std::string::npos ||
-                         drawable.texture_id.find("Idle") != std::string::npos)) {
+            if (debug &&
+                (drawable.texture_id.find("r-typesheet2") !=
+                        std::string::npos ||
+                    drawable.texture_id.find("Idle") != std::string::npos)) {
                 std::cout << "[DrawableSystem] Entity " << i
-                          << " ready to draw: texture_id='" << drawable.texture_id 
-                          << "', pos=(" << transform.x << "," << transform.y 
-                          << "), z=" << drawable.z_index
+                          << " ready to draw: texture_id='"
+                          << drawable.texture_id << "', pos=(" << transform.x
+                          << "," << transform.y << "), z=" << drawable.z_index
                           << ", rect=(" << drawable.texture_rect.width << "x"
                           << drawable.texture_rect.height << ")" << std::endl;
             }
@@ -380,7 +384,8 @@ void DrawableSystem(Eng::registry &reg, GameWorld &game_world,
         }
     }
 
-    // Sort by z_index first, then by texture_id to reduce texture binding overhead
+    // Sort by z_index first, then by texture_id to reduce texture binding
+    // overhead
     std::sort(render_order.begin(), render_order.end(),
         [](const RenderItem &a, const RenderItem &b) {
             if (a.z_index != b.z_index) {
@@ -420,8 +425,11 @@ void DrawableSystem(Eng::registry &reg, GameWorld &game_world,
     if (frame_count % 120 == 0) {
         std::cout << "[RenderStats] Total: " << total_entities
                   << " | Rendered: " << rendered_sprites << " sprites + "
-                  << rendered_particles << " particles | Culled: " << culled_entities
-                  << " (" << (total_entities > 0 ? (culled_entities * 100 / total_entities) : 0)
+                  << rendered_particles
+                  << " particles | Culled: " << culled_entities << " ("
+                  << (total_entities > 0
+                             ? (culled_entities * 100 / total_entities)
+                             : 0)
                   << "%)" << std::endl;
     }
 }

@@ -85,6 +85,15 @@ struct Color {
     Color(uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha = 255)
         : r(red), g(green), b(blue), a(alpha) {}
 
+    // Equality operators for testing
+    constexpr bool operator==(const Color &other) const {
+        return r == other.r && g == other.g && b == other.b && a == other.a;
+    }
+
+    constexpr bool operator!=(const Color &other) const {
+        return !(*this == other);
+    }
+
     // Predefined colors
     static const Color White;
     static const Color Black;

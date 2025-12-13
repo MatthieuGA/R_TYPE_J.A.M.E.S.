@@ -88,6 +88,11 @@ struct Event {
  * @brief Pure virtual interface for video backend modules.
  *
  * All video backend plugins must implement this interface.
+ *
+ * @note Thread Safety: This interface is NOT thread-safe by default.
+ * All methods must be called from the same thread (typically the
+ * main/rendering thread). Implementations may provide thread-safe variants,
+ * but this is not guaranteed.
  */
 class IVideoModule {
  public:
@@ -105,6 +110,13 @@ class IVideoModule {
      */
     virtual bool Initialize(
         unsigned int width, unsigned int height, const std::string &title) = 0;
+
+    /**
+     * @brief Check if the backend is initialized.
+     *
+     * @return true if initialized, false otherwise
+     */
+    virtual bool IsInitialized() const = 0;
 
     /**
      * @brief Shutdown the video backend.
@@ -198,6 +210,18 @@ class IVideoModule {
      */
     virtual Vector2f GetTextureSize(const std::string &id) const = 0;
 
+    /**
+     * @brief Unload a texture and free GPU memory.
+     *
+     * If reference counting is used, decrements the reference count
+     * and only unloads when count reaches zero.
+     *
+     * @param id Texture identifier
+     * @return true if texture was unloaded, false if not found or still
+     * referenced
+     */
+    virtual bool UnloadTexture(const std::string &id) = 0;
+
     // ===== Font Management =====
 
     /**
@@ -227,6 +251,14 @@ class IVideoModule {
      */
     virtual FloatRect GetTextBounds(const std::string &text,
         const std::string &font_id, unsigned int character_size) const = 0;
+
+    /**
+     * @brief Unload a font and free memory.
+     *
+     * @param id Font identifier
+     * @return true if font was unloaded, false if not found
+     */
+    virtual bool UnloadFont(const std::string &id) = 0;
 
     // ===== Sprite Drawing =====
 
@@ -321,6 +353,14 @@ class IVideoModule {
     virtual void SetShaderParameter(const std::string &shader_id,
         const std::string &name, float value) = 0;
 
+    /**
+     * @brief Unload a shader and free resources.
+     *
+     * @param id Shader identifier
+     * @return true if shader was unloaded, false if not found
+     */
+    virtual bool UnloadShader(const std::string &id) = 0;
+
     // ===== Metadata =====
 
     /**
@@ -329,18 +369,6 @@ class IVideoModule {
      * @return Human-readable module name
      */
     virtual std::string GetModuleName() const = 0;
-
-    // ===== Compatibility Bridge =====
-
-    /**
-     * @brief Get underlying platform-specific window handle.
-     *
-     * This is a compatibility bridge for legacy code. Returns nullptr
-     * if not applicable to the backend implementation.
-     *
-     * @return Opaque pointer to platform window (e.g., sf::RenderWindow*)
-     */
-    virtual void *GetNativeWindow() const = 0;
 };
 
 }  // namespace Video
