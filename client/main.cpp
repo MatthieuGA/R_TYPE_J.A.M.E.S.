@@ -56,11 +56,24 @@ int main(int argc, char *argv[]) {
                   << std::endl;
 
         Engine::DLLoader<Engine::Video::IVideoModule> video_loader;
-        video_loader.open(video_plugin_path);
-        auto video_module = video_loader.getInstance("entryPoint");
+        try {
+            video_loader.open(video_plugin_path);
+        } catch (const std::exception &e) {
+            std::cerr << "[Client] CRITICAL ERROR: Failed to load video "
+                         "plugin library: "
+                      << video_plugin_path << std::endl;
+            std::cerr << "[Client] Error details: " << e.what() << std::endl;
+            throw std::runtime_error(
+                "Failed to load video plugin: " + std::string(e.what()));
+        }
 
+        auto video_module = video_loader.getInstance("entryPoint");
         if (!video_module) {
-            throw std::runtime_error("Failed to load video plugin");
+            std::cerr << "[Client] CRITICAL ERROR: Video plugin loaded but "
+                         "entryPoint() returned null"
+                      << std::endl;
+            throw std::runtime_error(
+                "Video plugin entryPoint() returned null");
         }
 
         std::cout << "[Client] Loaded video plugin: "
@@ -79,6 +92,13 @@ int main(int argc, char *argv[]) {
 
         game_world.rendering_engine_ = rendering_engine.get();
 
+        // Validate rendering engine is properly initialized before proceeding
+        if (!rendering_engine->IsInitialized()) {
+            throw std::runtime_error(
+                "Rendering engine not properly initialized after Initialize() "
+                "call");
+        }
+
         // Load audio plugin from config
         std::string audio_plugin_path =
             Engine::ConfigLoader::GetAudioBackend();
@@ -86,11 +106,24 @@ int main(int argc, char *argv[]) {
                   << std::endl;
 
         Engine::DLLoader<Engine::Audio::IAudioModule> audio_loader;
-        audio_loader.open(audio_plugin_path);
-        auto audio_module = audio_loader.getInstance("entryPoint");
+        try {
+            audio_loader.open(audio_plugin_path);
+        } catch (const std::exception &e) {
+            std::cerr << "[Client] CRITICAL ERROR: Failed to load audio "
+                         "plugin library: "
+                      << audio_plugin_path << std::endl;
+            std::cerr << "[Client] Error details: " << e.what() << std::endl;
+            throw std::runtime_error(
+                "Failed to load audio plugin: " + std::string(e.what()));
+        }
 
+        auto audio_module = audio_loader.getInstance("entryPoint");
         if (!audio_module) {
-            throw std::runtime_error("Failed to load audio plugin");
+            std::cerr << "[Client] CRITICAL ERROR: Audio plugin loaded but "
+                         "entryPoint() returned null"
+                      << std::endl;
+            throw std::runtime_error(
+                "Audio plugin entryPoint() returned null");
         }
 
         std::cout << "[Client] Loaded audio plugin: "
@@ -134,6 +167,14 @@ int main(int argc, char *argv[]) {
 
         // Main game loop using rendering engine
         std::cout << "[Client] Entering main loop..." << std::endl;
+
+        // Double-check initialization before starting game loop (defense in
+        // depth)
+        if (!rendering_engine->IsInitialized()) {
+            throw std::runtime_error(
+                "Rendering engine lost initialization state before game loop");
+        }
+
         while (rendering_engine->IsWindowOpen()) {
             Engine::Video::Event event;
             while (rendering_engine->PollEvent(event)) {
