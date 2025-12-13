@@ -10,6 +10,8 @@
 #include <utility>
 #include <vector>
 
+#include <debug/DebugConfig.hpp>
+
 namespace Engine {
 namespace Rendering {
 
@@ -29,16 +31,27 @@ RenderingEngine::RenderingEngine(std::shared_ptr<Video::IVideoModule> plugin)
 bool RenderingEngine::Initialize(
     unsigned int width, unsigned int height, const std::string &title) {
     if (!plugin_) {
-        std::cerr << "[RenderingEngine] Cannot initialize: null plugin"
+        std::cerr << "[RenderingEngine] CRITICAL ERROR: Cannot initialize "
+                     "with null plugin"
                   << std::endl;
-        return false;
+        throw std::runtime_error(
+            "RenderingEngine: Cannot initialize with null plugin");
     }
 
     // Initialize camera with window size
     camera_.size =
         Vector2f(static_cast<float>(width), static_cast<float>(height));
 
-    return plugin_->Initialize(width, height, title);
+    bool success = plugin_->Initialize(width, height, title);
+    if (!success) {
+        std::cerr
+            << "[RenderingEngine] CRITICAL ERROR: Plugin initialization failed"
+            << std::endl;
+        throw std::runtime_error(
+            "RenderingEngine: Plugin initialization failed");
+    }
+
+    return success;
 }
 
 void RenderingEngine::Shutdown() {
@@ -55,6 +68,10 @@ void RenderingEngine::Update(float delta_time) {
 }
 
 // ===== Window Management =====
+
+bool RenderingEngine::IsInitialized() const {
+    return plugin_ && plugin_->IsInitialized();
+}
 
 bool RenderingEngine::IsWindowOpen() const {
     return plugin_ && plugin_->IsWindowOpen();
@@ -91,15 +108,25 @@ bool RenderingEngine::PollEvent(Video::Event &event) {
 // ===== Frame Management =====
 
 void RenderingEngine::BeginFrame(const Color &clear_color) {
-    if (plugin_) {
-        plugin_->Clear(clear_color);
+    if (!plugin_) {
+        std::cerr << "[RenderingEngine] CRITICAL ERROR: Cannot begin frame - "
+                     "plugin is null"
+                  << std::endl;
+        throw std::runtime_error(
+            "RenderingEngine: Cannot begin frame with null plugin");
     }
+    plugin_->Clear(clear_color);
 }
 
 void RenderingEngine::EndFrame() {
-    if (plugin_) {
-        plugin_->Display();
+    if (!plugin_) {
+        std::cerr << "[RenderingEngine] CRITICAL ERROR: Cannot end frame - "
+                     "plugin is null"
+                  << std::endl;
+        throw std::runtime_error(
+            "RenderingEngine: Cannot end frame with null plugin");
     }
+    plugin_->Display();
 }
 
 // ===== Camera =====
@@ -119,18 +146,22 @@ Camera &RenderingEngine::GetCamera() {
 // ===== High-Level Entity Rendering =====
 
 void RenderingEngine::RenderSprite(const std::string &texture_id,
-    const Vector2f &world_position, const Vector2f &world_scale, float rotation,
-    const FloatRect *texture_rect, const Color &color,
+    const Vector2f &world_position, const Vector2f &world_scale,
+    float rotation, const FloatRect *texture_rect, const Color &color,
     const Vector2f &origin_offset, const std::string *shader_id) {
     if (!plugin_) {
+        std::cerr
+            << "[RenderingEngine] ERROR: Cannot render sprite - plugin is null"
+            << std::endl;
         return;
     }
 
     // Apply camera transformation to convert world to screen coordinates
     Vector2f screen_position = camera_.WorldToScreen(world_position);
-    
+
     // Apply camera zoom to scale (supports non-uniform scaling and flipping)
-    Vector2f final_scale(world_scale.x * camera_.zoom, world_scale.y * camera_.zoom);
+    Vector2f final_scale(
+        world_scale.x * camera_.zoom, world_scale.y * camera_.zoom);
 
     // Build transform for rendering
     Transform render_transform;
@@ -142,8 +173,9 @@ void RenderingEngine::RenderSprite(const std::string &texture_id,
     // Draw using the plugin
     plugin_->DrawSprite(
         texture_id, render_transform, texture_rect, color, shader_id);
-    
-    // TODO: Track sprite_draw_calls in statistics when stats_ member is added
+
+    // Track statistics
+    stats_.sprite_draw_calls++;
 }
 
 void RenderingEngine::RenderText(const std::string &text,
@@ -151,12 +183,15 @@ void RenderingEngine::RenderText(const std::string &text,
     float world_scale, float rotation, unsigned int character_size,
     const Color &color, const Vector2f &origin_offset) {
     if (!plugin_) {
+        std::cerr
+            << "[RenderingEngine] ERROR: Cannot render text - plugin is null"
+            << std::endl;
         return;
     }
 
     // Apply camera transformation to convert world to screen coordinates
     Vector2f screen_position = camera_.WorldToScreen(world_position);
-    
+
     // Apply camera zoom to scale
     float final_scale = world_scale * camera_.zoom;
 
@@ -169,29 +204,38 @@ void RenderingEngine::RenderText(const std::string &text,
 
     // Draw text using the plugin
     plugin_->DrawText(text, font_id, render_transform, character_size, color);
-    
-    // TODO: Track text_draw_calls in statistics when stats_ member is added
+
+    // Track statistics
+    stats_.text_draw_calls++;
 }
 
 void RenderingEngine::RenderParticles(const std::vector<Vector2f> &particles,
     const std::vector<Color> &colors, const std::vector<float> &sizes,
     int z_index) {
-    std::cout << "[DEBUG] RenderParticles called with " << particles.size() << " particles" << std::endl;
-    
-    if (!plugin_ || particles.empty()) {
-        std::cout << "[DEBUG] RenderParticles: Early return (plugin=" << (plugin_ ? "valid" : "null") 
-                  << ", empty=" << particles.empty() << ")" << std::endl;
+    DEBUG_PARTICLES_LOG(
+        "RenderParticles called with " << particles.size() << " particles");
+
+    if (!plugin_) {
+        std::cerr << "[RenderingEngine] ERROR: Cannot render particles - "
+                     "plugin is null"
+                  << std::endl;
         return;
     }
 
-    std::cout << "[DEBUG] RenderParticles: Creating vertex array for " << particles.size() << " particles" << std::endl;
-    
+    if (particles.empty()) {
+        DEBUG_PARTICLES_LOG("Early return (empty particle list)");
+        return;
+    }
+
+    DEBUG_PARTICLES_LOG(
+        "Creating vertex array for " << particles.size() << " particles");
+
     // Use vertex array for efficient batched rendering
     // Each particle is rendered as a small quad (4 vertices per particle)
     std::vector<Video::Vertex> vertices;
     vertices.reserve(particles.size() * 4);
-    
-    std::cout << "[DEBUG] RenderParticles: Reserved " << (particles.size() * 4) << " vertices" << std::endl;
+
+    DEBUG_PARTICLES_LOG("Reserved " << (particles.size() * 4) << " vertices");
 
     for (size_t i = 0; i < particles.size(); ++i) {
         const float half_size = ((i < sizes.size()) ? sizes[i] : 2.0f) / 2.0f;
@@ -205,32 +249,32 @@ void RenderingEngine::RenderParticles(const std::vector<Vector2f> &particles,
         v2.position = Vector2f(pos.x + half_size, pos.y - half_size);
         v3.position = Vector2f(pos.x + half_size, pos.y + half_size);
         v4.position = Vector2f(pos.x - half_size, pos.y + half_size);
-        
-        v1.color = v2.color = v3.color = v4.color = color;
-        v1.tex_coords = v2.tex_coords = v3.tex_coords = v4.tex_coords = Vector2f(0.0f, 0.0f);
 
+        v1.color = v2.color = v3.color = v4.color = color;
+
+        // Add all 4 vertices for the quad
         vertices.push_back(v1);
         vertices.push_back(v2);
         vertices.push_back(v3);
         vertices.push_back(v4);
     }
 
-    std::cout << "[DEBUG] RenderParticles: Built " << vertices.size() << " vertices" << std::endl;
-    
+    DEBUG_PARTICLES_LOG("Built " << vertices.size() << " vertices");
+
     // Draw all particles in a single batch using Quads primitive
     Video::RenderStates states;
-    std::cout << "[DEBUG] RenderParticles: Calling DrawVertices with " << vertices.size() << " vertices" << std::endl;
-    
-    if (vertices.empty()) {
-        std::cout << "[DEBUG] RenderParticles: WARNING - vertices array is empty!" << std::endl;
-        return;
-    }
-    
-    plugin_->DrawVertices(vertices.data(), vertices.size(), 3, states);  // 3 = Quads
-    
-    std::cout << "[DEBUG] RenderParticles: DrawVertices completed" << std::endl;
-    
-    // TODO: Track particle_batches and total_particles in statistics when stats_ member is added
+
+    DEBUG_PARTICLES_LOG(
+        "Calling DrawVertices with " << vertices.size() << " vertices");
+
+    plugin_->DrawVertices(
+        vertices.data(), vertices.size(), 3, states);  // 3 = Quads
+
+    DEBUG_PARTICLES_LOG("DrawVertices completed");
+
+    // Track statistics
+    stats_.particle_batches++;
+    stats_.total_particles += particles.size();
 }
 
 // ===== Resource Management =====
@@ -238,36 +282,113 @@ void RenderingEngine::RenderParticles(const std::vector<Vector2f> &particles,
 bool RenderingEngine::LoadTexture(
     const std::string &id, const std::string &path) {
     if (!plugin_) {
+        std::cerr << "[RenderingEngine] ERROR: Cannot load texture '" << id
+                  << "' - plugin is null" << std::endl;
         return false;
     }
-    return plugin_->LoadTexture(id, path);
+
+    // Increment reference count
+    texture_ref_counts_[id]++;
+
+    // Only load if this is the first reference
+    if (texture_ref_counts_[id] == 1) {
+        bool success = plugin_->LoadTexture(id, path);
+        if (!success) {
+            std::cerr << "[RenderingEngine] ERROR: Failed to load texture '"
+                      << id << "' from '" << path << "'" << std::endl;
+            // Decrement ref count on failure
+            texture_ref_counts_[id]--;
+            if (texture_ref_counts_[id] == 0) {
+                texture_ref_counts_.erase(id);
+            }
+        }
+        return success;
+    }
+
+    // Already loaded, just return success
+    return true;
 }
 
 bool RenderingEngine::UnloadTexture(const std::string &id) {
-    // TODO: Implement texture reference counting and unloading
-    // For now, textures are not unloaded (managed by plugin lifetime)
-    (void)id;  // Suppress unused parameter warning
+    if (!plugin_) {
+        std::cerr << "[RenderingEngine] ERROR: Cannot unload texture '" << id
+                  << "' - plugin is null" << std::endl;
+        return false;
+    }
+
+    // Find texture in reference count map
+    auto it = texture_ref_counts_.find(id);
+    if (it == texture_ref_counts_.end() || it->second == 0) {
+        // Not loaded or already fully unloaded
+        return false;
+    }
+
+    // Decrement reference count
+    it->second--;
+
+    // Only unload from plugin when reference count reaches zero
+    if (it->second == 0) {
+        texture_ref_counts_.erase(it);
+        // Call plugin to actually free GPU memory
+        return plugin_->UnloadTexture(id);
+    }
+
     return true;
 }
 
 bool RenderingEngine::LoadFont(
     const std::string &id, const std::string &path) {
     if (!plugin_) {
+        std::cerr << "[RenderingEngine] ERROR: Cannot load font '" << id
+                  << "' - plugin is null" << std::endl;
         return false;
     }
-    return plugin_->LoadFont(id, path);
+    bool success = plugin_->LoadFont(id, path);
+    if (!success) {
+        std::cerr << "[RenderingEngine] ERROR: Failed to load font '" << id
+                  << "' from '" << path << "'" << std::endl;
+    }
+    return success;
+}
+
+bool RenderingEngine::UnloadFont(const std::string &id) {
+    if (!plugin_) {
+        std::cerr << "[RenderingEngine] ERROR: Cannot unload font '" << id
+                  << "' - plugin is null" << std::endl;
+        return false;
+    }
+    return plugin_->UnloadFont(id);
 }
 
 bool RenderingEngine::LoadShader(const std::string &id,
     const std::string &vertex_path, const std::string &fragment_path) {
     if (!plugin_) {
+        std::cerr << "[RenderingEngine] ERROR: Cannot load shader '" << id
+                  << "' - plugin is null" << std::endl;
         return false;
     }
-    return plugin_->LoadShader(id, vertex_path, fragment_path);
+    bool success = plugin_->LoadShader(id, vertex_path, fragment_path);
+    if (!success) {
+        std::cerr << "[RenderingEngine] ERROR: Failed to load shader '" << id
+                  << "' (vertex: '" << vertex_path << "', fragment: '"
+                  << fragment_path << "')" << std::endl;
+    }
+    return success;
+}
+
+bool RenderingEngine::UnloadShader(const std::string &id) {
+    if (!plugin_) {
+        std::cerr << "[RenderingEngine] ERROR: Cannot unload shader '" << id
+                  << "' - plugin is null" << std::endl;
+        return false;
+    }
+    return plugin_->UnloadShader(id);
 }
 
 Vector2f RenderingEngine::GetTextureSize(const std::string &id) const {
     if (!plugin_) {
+        std::cerr << "[RenderingEngine] ERROR: Cannot get texture size for '"
+                  << id << "' - plugin is null" << std::endl;
         return Vector2f(0.0f, 0.0f);
     }
     return plugin_->GetTextureSize(id);
@@ -320,13 +441,6 @@ std::string RenderingEngine::GetModuleName() const {
 
 Video::IVideoModule *RenderingEngine::GetPlugin() const {
     return plugin_.get();
-}
-
-void *RenderingEngine::GetNativeWindow() const {
-    if (!plugin_) {
-        return nullptr;
-    }
-    return plugin_->GetNativeWindow();
 }
 
 }  // namespace Rendering

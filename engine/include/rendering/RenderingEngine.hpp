@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "graphics/Types.hpp"
@@ -33,13 +34,57 @@ struct Camera {
 
     /**
      * @brief Convert world coordinates to screen coordinates.
-     * Uses top-left origin (no centering offset) to match original coordinate system.
+     * Uses top-left origin (no centering offset) to match original coordinate
+     * system.
      */
     Vector2f WorldToScreen(const Vector2f &world_pos) const {
         Vector2f screen;
         screen.x = (world_pos.x - position.x) * zoom;
         screen.y = (world_pos.y - position.y) * zoom;
         return screen;
+    }
+
+    /**
+     * @brief Check if an entity is visible within the camera viewport.
+     * @param world_pos Entity world position
+     * @param entity_size Entity size (width, height)
+     * @return true if entity is at least partially visible
+     */
+    bool IsVisible(
+        const Vector2f &world_pos, const Vector2f &entity_size) const {
+        // Calculate viewport bounds in world coordinates
+        float viewport_left = position.x;
+        float viewport_right = position.x + (size.x / zoom);
+        float viewport_top = position.y;
+        float viewport_bottom = position.y + (size.y / zoom);
+
+        // Calculate entity bounds
+        float entity_left = world_pos.x;
+        float entity_right = world_pos.x + entity_size.x;
+        float entity_top = world_pos.y;
+        float entity_bottom = world_pos.y + entity_size.y;
+
+        // AABB intersection test
+        return !(entity_right < viewport_left ||
+                 entity_left > viewport_right ||
+                 entity_bottom < viewport_top || entity_top > viewport_bottom);
+    }
+};
+
+/**
+ * @brief Statistics for rendering performance tracking.
+ */
+struct RenderStats {
+    size_t sprite_draw_calls = 0;
+    size_t text_draw_calls = 0;
+    size_t particle_batches = 0;
+    size_t total_particles = 0;
+
+    void Reset() {
+        sprite_draw_calls = 0;
+        text_draw_calls = 0;
+        particle_batches = 0;
+        total_particles = 0;
     }
 };
 
@@ -87,6 +132,7 @@ class RenderingEngine {
 
     // ===== Window Management =====
 
+    bool IsInitialized() const;
     bool IsWindowOpen() const;
     void CloseWindow();
     Vector2f GetWindowSize() const;
@@ -140,8 +186,8 @@ class RenderingEngine {
      * @param shader_id Optional shader to apply
      */
     void RenderSprite(const std::string &texture_id,
-        const Vector2f &world_position, const Vector2f &world_scale, float rotation,
-        const FloatRect *texture_rect, const Color &color,
+        const Vector2f &world_position, const Vector2f &world_scale,
+        float rotation, const FloatRect *texture_rect, const Color &color,
         const Vector2f &origin_offset, const std::string *shader_id);
 
     /**
@@ -181,9 +227,10 @@ class RenderingEngine {
     bool LoadTexture(const std::string &id, const std::string &path);
     bool UnloadTexture(const std::string &id);  // Reference-counted unload
     bool LoadFont(const std::string &id, const std::string &path);
+    bool UnloadFont(const std::string &id);
     bool LoadShader(const std::string &id, const std::string &vertex_path,
         const std::string &fragment_path);
-
+    bool UnloadShader(const std::string &id);
     Vector2f GetTextureSize(const std::string &id) const;
     FloatRect GetTextBounds(const std::string &text,
         const std::string &font_id, unsigned int character_size) const;
@@ -223,17 +270,12 @@ class RenderingEngine {
      */
     Video::IVideoModule *GetPlugin() const;
 
-    /**
-     * @brief Get platform-specific window handle (SFML, SDL, etc.).
-     *
-     * For legacy compatibility.
-     */
-    void *GetNativeWindow() const;
-
  private:
     std::shared_ptr<Video::IVideoModule> plugin_;
     Camera camera_;
     float accumulated_time_ = 0.0f;
+    RenderStats stats_;
+    std::unordered_map<std::string, size_t> texture_ref_counts_;
 };
 
 }  // namespace Rendering
