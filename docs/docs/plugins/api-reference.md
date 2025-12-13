@@ -1003,9 +1003,422 @@ private:
 
 ---
 
+## RenderingEngine Class
+
+**Header:** `client/include/rendering/RenderingEngine.hpp`
+
+**Namespace:** `Engine::Rendering`
+
+High-level rendering abstraction layer that sits between game systems and the video plugin. Provides game-oriented methods for simplified rendering.
+
+### Constructor
+
+#### `RenderingEngine(std::shared_ptr<Video::IVideoModule> plugin)`
+
+Creates a rendering engine with the specified video plugin.
+
+**Parameters:**
+- `plugin` - Shared pointer to an IVideoModule implementation
+
+**Example:**
+```cpp
+auto video_plugin = loader.getInstance("entryPoint");
+auto rendering_engine = std::make_unique<Engine::Rendering::RenderingEngine>(video_plugin);
+```
+
+---
+
+### Initialization Methods
+
+#### `bool Initialize(int width, int height, const std::string &title)`
+
+Initializes the rendering engine and creates a window.
+
+**Parameters:**
+- `width` - Window width in pixels
+- `height` - Window height in pixels
+- `title` - Window title string
+
+**Returns:**
+- `true` if initialization succeeded, `false` otherwise
+
+**Throws:**
+- `std::runtime_error` if plugin is null
+
+**Example:**
+```cpp
+if (!rendering_engine->Initialize(1920, 1080, "R-TYPE J.A.M.E.S.")) {
+    std::cerr << "Failed to initialize rendering engine" << std::endl;
+    return EXIT_FAILURE;
+}
+```
+
+---
+
+#### `bool IsInitialized() const`
+
+Checks if the rendering engine has been successfully initialized.
+
+**Returns:**
+- `true` if initialized, `false` otherwise
+
+**Example:**
+```cpp
+if (!rendering_engine->IsInitialized()) {
+    throw std::runtime_error("Rendering engine not properly initialized");
+}
+```
+
+**Best Practice:**
+Always validate initialization state before entering the game loop:
+```cpp
+rendering_engine->Initialize(1920, 1080, "Game");
+if (!rendering_engine->IsInitialized()) {
+    // Handle initialization failure
+}
+```
+
+---
+
+#### `void Shutdown()`
+
+Shuts down the rendering engine and releases all resources.
+
+**Example:**
+```cpp
+rendering_engine->Shutdown();
+```
+
+**Notes:**
+- Called automatically by destructor
+- Safe to call multiple times
+
+---
+
+### Frame Lifecycle
+
+#### `void BeginFrame(const Graphics::Color &clear_color)`
+
+Begins a new frame and clears the screen.
+
+**Parameters:**
+- `clear_color` - Color to clear the screen with
+
+**Throws:**
+- `std::runtime_error` if plugin is null
+
+**Example:**
+```cpp
+rendering_engine->BeginFrame(Engine::Graphics::Color(30, 30, 80, 255));
+```
+
+**Notes:**
+- Must be called before any rendering operations
+- Clears all previous frame data
+
+---
+
+#### `void EndFrame()`
+
+Presents the rendered frame to the screen.
+
+**Throws:**
+- `std::runtime_error` if plugin is null
+
+**Example:**
+```cpp
+rendering_engine->EndFrame();
+```
+
+**Notes:**
+- Must be called after all rendering operations
+- Swaps frame buffers and displays result
+
+---
+
+### Resource Management
+
+#### `bool LoadTexture(const std::string &id, const std::string &path)`
+
+Loads a texture with reference counting.
+
+**Parameters:**
+- `id` - Unique identifier for the texture
+- `path` - File path to the texture image
+
+**Returns:**
+- `true` if loaded successfully, `false` otherwise
+
+**Example:**
+```cpp
+if (!rendering_engine->LoadTexture("player", "assets/player.png")) {
+    std::cerr << "Failed to load player texture" << std::endl;
+}
+```
+
+**Notes:**
+- Uses reference counting - loading the same texture multiple times is safe
+- Only actually loads the texture once; subsequent calls increment ref count
+
+---
+
+#### `void UnloadTexture(const std::string &id)`
+
+Decrements reference count and unloads texture when it reaches zero.
+
+**Parameters:**
+- `id` - Identifier of the texture to unload
+
+**Example:**
+```cpp
+rendering_engine->UnloadTexture("player");
+```
+
+**Notes:**
+- Only frees GPU memory when ref count reaches zero
+- Safe to call even if texture not loaded
+
+---
+
+#### `bool LoadFont(const std::string &id, const std::string &path)`
+
+Loads a font for text rendering.
+
+**Parameters:**
+- `id` - Unique identifier for the font
+- `path` - File path to the font file (.ttf, .otf)
+
+**Returns:**
+- `true` if loaded successfully, `false` otherwise
+
+**Example:**
+```cpp
+if (!rendering_engine->LoadFont("main_font", "assets/dogica.ttf")) {
+    std::cerr << "Failed to load font" << std::endl;
+}
+```
+
+---
+
+#### `void UnloadFont(const std::string &id)`
+
+Unloads a previously loaded font.
+
+**Parameters:**
+- `id` - Identifier of the font to unload
+
+**Example:**
+```cpp
+rendering_engine->UnloadFont("main_font");
+```
+
+---
+
+#### `bool LoadShader(const std::string &id, const std::string &vertex_path, const std::string &fragment_path)`
+
+Loads a shader program.
+
+**Parameters:**
+- `id` - Unique identifier for the shader
+- `vertex_path` - Path to vertex shader file
+- `fragment_path` - Path to fragment shader file
+
+**Returns:**
+- `true` if loaded successfully, `false` otherwise
+
+**Example:**
+```cpp
+if (!rendering_engine->LoadShader("wave", "shaders/wave.vert", "shaders/wave.frag")) {
+    std::cerr << "Failed to load shader" << std::endl;
+}
+```
+
+---
+
+#### `void UnloadShader(const std::string &id)`
+
+Unloads a previously loaded shader.
+
+**Parameters:**
+- `id` - Identifier of the shader to unload
+
+**Example:**
+```cpp
+rendering_engine->UnloadShader("wave");
+```
+
+---
+
+#### `Graphics::Vector2f GetTextureSize(const std::string &id) const`
+
+Gets the dimensions of a loaded texture.
+
+**Parameters:**
+- `id` - Identifier of the texture
+
+**Returns:**
+- Vector2f containing width (x) and height (y)
+
+**Example:**
+```cpp
+auto size = rendering_engine->GetTextureSize("player");
+std::cout << "Texture: " << size.x << "x" << size.y << std::endl;
+```
+
+---
+
+### Rendering Methods
+
+#### `void RenderSprite(const std::string &texture_id, const Video::Transform &transform, const Graphics::IntRect *texture_rect, const Graphics::Color &color, int z_index)`
+
+Renders a sprite.
+
+**Parameters:**
+- `texture_id` - ID of loaded texture
+- `transform` - Position, rotation, scale, origin
+- `texture_rect` - Optional: sub-rectangle for sprite sheets (nullptr = full texture)
+- `color` - Tint color (White = no tint)
+- `z_index` - Rendering layer (higher = drawn on top)
+
+**Example:**
+```cpp
+Engine::Video::Transform transform;
+transform.position = {100.0f, 200.0f};
+transform.rotation = 45.0f;
+transform.scale = {2.0f, 2.0f};
+transform.origin = {16.0f, 16.0f};
+
+rendering_engine->RenderSprite(
+    "player", 
+    transform, 
+    nullptr, 
+    Engine::Graphics::Color::White, 
+    1
+);
+```
+
+---
+
+#### `void RenderText(const std::string &text, const std::string &font_id, const Video::Transform &transform, unsigned int character_size, const Graphics::Color &color, int z_index)`
+
+Renders text.
+
+**Parameters:**
+- `text` - String to render
+- `font_id` - ID of loaded font
+- `transform` - Position, rotation, scale
+- `character_size` - Font size in pixels
+- `color` - Text color
+- `z_index` - Rendering layer
+
+**Example:**
+```cpp
+Engine::Video::Transform transform;
+transform.position = {10.0f, 10.0f};
+
+rendering_engine->RenderText(
+    "Score: 100",
+    "main_font",
+    transform,
+    24,
+    Engine::Graphics::Color::White,
+    10
+);
+```
+
+---
+
+#### `void RenderParticles(const std::vector<Graphics::Vector2f> &particles, const std::vector<Graphics::Color> &colors, const std::vector<float> &sizes, int z_index)`
+
+Renders a batch of particles efficiently.
+
+**Parameters:**
+- `particles` - Particle positions
+- `colors` - Color for each particle
+- `sizes` - Size for each particle
+- `z_index` - Rendering layer
+
+**Example:**
+```cpp
+std::vector<Engine::Graphics::Vector2f> positions;
+std::vector<Engine::Graphics::Color> colors;
+std::vector<float> sizes;
+
+for (int i = 0; i < 100; ++i) {
+    positions.push_back({x + rand(), y + rand()});
+    colors.push_back(Engine::Graphics::Color(255, 128, 0, 200));
+    sizes.push_back(4.0f);
+}
+
+rendering_engine->RenderParticles(positions, colors, sizes, 0);
+```
+
+**Notes:**
+- Batched into single draw call for efficiency
+- Much faster than rendering individual sprites
+
+---
+
+### Debug System
+
+#### Debug Macros
+
+**Header:** `engine/include/debug/DebugConfig.hpp`
+
+Compile-time debug output with zero production overhead.
+
+**Available Macros:**
+- `DEBUG_PARTICLES_LOG(msg)` - Particle rendering debug
+- `DEBUG_RENDERING_LOG(msg)` - General rendering debug
+- `DEBUG_NETWORK_LOG(msg)` - Network debug
+
+**Usage:**
+```cpp
+#include <debug/DebugConfig.hpp>
+
+void RenderParticles(const std::vector<Vector2f> &particles) {
+    DEBUG_PARTICLES_LOG("RenderParticles called with " << particles.size() << " particles");
+    
+    // ... rendering code ...
+    
+    DEBUG_PARTICLES_LOG("Built " << vertices.size() << " vertices");
+}
+```
+
+**CMake Flags:**
+```bash
+# Enable specific debug category
+cmake -S . -B build -DDEBUG_PARTICLES=ON
+
+# Enable all debug in Debug build
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+```
+
+**Macro Expansion:**
+
+When enabled:
+```cpp
+DEBUG_PARTICLES_LOG("Message");
+// Expands to:
+std::cout << "[DEBUG_PARTICLES] " << "Message" << std::endl;
+```
+
+When disabled (production):
+```cpp
+DEBUG_PARTICLES_LOG("Message");
+// Expands to:
+((void)0);  // Completely removed by optimizer
+```
+
+📘 **[Complete Debug System Guide](../guides/debug-system.md)**
+
+---
+
 ## See Also
 
 - [Audio Plugin Development Guide](./audio-plugin-guide.md)
 - [Video Plugin Development Guide](./video-plugin-guide.md)
+- [RenderingEngine API Guide](../guides/rendering-api.md) - Complete usage guide
+- [Debug System Guide](../guides/debug-system.md) - Debugging tools
 - [Architecture Overview](./architecture.md)
 - [Troubleshooting](./troubleshooting.md)

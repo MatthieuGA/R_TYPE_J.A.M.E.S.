@@ -35,9 +35,22 @@ const sidebars: SidebarsConfig = {
       items: [
         'plugins/index',
         'plugins/audio-plugin-guide',
+        'plugins/video-plugin-guide',
         'plugins/architecture',
         'plugins/api-reference',
         'plugins/troubleshooting',
+      ],
+    },
+  ],
+
+  // Guides sidebar: development guides and tutorials
+  guidesSidebar: [
+    {
+      type: 'category',
+      label: 'Development Guides',
+      items: [
+        'guides/debug-system',
+        'guides/rendering-api',
       ],
     },
   ],

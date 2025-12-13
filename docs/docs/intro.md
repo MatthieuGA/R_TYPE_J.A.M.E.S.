@@ -1,8 +1,3 @@
-id: intro
-title: Getting Started
-sidebar_position: 1
----
-
 # Getting Started
 
 Welcome to the official documentation of **R-TYPE J.A.M.E.S.**

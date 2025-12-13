@@ -514,7 +514,7 @@ std::cout << "Load time: " << duration.count() << "ms" << std::endl;
 ```bash
 ls -lh build/lib/my_audio_module.so
 
-# Large size (>100MB) indicates excessive dependencies
+# Large size (&gt;100MB) indicates excessive dependencies
 # Consider static linking some libraries
 ```
 
