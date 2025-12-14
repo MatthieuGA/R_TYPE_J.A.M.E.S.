@@ -96,13 +96,13 @@ inline void ApplySpawnEntityPacket(
     Component::Position pos;
     pos.x = packet.pos_x;
     pos.y = packet.pos_y;
-    reg.add_component(entity, std::move(pos));
+    reg.AddComponent(entity, std::move(pos));
 
     // Add Velocity component
     Component::Velocity vel;
     vel.vx = packet.vel_x;
     vel.vy = packet.vel_y;
-    reg.add_component(entity, std::move(vel));
+    reg.AddComponent(entity, std::move(vel));
 }
 
 /**

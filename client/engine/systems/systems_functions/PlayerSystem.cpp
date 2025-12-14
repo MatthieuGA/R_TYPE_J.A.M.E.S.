@@ -45,9 +45,6 @@ void PlayerSystem(Eng::registry &reg,
         else
             animation.current_frame = 2;
 
-        animation.first_frame_position.y =
-            animation.frameHeight * (player_tag.id_player % 4);
-
         float rotation = velocity.vx / player_tag.speed_max * 5.f;
         transform.rotationDegrees = rotation;
 

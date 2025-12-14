@@ -10,53 +10,102 @@
 
 namespace Rtype::Client {
 /**
- * @brief Initialize the health bar sprites and textures.
- *
- * Loads the textures for the health bar components and sets up the sprites.
+ * @brief Initialize the health bar textures via RenderingEngine.
  *
  * @param health_bar The HealthBar component to initialize.
+ * @param game_world Game world containing rendering engine.
  */
-void InitHealthBar(Com::HealthBar &health_bar) {
-    if (!health_bar.foreground_texture.loadFromFile(
-            "assets/images/ui/health_bar/foreground_bar.png")) {
-        std::cerr << "Failed to load foreground bar texture\n";
+void InitHealthBar(Com::HealthBar &health_bar, GameWorld &game_world) {
+    if (!game_world.rendering_engine_) {
+        std::cerr << "[HealthBarSystem] ERROR: rendering_engine is null!"
+                  << std::endl;
         return;
     }
-    health_bar.foreground_bar.setTexture(health_bar.foreground_texture);
-    if (!health_bar.green_texture.loadFromFile(
-            "assets/images/ui/health_bar/green_bar.png")) {
-        std::cerr << "Failed to load green bar texture\n";
-        return;
-    }
-    health_bar.green_bar.setTexture(health_bar.green_texture);
-    if (!health_bar.yellow_texture.loadFromFile(
-            "assets/images/ui/health_bar/yellow_bar.png")) {
-        std::cerr << "Failed to load yellow bar texture\n";
-        return;
-    }
-    health_bar.yellow_bar.setTexture(health_bar.yellow_texture);
 
-    health_bar.foreground_bar.setOrigin(
-        health_bar.foreground_texture.getSize().x / 2.f,
-        health_bar.foreground_texture.getSize().y / 2.f);
-    health_bar.green_bar.setOrigin(health_bar.green_texture.getSize().x / 2.f,
-        health_bar.green_texture.getSize().y / 2.f);
-    health_bar.yellow_bar.setOrigin(
-        health_bar.yellow_texture.getSize().x / 2.f,
-        health_bar.yellow_texture.getSize().y / 2.f);
+    // Load health bar textures
+    bool green_loaded =
+        game_world.rendering_engine_->LoadTexture(health_bar.green_texture_id,
+            "assets/images/" + health_bar.green_texture_id);
+    bool yellow_loaded =
+        game_world.rendering_engine_->LoadTexture(health_bar.yellow_texture_id,
+            "assets/images/" + health_bar.yellow_texture_id);
+    bool foreground_loaded = game_world.rendering_engine_->LoadTexture(
+        health_bar.foreground_texture_id,
+        "assets/images/" + health_bar.foreground_texture_id);
+
+    if (!green_loaded || !yellow_loaded || !foreground_loaded) {
+        std::cerr
+            << "[HealthBarSystem] ERROR: Failed to load health bar textures"
+            << std::endl;
+        return;
+    }
+
     health_bar.is_loaded = true;
 }
 
 /**
- * @brief Draw the health bar components to the game window.
+ * @brief Draw the health bar components using RenderingEngine.
+ *
+ * Renders bars with center origin in pixel coordinates (like SFML setOrigin).
+ * This keeps bars centered as they scale in width - scaling from center
+ * means they expand/shrink equally in both directions.
  *
  * @param health_bar The HealthBar component to draw.
- * @param game_world The GameWorld providing the render window.
+ * @param position World position for the health bar center.
+ * @param scale Base scale for the health bar.
+ * @param game_world The GameWorld providing the rendering engine.
  */
-void DrawHealthBar(Com::HealthBar &health_bar, GameWorld &game_world) {
-    game_world.window_.draw(health_bar.yellow_bar);
-    game_world.window_.draw(health_bar.green_bar);
-    game_world.window_.draw(health_bar.foreground_bar);
+void DrawHealthBar(Com::HealthBar &health_bar,
+    const Engine::Graphics::Vector2f &position,
+    const Engine::Graphics::Vector2f &base_scale, GameWorld &game_world) {
+    if (!game_world.rendering_engine_) {
+        return;
+    }
+
+    // Get texture sizes to calculate center origin in pixels
+    Engine::Graphics::Vector2f yellow_size =
+        game_world.rendering_engine_->GetTextureSize(
+            health_bar.yellow_texture_id);
+    Engine::Graphics::Vector2f green_size =
+        game_world.rendering_engine_->GetTextureSize(
+            health_bar.green_texture_id);
+    Engine::Graphics::Vector2f foreground_size =
+        game_world.rendering_engine_->GetTextureSize(
+            health_bar.foreground_texture_id);
+
+    // Calculate center origin in pixels (like SFML setOrigin(width/2,
+    // height/2)) NOTE: RenderingEngine negates origin_offset, so we pass
+    // negative to get positive in SFML
+    Engine::Graphics::Vector2f yellow_origin(
+        -yellow_size.x / 2.f, -yellow_size.y / 2.f);
+    Engine::Graphics::Vector2f green_origin(
+        -green_size.x / 2.f, -green_size.y / 2.f);
+    Engine::Graphics::Vector2f foreground_origin(
+        -foreground_size.x / 2.f, -foreground_size.y / 2.f);
+
+    // Calculate scaled percentages for width
+    Engine::Graphics::Vector2f yellow_scale(
+        (health_bar.percent_delay / 100.f) * base_scale.x, base_scale.y);
+    Engine::Graphics::Vector2f green_scale(
+        (health_bar.percent / 100.f) * base_scale.x, base_scale.y);
+
+    // Render bars back to front (yellow -> green -> foreground)
+    // Using pixel-coordinate origins so bars scale from center
+
+    // Yellow bar (delayed damage indicator)
+    game_world.rendering_engine_->RenderSprite(health_bar.yellow_texture_id,
+        position, yellow_scale, 0.0f, nullptr, Engine::Graphics::Color::White,
+        yellow_origin, nullptr);
+
+    // Green bar (current health)
+    game_world.rendering_engine_->RenderSprite(health_bar.green_texture_id,
+        position, green_scale, 0.0f, nullptr, Engine::Graphics::Color::White,
+        green_origin, nullptr);
+
+    // Foreground border (full width)
+    game_world.rendering_engine_->RenderSprite(
+        health_bar.foreground_texture_id, position, base_scale, 0.0f, nullptr,
+        Engine::Graphics::Color::White, foreground_origin, nullptr);
 }
 
 /**
@@ -83,28 +132,20 @@ void UpdatePercentageHealthBar(const Com::Health &health,
 }
 
 /**
- * @brief Set the positions and scales of health bar sprites.
+ * @brief Calculate the world position for the health bar.
  *
  * @param transform The Transform component of the entity.
- * @param health_bar The HealthBar component to update.
+ * @param health_bar The HealthBar component.
+ * @return World position for the health bar.
  */
-void SetHealthsBarSprites(
-    const Com::Transform &transform, Com::HealthBar &health_bar) {
-    sf::Vector2f transform_s =
-        sf::Vector2f(std::abs(transform.scale.x), std::abs(transform.scale.y));
+Engine::Graphics::Vector2f CalculateHealthBarPosition(
+    const Com::Transform &transform, const Com::HealthBar &health_bar) {
+    Engine::Graphics::Vector2f transform_scale(
+        std::abs(transform.scale.x), std::abs(transform.scale.y));
 
-    sf::Vector2f posBar =
-        sf::Vector2f(transform.x + (health_bar.offset.x * transform_s.x),
-            transform.y + (health_bar.offset.y * transform_s.y));
-    health_bar.green_bar.setPosition(posBar);
-    health_bar.yellow_bar.setPosition(posBar);
-    health_bar.foreground_bar.setPosition(posBar);
-    // Update health bar scales based on percent
-    health_bar.green_bar.setScale(
-        (health_bar.percent / 100.f) * transform_s.x, transform_s.y);
-    health_bar.yellow_bar.setScale(
-        (health_bar.percent_delay / 100.f) * transform_s.x, transform_s.y);
-    health_bar.foreground_bar.setScale(transform_s.x, transform_s.y);
+    return Engine::Graphics::Vector2f(
+        transform.x + (health_bar.offset.x * transform_scale.x),
+        transform.y + (health_bar.offset.y * transform_scale.y));
 }
 
 /**
@@ -112,10 +153,10 @@ void SetHealthsBarSprites(
  *
  * This system updates health bar percentages based on entity health,
  * positions the health bars according to entity transforms, and
- * renders them to the game window.
+ * renders them using the RenderingEngine API.
  *
  * @param reg Engine registry (unused)
- * @param game_world Game world providing delta time and render window
+ * @param game_world Game world providing delta time and rendering engine
  * @param transforms Sparse array of Transform components
  * @param health_bars Sparse array of HealthBar components
  * @param healths Sparse array of Health components
@@ -126,17 +167,27 @@ void HealthBarSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Health> const &healths) {
     for (auto &&[i, transform, health_bar, health] :
         make_indexed_zipper(transforms, health_bars, healths)) {
-        // Initialize health bar sprites if not loaded
-        if (!health_bar.is_loaded)
-            InitHealthBar(health_bar);
-        if (!health_bar.is_loaded)
-            return;
-        // Update Percentages Bars
+        // Initialize health bar textures if not loaded
+        if (!health_bar.is_loaded) {
+            InitHealthBar(health_bar, game_world);
+        }
+        if (!health_bar.is_loaded) {
+            continue;
+        }
+
+        // Update health bar percentages
         UpdatePercentageHealthBar(health, health_bar, game_world);
-        // Update health bar position
-        SetHealthsBarSprites(transform, health_bar);
-        if (health_bar.percent < 100.f)
-            DrawHealthBar(health_bar, game_world);
+
+        // Calculate position and scale
+        Engine::Graphics::Vector2f bar_position =
+            CalculateHealthBarPosition(transform, health_bar);
+        Engine::Graphics::Vector2f bar_scale(
+            std::abs(transform.scale.x), std::abs(transform.scale.y));
+
+        // Only draw if health is not full
+        if (health_bar.percent < 100.f) {
+            DrawHealthBar(health_bar, bar_position, bar_scale, game_world);
+        }
     }
 }
 }  // namespace Rtype::Client

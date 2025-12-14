@@ -5,7 +5,7 @@
 #include <utility>
 #include <vector>
 
-#include "graphics/Types.hpp"
+#include <graphics/Types.hpp>
 
 namespace Rtype::Client::Component {
 
@@ -217,17 +217,38 @@ struct Text {
           color(color),
           opacity(1.0f),
           z_index(z_index),
-          is_loaded(false),
-          offset(offset) {}
+          offset(offset),
+          is_loaded(false) {}
+
+    // Non-copyable to avoid accidental font pointer mismatches
+    Text(Text const &) = delete;
+    Text &operator=(Text const &) = delete;
+
+    // Move constructor: rebind text to the moved font
+    Text(Text &&other) noexcept;
+
+    // Move assignment: similar to move ctor
+    Text &operator=(Text &&other) noexcept;
 };
 
+/**
+ * @brief Particle data for particle systems.
+ *
+ * Backend-agnostic particle representation.
+ */
 struct Particle {
     Engine::Graphics::Vector2f position;
     Engine::Graphics::Vector2f velocity;
-    float lifetime;     // restant
-    float maxLifetime;  // durée de vie initiale
+    float lifetime;     // remaining
+    float maxLifetime;  // initial lifetime
 };
 
+/**
+ * @brief Particle emitter component for particle effects.
+ *
+ * Particle rendering is handled by the plugin backend.
+ * No SFML types - completely backend-agnostic.
+ */
 struct ParticleEmitter {
     bool active = true;
     float duration_active = -1.f;
@@ -236,38 +257,40 @@ struct ParticleEmitter {
     std::vector<Particle> particles;
     std::size_t maxParticles = 300;
 
-    float emissionRate = 200.f;  // particules / seconde
+    float emissionRate = 200.f;  // particles / second
     float emissionAccumulator = 0.f;
 
     Engine::Graphics::Color startColor =
-        Engine::Graphics::Color(80, 80, 255, 255);  // bleu
+        Engine::Graphics::Color(80, 80, 255, 255);  // blue
     Engine::Graphics::Color endColor =
-        Engine::Graphics::Color(80, 80, 255, 0);  // bleu transparent
+        Engine::Graphics::Color(80, 80, 255, 0);  // transparent blue
 
-    Engine::Graphics::Vector2f offset = {
-        0.f, 0.f};  // offset local par rapport au Transform
+    Engine::Graphics::Vector2f offset{
+        0.f, 0.f};  // local offset from Transform
 
-    float particleLifetime = 1.0f;  // durée de vie des particules en secondes
-    float particleSpeed = 50.f;     // vitesse initiale des particules
-    Engine::Graphics::Vector2f direction = {
-        0.f, -1.f};              // direction initiale des particules
-    float spreadAngle = 30.f;    // angle de dispersion en degrés
-    float gravity = 0.f;         // accélération verticale
-    float emissionRadius = 0.f;  // rayon d'apparition des particules
-    float start_size = 1.0f;     // taille de début des particules
-    float end_size = 1.0f;       // taille de fin des particules
-    int z_index = 0;             // layer de rendu des particules
+    float particleLifetime = 1.0f;  // particle lifetime in seconds
+    float particleSpeed = 50.f;     // initial particle speed
+    Engine::Graphics::Vector2f direction{0.f, -1.f};  // initial direction
+    float spreadAngle = 30.f;    // spread angle in degrees
+    float gravity = 0.f;         // vertical acceleration
+    float emissionRadius = 0.f;  // emission radius for particles
+    float start_size = 1.0f;     // particle start size
+    float end_size = 1.0f;       // particle end size
+    int z_index = 0;             // rendering layer
 
-    bool emitting = true;  // Does the Particle emit particle
+    bool emitting = true;  // Whether the emitter is emitting particles
 
     ParticleEmitter(float emissionRate = 200.f, std::size_t maxParticles = 300,
         Engine::Graphics::Color startColor = Engine::Graphics::Color(
             80, 80, 255, 255),
         Engine::Graphics::Color endColor = Engine::Graphics::Color(
             80, 80, 255, 0),
-        Engine::Graphics::Vector2f offset = {0.f, 0.f}, bool active = true,
-        float particleLifetime = 1.0f, float particleSpeed = 50.f,
-        Engine::Graphics::Vector2f direction = {0.f, -1.f},
+        Engine::Graphics::Vector2f offset = Engine::Graphics::Vector2f(
+            0.f, 0.f),
+        bool active = true, float particleLifetime = 1.0f,
+        float particleSpeed = 50.f,
+        Engine::Graphics::Vector2f direction = Engine::Graphics::Vector2f(
+            0.f, -1.f),
         float spreadAngle = 30.f, float gravity = 0.f,
         float emissionRadius = 0.f, float start_size = 1.0f,
         float end_size = 1.0f, float duration = -1.f, int z_index = 0)

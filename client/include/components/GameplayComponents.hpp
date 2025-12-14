@@ -5,7 +5,7 @@
 #include <utility>
 #include <vector>
 
-#include "graphics/Types.hpp"
+#include <graphics/Types.hpp>
 
 namespace Rtype::Client::Component {
 struct PlayerTag {
@@ -281,9 +281,11 @@ struct HealthBar {
 
     float timer_damage = 0.f;
 
-    std::string green_texture_id;
-    std::string yellow_texture_id;
-    std::string foreground_texture_id;
+    // Texture IDs for backend-agnostic rendering
+    std::string green_texture_id = "ui/health_bar/green_bar.png";
+    std::string yellow_texture_id = "ui/health_bar/yellow_bar.png";
+    std::string foreground_texture_id = "ui/health_bar/foreground_bar.png";
+
     bool is_loaded = false;
 };
 

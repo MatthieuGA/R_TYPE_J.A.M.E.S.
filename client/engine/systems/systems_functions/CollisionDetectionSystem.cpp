@@ -6,6 +6,31 @@
 #include "engine/systems/InitRegistrySystems.hpp"
 
 namespace Rtype::Client {
+
+/**
+ * @brief Check AABB collision between two entities.
+ *
+ * This function computes the offsets based on the transforms and hitboxes,
+ * then calls `IsCollidingFromOffset` to determine if a collision occurs.
+ *
+ * @param trans_a Transform of entity A
+ * @param hb_a HitBox of entity A
+ * @param trans_b Transform of entity B
+ * @param hb_b HitBox of entity B
+ * @param game_world Game world context (unused in current implementation)
+ * @return true if the boxes overlap
+ */
+bool IsColliding(const Com::Transform &trans_a, const Com::HitBox &hb_a,
+    const Com::Transform &trans_b, const Com::HitBox &hb_b,
+    Rtype::Client::GameWorld &game_world) {
+    Engine::Graphics::Vector2f off_a =
+        GetOffsetFromTransform(trans_a, {hb_a.width, hb_a.height});
+    Engine::Graphics::Vector2f off_b =
+        GetOffsetFromTransform(trans_b, {hb_b.width, hb_b.height});
+
+    return IsCollidingFromOffset(trans_a, hb_a, trans_b, hb_b, off_a, off_b);
+}
+
 /**
  * @brief Compute and resolve penetration between two colliding entities.
  *
@@ -46,29 +71,29 @@ void ComputeCollision(Eng::sparse_array<Com::Solid> const &solids, int i,
         hb_b.height * (hb_b.scaleWithTransform ? trans_b.scale.y : 1.0f);
 
     // Compute offsets and scaled hitboxes (same as is_colliding)
-    sf::Vector2f off_a =
+    Engine::Graphics::Vector2f off_a =
         GetOffsetFromTransform(trans_a, {width_computed_a, height_computed_a});
-    sf::Vector2f off_b =
+    Engine::Graphics::Vector2f off_b =
         GetOffsetFromTransform(trans_b, {width_computed_b, height_computed_b});
 
-    sf::Vector2f scal_off_a =
-        sf::Vector2f(off_a.x * trans_a.scale.x, off_a.y * trans_a.scale.y);
-    sf::Vector2f scal_off_b =
-        sf::Vector2f(off_b.x * trans_b.scale.x, off_b.y * trans_b.scale.y);
-    sf::Vector2f scaledA = sf::Vector2f(width_computed_a * trans_a.scale.x,
-        height_computed_a * trans_a.scale.y);
-    sf::Vector2f scaledB = sf::Vector2f(width_computed_b * trans_b.scale.x,
-        height_computed_b * trans_b.scale.y);
+    Engine::Graphics::Vector2f scal_off_a = off_a * trans_a.scale;
+    Engine::Graphics::Vector2f scal_off_b = off_b * trans_b.scale;
+    Engine::Graphics::Vector2f hb_scal_a =
+        Engine::Graphics::Vector2f(width_computed_a * trans_a.scale.x,
+            height_computed_a * trans_a.scale.y);
+    Engine::Graphics::Vector2f hb_scal_b =
+        Engine::Graphics::Vector2f(width_computed_b * trans_b.scale.x,
+            height_computed_b * trans_b.scale.y);
 
     float a_min_x = trans_a.x + scal_off_a.x;
-    float a_max_x = a_min_x + scaledA.x;
+    float a_max_x = a_min_x + hb_scal_a.x;
     float a_min_y = trans_a.y + scal_off_a.y;
-    float a_max_y = a_min_y + scaledA.y;
+    float a_max_y = a_min_y + hb_scal_a.y;
 
     float b_min_x = trans_b.x + scal_off_b.x;
-    float b_max_x = b_min_x + scaledB.x;
+    float b_max_x = b_min_x + hb_scal_b.x;
     float b_min_y = trans_b.y + scal_off_b.y;
-    float b_max_y = b_min_y + scaledB.y;
+    float b_max_y = b_min_y + hb_scal_b.y;
 
     float overlap_x = std::min(a_max_x, b_max_x) - std::max(a_min_x, b_min_x);
     float overlap_y = std::min(a_max_y, b_max_y) - std::max(a_min_y, b_min_y);

@@ -1,0 +1,72 @@
+
+######################################################################
+🚀 Running Engine Tests...
+######################################################################
+
+[  4%] Built target r-type_engine
+[  6%] Built target gtest
+[ 10%] Built target gtest_main
+[ 12%] Building CXX object tests/CMakeFiles/engine_tests.dir/test_button_click_system.cpp.o
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./tests/test_button_click_system.cpp: In member function ‘virtual void ButtonClickSystemTest::SetUp()’:
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./tests/test_button_click_system.cpp:16:20: error: ‘struct Rtype::Client::GameWorld’ has no member named ‘window_’
+   16 |         game_world.window_.create(
+      |                    ^~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./tests/test_button_click_system.cpp: In member function ‘virtual void ButtonClickSystemTest::TearDown()’:
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./tests/test_button_click_system.cpp:21:20: error: ‘struct Rtype::Client::GameWorld’ has no member named ‘window_’
+   21 |         game_world.window_.close();
+      |                    ^~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./tests/test_button_click_system.cpp: In member function ‘virtual void ButtonClickSystemTest_UpdatesColorBasedOnState_Test::TestBody()’:
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./tests/test_button_click_system.cpp:61:38: error: no match for ‘operator=’ (operand types are ‘Engine::Graphics::Color’ and ‘const sf::Color’)
+   61 |     clickable.idleColor = sf::Color::White;
+      |                                      ^~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./tests/test_button_click_system.cpp:61:38: note: there are 2 candidates
+In file included from /home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/engine/GameWorld.hpp:6,
+                 from /home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./tests/test_button_click_system.cpp:5:
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./engine/include/graphics/Types.hpp:77:8: note: candidate 1: ‘constexpr Engine::Graphics::Color& Engine::Graphics::Color::operator=(const Engine::Graphics::Color&)’
+   77 | struct Color {
+      |        ^~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./engine/include/graphics/Types.hpp:77:8: note: no known conversion for argument 1 from ‘const sf::Color’ to ‘const Engine::Graphics::Color&’
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./engine/include/graphics/Types.hpp:77:8: note: candidate 2: ‘constexpr Engine::Graphics::Color& Engine::Graphics::Color::operator=(Engine::Graphics::Color&&)’
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./engine/include/graphics/Types.hpp:77:8: note: no known conversion for argument 1 from ‘const sf::Color’ to ‘Engine::Graphics::Color&&’
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./tests/test_button_click_system.cpp:62:39: error: no match for ‘operator=’ (operand types are ‘Engine::Graphics::Color’ and ‘const sf::Color’)
+   62 |     clickable.hoverColor = sf::Color::Yellow;
+      |                                       ^~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./tests/test_button_click_system.cpp:62:39: note: there are 2 candidates
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./engine/include/graphics/Types.hpp:77:8: note: candidate 1: ‘constexpr Engine::Graphics::Color& Engine::Graphics::Color::operator=(const Engine::Graphics::Color&)’
+   77 | struct Color {
+      |        ^~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./engine/include/graphics/Types.hpp:77:8: note: no known conversion for argument 1 from ‘const sf::Color’ to ‘const Engine::Graphics::Color&’
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./engine/include/graphics/Types.hpp:77:8: note: candidate 2: ‘constexpr Engine::Graphics::Color& Engine::Graphics::Color::operator=(Engine::Graphics::Color&&)’
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./engine/include/graphics/Types.hpp:77:8: note: no known conversion for argument 1 from ‘const sf::Color’ to ‘Engine::Graphics::Color&&’
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./tests/test_button_click_system.cpp:63:39: error: no match for ‘operator=’ (operand types are ‘Engine::Graphics::Color’ and ‘const sf::Color’)
+   63 |     clickable.clickColor = sf::Color::Red;
+      |                                       ^~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./tests/test_button_click_system.cpp:63:39: note: there are 2 candidates
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./engine/include/graphics/Types.hpp:77:8: note: candidate 1: ‘constexpr Engine::Graphics::Color& Engine::Graphics::Color::operator=(const Engine::Graphics::Color&)’
+   77 | struct Color {
+      |        ^~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./engine/include/graphics/Types.hpp:77:8: note: no known conversion for argument 1 from ‘const sf::Color’ to ‘const Engine::Graphics::Color&’
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./engine/include/graphics/Types.hpp:77:8: note: candidate 2: ‘constexpr Engine::Graphics::Color& Engine::Graphics::Color::operator=(Engine::Graphics::Color&&)’
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./engine/include/graphics/Types.hpp:77:8: note: no known conversion for argument 1 from ‘const sf::Color’ to ‘Engine::Graphics::Color&&’
+In file included from /home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./tests/test_button_click_system.cpp:1:
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./build/_deps/googletest-src/googletest/include/gtest/gtest.h: In instantiation of ‘testing::AssertionResult testing::internal::CmpHelperEQ(const char*, const char*, const T1&, const T2&) [with T1 = Engine::Graphics::Color; T2 = Engine::Graphics::Color]’:
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./build/_deps/googletest-src/googletest/include/gtest/gtest.h:1398:23:   required from ‘static testing::AssertionResult testing::internal::EqHelper::Compare(const char*, const char*, const T1&, const T2&) [with T1 = Engine::Graphics::Color; T2 = Engine::Graphics::Color; typename std::enable_if<((! std::is_integral<_Tp>::value) || (! std::is_pointer<_Dp>::value))>::type* <anonymous> = 0]’
+ 1398 |     return CmpHelperEQ(lhs_expression, rhs_expression, lhs, rhs);
+      |            ~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./tests/test_button_click_system.cpp:80:9:   required from here
+   80 |         EXPECT_EQ(drawables[0]->color, clickable.idleColor);
+      |         ^
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./build/_deps/googletest-src/googletest/include/gtest/gtest.h:1379:11: error: no match for ‘operator==’ (operand types are ‘const Engine::Graphics::Color’ and ‘const Engine::Graphics::Color’)
+ 1379 |   if (lhs == rhs) {
+      |       ~~~~^~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./build/_deps/googletest-src/googletest/include/gtest/gtest.h:1379:11: note: there is 1 candidate
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./build/_deps/googletest-src/googletest/include/gtest/gtest.h:1371:13: note: candidate 1: ‘bool testing::internal::operator==(faketype, faketype)’
+ 1371 | inline bool operator==(faketype, faketype) { return true; }
+      |             ^~~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./build/_deps/googletest-src/googletest/include/gtest/gtest.h:1371:24: note: no known conversion for argument 1 from ‘const Engine::Graphics::Color’ to ‘testing::internal::faketype’
+ 1371 | inline bool operator==(faketype, faketype) { return true; }
+      |                        ^~~~~~~~
+gmake[3]: *** [tests/CMakeFiles/engine_tests.dir/build.make:121: tests/CMakeFiles/engine_tests.dir/test_button_click_system.cpp.o] Error 1
+gmake[2]: *** [CMakeFiles/Makefile2:639: tests/CMakeFiles/engine_tests.dir/all] Error 2
+gmake[1]: *** [CMakeFiles/Makefile2:646: tests/CMakeFiles/engine_tests.dir/rule] Error 2
+gmake: *** [Makefile:310: engine_tests] Error 2

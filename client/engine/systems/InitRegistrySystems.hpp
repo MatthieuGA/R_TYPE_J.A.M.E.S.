@@ -35,18 +35,18 @@ void DrawTextRenderSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> const &transforms,
     Eng::sparse_array<Com::Text> &texts);
 
-void AnimationSystem(Eng::registry &reg, const float dt,
+void AnimationSystem(Eng::registry &reg, GameWorld &game_world, const float dt,
     Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
     Eng::sparse_array<Com::Drawable> &drawables);
 
-void LoadAnimationSystem(Eng::registry &reg,
+void LoadAnimationSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::AnimatedSprite> &animated_sprites);
 
-void InitializeShaderSystem(
-    Eng::registry &reg, Eng::sparse_array<Com::Shader> &shaders);
+void InitializeShaderSystem(Eng::registry &reg, GameWorld &game_world,
+    Eng::sparse_array<Com::Shader> &shaders);
 
 void InitializeDrawableAnimatedSystem(Eng::registry &reg,
-    Eng::sparse_array<Com::Transform> const &transforms,
+    GameWorld &game_world, Eng::sparse_array<Com::Transform> const &transforms,
     Eng::sparse_array<Com::Drawable> &drawables,
     Eng::sparse_array<Com::AnimatedSprite> const &animated_sprites);
 
@@ -149,11 +149,13 @@ void HealthBarSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> const &transforms,
     Eng::sparse_array<Com::HealthBar> &health_bars,
     Eng::sparse_array<Com::Health> const &healths);
+
 void NetworkInputSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Inputs> const &inputs,
     Eng::sparse_array<Com::PlayerTag> const &player_tags);
 
 uint8_t InputToBitfield(const Com::Inputs &input);
+
 // AUDIO SYSTEM
 
 void AudioSystem(Eng::registry &reg, Audio::AudioManager &audio_manager,

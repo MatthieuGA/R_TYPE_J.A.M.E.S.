@@ -10,6 +10,14 @@ echo "R-TYPE Build Script (vcpkg)"
 echo "=========================================="
 echo ""
 
+# Ensure we're in the project root
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$PROJECT_ROOT"
+
+echo "Project root: $PROJECT_ROOT"
+echo ""
+
 # Function to test exit status
 function testExitStatus() {
     if [ $1 -ne 0 ]; then
@@ -69,7 +77,55 @@ else
 fi
 echo ""
 
-# Create build directory
+# Prepare toolchain path for CMake (relative to project root)
+if [[ "$VCPKG_CMAKE_TOOLCHAIN" = /* ]]; then
+    TOOLCHAIN_FILE="$VCPKG_CMAKE_TOOLCHAIN"
+else
+    TOOLCHAIN_FILE="$PROJECT_ROOT/$VCPKG_CMAKE_TOOLCHAIN"
+fi
+
+echo "Using CMake toolchain file: $TOOLCHAIN_FILE"
+echo ""
+
+# Install vcpkg dependencies if vcpkg.json exists
+if [ -f "vcpkg.json" ]; then
+    echo "=========================================="
+    echo "Installing vcpkg dependencies..."
+    echo "=========================================="
+    echo ""
+    
+    # Get vcpkg executable path (toolchain is in scripts/buildsystems/vcpkg.cmake)
+    if [[ "$VCPKG_CMAKE_TOOLCHAIN" = /* ]]; then
+        VCPKG_ROOT_DIR="$(dirname $(dirname $(dirname $VCPKG_CMAKE_TOOLCHAIN)))"
+    else
+        VCPKG_ROOT_DIR="$PROJECT_ROOT/$(dirname $(dirname $(dirname $VCPKG_CMAKE_TOOLCHAIN)))"
+    fi
+    VCPKG_EXEC="$VCPKG_ROOT_DIR/vcpkg"
+    
+    if [ -f "$VCPKG_EXEC" ]; then
+        echo "Using vcpkg: $VCPKG_EXEC"
+        echo "Installing dependencies from vcpkg.json..."
+        "$VCPKG_EXEC" install
+        testExitStatus $? "vcpkg install"
+        echo ""
+    else
+        echo "WARNING: vcpkg executable not found at $VCPKG_EXEC"
+        echo "Attempting to use system-installed dependencies instead..."
+        echo ""
+    fi
+fi
+
+# Clean and create build directory for fresh build
+echo "=========================================="
+echo "Preparing build directory..."
+echo "=========================================="
+echo ""
+
+if [ -d "build" ]; then
+    echo "Removing old build directory..."
+    rm -rf build
+fi
+
 mkdir -p build
 cd build
 
@@ -78,15 +134,6 @@ echo "Configuring with CMake..."
 echo "=========================================="
 echo ""
 
-# Prepare toolchain path for CMake (build dir is `build/` so make relative if needed)
-if [[ "$VCPKG_CMAKE_TOOLCHAIN" = /* ]]; then
-    TOOLCHAIN_FILE="$VCPKG_CMAKE_TOOLCHAIN"
-else
-    TOOLCHAIN_FILE="../$VCPKG_CMAKE_TOOLCHAIN"
-fi
-
-echo "Using CMake toolchain file: $TOOLCHAIN_FILE"
-
 # Check that a build program (make or ninja) exists for CMake's default generators
 if ! command -v make &> /dev/null && ! command -v ninja &> /dev/null; then
     echo "ERROR: No build tool found (make or ninja)."
@@ -94,10 +141,13 @@ if ! command -v make &> /dev/null && ! command -v ninja &> /dev/null; then
     exit 1
 fi
 
-# Configure with CMake
+# Configure with CMake (Production build - no debug flags)
 cmake .. \
     -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN_FILE" \
-    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_BUILD_TYPE=Release \
+    -DDEBUG_PARTICLES=OFF \
+    -DDEBUG_RENDERING=OFF \
+    -DDEBUG_NETWORK=OFF
 
 testExitStatus $? "CMake configuration"
 
@@ -125,9 +175,16 @@ echo "========================================="
 echo "✓ Build completed successfully!"
 echo "========================================="
 echo ""
+echo "Build artifacts:"
+echo "  Client: build/client/r-type_client"
+echo "  Server: build/server/r-type_server"
+echo "  Video Plugin: build/lib/sfml_video_module.so"
+echo "  Audio Plugin: build/lib/sfml_audio_module.so"
+echo "  Assets: build/client/assets/"
+echo ""
 echo "To run the client:"
-echo "  ./build/client/r-type_client"
+echo "  cd build/client && ./r-type_client"
 echo ""
 echo "To run the server:"
-echo "  ./build/server/r-type_server"
+echo "  cd build/server && ./r-type_server"
 echo ""

@@ -1,0 +1,100 @@
+[0;34m========================================[0m
+[0;34mOld Engine Pattern Detection Script[0m
+[0;34m========================================[0m
+
+[0;32mScanning directory: .[0m
+[0;32mExcluded: build|vcpkg|old_engine|_deps|node_modules|.git|docs/examples[0m
+
+[0;34m=== CRITICAL: Must Fix (Breaking Changes) ===[0m
+
+[0;31m[CRITICAL] Direct SFML RenderWindow usage[0m
+[35m[K./client/engine/GameWorld.hpp[m[K[36m[K:[m[K[32m[K21[m[K[36m[K:[m[K    [01;31m[Ksf::RenderWindow[m[K window_;
+[35m[K./tests/test_systems.cpp[m[K[36m[K:[m[K[32m[K57[m[K[36m[K:[m[K    [01;31m[Ksf::RenderWindow[m[K window(sf::VideoMode(200, 150), "test", sf::Style::None);
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/RenderTarget.hpp[m[K[36m[K:[m[K[32m[K516[m[K[36m[K:[m[K/// \see [01;31m[Ksf::RenderWindow[m[K, sf::RenderTexture, sf::View
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/RenderTexture.hpp[m[K[36m[K:[m[K[32m[K275[m[K[36m[K:[m[K/// sf::RenderTexture is the little brother of [01;31m[Ksf::RenderWindow[m[K.
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/RenderTexture.hpp[m[K[36m[K:[m[K[32m[K291[m[K[36m[K:[m[K/// [01;31m[Ksf::RenderWindow[m[K window(sf::VideoMode(800, 600), "SFML window");
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/RenderTexture.hpp[m[K[36m[K:[m[K[32m[K327[m[K[36m[K:[m[K/// Like [01;31m[Ksf::RenderWindow[m[K, sf::RenderTexture is still able to render direct
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/RenderTexture.hpp[m[K[36m[K:[m[K[32m[K332[m[K[36m[K:[m[K/// \see sf::RenderTarget, [01;31m[Ksf::RenderWindow[m[K, sf::View, sf::Texture
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/RenderWindow.hpp[m[K[36m[K:[m[K[32m[K207[m[K[36m[K:[m[K/// \class [01;31m[Ksf::RenderWindow[m[K
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/RenderWindow.hpp[m[K[36m[K:[m[K[32m[K210[m[K[36m[K:[m[K/// [01;31m[Ksf::RenderWindow[m[K is the main class of the Graphics module.
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/RenderWindow.hpp[m[K[36m[K:[m[K[32m[K214[m[K[36m[K:[m[K/// [01;31m[Ksf::RenderWindow[m[K is derived from sf::Window, thus it inherits
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/RenderWindow.hpp[m[K[36m[K:[m[K[32m[K219[m[K[36m[K:[m[K/// On top of that, [01;31m[Ksf::RenderWindow[m[K adds more features related to
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/RenderWindow.hpp[m[K[36m[K:[m[K[32m[K222[m[K[36m[K:[m[K/// Here is a typical rendering and event loop with a [01;31m[Ksf::RenderWindow[m[K:
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/RenderWindow.hpp[m[K[36m[K:[m[K[32m[K226[m[K[36m[K:[m[K/// [01;31m[Ksf::RenderWindow[m[K window(sf::VideoMode(800, 600), "SFML window");
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/RenderWindow.hpp[m[K[36m[K:[m[K[32m[K256[m[K[36m[K:[m[K/// Like sf::Window, [01;31m[Ksf::RenderWindow[m[K is still able to render direct
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/RenderWindow.hpp[m[K[36m[K:[m[K[32m[K262[m[K[36m[K:[m[K/// [01;31m[Ksf::RenderWindow[m[K window(sf::VideoMode(800, 600), "SFML OpenGL");
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/View.hpp[m[K[36m[K:[m[K[32m[K314[m[K[36m[K:[m[K/// [01;31m[Ksf::RenderWindow[m[K window;
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/View.hpp[m[K[36m[K:[m[K[32m[K341[m[K[36m[K:[m[K/// \see [01;31m[Ksf::RenderWindow[m[K, sf::RenderTexture
+[35m[K./test_sfml_context.cpp[m[K[36m[K:[m[K[32m[K12[m[K[36m[K:[m[K    [01;31m[Ksf::RenderWindow[m[K window(sf::VideoMode(800, 600), "SFML Test", sf::Style::Default, settings);
+[35m[K./test_sfml_render.cpp[m[K[36m[K:[m[K[32m[K9[m[K[36m[K:[m[K    [01;31m[Ksf::RenderWindow[m[K window(sf::VideoMode(800, 600), "SFML Test");
+[0;31m  → Found 19 occurrence(s)[0m
+
+[0;31m[CRITICAL] Direct window_.draw() calls[0m
+  ✓ No occurrences found
+
+[0;31m[CRITICAL] Direct window_.clear() calls[0m
+  ✓ No occurrences found
+
+[0;31m[CRITICAL] Direct window_.display() calls[0m
+  ✓ No occurrences found
+
+[0;31m[CRITICAL] Manual resource loading with loadFromFile()[0m
+  ✓ No occurrences found
+
+[0;31m[CRITICAL] SFML Sprite object usage[0m
+[35m[K./client/engine/systems/systems_functions/render/DrawableSystem.cpp[m[K[36m[K:[m[K[32m[K202[m[K[36m[K:[m[Kvoid DrawSprite(GameWorld &game_world, [01;31m[Ksf::Sprite [m[K&sprite,
+[35m[K./client/include/components/GameplayComponents.hpp[m[K[36m[K:[m[K[32m[K279[m[K[36m[K:[m[K    [01;31m[Ksf::Sprite [m[Kgreen_bar;
+[35m[K./client/include/components/GameplayComponents.hpp[m[K[36m[K:[m[K[32m[K280[m[K[36m[K:[m[K    [01;31m[Ksf::Sprite [m[Kyellow_bar;
+[35m[K./client/include/components/GameplayComponents.hpp[m[K[36m[K:[m[K[32m[K281[m[K[36m[K:[m[K    [01;31m[Ksf::Sprite [m[Kforeground_bar;
+[35m[K./client/include/components/RenderComponent.hpp[m[K[36m[K:[m[K[32m[K17[m[K[36m[K:[m[K    [01;31m[Ksf::Sprite [m[Ksprite;
+[35m[K./client/include/components/RenderComponent.hpp[m[K[36m[K:[m[K[32m[K105[m[K[36m[K:[m[K        [01;31m[Ksf::Sprite [m[Ksprite;
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/Drawable.hpp[m[K[36m[K:[m[K[32m[K118[m[K[36m[K:[m[K///     [01;31m[Ksf::Sprite [m[Km_sprite;
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/RenderTexture.hpp[m[K[36m[K:[m[K[32m[K319[m[K[36m[K:[m[K///    [01;31m[Ksf::Sprite [m[Ksprite(texture.getTexture());
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/RenderWindow.hpp[m[K[36m[K:[m[K[32m[K265[m[K[36m[K:[m[K/// [01;31m[Ksf::Sprite [m[Ksprite;
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/Sprite.hpp[m[K[36m[K:[m[K[32m[K233[m[K[36m[K:[m[K/// [01;31m[Ksf::Sprite [m[Kis a drawable class that allows to easily display
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/Sprite.hpp[m[K[36m[K:[m[K[32m[K242[m[K[36m[K:[m[K/// [01;31m[Ksf::Sprite [m[Kworks in combination with the sf::Texture class, which
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/Sprite.hpp[m[K[36m[K:[m[K[32m[K245[m[K[36m[K:[m[K/// The separation of [01;31m[Ksf::Sprite [m[Kand sf::Texture allows more flexibility
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/Sprite.hpp[m[K[36m[K:[m[K[32m[K248[m[K[36m[K:[m[K/// applications). On the other side, a [01;31m[Ksf::Sprite [m[Kis a lightweight
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/Sprite.hpp[m[K[36m[K:[m[K[32m[K252[m[K[36m[K:[m[K/// It is important to note that the [01;31m[Ksf::Sprite [m[Kinstance doesn't
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/Sprite.hpp[m[K[36m[K:[m[K[32m[K255[m[K[36m[K:[m[K/// used by a [01;31m[Ksf::Sprite [m[K(i.e. never write a function that
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/Sprite.hpp[m[K[36m[K:[m[K[32m[K267[m[K[36m[K:[m[K/// [01;31m[Ksf::Sprite [m[Ksprite;
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/Texture.hpp[m[K[36m[K:[m[K[32m[K687[m[K[36m[K:[m[K/// [01;31m[Ksf::Sprite [m[Ksprite;
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/Texture.hpp[m[K[36m[K:[m[K[32m[K704[m[K[36m[K:[m[K/// [01;31m[Ksf::Sprite [m[Ksprite(texture);
+[35m[K./DrawableSystem.cpp[m[K[36m[K:[m[K[32m[K202[m[K[36m[K:[m[Kvoid DrawSprite(GameWorld &game_world, [01;31m[Ksf::Sprite [m[K&sprite,
+[35m[K./test_sfml_render.cpp[m[K[36m[K:[m[K[32m[K19[m[K[36m[K:[m[K    [01;31m[Ksf::Sprite [m[Ksprite;
+[0;31m  → Found 20 occurrence(s)[0m
+
+[0;31m[CRITICAL] SFML Texture object usage[0m
+[35m[K./client/include/components/GameplayComponents.hpp[m[K[36m[K:[m[K[32m[K282[m[K[36m[K:[m[K    [01;31m[Ksf::Texture [m[Kgreen_texture;
+[35m[K./client/include/components/GameplayComponents.hpp[m[K[36m[K:[m[K[32m[K283[m[K[36m[K:[m[K    [01;31m[Ksf::Texture [m[Kyellow_texture;
+[35m[K./client/include/components/GameplayComponents.hpp[m[K[36m[K:[m[K[32m[K284[m[K[36m[K:[m[K    [01;31m[Ksf::Texture [m[Kforeground_texture;
+[35m[K./client/include/components/RenderComponent.hpp[m[K[36m[K:[m[K[32m[K18[m[K[36m[K:[m[K    [01;31m[Ksf::Texture [m[Ktexture;
+[35m[K./client/include/components/RenderComponent.hpp[m[K[36m[K:[m[K[32m[K104[m[K[36m[K:[m[K        [01;31m[Ksf::Texture [m[Ktexture;
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/Drawable.hpp[m[K[36m[K:[m[K[32m[K119[m[K[36m[K:[m[K///     [01;31m[Ksf::Texture [m[Km_texture;
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/RenderTexture.hpp[m[K[36m[K:[m[K[32m[K246[m[K[36m[K:[m[K    /// The internal [01;31m[Ksf::Texture [m[Kof a render-texture is always the
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/RenderWindow.hpp[m[K[36m[K:[m[K[32m[K148[m[K[36m[K:[m[K    /// Use a [01;31m[Ksf::Texture [m[Kand its sf::Texture::update(const Window&)
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/RenderWindow.hpp[m[K[36m[K:[m[K[32m[K152[m[K[36m[K:[m[K    /// [01;31m[Ksf::Texture [m[Ktexture;
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/RenderWindow.hpp[m[K[36m[K:[m[K[32m[K161[m[K[36m[K:[m[K    /// drawing, you should rather use a [01;31m[Ksf::Texture [m[Kand its
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/Shader.hpp[m[K[36m[K:[m[K[32m[K445[m[K[36m[K:[m[K    /// [01;31m[Ksf::Texture [m[Ktexture;
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/Shader.hpp[m[K[36m[K:[m[K[32m[K864[m[K[36m[K:[m[K/// Like [01;31m[Ksf::Texture [m[Kthat can be used as a raw OpenGL texture,
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/Sprite.hpp[m[K[36m[K:[m[K[32m[K242[m[K[36m[K:[m[K/// sf::Sprite works in combination with the [01;31m[Ksf::Texture [m[Kclass, which
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/Sprite.hpp[m[K[36m[K:[m[K[32m[K245[m[K[36m[K:[m[K/// The separation of sf::Sprite and [01;31m[Ksf::Texture [m[Kallows more flexibility
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/Sprite.hpp[m[K[36m[K:[m[K[32m[K246[m[K[36m[K:[m[K/// and better performances: indeed a [01;31m[Ksf::Texture [m[Kis a heavy resource,
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/Sprite.hpp[m[K[36m[K:[m[K[32m[K249[m[K[36m[K:[m[K/// object which can use the pixel data of a [01;31m[Ksf::Texture [m[Kand draw
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/Sprite.hpp[m[K[36m[K:[m[K[32m[K254[m[K[36m[K:[m[K/// Thus, a [01;31m[Ksf::Texture [m[Kmust not be destroyed while it is
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/Sprite.hpp[m[K[36m[K:[m[K[32m[K256[m[K[36m[K:[m[K/// uses a local [01;31m[Ksf::Texture [m[Kinstance for creating a sprite).
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/Sprite.hpp[m[K[36m[K:[m[K[32m[K263[m[K[36m[K:[m[K/// [01;31m[Ksf::Texture [m[Ktexture;
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/Texture.hpp[m[K[36m[K:[m[K[32m[K546[m[K[36m[K:[m[K    /// mix [01;31m[Ksf::Texture [m[Kwith OpenGL code.
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/Texture.hpp[m[K[36m[K:[m[K[32m[K549[m[K[36m[K:[m[K    /// [01;31m[Ksf::Texture [m[Kt1, t2;
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/Texture.hpp[m[K[36m[K:[m[K[32m[K640[m[K[36m[K:[m[K/// [01;31m[Ksf::Texture [m[Kstores pixels that can be drawn, with a sprite
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/Texture.hpp[m[K[36m[K:[m[K[32m[K651[m[K[36m[K:[m[K/// [01;31m[Ksf::Texture [m[Kmakes it easy to convert from/to sf::Image, but
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/Texture.hpp[m[K[36m[K:[m[K[32m[K671[m[K[36m[K:[m[K/// Like sf::Image, [01;31m[Ksf::Texture [m[Kcan handle a unique internal
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/Texture.hpp[m[K[36m[K:[m[K[32m[K682[m[K[36m[K:[m[K/// [01;31m[Ksf::Texture [m[Ktexture;
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/Texture.hpp[m[K[36m[K:[m[K[32m[K699[m[K[36m[K:[m[K/// [01;31m[Ksf::Texture [m[Ktexture;
+[35m[K./vcpkg_installed/x64-linux/include/SFML/Graphics/Texture.hpp[m[K[36m[K:[m[K[32m[K723[m[K[36m[K:[m[K/// [01;31m[Ksf::Texture [m[Kcan also be used directly as a raw texture for
+[35m[K./vcpkg_installed/x64-linux/include/SFML/System/InputStream.hpp[m[K[36m[K:[m[K[32m[K105[m[K[36m[K:[m[K/// SFML resource classes like [01;31m[Ksf::Texture [m[Kand
+[35m[K./vcpkg_installed/x64-linux/include/SFML/System/InputStream.hpp[m[K[36m[K:[m[K[32m[K138[m[K[36m[K:[m[K/// [01;31m[Ksf::Texture [m[Ktexture;
+[35m[K./test_sfml_context.cpp[m[K[36m[K:[m[K[32m[K18[m[K[36m[K:[m[K    [01;31m[Ksf::Texture [m[Ktexture;
+[35m[K./test_sfml_render.cpp[m[K[36m[K:[m[K[32m[K12[m[K[36m[K:[m[K    [01;31m[Ksf::Texture [m[Ktexture;
+[0;31m  → Found 31 occurrence(s)[0m
+

@@ -1,0 +1,473 @@
+==========================================
+R-TYPE Build Script (vcpkg)
+==========================================
+
+Project root: /home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S.
+
+✓ CMake version: 3.31.6
+
+✓ Using local vcpkg in project directory
+
+==========================================
+Configuring with CMake...
+==========================================
+
+Using CMake toolchain file: ../vcpkg/scripts/buildsystems/vcpkg.cmake
+-- Running vcpkg install
+Detecting compiler hash for triplet x64-linux...
+Compiler found: /usr/lib64/ccache/c++
+The following packages are already installed:
+  * alsa:x64-linux@1.2.14#1
+  * boost-algorithm:x64-linux@1.89.0
+  * boost-align:x64-linux@1.89.0
+  * boost-array:x64-linux@1.89.0
+    boost-asio[core,deadline-timer,spawn]:x64-linux@1.89.0
+  * boost-assert:x64-linux@1.89.0
+  * boost-atomic:x64-linux@1.89.0
+  * boost-bind:x64-linux@1.89.0
+  * boost-cmake:x64-linux@1.89.0
+  * boost-concept-check:x64-linux@1.89.0
+  * boost-config:x64-linux@1.89.0
+  * boost-container:x64-linux@1.89.0
+  * boost-container-hash:x64-linux@1.89.0
+  * boost-context:x64-linux@1.89.0
+  * boost-conversion:x64-linux@1.89.0
+  * boost-core:x64-linux@1.89.0
+  * boost-date-time:x64-linux@1.89.0
+  * boost-describe:x64-linux@1.89.0
+  * boost-detail:x64-linux@1.89.0
+  * boost-exception:x64-linux@1.89.0
+  * boost-function:x64-linux@1.89.0
+  * boost-function-types:x64-linux@1.89.0
+  * boost-functional:x64-linux@1.89.0
+  * boost-fusion:x64-linux@1.89.0
+  * boost-headers:x64-linux@1.89.0
+  * boost-integer:x64-linux@1.89.0
+  * boost-intrusive:x64-linux@1.89.0
+  * boost-io:x64-linux@1.89.0
+  * boost-iterator:x64-linux@1.89.0
+  * boost-lexical-cast:x64-linux@1.89.0
+    boost-lockfree:x64-linux@1.89.0
+  * boost-move:x64-linux@1.89.0
+  * boost-mp11:x64-linux@1.89.0
+  * boost-mpl:x64-linux@1.89.0
+  * boost-numeric-conversion:x64-linux@1.89.0
+  * boost-optional:x64-linux@1.89.0
+  * boost-parameter:x64-linux@1.89.0
+  * boost-pool:x64-linux@1.89.0
+  * boost-predef:x64-linux@1.89.0
+  * boost-preprocessor:x64-linux@1.89.0
+  * boost-range:x64-linux@1.89.0
+  * boost-regex:x64-linux@1.89.0
+  * boost-smart-ptr:x64-linux@1.89.0
+  * boost-static-assert:x64-linux@1.89.0
+    boost-system:x64-linux@1.89.0
+  * boost-throw-exception:x64-linux@1.89.0
+  * boost-tokenizer:x64-linux@1.89.0
+  * boost-tuple:x64-linux@1.89.0
+  * boost-type-traits:x64-linux@1.89.0
+  * boost-typeof:x64-linux@1.89.0
+  * boost-uninstall:x64-linux@1.89.0
+  * boost-unordered:x64-linux@1.89.0
+  * boost-utility:x64-linux@1.89.0
+  * boost-variant2:x64-linux@1.89.0
+  * boost-winapi:x64-linux@1.89.0
+  * brotli:x64-linux@1.2.0
+  * bzip2[core,tool]:x64-linux@1.0.8#6
+  * egl-registry:x64-linux@2024-01-25
+  * fmt:x64-linux@12.1.0
+  * freetype[brotli,bzip2,core,png,zlib]:x64-linux@2.13.3
+  * libflac[core,stack-protector]:x64-linux@1.5.0
+  * libogg:x64-linux@1.3.6#1
+  * libpng:x64-linux@1.6.51
+  * libvorbis:x64-linux@1.3.7#4
+  * openal-soft:x64-linux@1.24.3#1
+  * opengl:x64-linux@2022-12-04#3
+  * opengl-registry:x64-linux@2024-02-10#1
+    sfml[audio,core,graphics,network,window]:x64-linux@2.6.2
+  * stb:x64-linux@2024-07-29#1
+  * vcpkg-boost:x64-linux@2025-03-29
+  * vcpkg-cmake:x64-linux@2024-04-23
+  * vcpkg-cmake-config:x64-linux@2024-05-23
+  * zlib:x64-linux@1.3.1
+boost-system provides CMake targets:
+
+  # this is heuristically generated, and may not be correct
+  find_package(boost_system CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE Boost::system)
+
+boost-asio provides CMake targets:
+
+  # this is heuristically generated, and may not be correct
+  find_package(boost_asio CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE Boost::asio)
+
+  find_package(boost_asio_core CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE Boost::asio_core)
+
+  find_package(boost_asio_deadline_timer CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE Boost::asio_deadline_timer)
+
+  find_package(boost_asio_spawn CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE Boost::asio_spawn)
+
+boost-lockfree provides CMake targets:
+
+  # this is heuristically generated, and may not be correct
+  find_package(boost_lockfree CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE Boost::lockfree)
+
+The package sfml provides CMake targets:
+
+    find_package(SFML COMPONENTS system window graphics audio CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE sfml-system sfml-network sfml-graphics sfml-window sfml-audio)
+
+    # If you want SFML to provide an implementation of main():
+    target_link_libraries(main PRIVATE sfml-main)
+
+All requested installations completed successfully in: 4.09 ms
+-- Running vcpkg install - done
+-- Found SFML 2.6.2 in /home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./build/vcpkg_installed/x64-linux/share/sfml
+-- Found SFML 2.6.2 in /home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./build/vcpkg_installed/x64-linux/share/sfml
+-- ==============================================
+-- R-TYPE J.A.M.E.S. Configuration Summary
+-- ==============================================
+-- Build type: Release
+-- C++ Compiler: /usr/lib64/ccache/c++
+-- C++ Standard: 20
+-- SFML Found: 1
+-- Boost Found: 1
+--   Boost Version: 1.89.0
+--   Boost Include: /home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./build/vcpkg_installed/x64-linux/include
+-- Coverage enabled: OFF
+-- Toolchain file: ../vcpkg/scripts/buildsystems/vcpkg.cmake
+-- ==============================================
+-- Configuring done (2.2s)
+-- Generating done (0.2s)
+-- Build files have been written to: /home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./build
+
+==========================================
+Building...
+==========================================
+
+Building with 13 parallel jobs (CPU cores: 12)
+
+[  2%] Built target r-type_engine
+[  3%] Built target sfml_audio_module
+[  4%] Building CXX object client/plugins/video/sfml/CMakeFiles/sfml_video_module.dir/SFMLVideoModule.cpp.o
+[  5%] Built target gtest
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/plugins/video/sfml/SFMLVideoModule.cpp:6:10: fatal error: plugins/video/sfml/SFMLVideoModule.hpp: No such file or directory
+    6 | #include "plugins/video/sfml/SFMLVideoModule.hpp"
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+gmake[2]: *** [client/plugins/video/sfml/CMakeFiles/sfml_video_module.dir/build.make:79: client/plugins/video/sfml/CMakeFiles/sfml_video_module.dir/SFMLVideoModule.cpp.o] Error 1
+gmake[1]: *** [CMakeFiles/Makefile2:573: client/plugins/video/sfml/CMakeFiles/sfml_video_module.dir/all] Error 2
+gmake[1]: *** Waiting for unfinished jobs....
+[  6%] Building CXX object _deps/googletest-build/googletest/CMakeFiles/gtest_main.dir/src/gtest_main.cc.o
+[  6%] Building CXX object _deps/googletest-build/googlemock/CMakeFiles/gmock.dir/src/gmock-all.cc.o
+[  7%] Building CXX object server/CMakeFiles/r-type_server.dir/main.cpp.o
+[  7%] Building CXX object server/CMakeFiles/r-type_server.dir/src/server/Config.cpp.o
+[  8%] Building CXX object server/CMakeFiles/r-type_server.dir/src/server/Network.cpp.o
+[  8%] Building CXX object server/CMakeFiles/r-type_server.dir/src/server/Server.cpp.o
+[  9%] Building CXX object server/CMakeFiles/r-type_server.dir/src/server/PacketSender.cpp.o
+[ 10%] Building CXX object server/CMakeFiles/r-type_server.dir/src/server/ClientConnectionManager.cpp.o
+[ 10%] Building CXX object server/CMakeFiles/r-type_server.dir/src/server/PacketHandler.cpp.o
+[ 11%] Building CXX object client/CMakeFiles/r-type_client.dir/engine/HierarchyTools.cpp.o
+[ 11%] Building CXX object client/CMakeFiles/r-type_client.dir/engine/InitRegistryComponent.cpp.o
+[ 12%] Building CXX object client/CMakeFiles/r-type_client.dir/engine/OriginTool.cpp.o
+[ 12%] Building CXX object client/CMakeFiles/r-type_client.dir/engine/audio/AudioManager.cpp.o
+[ 13%] Building CXX object client/CMakeFiles/r-type_client.dir/engine/audio/PluginAudioBackend.cpp.o
+[ 14%] Building CXX object client/CMakeFiles/r-type_client.dir/engine/audio/SFMLAudioBackend.cpp.o
+In file included from /home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/engine/HierarchyTools.hpp:4,
+                 from /home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/engine/HierarchyTools.cpp:1:
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/CoreComponents.hpp:24:5: error: ‘sf’ does not name a type
+   24 |     sf::Vector2f scale;
+      |     ^~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/CoreComponents.hpp:48:56: error: ‘sf’ has not been declared
+   48 |     Transform(float x, float y, float rotationDegrees, sf::Vector2f scale,
+      |                                                        ^~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/CoreComponents.hpp:48:69: error: expected ‘,’ or ‘...’ before ‘scale’
+   48 |     Transform(float x, float y, float rotationDegrees, sf::Vector2f scale,
+      |                                                                     ^~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/CoreComponents.hpp:64:9: error: ‘sf’ has not been declared
+   64 |         sf::Vector2f customOrigin = sf::Vector2f(0.0f, 0.0f),
+      |         ^~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/CoreComponents.hpp:64:22: error: expected ‘,’ or ‘...’ before ‘customOrigin’
+   64 |         sf::Vector2f customOrigin = sf::Vector2f(0.0f, 0.0f),
+      |                      ^~~~~~~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/CoreComponents.hpp:64:13: error: default argument missing for parameter 6 of ‘Rtype::Client::Component::Transform::Transform(float, float, float, float, OriginPoint, int)’
+   64 |         sf::Vector2f customOrigin = sf::Vector2f(0.0f, 0.0f),
+      |         ~~~~^~~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/CoreComponents.hpp:63:21: note: ...following parameter 5 which has a default argument
+   63 |         OriginPoint origin = CENTER,
+      |         ~~~~~~~~~~~~^~~~~~~~~~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/CoreComponents.hpp: In constructor ‘Rtype::Client::Component::Transform::Transform(float, float, float, int)’:
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/CoreComponents.hpp:56:11: error: class ‘Rtype::Client::Component::Transform’ does not have any field named ‘scale’
+   56 |           scale(scale),
+      |           ^~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/CoreComponents.hpp:56:17: error: ‘scale’ was not declared in this scope
+   56 |           scale(scale),
+      |                 ^~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/CoreComponents.hpp: In constructor ‘Rtype::Client::Component::Transform::Transform(float, float, float, float, OriginPoint, int)’:
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/CoreComponents.hpp:69:11: error: class ‘Rtype::Client::Component::Transform’ does not have any field named ‘scale’
+   69 |           scale({scale, scale}),
+      |           ^~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/engine/HierarchyTools.hpp: At global scope:
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/engine/HierarchyTools.hpp:11:1: error: ‘sf’ does not name a type
+   11 | sf::Vector2f CalculateCumulativeScale(const Com::Transform &transform,
+      | ^~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/engine/HierarchyTools.cpp:19:1: error: ‘sf’ does not name a type
+   19 | sf::Vector2f CalculateCumulativeScale(const Com::Transform &transform,
+      | ^~
+gmake[2]: *** [client/CMakeFiles/r-type_client.dir/build.make:93: client/CMakeFiles/r-type_client.dir/engine/HierarchyTools.cpp.o] Error 1
+gmake[2]: *** Waiting for unfinished jobs....
+In file included from /home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/engine/OriginTool.hpp:4,
+                 from /home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/engine/OriginTool.cpp:1:
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/CoreComponents.hpp:24:5: error: ‘sf’ does not name a type
+   24 |     sf::Vector2f scale;
+      |     ^~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/CoreComponents.hpp:48:56: error: ‘sf’ has not been declared
+   48 |     Transform(float x, float y, float rotationDegrees, sf::Vector2f scale,
+      |                                                        ^~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/CoreComponents.hpp:48:69: error: expected ‘,’ or ‘...’ before ‘scale’
+   48 |     Transform(float x, float y, float rotationDegrees, sf::Vector2f scale,
+      |                                                                     ^~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/CoreComponents.hpp:64:9: error: ‘sf’ has not been declared
+   64 |         sf::Vector2f customOrigin = sf::Vector2f(0.0f, 0.0f),
+      |         ^~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/CoreComponents.hpp:64:22: error: expected ‘,’ or ‘...’ before ‘customOrigin’
+   64 |         sf::Vector2f customOrigin = sf::Vector2f(0.0f, 0.0f),
+      |                      ^~~~~~~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/CoreComponents.hpp:64:13: error: default argument missing for parameter 6 of ‘Rtype::Client::Component::Transform::Transform(float, float, float, float, OriginPoint, int)’
+   64 |         sf::Vector2f customOrigin = sf::Vector2f(0.0f, 0.0f),
+      |         ~~~~^~~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/CoreComponents.hpp:63:21: note: ...following parameter 5 which has a default argument
+   63 |         OriginPoint origin = CENTER,
+      |         ~~~~~~~~~~~~^~~~~~~~~~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/CoreComponents.hpp: In constructor ‘Rtype::Client::Component::Transform::Transform(float, float, float, int)’:
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/CoreComponents.hpp:56:11: error: class ‘Rtype::Client::Component::Transform’ does not have any field named ‘scale’
+   56 |           scale(scale),
+      |           ^~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/CoreComponents.hpp:56:17: error: ‘scale’ was not declared in this scope
+   56 |           scale(scale),
+      |                 ^~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/CoreComponents.hpp: In constructor ‘Rtype::Client::Component::Transform::Transform(float, float, float, float, OriginPoint, int)’:
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/CoreComponents.hpp:69:11: error: class ‘Rtype::Client::Component::Transform’ does not have any field named ‘scale’
+   69 |           scale({scale, scale}),
+      |           ^~~~~
+gmake[2]: *** [client/CMakeFiles/r-type_client.dir/build.make:121: client/CMakeFiles/r-type_client.dir/engine/OriginTool.cpp.o] Error 1
+[ 15%] Linking CXX static library ../../../lib/libgtest_main.a
+[ 15%] Built target gtest_main
+In file included from /home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/engine/InitRegistryComponent.hpp:2,
+                 from /home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/engine/InitRegistryComponent.cpp:1:
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/CoreComponents.hpp:24:5: error: ‘sf’ does not name a type
+   24 |     sf::Vector2f scale;
+      |     ^~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/CoreComponents.hpp:48:56: error: ‘sf’ has not been declared
+   48 |     Transform(float x, float y, float rotationDegrees, sf::Vector2f scale,
+      |                                                        ^~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/CoreComponents.hpp:48:69: error: expected ‘,’ or ‘...’ before ‘scale’
+   48 |     Transform(float x, float y, float rotationDegrees, sf::Vector2f scale,
+      |                                                                     ^~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/CoreComponents.hpp:64:9: error: ‘sf’ has not been declared
+   64 |         sf::Vector2f customOrigin = sf::Vector2f(0.0f, 0.0f),
+      |         ^~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/CoreComponents.hpp:64:22: error: expected ‘,’ or ‘...’ before ‘customOrigin’
+   64 |         sf::Vector2f customOrigin = sf::Vector2f(0.0f, 0.0f),
+      |                      ^~~~~~~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/CoreComponents.hpp:64:13: error: default argument missing for parameter 6 of ‘Rtype::Client::Component::Transform::Transform(float, float, float, float, OriginPoint, int)’
+   64 |         sf::Vector2f customOrigin = sf::Vector2f(0.0f, 0.0f),
+      |         ~~~~^~~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/CoreComponents.hpp:63:21: note: ...following parameter 5 which has a default argument
+   63 |         OriginPoint origin = CENTER,
+      |         ~~~~~~~~~~~~^~~~~~~~~~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/CoreComponents.hpp: In constructor ‘Rtype::Client::Component::Transform::Transform(float, float, float, int)’:
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/CoreComponents.hpp:56:11: error: class ‘Rtype::Client::Component::Transform’ does not have any field named ‘scale’
+   56 |           scale(scale),
+      |           ^~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/CoreComponents.hpp:56:17: error: ‘scale’ was not declared in this scope
+   56 |           scale(scale),
+      |                 ^~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/CoreComponents.hpp: In constructor ‘Rtype::Client::Component::Transform::Transform(float, float, float, float, OriginPoint, int)’:
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/CoreComponents.hpp:69:11: error: class ‘Rtype::Client::Component::Transform’ does not have any field named ‘scale’
+   69 |           scale({scale, scale}),
+      |           ^~~~~
+In file included from /home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/engine/InitRegistryComponent.hpp:3:
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp: At global scope:
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:90:5: error: ‘sf’ does not name a type
+   90 |     sf::Vector2f offset_shoot_position = sf::Vector2f(0.0f, 0.0f);
+      |     ^~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:101:9: error: ‘sf’ has not been declared
+  101 |         sf::Vector2f offset = sf::Vector2f(0.0f, 0.0f));
+      |         ^~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:101:22: error: expected ‘,’ or ‘...’ before ‘offset’
+  101 |         sf::Vector2f offset = sf::Vector2f(0.0f, 0.0f));
+      |                      ^~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:101:13: error: default argument missing for parameter 3 of ‘Rtype::Client::Component::EnemyShootTag::EnemyShootTag(float, int, int)’
+  101 |         sf::Vector2f offset = sf::Vector2f(0.0f, 0.0f));
+      |         ~~~~^~~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:100:25: note: ...following parameter 1 which has a default argument
+  100 |     EnemyShootTag(float speed = 200.0f, int damage = 10,
+      |                   ~~~~~~^~~~~~~~~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:106:5: error: ‘sf’ does not name a type
+  106 |     sf::Vector2f direction;
+      |     ^~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:181:39: error: ‘sf’ has not been declared
+  181 |     PatternMovement(PatternType type, sf::Vector2f amplitude,
+      |                                       ^~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:181:52: error: expected ‘,’ or ‘...’ before ‘amplitude’
+  181 |     PatternMovement(PatternType type, sf::Vector2f amplitude,
+      |                                                    ^~~~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:198:33: error: ‘sf’ was not declared in this scope
+  198 |     PatternMovement(std::vector<sf::Vector2f> waypoints, sf::Vector2f baseDir,
+      |                                 ^~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:198:45: error: template argument 1 is invalid
+  198 |     PatternMovement(std::vector<sf::Vector2f> waypoints, sf::Vector2f baseDir,
+      |                                             ^
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:198:45: error: template argument 2 is invalid
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:198:46: error: expected ‘)’ before ‘waypoints’
+  198 |     PatternMovement(std::vector<sf::Vector2f> waypoints, sf::Vector2f baseDir,
+      |                    ~                         ^~~~~~~~~~
+      |                                              )
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:202:30: error: expected unqualified-id before ‘)’ token
+  202 |           spawnPos({0.f, 0.f}),
+      |                              ^
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:205:31: error: expected unqualified-id before ‘)’ token
+  205 |           amplitude({0.f, 0.f}),
+      |                               ^
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:206:31: error: expected unqualified-id before ‘)’ token
+  206 |           frequency({0.f, 0.f}),
+      |                               ^
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:227:52: error: ‘sf’ has not been declared
+  227 |     PatternMovement(float baseSpeed, float radius, sf::Vector2f centerPos)
+      |                                                    ^~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:227:65: error: expected ‘,’ or ‘...’ before ‘centerPos’
+  227 |     PatternMovement(float baseSpeed, float radius, sf::Vector2f centerPos)
+      |                                                                 ^~~~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:249:5: error: ‘sf’ does not name a type
+  249 |     sf::Vector2f spawnPos;  // Spawn position of the entity
+      |     ^~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:250:5: error: ‘sf’ does not name a type
+  250 |     sf::Vector2f baseDir;   // Base movement direction (normalized)
+      |     ^~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:254:5: error: ‘sf’ does not name a type
+  254 |     sf::Vector2f amplitude;  // Amplitude of the sine wave
+      |     ^~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:255:5: error: ‘sf’ does not name a type
+  255 |     sf::Vector2f frequency;  // Frequency of the sine wave
+      |     ^~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:258:17: error: ‘sf’ was not declared in this scope
+  258 |     std::vector<sf::Vector2f> waypoints;
+      |                 ^~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:258:29: error: template argument 1 is invalid
+  258 |     std::vector<sf::Vector2f> waypoints;
+      |                             ^
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:258:29: error: template argument 2 is invalid
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:258:10: error: ‘<expression error>’ in namespace ‘std’ does not name a type
+  258 |     std::vector<sf::Vector2f> waypoints;
+      |          ^~~~~~~~~~~~~~~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp: In constructor ‘Rtype::Client::Component::PatternMovement::PatternMovement()’:
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:170:11: error: class ‘Rtype::Client::Component::PatternMovement’ does not have any field named ‘spawnPos’
+  170 |           spawnPos({0.f, 0.f}),
+      |           ^~~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:171:11: error: class ‘Rtype::Client::Component::PatternMovement’ does not have any field named ‘baseDir’
+  171 |           baseDir({1.f, 0.f}),
+      |           ^~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:173:11: error: class ‘Rtype::Client::Component::PatternMovement’ does not have any field named ‘amplitude’
+  173 |           amplitude({0.f, 0.f}),
+      |           ^~~~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:174:11: error: class ‘Rtype::Client::Component::PatternMovement’ does not have any field named ‘frequency’
+  174 |           frequency({0.f, 0.f}),
+      |           ^~~~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:175:11: error: class ‘Rtype::Client::Component::PatternMovement’ does not have any field named ‘waypoints’
+  175 |           waypoints({}),
+      |           ^~~~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp: In constructor ‘Rtype::Client::Component::PatternMovement::PatternMovement(PatternType, int)’:
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:187:11: error: class ‘Rtype::Client::Component::PatternMovement’ does not have any field named ‘spawnPos’
+  187 |           spawnPos({0.f, 0.f}),
+      |           ^~~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:188:11: error: class ‘Rtype::Client::Component::PatternMovement’ does not have any field named ‘baseDir’
+  188 |           baseDir(baseDir),
+      |           ^~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:188:19: error: ‘baseDir’ was not declared in this scope
+  188 |           baseDir(baseDir),
+      |                   ^~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:190:11: error: class ‘Rtype::Client::Component::PatternMovement’ does not have any field named ‘amplitude’
+  190 |           amplitude(amplitude),
+      |           ^~~~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:190:21: error: ‘amplitude’ was not declared in this scope
+  190 |           amplitude(amplitude),
+      |                     ^~~~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:191:11: error: class ‘Rtype::Client::Component::PatternMovement’ does not have any field named ‘frequency’
+  191 |           frequency(frequency),
+      |           ^~~~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:191:21: error: ‘frequency’ was not declared in this scope
+  191 |           frequency(frequency),
+      |                     ^~~~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:192:11: error: class ‘Rtype::Client::Component::PatternMovement’ does not have any field named ‘waypoints’
+  192 |           waypoints({}),
+      |           ^~~~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp: In constructor ‘Rtype::Client::Component::PatternMovement::PatternMovement(float)’:
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:217:11: error: class ‘Rtype::Client::Component::PatternMovement’ does not have any field named ‘spawnPos’
+  217 |           spawnPos({0.f, 0.f}),
+      |           ^~~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:218:11: error: class ‘Rtype::Client::Component::PatternMovement’ does not have any field named ‘baseDir’
+  218 |           baseDir({0.f, 0.f}),
+      |           ^~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:220:11: error: class ‘Rtype::Client::Component::PatternMovement’ does not have any field named ‘amplitude’
+  220 |           amplitude({0.f, 0.f}),
+      |           ^~~~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:221:11: error: class ‘Rtype::Client::Component::PatternMovement’ does not have any field named ‘frequency’
+  221 |           frequency({0.f, 0.f}),
+      |           ^~~~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:222:11: error: class ‘Rtype::Client::Component::PatternMovement’ does not have any field named ‘waypoints’
+  222 |           waypoints({}),
+      |           ^~~~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp: In constructor ‘Rtype::Client::Component::PatternMovement::PatternMovement(float, float, int)’:
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:231:11: error: class ‘Rtype::Client::Component::PatternMovement’ does not have any field named ‘spawnPos’
+  231 |           spawnPos(centerPos),
+      |           ^~~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:231:20: error: ‘centerPos’ was not declared in this scope
+  231 |           spawnPos(centerPos),
+      |                    ^~~~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:232:11: error: class ‘Rtype::Client::Component::PatternMovement’ does not have any field named ‘baseDir’
+  232 |           baseDir({0.f, 0.f}),
+      |           ^~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:234:11: error: class ‘Rtype::Client::Component::PatternMovement’ does not have any field named ‘amplitude’
+  234 |           amplitude({0.f, 0.f}),
+      |           ^~~~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:235:11: error: class ‘Rtype::Client::Component::PatternMovement’ does not have any field named ‘frequency’
+  235 |           frequency({0.f, 0.f}),
+      |           ^~~~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:236:11: error: class ‘Rtype::Client::Component::PatternMovement’ does not have any field named ‘waypoints’
+  236 |           waypoints({}),
+      |           ^~~~~~~~~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp: At global scope:
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:272:5: error: ‘sf’ does not name a type
+  272 |     sf::Vector2f offset = {0.f, -10.f};
+      |     ^~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:279:5: error: ‘sf’ does not name a type
+  279 |     sf::Sprite green_bar;
+      |     ^~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:280:5: error: ‘sf’ does not name a type
+  280 |     sf::Sprite yellow_bar;
+      |     ^~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:281:5: error: ‘sf’ does not name a type
+  281 |     sf::Sprite foreground_bar;
+      |     ^~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:282:5: error: ‘sf’ does not name a type
+  282 |     sf::Texture green_texture;
+      |     ^~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:283:5: error: ‘sf’ does not name a type
+  283 |     sf::Texture yellow_texture;
+      |     ^~
+/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./client/include/components/GameplayComponents.hpp:284:5: error: ‘sf’ does not name a type
+  284 |     sf::Texture foreground_texture;
+      |     ^~
+gmake[2]: *** [client/CMakeFiles/r-type_client.dir/build.make:107: client/CMakeFiles/r-type_client.dir/engine/InitRegistryComponent.cpp.o] Error 1
+gmake[1]: *** [CMakeFiles/Makefile2:509: client/CMakeFiles/r-type_client.dir/all] Error 2
+[ 16%] Linking CXX static library ../../../lib/libgmock.a
+[ 16%] Built target gmock
+[ 17%] Linking CXX executable r-type_server
+[ 17%] Built target r-type_server
+gmake: *** [Makefile:146: all] Error 2

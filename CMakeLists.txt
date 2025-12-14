@@ -3,6 +3,35 @@ cmake_minimum_required(VERSION 3.23)
 project(RTypeProject LANGUAGES CXX)
 
 # ===========================
+# Debug output options
+# ===========================
+option(DEBUG_PARTICLES "Enable particle rendering debug output" OFF)
+option(DEBUG_RENDERING "Enable general rendering debug output" OFF)
+option(DEBUG_NETWORK "Enable network debug output" OFF)
+
+# Pass debug flags to compiler
+if(DEBUG_PARTICLES)
+    add_compile_definitions(DEBUG_PARTICLES)
+    message(STATUS "Particle debug output: ENABLED")
+endif()
+
+if(DEBUG_RENDERING)
+    add_compile_definitions(DEBUG_RENDERING)
+    message(STATUS "Rendering debug output: ENABLED")
+endif()
+
+if(DEBUG_NETWORK)
+    add_compile_definitions(DEBUG_NETWORK)
+    message(STATUS "Network debug output: ENABLED")
+endif()
+
+# Enable all debug in Debug build type
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_compile_definitions(CMAKE_BUILD_TYPE_DEBUG)
+    message(STATUS "Debug build: All debug outputs ENABLED")
+endif()
+
+# ===========================
 # Options de coverage
 # ===========================
 option(ENABLE_COVERAGE "Enable code coverage" OFF)

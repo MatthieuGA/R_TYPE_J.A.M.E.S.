@@ -26,9 +26,9 @@ class FactoryActors {
         int health;
         float speed;
         std::string spritePath;
-        sf::Vector2f hitbox;
-        sf::Vector2f offset_healthbar;
-        sf::Vector2f scale;
+        Engine::Graphics::Vector2f hitbox;
+        Engine::Graphics::Vector2f offset_healthbar;
+        Engine::Graphics::Vector2f scale;
     };
 
     static FactoryActors &GetInstance() {
@@ -36,8 +36,8 @@ class FactoryActors {
         return instance;
     }
 
-    void CreateActor(Engine::entity &entity, Engine::registry &reg,
-        std::string const &tag, bool is_local = false);
+    void CreateActor(
+        Engine::entity &entity, Engine::registry &reg, std::string const &tag);
     void InitializeEnemyInfoMap(const std::string &jsonFolder);
 
  private:
@@ -46,8 +46,8 @@ class FactoryActors {
 
     void CreateBasicActor(
         Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
-    void CreatePlayerActor(Engine::entity &entity, Engine::registry &reg,
-        EnnemyInfo info, bool is_local);
+    void CreatePlayerActor(
+        Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
 
     void CreateBasicEnnemy(
         Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
@@ -55,11 +55,11 @@ class FactoryActors {
         Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
 
     // Helper to create a projectile for an enemy
-    void CreateEnemyProjectile(Engine::registry &reg, sf::Vector2f direction,
+    void CreateEnemyProjectile(Engine::registry &reg,
+        Engine::Graphics::Vector2f direction,
         Component::EnemyShootTag &enemy_shoot, int ownerId,
         Component::Transform const &transform);
 
     std::map<std::string, EnnemyInfo> enemy_info_map_ = {};
-    int id_player_ = 0;
 };
 }  // namespace Rtype::Client

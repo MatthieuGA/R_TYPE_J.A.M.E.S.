@@ -33,6 +33,17 @@ void PlayerHitSystem(Eng::registry &reg, GameWorld &game_world,
                     anim_sprite->GetCurrentAnimation()->frameDuration) {
                     anim_sprite->SetCurrentAnimation("Default", true);
                     auto *currentAnim = anim_sprite->GetCurrentAnimation();
+
+                    // Update drawable texture_id to match the Default
+                    // animation
+                    if (currentAnim != nullptr && currentAnim->isLoaded) {
+                        auto &drawables =
+                            reg.GetComponents<Component::Drawable>();
+                        if (drawables.has(i)) {
+                            drawables[i]->texture_id = currentAnim->texture_id;
+                        }
+                    }
+
                     anim_sprite->elapsedTime = 0.0f;
                 }
             }

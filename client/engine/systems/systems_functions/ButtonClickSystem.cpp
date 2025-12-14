@@ -1,5 +1,3 @@
-#include <SFML/Graphics.hpp>
-
 #include "engine/OriginTool.hpp"
 #include "engine/systems/InitRegistrySystems.hpp"
 
@@ -13,7 +11,7 @@ namespace Rtype::Client {
  * when a click is detected.
  *
  * @param reg Engine registry.
- * @param game_world Reference to the game world, including the window.
+ * @param game_world Reference to the game world, including mouse state.
  * @param hit_boxes Sparse array of HitBox components.
  * @param clickables Sparse array of Clickable components.
  * @param drawables Sparse array of Drawable components.
@@ -24,14 +22,12 @@ void ButtonClickSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Clickable> &clickables,
     Eng::sparse_array<Com::Drawable> &drawables,
     Eng::sparse_array<Com::Transform> &transforms) {
-    if (!game_world.window_.hasFocus())
-        return;
+    (void)reg;
+
+    Engine::Graphics::Vector2f mousePos = game_world.mouse_position_;
 
     for (auto &&[i, hit_box, clickable, drawable, transform] :
         make_indexed_zipper(hit_boxes, clickables, drawables, transforms)) {
-        sf::Vector2f mousePos = game_world.window_.mapPixelToCoords(
-            sf::Mouse::getPosition(game_world.window_));
-
         const float width_computed =
             hit_box.width *
             (hit_box.scaleWithTransform ? transform.scale.x : 1.0f);
@@ -39,8 +35,9 @@ void ButtonClickSystem(Eng::registry &reg, GameWorld &game_world,
             hit_box.height *
             (hit_box.scaleWithTransform ? transform.scale.y : 1.0f);
 
-        const sf::Vector2f offsetOrigin = GetOffsetFromTransform(
-            transform, sf::Vector2f(width_computed, height_computed));
+        const Engine::Graphics::Vector2f offsetOrigin =
+            GetOffsetFromTransform(transform,
+                Engine::Graphics::Vector2f(width_computed, height_computed));
 
         const float left = transform.x + offsetOrigin.x;
         const float top = transform.y + offsetOrigin.y;
@@ -50,10 +47,9 @@ void ButtonClickSystem(Eng::registry &reg, GameWorld &game_world,
                                 mousePos.y >= top && mousePos.y <= bottom);
 
         clickable.isHovered = isHovered;
-        if (isHovered && sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+        if (isHovered && game_world.mouse_button_pressed_) {
             clickable.isClicked = true;
-        } else if (!sf::Mouse::isButtonPressed(sf::Mouse::Left) &&
-                   clickable.isClicked) {
+        } else if (!game_world.mouse_button_pressed_ && clickable.isClicked) {
             // Mouse button released after being clicked
             clickable.isClicked = false;
             if (clickable.onClick)

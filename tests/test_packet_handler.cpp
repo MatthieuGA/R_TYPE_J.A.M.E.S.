@@ -11,6 +11,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include <boost/asio.hpp>
 

@@ -62,10 +62,8 @@ void Server::RegisterSystems() {
             Engine::sparse_array<Component::Velocity> const &velocities) {
             for (auto &&[i, pos, vel] :
                 make_indexed_zipper(transforms, velocities)) {
-                auto &pos = transforms[i];
-                auto &vel = velocities[i];
-                pos->x += vel->vx * TICK_RATE_MS / 1000.0f;
-                pos->y += vel->vy * TICK_RATE_MS / 1000.0f;
+                pos.x += vel.vx * TICK_RATE_MS / 1000.0f;
+                pos.y += vel.vy * TICK_RATE_MS / 1000.0f;
             }
         });
 
