@@ -5,109 +5,94 @@
 #include <utility>
 #include <vector>
 
-#include <SFML/Graphics.hpp>
+#include "graphics/Types.hpp"
 
 namespace Rtype::Client::Component {
+
+/**
+ * @brief Drawable component for sprite rendering.
+ *
+ * Stores a texture resource ID (loaded via video backend) and rendering
+ * properties. No SFML types - completely backend-agnostic.
+ */
 struct Drawable {
-    std::string spritePath;
+    std::string texture_id;   // Unique ID for texture resource
+    std::string sprite_path;  // File path (for loading)
     int z_index = 0;
     float opacity = 1.0f;
-    float rotation = 0.0f;
-    sf::Color color = sf::Color::White;
-    sf::Sprite sprite;
-    sf::Texture texture;
-    bool isLoaded = false;
+    Engine::Graphics::Color color = Engine::Graphics::Color::White;
+    Engine::Graphics::IntRect
+        texture_rect;  // Source rect in texture (for sprite sheets)
+    Engine::Graphics::Vector2f origin{0.0f, 0.0f};  // Sprite origin
+    Engine::Graphics::Vector2f scale{1.0f, 1.0f};   // Sprite scale
+    float rotation = 0.0f;                          // Rotation in degrees
+    bool is_loaded = false;
 
     explicit Drawable(
-        const std::string &spritePath, int z_index = 0, float opacity = 1.0f)
-        : spritePath("assets/images/" + spritePath),
+        const std::string &sprite_path, int z_index = 0, float opacity = 1.0f)
+        : sprite_path("assets/images/" + sprite_path),
+          texture_id(sprite_path),  // Use sprite_path as texture ID
           z_index(z_index),
-          texture(),
           opacity(opacity),
-          sprite(texture),
-          isLoaded(false),
-          color(sf::Color::White) {}
+          color(Engine::Graphics::Color::White),
+          texture_rect(),
+          origin(0.0f, 0.0f),
+          scale(1.0f, 1.0f),
+          rotation(0.0f),
+          is_loaded(false) {}
 
-    // Non-copyable to avoid accidental sprite/texture pointer mismatches
-    Drawable(Drawable const &) = delete;
-    Drawable &operator=(Drawable const &) = delete;
-
-    // Move constructor: ensure sprite is rebound to the moved texture and
-    // visual properties are preserved.
-    Drawable(Drawable &&other) noexcept
-        : spritePath(std::move(other.spritePath)),
-          z_index(other.z_index),
-          opacity(other.opacity),
-          texture(std::move(other.texture)),
-          sprite(),
-          isLoaded(other.isLoaded) {
-        // Rebind sprite to the moved texture and copy visual state
-        sprite.setTexture(texture, true);
-        sprite.setTextureRect(other.sprite.getTextureRect());
-        sprite.setScale(other.sprite.getScale());
-        sprite.setOrigin(other.sprite.getOrigin());
-        sprite.setPosition(other.sprite.getPosition());
-        sprite.setRotation(other.sprite.getRotation());
-        sprite.setColor(other.sprite.getColor());
-    }
-
-    // Move assignment: similar to move ctor
-    Drawable &operator=(Drawable &&other) noexcept {
-        if (this == &other)
-            return *this;
-        spritePath = std::move(other.spritePath);
-        z_index = other.z_index;
-        opacity = other.opacity;
-        texture = std::move(other.texture);
-        isLoaded = other.isLoaded;
-
-        sprite = sf::Sprite();
-        sprite.setTexture(texture, true);
-        sprite.setTextureRect(other.sprite.getTextureRect());
-        sprite.setScale(other.sprite.getScale());
-        sprite.setOrigin(other.sprite.getOrigin());
-        sprite.setPosition(other.sprite.getPosition());
-        sprite.setRotation(other.sprite.getRotation());
-        sprite.setColor(other.sprite.getColor());
-
-        return *this;
-    }
+    // Movable and copyable (no resource ownership issues)
+    Drawable(Drawable const &) = default;
+    Drawable &operator=(Drawable const &) = default;
+    Drawable(Drawable &&) noexcept = default;
+    Drawable &operator=(Drawable &&) noexcept = default;
 };
 
+/**
+ * @brief Shader component for shader effects.
+ *
+ * Stores a shader resource ID and uniform parameters.
+ */
 struct Shader {
-    std::string shaderPath;
-    std::shared_ptr<sf::Shader> shader;
-    bool isLoaded = false;
+    std::string shader_id;    // Unique ID for shader resource
+    std::string shader_path;  // File path (for loading)
+    bool is_loaded = false;
     std::map<std::string, float> uniforms_float = {};
 
     explicit Shader(const std::string &path,
         std::vector<std::pair<std::string, float>> uf = {})
-        : shaderPath("assets/shaders/" + path),
-          shader(nullptr),
-          isLoaded(false) {
+        : shader_path("assets/shaders/" + path),
+          shader_id(path),  // Use path as shader ID
+          is_loaded(false) {
         for (const auto &[name, value] : uf)
             uniforms_float[name] = value;
     }
 };
 
+/**
+ * @brief Animated sprite component for frame-based animation.
+ *
+ * Works with Drawable component to animate sprite sheets.
+ * Animation rendering is handled by the plugin backend.
+ */
 struct AnimatedSprite {
     struct Animation {
         std::string path;
+        std::string texture_id;  // Unique ID for texture resource
         int frameWidth;
         int frameHeight;
         int totalFrames;
         int current_frame;
         float frameDuration;
         bool loop;
-        sf::Vector2f first_frame_position = sf::Vector2f(0.0f, 0.0f);
-        sf::Vector2f offset = sf::Vector2f(0.0f, 0.0f);
-        sf::Texture texture;
-        sf::Sprite sprite;
+        Engine::Graphics::Vector2f first_frame_position{0.0f, 0.0f};
+        Engine::Graphics::Vector2f offset{0.0f, 0.0f};
 
         bool isLoaded = false;
 
         Animation()
             : path(""),
+              texture_id(""),
               frameWidth(0),
               frameHeight(0),
               totalFrames(0),
@@ -116,15 +101,16 @@ struct AnimatedSprite {
               loop(false),
               first_frame_position(0.0f, 0.0f),
               offset(0.0f, 0.0f),
-              texture(),
-              sprite(),
               isLoaded(false) {}
 
         Animation(const std::string &path, int frameWidth, int frameHeight,
             int totalFrames, float frameDuration, bool loop,
-            sf::Vector2f first_frame_position = sf::Vector2f(0.0f, 0.0f),
-            sf::Vector2f offset = sf::Vector2f(0.0f, 0.0f))
+            Engine::Graphics::Vector2f first_frame_position =
+                Engine::Graphics::Vector2f(0.0f, 0.0f),
+            Engine::Graphics::Vector2f offset = Engine::Graphics::Vector2f(
+                0.0f, 0.0f))
             : path(path.empty() ? "" : "assets/images/" + path),
+              texture_id(path),  // Use path as texture ID
               frameWidth(frameWidth),
               frameHeight(frameHeight),
               totalFrames(totalFrames),
@@ -133,8 +119,6 @@ struct AnimatedSprite {
               loop(loop),
               first_frame_position(first_frame_position),
               offset(offset),
-              texture(),
-              sprite(),
               isLoaded(false) {}
     };
 
@@ -145,9 +129,10 @@ struct AnimatedSprite {
     bool animated = true;
     float elapsedTime = 0.0f;
 
-    AnimatedSprite(int frameWidth, int frameHeight, float frameDuration,
+    AnimatedSprite(int frame_width, int frame_height, float frame_duration,
         bool loop = true,
-        sf::Vector2f first_frame_position = sf::Vector2f(0.0f, 0.0f),
+        Engine::Graphics::Vector2f first_frame_position =
+            Engine::Graphics::Vector2f(0.0f, 0.0f),
         int totalFrames = 0);
 
     AnimatedSprite(int frameWidth, int frameHeight, int current_frame);
@@ -169,8 +154,10 @@ struct AnimatedSprite {
     void AddAnimation(const std::string &name, const std::string &path,
         int frameWidth, int frameHeight, int totalFrames, float frameDuration,
         bool loop = true,
-        sf::Vector2f first_frame_position = sf::Vector2f(0.0f, 0.0f),
-        sf::Vector2f offset = sf::Vector2f(0.0f, 0.0f));
+        Engine::Graphics::Vector2f first_frame_position =
+            Engine::Graphics::Vector2f(0.0f, 0.0f),
+        Engine::Graphics::Vector2f offset = Engine::Graphics::Vector2f(
+            0.0f, 0.0f));
 
     /**
      * @brief Change the current playing animation.
@@ -201,52 +188,42 @@ struct AnimatedSprite {
 };
 
 /**
- * @brief Text component for rendering text with SFML.
+ * @brief Text component for rendering text.
  *
- * The text position, rotation, and scale are controlled by the Transform
- * component. This component only manages the text content, appearance,
- * font loading, per-entity opacity, and an optional local offset.
+ * Stores a font resource ID and text rendering properties.
+ * No SFML types - completely backend-agnostic.
  */
 struct Text {
     std::string content;
-    std::string fontPath;
-    unsigned int characterSize = 30;
-    sf::Color color = sf::Color::White;
+    std::string font_id;    // Unique ID for font resource
+    std::string font_path;  // File path (for loading)
+    unsigned int character_size = 30;
+    Engine::Graphics::Color color = Engine::Graphics::Color::White;
     float opacity = 1.0f;
     int z_index = 0;
-    sf::Vector2f offset = sf::Vector2f(0.0f, 0.0f);
-
-    sf::Text text;
-    sf::Font font;
+    Engine::Graphics::Vector2f offset{0.0f, 0.0f};
     bool is_loaded = false;
 
-    explicit Text(const std::string &fontPath, const std::string &content = "",
-        unsigned int characterSize = 30, int z_index = 0,
-        sf::Color color = sf::Color::White,
-        sf::Vector2f offset = sf::Vector2f(0.0f, 0.0f))
+    explicit Text(const std::string &font_path,
+        const std::string &content = "", unsigned int character_size = 30,
+        int z_index = 0,
+        Engine::Graphics::Color color = Engine::Graphics::Color::White,
+        Engine::Graphics::Vector2f offset = Engine::Graphics::Vector2f(
+            0.0f, 0.0f))
         : content(content),
-          fontPath("assets/fonts/" + fontPath),
-          characterSize(characterSize),
+          font_path("assets/fonts/" + font_path),
+          font_id(font_path),  // Use font_path as font ID
+          character_size(character_size),
           color(color),
           opacity(1.0f),
           z_index(z_index),
           is_loaded(false),
           offset(offset) {}
-
-    // Non-copyable to avoid accidental font pointer mismatches
-    Text(Text const &) = delete;
-    Text &operator=(Text const &) = delete;
-
-    // Move constructor: rebind text to the moved font
-    Text(Text &&other) noexcept;
-
-    // Move assignment: similar to move ctor
-    Text &operator=(Text &&other) noexcept;
 };
 
 struct Particle {
-    sf::Vector2f position;
-    sf::Vector2f velocity;
+    Engine::Graphics::Vector2f position;
+    Engine::Graphics::Vector2f velocity;
     float lifetime;     // restant
     float maxLifetime;  // durée de vie initiale
 };
@@ -262,35 +239,38 @@ struct ParticleEmitter {
     float emissionRate = 200.f;  // particules / seconde
     float emissionAccumulator = 0.f;
 
-    sf::Color startColor = sf::Color(80, 80, 255, 255);  // bleu
-    sf::Color endColor = sf::Color(80, 80, 255, 0);      // bleu transparent
+    Engine::Graphics::Color startColor =
+        Engine::Graphics::Color(80, 80, 255, 255);  // bleu
+    Engine::Graphics::Color endColor =
+        Engine::Graphics::Color(80, 80, 255, 0);  // bleu transparent
 
-    sf::Vector2f offset = {0.f, 0.f};  // offset local par rapport au Transform
+    Engine::Graphics::Vector2f offset = {
+        0.f, 0.f};  // offset local par rapport au Transform
 
     float particleLifetime = 1.0f;  // durée de vie des particules en secondes
     float particleSpeed = 50.f;     // vitesse initiale des particules
-    sf::Vector2f direction = {0.f, -1.f};  // direction initiale des particules
-    float spreadAngle = 30.f;              // angle de dispersion en degrés
-    float gravity = 0.f;                   // accélération verticale
-    float emissionRadius = 0.f;            // rayon d'apparition des particules
-    float start_size = 1.0f;               // taille de début des particules
-    float end_size = 1.0f;                 // taille de fin des particules
-    int z_index = 0;                       // layer de rendu des particules
+    Engine::Graphics::Vector2f direction = {
+        0.f, -1.f};              // direction initiale des particules
+    float spreadAngle = 30.f;    // angle de dispersion en degrés
+    float gravity = 0.f;         // accélération verticale
+    float emissionRadius = 0.f;  // rayon d'apparition des particules
+    float start_size = 1.0f;     // taille de début des particules
+    float end_size = 1.0f;       // taille de fin des particules
+    int z_index = 0;             // layer de rendu des particules
 
     bool emitting = true;  // Does the Particle emit particle
 
-    // pour le rendu
-    sf::VertexArray vertices = sf::VertexArray(sf::Points);
-
     ParticleEmitter(float emissionRate = 200.f, std::size_t maxParticles = 300,
-        sf::Color startColor = sf::Color(80, 80, 255, 255),
-        sf::Color endColor = sf::Color(80, 80, 255, 0),
-        sf::Vector2f offset = {0.f, 0.f}, bool active = true,
+        Engine::Graphics::Color startColor = Engine::Graphics::Color(
+            80, 80, 255, 255),
+        Engine::Graphics::Color endColor = Engine::Graphics::Color(
+            80, 80, 255, 0),
+        Engine::Graphics::Vector2f offset = {0.f, 0.f}, bool active = true,
         float particleLifetime = 1.0f, float particleSpeed = 50.f,
-        sf::Vector2f direction = {0.f, -1.f}, float spreadAngle = 30.f,
-        float gravity = 0.f, float emissionRadius = 0.f,
-        float start_size = 1.0f, float end_size = 1.0f, float duration = -1.f,
-        int z_index = 0)
+        Engine::Graphics::Vector2f direction = {0.f, -1.f},
+        float spreadAngle = 30.f, float gravity = 0.f,
+        float emissionRadius = 0.f, float start_size = 1.0f,
+        float end_size = 1.0f, float duration = -1.f, int z_index = 0)
         : active(active),
           duration_active(duration),
           duration_past(0.0f),

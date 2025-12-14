@@ -3,13 +3,13 @@
 #include <string>
 
 #include <boost/asio.hpp>
-#include <graphics/Types.hpp>
-#include <time/Clock.hpp>
 
+#include "graphics/Types.hpp"
 #include "include/WindowConst.hpp"
 #include "include/registry.hpp"
 #include "network/Network.hpp"
 #include "rendering/RenderingEngine.hpp"
+#include "time/Clock.hpp"
 
 #include "engine/events/Event.h"
 
