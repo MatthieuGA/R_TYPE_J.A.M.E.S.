@@ -21,11 +21,13 @@
 ## Main signature
 
 ```cpp
-void InputSystem(Eng::registry &reg,
+void InputSystem(Eng::registry &reg, bool has_focus,
     Eng::sparse_array<Com::Inputs> &inputs);
 ```
 
 ## Notes
 
-- Uses `sf::Keyboard::isKeyPressed` and runs on the client.
+- Uses `sf::Keyboard::isKeyPressed` for local input polling (SFML is only used internally in the system, not exposed).
+- Only reads input when `has_focus` is true.
 - Key remapping requires code changes if needed.
+- Converts inputs to RFC-compliant bitfield via `InputToBitfield` for network transmission.

@@ -7,6 +7,9 @@ namespace Rtype::Client {
 /**
  * @brief Set the opacity of child drawable based on player's charge time.
  *
+ * When charging starts (opacity goes from 0 to 1), reset the animation
+ * and enable it so the charging effect animates.
+ *
  * @param drawables Sparse array of Drawable components.
  * @param animated_sprites Sparse array of AnimatedSprite components.
  * @param player_tag The PlayerTag component of the parent entity.
@@ -20,8 +23,11 @@ void SetOpacityChildren(Eng::sparse_array<Com::Drawable> &drawables,
     auto &drawable = drawables[child_id];
     auto &animated_sprite = animated_sprites[child_id];
 
-    if (drawable->opacity == 0.0f) {
-        // Get current animation
+    bool was_hidden = (drawable->opacity == 0.0f);
+    bool should_show = (player_tag.charge_time > player_tag.charge_time_min);
+
+    if (was_hidden && should_show) {
+        // Charging started - reset animation and enable it
         auto it = animated_sprite->animations.find(
             animated_sprite->currentAnimation);
         if (it == animated_sprite->animations.end()) {
@@ -30,9 +36,13 @@ void SetOpacityChildren(Eng::sparse_array<Com::Drawable> &drawables,
         if (it != animated_sprite->animations.end()) {
             it->second.current_frame = 0;
         }
+        animated_sprite->animated = true;  // Enable animation
+    } else if (!should_show) {
+        // Not charging - disable animation
+        animated_sprite->animated = false;
     }
-    drawable->opacity =
-        (player_tag.charge_time > player_tag.charge_time_min) ? 1.0f : 0.0f;
+
+    drawable->opacity = should_show ? 1.0f : 0.0f;
 }
 
 /**

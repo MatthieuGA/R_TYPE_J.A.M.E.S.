@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include <atomic>
 #include <string>
 #include <vector>
 
@@ -13,10 +14,17 @@
 #include "server/Server.hpp"
 #include "server/Vector2f.hpp"
 
-// Helper function to create a config for testing
-server::Config &getTestConfig() {
-    static const char *argv[] = {"test_server"};
-    return server::Config::FromCommandLine(1, const_cast<char **>(argv));
+// Helper function to create a config for testing with unique ports
+server::Config getTestConfig() {
+    // Use incrementing ports to avoid conflicts between parallel tests
+    static std::atomic<int> port_counter{50200};
+    int base_port = port_counter.fetch_add(2);
+
+    std::string tcp_port = std::to_string(base_port);
+    std::string udp_port = std::to_string(base_port + 1);
+
+    const char *argv[] = {"test_server", tcp_port.c_str(), udp_port.c_str()};
+    return server::Config::Parse(3, const_cast<char **>(argv));
 }
 
 // ============================================================================
@@ -25,14 +33,14 @@ server::Config &getTestConfig() {
 
 TEST(ServerTest, ServerConstruction) {
     boost::asio::io_context io;
-    server::Config &config = getTestConfig();
+    server::Config config = getTestConfig();
 
     EXPECT_NO_THROW({ server::Server server(config, io); });
 }
 
 TEST(ServerTest, ServerInitialize) {
     boost::asio::io_context io;
-    server::Config &config = getTestConfig();
+    server::Config config = getTestConfig();
     server::Server server(config, io);
 
     EXPECT_NO_THROW(server.Initialize());
@@ -40,7 +48,7 @@ TEST(ServerTest, ServerInitialize) {
 
 TEST(ServerTest, GetRegistryAfterInit) {
     boost::asio::io_context io;
-    server::Config &config = getTestConfig();
+    server::Config config = getTestConfig();
     server::Server server(config, io);
 
     server.Initialize();
@@ -59,7 +67,7 @@ TEST(ServerTest, GetRegistryAfterInit) {
 
 TEST(ServerTest, ComponentsRegisteredAfterInit) {
     boost::asio::io_context io;
-    server::Config &config = getTestConfig();
+    server::Config config = getTestConfig();
     server::Server server(config, io);
 
     server.Initialize();
@@ -81,15 +89,16 @@ TEST(ServerTest, ComponentsRegisteredAfterInit) {
 
 TEST(ServerTest, SpawnEntityWithPosition) {
     boost::asio::io_context io;
-    server::Config &config = getTestConfig();
+    server::Config config = getTestConfig();
     server::Server server(config, io);
     server.Initialize();
 
     Engine::registry &reg = server.GetRegistry();
     auto entity = reg.SpawnEntity();
 
-    auto &pos = reg.AddComponent(
-        entity, server::Component::Transform(100.0f, 200.0f, {1.0f, 1.0f}));
+    auto &pos =
+        reg.AddComponent(entity, server::Component::Transform(100.0f, 200.0f,
+                                     0.0f, vector2f{1.0f, 1.0f}));
 
     EXPECT_TRUE(pos.has_value());
     EXPECT_EQ(pos->x, 100.0f);
@@ -98,17 +107,16 @@ TEST(ServerTest, SpawnEntityWithPosition) {
 
 TEST(ServerTest, SpawnPlayerEntity) {
     boost::asio::io_context io;
-    server::Config &config = getTestConfig();
+    server::Config config = getTestConfig();
     server::Server server(config, io);
     server.Initialize();
 
     Engine::registry &reg = server.GetRegistry();
     auto player = reg.SpawnEntity();
 
-    reg.AddComponent(
-        player, server::Component::Transform{0.0f, 0.0f, {1.0f, 1.0f}});
+    reg.AddComponent(player, server::Component::Transform());
     reg.AddComponent(player, server::Component::Velocity{0.0f, 0.0f});
-    reg.AddComponent(player, server::Component::Health{100});
+    reg.AddComponent(player, server::Component::Health(100));
     reg.AddComponent(player, server::Component::PlayerTag{1});
 
     auto &positions = reg.GetComponents<server::Component::Transform>();
@@ -120,17 +128,16 @@ TEST(ServerTest, SpawnPlayerEntity) {
 
 TEST(ServerTest, SpawnEnemyEntity) {
     boost::asio::io_context io;
-    server::Config &config = getTestConfig();
+    server::Config config = getTestConfig();
     server::Server server(config, io);
     server.Initialize();
 
     Engine::registry &reg = server.GetRegistry();
     auto enemy = reg.SpawnEntity();
 
-    reg.AddComponent(
-        enemy, server::Component::Transform{500.0f, 300.0f, {1.0f, 1.0f}});
+    reg.AddComponent(enemy, server::Component::Transform());
     reg.AddComponent(enemy, server::Component::Velocity{-2.0f, 0.0f});
-    reg.AddComponent(enemy, server::Component::Health{50});
+    reg.AddComponent(enemy, server::Component::Health(50));
     reg.AddComponent(enemy, server::Component::EnemyTag{10});
 
     auto &positions = reg.GetComponents<server::Component::Transform>();
@@ -142,7 +149,7 @@ TEST(ServerTest, SpawnEnemyEntity) {
 
 TEST(ServerTest, MultipleEntitiesWithDifferentComponents) {
     boost::asio::io_context io;
-    server::Config &config = getTestConfig();
+    server::Config config = getTestConfig();
     server::Server server(config, io);
     server.Initialize();
 
@@ -150,21 +157,19 @@ TEST(ServerTest, MultipleEntitiesWithDifferentComponents) {
 
     // Create player
     auto player = reg.SpawnEntity();
-    reg.AddComponent(
-        player, server::Component::Transform{0.0f, 0.0f, {1.0f, 1.0f}});
+    reg.AddComponent(player, server::Component::Transform());
     reg.AddComponent(player, server::Component::PlayerTag{1});
-    reg.AddComponent(player, server::Component::Health{100, 100});
+    reg.AddComponent(player, server::Component::Health(100));
 
     // Create enemy
     auto enemy = reg.SpawnEntity();
-    reg.AddComponent(enemy, server::Component::Transform{100.0f, 100.0f});
+    reg.AddComponent(enemy, server::Component::Transform());
     reg.AddComponent(enemy, server::Component::EnemyTag{15});
     reg.AddComponent(enemy, server::Component::Velocity{-1.0f, 0.0f});
 
     // Create projectile
     auto projectile = reg.SpawnEntity();
-    reg.AddComponent(
-        projectile, server::Component::Transform{50.0f, 50.0f, {1.0f, 1.0f}});
+    reg.AddComponent(projectile, server::Component::Transform());
     reg.AddComponent(projectile, server::Component::Velocity{5.0f, 0.0f});
 
     auto &positions = reg.GetComponents<server::Component::Transform>();
@@ -188,15 +193,14 @@ TEST(ServerTest, MultipleEntitiesWithDifferentComponents) {
 
 TEST(ServerTest, MovementSystemUpdatesPosition) {
     boost::asio::io_context io;
-    server::Config &config = getTestConfig();
+    server::Config config = getTestConfig();
     server::Server server(config, io);
     server.Initialize();
 
     Engine::registry &reg = server.GetRegistry();
     auto entity = reg.SpawnEntity();
 
-    reg.AddComponent(
-        entity, server::Component::Transform{0.0f, 0.0f, {1.0f, 1.0f}});
+    reg.AddComponent(entity, server::Component::Transform());
     reg.AddComponent(entity, server::Component::Velocity{1.0f, 2.0f});
 
     auto &positions = reg.GetComponents<server::Component::Transform>();
@@ -205,58 +209,60 @@ TEST(ServerTest, MovementSystemUpdatesPosition) {
     EXPECT_EQ(positions[entity.getId()]->y, 0.0f);
 
     // Run one update cycle
+    // Movement system applies: pos += vel * (TICK_RATE_MS / 1000.0f)
+    // TICK_RATE_MS = 16ms => 0.016 seconds
     server.Update();
 
-    EXPECT_EQ(positions[entity.getId()]->x, 1.0f);
-    EXPECT_EQ(positions[entity.getId()]->y, 2.0f);
+    EXPECT_FLOAT_EQ(positions[entity.getId()]->x, 1.0f * 0.016f);
+    EXPECT_FLOAT_EQ(positions[entity.getId()]->y, 2.0f * 0.016f);
 
     // Run another update cycle
     server.Update();
 
-    EXPECT_EQ(positions[entity.getId()]->x, 2.0f);
-    EXPECT_EQ(positions[entity.getId()]->y, 4.0f);
+    EXPECT_FLOAT_EQ(positions[entity.getId()]->x, 1.0f * 0.016f * 2);
+    EXPECT_FLOAT_EQ(positions[entity.getId()]->y, 2.0f * 0.016f * 2);
 }
 
 TEST(ServerTest, MovementSystemMultipleEntities) {
     boost::asio::io_context io;
-    server::Config &config = getTestConfig();
+    server::Config config = getTestConfig();
     server::Server server(config, io);
     server.Initialize();
 
     Engine::registry &reg = server.GetRegistry();
 
     auto e1 = reg.SpawnEntity();
-    reg.AddComponent(
-        e1, server::Component::Transform{0.0f, 0.0f, {1.0f, 1.0f}});
+    reg.AddComponent(e1, server::Component::Transform());
     reg.AddComponent(e1, server::Component::Velocity{1.0f, 0.0f});
 
     auto e2 = reg.SpawnEntity();
     reg.AddComponent(
-        e2, server::Component::Transform{10.0f, 10.0f, {1.0f, 1.0f}});
+        e2, server::Component::Transform(10.0f, 10.0f, 0.0f, 1.0f));
     reg.AddComponent(e2, server::Component::Velocity{-2.0f, 3.0f});
 
     auto e3 = reg.SpawnEntity();
     reg.AddComponent(
-        e3, server::Component::Transform{50.0f, 50.0f, {1.0f, 1.0f}});
+        e3, server::Component::Transform(50.0f, 50.0f, 0.0f, 1.0f));
     reg.AddComponent(e3, server::Component::Velocity{0.5f, -1.0f});
 
     auto &positions = reg.GetComponents<server::Component::Transform>();
 
     server.Update();
 
-    EXPECT_EQ(positions[e1.getId()]->x, 1.0f);
-    EXPECT_EQ(positions[e1.getId()]->y, 0.0f);
+    // Delta time = 0.016 seconds (16ms)
+    EXPECT_FLOAT_EQ(positions[e1.getId()]->x, 1.0f * 0.016f);
+    EXPECT_FLOAT_EQ(positions[e1.getId()]->y, 0.0f);
 
-    EXPECT_EQ(positions[e2.getId()]->x, 8.0f);
-    EXPECT_EQ(positions[e2.getId()]->y, 13.0f);
+    EXPECT_FLOAT_EQ(positions[e2.getId()]->x, 10.0f + (-2.0f * 0.016f));
+    EXPECT_FLOAT_EQ(positions[e2.getId()]->y, 10.0f + (3.0f * 0.016f));
 
-    EXPECT_EQ(positions[e3.getId()]->x, 50.5f);
-    EXPECT_EQ(positions[e3.getId()]->y, 49.0f);
+    EXPECT_FLOAT_EQ(positions[e3.getId()]->x, 50.0f + (0.5f * 0.016f));
+    EXPECT_FLOAT_EQ(positions[e3.getId()]->y, 50.0f + (-1.0f * 0.016f));
 }
 
 TEST(ServerTest, MovementSystemIgnoresEntitiesWithoutVelocity) {
     boost::asio::io_context io;
-    server::Config &config = getTestConfig();
+    server::Config config = getTestConfig();
     server::Server server(config, io);
     server.Initialize();
 
@@ -264,25 +270,25 @@ TEST(ServerTest, MovementSystemIgnoresEntitiesWithoutVelocity) {
 
     // Entity with position and velocity
     auto moving = reg.SpawnEntity();
-    reg.AddComponent(moving, server::Component::Transform{0.0f, 0.0f});
+    reg.AddComponent(moving, server::Component::Transform());
     reg.AddComponent(moving, server::Component::Velocity{1.0f, 1.0f});
 
     // Entity with only position (no velocity)
     auto stationary = reg.SpawnEntity();
     reg.AddComponent(
-        stationary, server::Component::Transform{10.0f, 10.0f, {1.0f, 1.0f}});
+        stationary, server::Component::Transform(10.0f, 10.0f, 0.0f, 1.0f));
 
     auto &positions = reg.GetComponents<server::Component::Transform>();
 
     server.Update();
 
-    // Moving entity should have moved
-    EXPECT_EQ(positions[moving.getId()]->x, 1.0f);
-    EXPECT_EQ(positions[moving.getId()]->y, 1.0f);
+    // Moving entity should have moved (velocity * delta_time)
+    EXPECT_FLOAT_EQ(positions[moving.getId()]->x, 1.0f * 0.016f);
+    EXPECT_FLOAT_EQ(positions[moving.getId()]->y, 1.0f * 0.016f);
 
     // Stationary entity should not have moved
-    EXPECT_EQ(positions[stationary.getId()]->x, 10.0f);
-    EXPECT_EQ(positions[stationary.getId()]->y, 10.0f);
+    EXPECT_FLOAT_EQ(positions[stationary.getId()]->x, 10.0f);
+    EXPECT_FLOAT_EQ(positions[stationary.getId()]->y, 10.0f);
 }
 
 // ============================================================================
@@ -291,7 +297,7 @@ TEST(ServerTest, MovementSystemIgnoresEntitiesWithoutVelocity) {
 
 TEST(ServerTest, HealthComponentInitialization) {
     boost::asio::io_context io;
-    server::Config &config = getTestConfig();
+    server::Config config = getTestConfig();
     server::Server server(config, io);
     server.Initialize();
 
@@ -308,14 +314,14 @@ TEST(ServerTest, HealthComponentInitialization) {
 
 TEST(ServerTest, HealthComponentModification) {
     boost::asio::io_context io;
-    server::Config &config = getTestConfig();
+    server::Config config = getTestConfig();
     server::Server server(config, io);
     server.Initialize();
 
     Engine::registry &reg = server.GetRegistry();
     auto entity = reg.SpawnEntity();
 
-    reg.AddComponent(entity, server::Component::Health{100, 100});
+    reg.AddComponent(entity, server::Component::Health(100));
 
     auto &healths = reg.GetComponents<server::Component::Health>();
 
@@ -339,7 +345,7 @@ TEST(ServerTest, HealthComponentModification) {
 
 TEST(ServerTest, SimpleGameScenario) {
     boost::asio::io_context io;
-    server::Config &config = getTestConfig();
+    server::Config config = getTestConfig();
     server::Server server(config, io);
     server.Initialize();
 
@@ -347,14 +353,16 @@ TEST(ServerTest, SimpleGameScenario) {
 
     // Spawn player at spawn point
     auto player = reg.SpawnEntity();
-    reg.AddComponent(player, server::Component::Transform{50.0f, 400.0f});
+    reg.AddComponent(
+        player, server::Component::Transform(50.0f, 400.0f, 0.0f, 1.0f));
     reg.AddComponent(player, server::Component::Velocity{0.0f, 0.0f});
-    reg.AddComponent(player, server::Component::Health{100, 100});
+    reg.AddComponent(player, server::Component::Health(100));
     reg.AddComponent(player, server::Component::PlayerTag{1});
 
     // Spawn enemy moving towards player
     auto enemy = reg.SpawnEntity();
-    reg.AddComponent(enemy, server::Component::Transform{800.0f, 400.0f});
+    reg.AddComponent(
+        enemy, server::Component::Transform(800.0f, 400.0f, 0.0f, 1.0f));
     reg.AddComponent(enemy, server::Component::Velocity{-3.0f, 0.0f});
     reg.AddComponent(enemy, server::Component::Health{30});
     reg.AddComponent(enemy, server::Component::EnemyTag{20});
@@ -362,22 +370,25 @@ TEST(ServerTest, SimpleGameScenario) {
     auto &positions = reg.GetComponents<server::Component::Transform>();
 
     // Run 10 game ticks
+    // Delta time = 0.016s per tick
+    // Enemy displacement: -3.0 * 0.016 * 10 = -0.48
     for (int i = 0; i < 10; i++) {
         server.Update();
     }
 
-    // Enemy should have moved 30 pixels left
-    EXPECT_EQ(positions[enemy.getId()]->x, 770.0f);
-    EXPECT_EQ(positions[enemy.getId()]->y, 400.0f);
+    // Enemy should have moved left by velocity * delta * ticks
+    EXPECT_FLOAT_EQ(
+        positions[enemy.getId()]->x, 800.0f + (-3.0f * 0.016f * 10));
+    EXPECT_FLOAT_EQ(positions[enemy.getId()]->y, 400.0f);
 
     // Player should not have moved (velocity is 0)
-    EXPECT_EQ(positions[player.getId()]->x, 50.0f);
-    EXPECT_EQ(positions[player.getId()]->y, 400.0f);
+    EXPECT_FLOAT_EQ(positions[player.getId()]->x, 50.0f);
+    EXPECT_FLOAT_EQ(positions[player.getId()]->y, 400.0f);
 }
 
 TEST(ServerTest, EntityCleanup) {
     boost::asio::io_context io;
-    server::Config &config = getTestConfig();
+    server::Config config = getTestConfig();
     server::Server server(config, io);
     server.Initialize();
 
@@ -387,8 +398,7 @@ TEST(ServerTest, EntityCleanup) {
     std::vector<Engine::entity> entities;
     for (int i = 0; i < 5; i++) {
         auto e = reg.SpawnEntity();
-        reg.AddComponent(e,
-            server::Component::Transform{static_cast<float>(i * 10.0f), 0.0f});
+        reg.AddComponent(e, server::Component::Transform());
         entities.push_back(e);
     }
 
@@ -417,7 +427,7 @@ TEST(ServerTest, EntityCleanup) {
 
 TEST(ServerTest, StressManyEntities) {
     boost::asio::io_context io;
-    server::Config &config = getTestConfig();
+    server::Config config = getTestConfig();
     server::Server server(config, io);
     server.Initialize();
 
@@ -427,8 +437,8 @@ TEST(ServerTest, StressManyEntities) {
 
     for (int i = 0; i < 100; i++) {
         auto e = reg.SpawnEntity();
-        reg.AddComponent(e, server::Component::Transform{
-                                static_cast<float>(i), static_cast<float>(i)});
+        reg.AddComponent(e, server::Component::Transform(static_cast<float>(i),
+                                static_cast<float>(i), 0.0f, 1.0f));
         reg.AddComponent(e, server::Component::Velocity{1.0f, 1.0f});
         entities.push_back(e);
     }
@@ -437,24 +447,26 @@ TEST(ServerTest, StressManyEntities) {
 
     server.Update();
 
+    // After one update with delta time 0.016:
+    // new_pos = initial_pos + velocity * 0.016
     for (int i = 0; i < 100; i++) {
-        EXPECT_EQ(
-            positions[entities[i].getId()]->x, static_cast<float>(i + 1));
-        EXPECT_EQ(
-            positions[entities[i].getId()]->y, static_cast<float>(i + 1));
+        EXPECT_FLOAT_EQ(positions[entities[i].getId()]->x,
+            static_cast<float>(i) + (1.0f * 0.016f));
+        EXPECT_FLOAT_EQ(positions[entities[i].getId()]->y,
+            static_cast<float>(i) + (1.0f * 0.016f));
     }
 }
 
 TEST(ServerTest, StressMultipleUpdates) {
     boost::asio::io_context io;
-    server::Config &config = getTestConfig();
+    server::Config config = getTestConfig();
     server::Server server(config, io);
     server.Initialize();
 
     Engine::registry &reg = server.GetRegistry();
 
     auto entity = reg.SpawnEntity();
-    reg.AddComponent(entity, server::Component::Transform{0.0f, 0.0f});
+    reg.AddComponent(entity, server::Component::Transform());
     reg.AddComponent(entity, server::Component::Velocity{0.1f, 0.1f});
 
     auto &positions = reg.GetComponents<server::Component::Transform>();
@@ -465,9 +477,11 @@ TEST(ServerTest, StressMultipleUpdates) {
         server.Update();
     }
 
-    // Position should be NUM_UPDATES * velocity (with tolerance for FP errors)
-    EXPECT_NEAR(positions[entity.getId()]->x, 100.0f, 0.01f);
-    EXPECT_NEAR(positions[entity.getId()]->y, 100.0f, 0.01f);
+    // Position should be NUM_UPDATES * velocity * delta_time
+    // velocity = 0.1, delta_time = 0.016, updates = 1000
+    // expected = 0.1 * 0.016 * 1000 = 1.6
+    EXPECT_NEAR(positions[entity.getId()]->x, 0.1f * 0.016f * 1000, 0.01f);
+    EXPECT_NEAR(positions[entity.getId()]->y, 0.1f * 0.016f * 1000, 0.01f);
 }
 
 // ============================================================================
@@ -546,7 +560,6 @@ TEST(ServerTcpTest, ConnectAckPacketSerializeOK) {
     server::network::ConnectAckPacket ack;
     ack.player_id = server::network::PlayerId{42};
     ack.status = server::network::ConnectAckPacket::OK;
-    ack.reserved = {0, 0};
 
     server::network::PacketBuffer buffer;
     ack.Serialize(buffer);
@@ -571,7 +584,6 @@ TEST(ServerTcpTest, ConnectAckPacketSerializeServerFull) {
     server::network::ConnectAckPacket ack;
     ack.player_id = server::network::PlayerId{0};  // No ID assigned
     ack.status = server::network::ConnectAckPacket::ServerFull;
-    ack.reserved = {0, 0};
 
     server::network::PacketBuffer buffer;
     ack.Serialize(buffer);
@@ -587,7 +599,6 @@ TEST(ServerTcpTest, ConnectAckPacketSerializeBadUsername) {
     server::network::ConnectAckPacket ack;
     ack.player_id = server::network::PlayerId{0};
     ack.status = server::network::ConnectAckPacket::BadUsername;
-    ack.reserved = {0, 0};
 
     server::network::PacketBuffer buffer;
     ack.Serialize(buffer);
@@ -603,7 +614,6 @@ TEST(ServerTcpTest, ConnectAckPacketSerializeInGame) {
     server::network::ConnectAckPacket ack;
     ack.player_id = server::network::PlayerId{0};
     ack.status = server::network::ConnectAckPacket::InGame;
-    ack.reserved = {0, 0};
 
     server::network::PacketBuffer buffer;
     ack.Serialize(buffer);
@@ -620,7 +630,6 @@ TEST(ServerTcpTest, ConnectAckPacketDeserialize) {
     server::network::ConnectAckPacket original;
     original.player_id = server::network::PlayerId{7};
     original.status = server::network::ConnectAckPacket::OK;
-    original.reserved = {0, 0};
 
     // Serialize
     server::network::PacketBuffer write_buffer;
@@ -642,7 +651,6 @@ TEST(ServerTcpTest, ConnectAckPacketRoundTrip) {
         original.player_id =
             server::network::PlayerId{static_cast<uint8_t>(status_val + 1)};
         original.status = status_val;
-        original.reserved = {0, 0};
 
         server::network::PacketBuffer write_buffer;
         original.Serialize(write_buffer);
@@ -719,7 +727,7 @@ TEST(ServerTcpTest, UsernameUnicodeHandling) {
 
 TEST(ServerTcpTest, ServerInitializationWithNetworking) {
     boost::asio::io_context io;
-    server::Config &config = getTestConfig();
+    server::Config config = getTestConfig();
     server::Server server(config, io);
 
     EXPECT_NO_THROW(server.Initialize());
@@ -736,7 +744,6 @@ TEST(ServerTcpTest, MultipleConnectAckStatuses) {
         server::network::ConnectAckPacket ack;
         ack.player_id = server::network::PlayerId{1};
         ack.status = status;
-        ack.reserved = {0, 0};
 
         server::network::PacketBuffer buffer;
         EXPECT_NO_THROW(ack.Serialize(buffer));
@@ -808,8 +815,9 @@ TEST(ServerTcpEdgeCaseTest, UsernameWhitespaceOnly) {
 
     EXPECT_EQ(req.GetUsername(), whitespace);
 
-    // NOTE: Server will trim this to empty string and reject it (BadUsername)
-    // This test validates packet storage, server validation happens separately
+    // NOTE: Server will trim this to empty string and reject it
+    // (BadUsername) This test validates packet storage, server validation
+    // happens separately
 }
 
 TEST(ServerTcpEdgeCaseTest, UsernameWithLeadingTrailingSpaces) {
@@ -822,8 +830,8 @@ TEST(ServerTcpEdgeCaseTest, UsernameWithLeadingTrailingSpaces) {
     EXPECT_EQ(req.GetUsername(), spaced);
 
     // NOTE: Server WILL trim spaces when processing (see
-    // Server::HandleConnectReq) This test only validates packet serialization,
-    // not server-side validation
+    // Server::HandleConnectReq) This test only validates packet
+    // serialization, not server-side validation
 }
 
 // ----------------------------------------------------------------------------
@@ -843,7 +851,8 @@ TEST(ServerTcpEdgeCaseTest, PacketWrongSize) {
     data[1] = 50;  // Wrong size (should be 32)
     data[2] = 0;
 
-    // Attempting to deserialize should still work but data will be misaligned
+    // Attempting to deserialize should still work but data will be
+    // misaligned
     server::network::PacketBuffer corrupt_buffer(data);
     auto header = corrupt_buffer.ReadHeader();
 
@@ -921,7 +930,6 @@ TEST(ServerTcpEdgeCaseTest, ConnectAckExactSize) {
     server::network::ConnectAckPacket ack;
     ack.player_id = server::network::PlayerId{1};
     ack.status = server::network::ConnectAckPacket::OK;
-    ack.reserved = {0, 0};
 
     server::network::PacketBuffer buffer;
     ack.Serialize(buffer);
@@ -942,7 +950,6 @@ TEST(ServerTcpEdgeCaseTest, SerializeMultiplePacketsSequentially) {
         server::network::ConnectAckPacket ack;
         ack.player_id = server::network::PlayerId{i};
         ack.status = server::network::ConnectAckPacket::OK;
-        ack.reserved = {0, 0};
 
         server::network::PacketBuffer temp;
         ack.Serialize(temp);
@@ -1087,7 +1094,6 @@ TEST(ServerTcpEdgeCaseTest, ConnectAckReservedFieldsZero) {
     server::network::ConnectAckPacket ack;
     ack.player_id = server::network::PlayerId{1};
     ack.status = server::network::ConnectAckPacket::OK;
-    ack.reserved = {0, 0};
 
     server::network::PacketBuffer buffer;
     ack.Serialize(buffer);
@@ -1103,14 +1109,16 @@ TEST(ServerTcpEdgeCaseTest, ConnectAckReservedFieldsNonZero) {
     server::network::ConnectAckPacket ack;
     ack.player_id = server::network::PlayerId{1};
     ack.status = server::network::ConnectAckPacket::OK;
-    ack.reserved = {0xAB, 0xCD};  // Non-zero reserved values
+    // Bytes 14-15 are now udp_port (not reserved)
+    // Set udp_port to 0xCDAB (little-endian: AB CD)
+    ack.udp_port = 0xCDAB;
 
     server::network::PacketBuffer buffer;
     ack.Serialize(buffer);
 
     const auto &data = buffer.Data();
 
-    // Should serialize whatever values are set
+    // Should serialize udp_port in little-endian
     EXPECT_EQ(data[14], 0xAB);
     EXPECT_EQ(data[15], 0xCD);
 }
@@ -1123,7 +1131,6 @@ TEST(ServerTcpEdgeCaseTest, PlayerIdZero) {
     server::network::ConnectAckPacket ack;
     ack.player_id = server::network::PlayerId{0};  // Reserved/invalid ID
     ack.status = server::network::ConnectAckPacket::BadUsername;
-    ack.reserved = {0, 0};
 
     server::network::PacketBuffer buffer;
     ack.Serialize(buffer);
@@ -1136,7 +1143,6 @@ TEST(ServerTcpEdgeCaseTest, PlayerIdMaxValue) {
     server::network::ConnectAckPacket ack;
     ack.player_id = server::network::PlayerId{255};
     ack.status = server::network::ConnectAckPacket::OK;
-    ack.reserved = {0, 0};
 
     server::network::PacketBuffer buffer;
     ack.Serialize(buffer);

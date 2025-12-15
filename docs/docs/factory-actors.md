@@ -1,6 +1,6 @@
 # Factory Actors
 
-**Source files:** [client/game/factory/factory_ennemies/FactoryActors.hpp](client/game/factory/factory_ennemies/FactoryActors.hpp), [client/game/factory/factory_ennemies/FactoryActors.cpp](client/game/factory/factory_ennemies/FactoryActors.cpp), [client/game/factory/factory_ennemies/FactoryActorsInit.cpp](client/game/factory/factory_ennemies/FactoryActorsInit.cpp), [client/game/factory/factory_ennemies/CreateMermaidActor.cpp](client/game/factory/factory_ennemies/CreateMermaidActor.cpp), [client/game/factory/factory_ennemies/CreatePlayerActor.cpp](client/game/factory/factory_ennemies/CreatePlayerActor.cpp)
+**Source files:** `client/game/factory/factory_ennemies/FactoryActors.hpp`, `client/game/factory/factory_ennemies/FactoryActors.cpp`, `client/game/factory/factory_ennemies/FactoryActorsInit.cpp`, `client/game/factory/factory_ennemies/CreateMermaidActor.cpp`, `client/game/factory/factory_ennemies/CreatePlayerActor.cpp`
 
 **Purpose:** Centralized builder that instantiates actors (player and enemies) from JSON-driven definitions. It attaches the shared ECS components (transform, health, visuals, collision), then layers specialized logic per actor type (animations, AI patterns, shooting, VFX).
 

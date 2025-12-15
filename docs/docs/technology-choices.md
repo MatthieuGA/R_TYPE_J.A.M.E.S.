@@ -185,9 +185,9 @@ cmake -DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake
 
 ### R-Type Project Documentation
 
-- [RFC-0001: Engine Architecture](./rfcs/RFC-0001-engine-architecture.md)
-- [README.md](../README.md)
-- [CONTRIBUTING.md](../CONTRIBUTING.md)
+- RFC-0001: Engine Architecture (see project repository)
+- README.md (see project repository)
+- CONTRIBUTING.md (see project repository)
 
 ---
 

@@ -8,8 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include <SFML/Graphics.hpp>
-
 #include "game/scenes_management/Scene_A.hpp"
 
 namespace Rtype::Client::Component {

@@ -100,3 +100,25 @@ build_log.txt
 *.pdf
 r-type.txt
 vcpkg_installed/
+
+# Temporary analysis and build files
+*output*.txt
+test_*.cpp
+test_*.txt
+test_sfml_*
+test_packets_binary
+game_logic_patterns.txt
+DrawableSystem.cpp
+
+# Shell scripts outside scripts/ directory
+/*.sh
+
+# Documentation outside docs/docs/ (development notes, not for docusaurus)
+/docs/*.md
+!/docs/README.md
+/docs/architecture/
+/docs/guides/
+
+# Python test scripts
+*.py
+!scripts/*.py

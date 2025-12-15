@@ -1,5 +1,5 @@
 #pragma once
-#include <SFML/Graphics.hpp>
+#include <graphics/Types.hpp>
 
 namespace Rtype::Client::Component {
 struct NetworkId {
@@ -7,7 +7,7 @@ struct NetworkId {
 };
 
 struct InterpolatedPosition {
-    sf::Vector2f goalPosition;
+    Engine::Graphics::Vector2f goalPosition;
     float speed;
 };
 }  // namespace Rtype::Client::Component

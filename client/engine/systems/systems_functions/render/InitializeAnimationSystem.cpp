@@ -5,80 +5,82 @@
 
 namespace Rtype::Client {
 /**
- * @brief Compute and apply the origin for an animated drawable.
- *
- * Uses `GetOffsetFromAnimatedTransform` to calculate the correct origin
- * based on the animated frame size and transform.
- *
- * @param drawable Drawable component to update
- * @param animatedSprite AnimatedSprite containing frame dimensions
- * @param transform Transform used for offset calculation
- */
-void SetDrawableAnimationOrigin(Com::Drawable &drawable,
-    const Com::AnimatedSprite &animatedSprite,
-    const Com::Transform &transform) {
-    auto it = animatedSprite.animations.find(animatedSprite.currentAnimation);
-    if (it == animatedSprite.animations.end())
-        return;
-
-    sf::Vector2f origin =
-        GetOffsetFromAnimatedTransform(transform, animatedSprite);
-    drawable.sprite.setOrigin(-origin);
-}
-
-/**
  * @brief Initialize a drawable that uses an animated sprite sheet.
  *
- * Loads the texture, sets the origin for animated frames and initializes the
- * sprite IntRect to the current frame.
+ * Loads the texture via video backend and sets the texture_rect to the
+ * current frame.
  *
  * @param drawable Drawable component to initialize
- * @param animatedSprite AnimatedSprite providing frame info
- * @param transform Transform for origin calculation
+ * @param animated_sprite AnimatedSprite providing frame info
+ * @param game_world Game world containing video backend
  */
 void InitializeDrawableAnimated(Com::Drawable &drawable,
-    const Com::AnimatedSprite &animatedSprite,
-    const Com::Transform &transform) {
-    auto it = animatedSprite.animations.find(animatedSprite.currentAnimation);
-    if (it == animatedSprite.animations.end())
+    const Com::AnimatedSprite &animated_sprite, GameWorld &game_world) {
+    if (!game_world.rendering_engine_) {
+        std::cerr << "ERROR: video_backend is null!" << std::endl;
         return;
-
-    const auto &animation = it->second;
-
-    if (!drawable.texture.loadFromFile(drawable.spritePath)) {
-        std::cerr << "ERROR: Failed to load sprite from "
-                  << drawable.spritePath << "\n";
-    } else {
-        drawable.sprite.setTexture(drawable.texture, true);
     }
-    SetDrawableAnimationOrigin(drawable, animatedSprite, transform);
-    drawable.sprite.setTextureRect(
-        sf::IntRect(animation.current_frame * animation.frameWidth, 0,
-            animation.frameWidth, animation.frameHeight));
-    drawable.isLoaded = true;
+
+    // Load texture via video backend
+    bool loaded = game_world.rendering_engine_->LoadTexture(
+        drawable.texture_id, drawable.sprite_path);
+
+    if (!loaded) {
+        std::cerr << "ERROR: Failed to load animated sprite: "
+                  << drawable.sprite_path << " (ID: " << drawable.texture_id
+                  << ")" << std::endl;
+        return;
+    }
+
+    // Set initial texture rect to first frame
+    // Get the current animation from the animations map
+    auto it =
+        animated_sprite.animations.find(animated_sprite.currentAnimation);
+    if (it == animated_sprite.animations.end()) {
+        // Fallback to "Default" if current animation not found
+        it = animated_sprite.animations.find("Default");
+        if (it == animated_sprite.animations.end() ||
+            animated_sprite.animations.empty()) {
+            std::cerr << "ERROR: No animations found for AnimatedSprite"
+                      << std::endl;
+            return;
+        }
+        // Use the first available animation as fallback
+        it = animated_sprite.animations.begin();
+    }
+
+    const auto &anim = it->second;
+    drawable.texture_rect = Engine::Graphics::IntRect(
+        static_cast<int>(anim.first_frame_position.x) +
+            (anim.current_frame * anim.frameWidth),
+        static_cast<int>(anim.first_frame_position.y), anim.frameWidth,
+        anim.frameHeight);
+
+    drawable.is_loaded = true;
 }
 
 /**
  * @brief System to initialize drawables for entities that have an
  * AnimatedSprite component.
  *
- * Ensures textures are loaded and the sprite rectangle/origin are set for
+ * Ensures textures are loaded and the sprite rectangle is set for
  * animated sprites.
  *
  * @param reg Engine registry (unused)
+ * @param game_world Game world containing video backend
  * @param transforms Sparse array of Transform components
  * @param drawables Sparse array of Drawable components
  * @param animated_sprites Sparse array of AnimatedSprite components
  */
 void InitializeDrawableAnimatedSystem(Eng::registry &reg,
-    Eng::sparse_array<Com::Transform> const &transforms,
+    GameWorld &game_world, Eng::sparse_array<Com::Transform> const &transforms,
     Eng::sparse_array<Com::Drawable> &drawables,
     Eng::sparse_array<Com::AnimatedSprite> const &animated_sprites) {
-    // Else draw entities with Transform and Drawable components
     for (auto &&[i, transform, drawable, animated_sprite] :
         make_indexed_zipper(transforms, drawables, animated_sprites)) {
-        if (!drawable.isLoaded)
-            InitializeDrawableAnimated(drawable, animated_sprite, transform);
+        if (!drawable.is_loaded) {
+            InitializeDrawableAnimated(drawable, animated_sprite, game_world);
+        }
     }
 }
 }  // namespace Rtype::Client

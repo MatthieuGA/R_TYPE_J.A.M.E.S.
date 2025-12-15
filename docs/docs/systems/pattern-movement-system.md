@@ -13,7 +13,7 @@
 ## Behavior
 
 - Increments `patternMovement.elapsed` with `dt`, then dispatches to the function matching `PatternType`:
-  - **Straight**: sets `vx/vy = baseDir * baseSpeed`; kills entity if far outside bounds (x<-100/x>2000/y<-100/y>1200).
+  - **Straight**: sets `vx/vy = baseDir * baseSpeed`; kills entity if far outside bounds (`x < 100`, `x > 2000`, `y < -100`, `y > 1200`).
   - **SineHorizontal / ZigZagHorizontal**: advances in X with base speed and oscillates in Y (continuous sine or sign-based zigzag).
   - **SineVertical / ZigZagVertical**: advances in Y with base speed and oscillates in X.
   - **Wave**: combines sine offsets on X and Y added to base velocity.

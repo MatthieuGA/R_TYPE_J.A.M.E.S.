@@ -12,15 +12,6 @@ namespace Eng = Engine;
 
 class ButtonClickSystemTest : public ::testing::Test {
  protected:
-    void SetUp() override {
-        game_world.window_.create(
-            sf::VideoMode({800u, 600u}), "button-test", sf::Style::None);
-    }
-
-    void TearDown() override {
-        game_world.window_.close();
-    }
-
     Rtype::Client::GameWorld game_world{"127.0.0.1", 50000, 50000};
     Eng::registry reg;
     Eng::sparse_array<Com::HitBox> hit_boxes;
@@ -58,9 +49,9 @@ TEST_F(ButtonClickSystemTest, UpdatesColorBasedOnState) {
         200.0f, 150.0f, 0.0f, 1.0f, Com::Transform::TOP_LEFT};
     Com::HitBox hitbox{100.0f, 50.0f, true};
     Com::Clickable clickable;
-    clickable.idleColor = sf::Color::White;
-    clickable.hoverColor = sf::Color::Yellow;
-    clickable.clickColor = sf::Color::Red;
+    clickable.idleColor = Eng::Graphics::Color::White;
+    clickable.hoverColor = Eng::Graphics::Color::Yellow;
+    clickable.clickColor = Eng::Graphics::Color::Red;
 
     Com::Drawable drawable{"Logo.png", 0};
 

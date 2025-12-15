@@ -24,9 +24,9 @@ TEST(ComponentsCore, TransformAndVelocity) {
 
 TEST(ComponentsCore, DrawableBasics) {
     Com::Drawable d("Logo.png", 5);
-    EXPECT_EQ(d.spritePath, std::string("assets/images/Logo.png"));
+    EXPECT_EQ(d.sprite_path, std::string("assets/images/Logo.png"));
     EXPECT_EQ(d.z_index, 5);
-    EXPECT_FALSE(d.isLoaded);
+    EXPECT_FALSE(d.is_loaded);
 }
 
 TEST(ComponentsCore, ControllableAndInput) {

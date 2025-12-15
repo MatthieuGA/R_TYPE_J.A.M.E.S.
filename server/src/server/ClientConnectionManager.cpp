@@ -135,7 +135,8 @@ bool ClientConnectionManager::AllPlayersReady() const {
             break;
         }
     }
-    return all_ready;
+    // Return false if no authenticated players are connected
+    return connected_players > 0 && all_ready;
 }
 
 const std::unordered_map<uint32_t, ClientConnection> &

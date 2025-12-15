@@ -1,0 +1,19 @@
+{
+  "plugins": {
+    "video": {
+      "backend": "../lib/sfml_video_module.so",
+      "window": {
+        "width": 1920,
+        "height": 1080,
+        "title": "R-Type J.A.M.E.S."
+      }
+    },
+    "audio": {
+      "backend": "../lib/sfml_audio_module.so",
+      "sfx_volume": 0.7,
+      "music_volume": 0.5,
+      "mute_sfx": false,
+      "mute_music": false
+    }
+  }
+}
