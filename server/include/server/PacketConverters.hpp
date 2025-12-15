@@ -5,7 +5,8 @@
 #include <vector>
 
 #include "include/registry.hpp"
-#include "server/Components.hpp"
+#include "server/CoreComponents.hpp"
+#include "server/GameplayComponents.hpp"
 
 // #include "server/Packets.hpp"  // TODO: Create Packets.hpp with packet type
 // definitions
@@ -51,7 +52,7 @@ namespace server::converters {
  */
 inline network::SpawnEntityPacket ToSpawnEntityPacket(network::Tick tick,
     network::EntityId entity_id, uint8_t entity_type,
-    const Component::Position &pos, const Component::Velocity &vel) {
+    const Component::Transform &pos, const Component::Velocity &vel) {
     network::SpawnEntityPacket packet;
     packet.tick = tick;
     packet.entity_id = entity_id;
@@ -67,7 +68,8 @@ inline network::SpawnEntityPacket ToSpawnEntityPacket(network::Tick tick,
  * @brief Create a PlayerShoot packet from position component
  */
 inline network::PlayerShootPacket ToPlayerShootPacket(network::Tick tick,
-    network::PlayerId player_id, const Component::Position &pos, float angle) {
+    network::PlayerId player_id, const Component::Transform &pos,
+    float angle) {
     network::PlayerShootPacket packet;
     packet.tick = tick;
     packet.player_id = player_id;
@@ -93,7 +95,7 @@ inline void ApplySpawnEntityPacket(
     auto entity = reg.entity_from_index(packet.entity_id);
 
     // Add Position component
-    Component::Position pos;
+    Component::Transform pos;
     pos.x = packet.pos_x;
     pos.y = packet.pos_y;
     reg.add_component(entity, std::move(pos));
@@ -111,7 +113,7 @@ inline void ApplySpawnEntityPacket(
 inline void UpdatePositionFromPacket(Engine::registry &reg,
     network::EntityId entity_id, float pos_x, float pos_y) {
     auto entity = reg.entity_from_index(entity_id);
-    auto &positions = reg.GetComponents<Component::Position>();
+    auto &positions = reg.GetComponents<Component::Transform>();
 
     if (positions.has(entity.getId())) {
         positions[entity.getId()]->x = pos_x;
@@ -124,10 +126,10 @@ inline void UpdatePositionFromPacket(Engine::registry &reg,
  *
  * Returns nullopt if components don't exist.
  */
-inline std::optional<std::pair<Component::Position, Component::Velocity>>
+inline std::optional<std::pair<Component::Transform, Component::Velocity>>
 GetEntityTransform(Engine::registry &reg, network::EntityId entity_id) {
     auto entity = reg.entity_from_index(entity_id);
-    auto &positions = reg.GetComponents<Component::Position>();
+    auto &positions = reg.GetComponents<Component::Transform>();
     auto &velocities = reg.GetComponents<Component::Velocity>();
 
     if (positions.has(entity.getId()) && velocities.has(entity.getId())) {
@@ -147,7 +149,7 @@ inline std::vector<network::SpawnEntityPacket> CreateSnapshotPackets(
     Engine::registry &reg, network::Tick current_tick) {
     std::vector<network::SpawnEntityPacket> packets;
 
-    auto &positions = reg.GetComponents<Component::Position>();
+    auto &positions = reg.GetComponents<Component::Transform>();
     auto &velocities = reg.GetComponents<Component::Velocity>();
 
     for (size_t i = 0; i < positions.size(); ++i) {

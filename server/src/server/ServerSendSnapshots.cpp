@@ -27,8 +27,29 @@ void Server::SendSnapshotsToAllClients() {
             static_cast<uint16_t>(std::clamp(transform.x, 0.0f, 65535.0f));
         entity_state.pos_y =
             static_cast<uint16_t>(std::clamp(transform.y, 0.0f, 38864.0f));
-        entity_state.angle = static_cast<uint16_t>(
-            std::fmod(transform.rotationDegrees, 360.0f));
+        try {
+            auto &velocity = registry_.GetComponent<Component::Velocity>(
+                registry_.EntityFromIndex(i));
+            // Encode velocity with bias: [-32768, 32767] -> [0, 65535]
+            int16_t vx_clamped = static_cast<int16_t>(
+                std::clamp(velocity.vx, -32768.0f, 32767.0f));
+            int16_t vy_clamped = static_cast<int16_t>(
+                std::clamp(velocity.vy, -32768.0f, 32767.0f));
+            entity_state.velocity_x = static_cast<uint16_t>(
+                static_cast<int32_t>(vx_clamped) + 32768);
+            entity_state.velocity_y = static_cast<uint16_t>(
+                static_cast<int32_t>(vy_clamped) + 32768);
+        } catch (const std::exception &e) {
+            entity_state.velocity_x = 32768;  // 0 velocity encoded
+            entity_state.velocity_y = 32768;
+        }
+        // Normalize angle to [0, 360) range
+        float normalized_angle = transform.rotationDegrees;
+        while (normalized_angle < 0.0f)
+            normalized_angle += 360.0f;
+        while (normalized_angle >= 360.0f)
+            normalized_angle -= 360.0f;
+        entity_state.angle = static_cast<uint16_t>(normalized_angle * 10.0f);
 
         packet_sender_.SendSnapshot(entity_state);
     }

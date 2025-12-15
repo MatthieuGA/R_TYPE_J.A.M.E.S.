@@ -10,7 +10,7 @@
 namespace server::Component {
 
 struct PlayerTag {
-    float speed_max = 300.0f;
+    float speed_max = 800.0f;
     float shoot_cooldown_max = 0.3f;
     float charge_time_min = 0.5f;
     bool isInPlay = true;

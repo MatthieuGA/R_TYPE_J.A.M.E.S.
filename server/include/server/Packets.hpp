@@ -297,6 +297,8 @@ struct EntityState {
     uint16_t pos_x;       // 2 bytes (normalized 0..65535)
     uint16_t pos_y;       // 2 bytes (normalized 0..38864)
     uint16_t angle;       // 2 bytes (degrees 0..360)
+    uint16_t velocity_x;  // 2 bytes (normalized -32768..32767)
+    uint16_t velocity_y;  // 2 bytes (normalized -32768..32767)
 
     void Serialize(PacketBuffer &buffer) const {
         buffer.WriteUint32(entity_id.value);
@@ -305,6 +307,8 @@ struct EntityState {
         buffer.WriteUint16(pos_x);
         buffer.WriteUint16(pos_y);
         buffer.WriteUint16(angle);
+        buffer.WriteUint16(velocity_x);
+        buffer.WriteUint16(velocity_y);
     }
 
     static EntityState Deserialize(PacketBuffer &buffer) {
@@ -315,6 +319,8 @@ struct EntityState {
         state.pos_x = buffer.ReadUint16();
         state.pos_y = buffer.ReadUint16();
         state.angle = buffer.ReadUint16();
+        state.velocity_x = buffer.ReadUint16();
+        state.velocity_y = buffer.ReadUint16();
         return state;
     }
 };

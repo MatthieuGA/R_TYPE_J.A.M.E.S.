@@ -32,6 +32,8 @@ struct ParsedEntity {
     uint16_t pos_x;
     uint16_t pos_y;
     uint16_t angle;
+    uint16_t velocity_x;
+    uint16_t velocity_y;
 };
 
 /**
@@ -48,7 +50,7 @@ static std::vector<ParsedEntity> ParseSnapshotData(
     const client::SnapshotPacket &snapshot) {
     std::vector<ParsedEntity> entities;
 
-    const size_t kEntityStateSize = 12;
+    const size_t kEntityStateSize = 16;  // 16 bytes per EntityState
 
     // Check if payload contains WorldSnapshotPacket format (header + entities)
     // or just a single EntityState (current server implementation)
@@ -63,6 +65,8 @@ static std::vector<ParsedEntity> ParseSnapshotData(
         // - pos_x (u16, 2 bytes)
         // - pos_y (u16, 2 bytes)
         // - angle (u16, 2 bytes)
+        // - velocity_x (u16, 2 bytes)
+        // - velocity_y (u16, 2 bytes)
 
         entity.entity_id = static_cast<uint32_t>(snapshot.payload[0]) |
                            (static_cast<uint32_t>(snapshot.payload[1]) << 8) |
@@ -80,6 +84,12 @@ static std::vector<ParsedEntity> ParseSnapshotData(
 
         entity.angle = static_cast<uint16_t>(snapshot.payload[10]) |
                        (static_cast<uint16_t>(snapshot.payload[11]) << 8);
+
+        entity.velocity_x = static_cast<uint16_t>(snapshot.payload[12]) |
+                            (static_cast<uint16_t>(snapshot.payload[13]) << 8);
+
+        entity.velocity_y = static_cast<uint16_t>(snapshot.payload[14]) |
+                            (static_cast<uint16_t>(snapshot.payload[15]) << 8);
 
         entities.push_back(entity);
     } else if (snapshot.payload_size >= 4) {
@@ -116,6 +126,14 @@ static std::vector<ParsedEntity> ParseSnapshotData(
             entity.angle =
                 static_cast<uint16_t>(snapshot.payload[offset + 10]) |
                 (static_cast<uint16_t>(snapshot.payload[offset + 11]) << 8);
+
+            entity.velocity_x =
+                static_cast<uint16_t>(snapshot.payload[offset + 12]) |
+                (static_cast<uint16_t>(snapshot.payload[offset + 13]) << 8);
+
+            entity.velocity_y =
+                static_cast<uint16_t>(snapshot.payload[offset + 14]) |
+                (static_cast<uint16_t>(snapshot.payload[offset + 15]) << 8);
 
             entities.push_back(entity);
             offset += kEntityStateSize;
@@ -162,7 +180,9 @@ static void DisplaySnapshotData(const client::SnapshotPacket &snapshot) {
         std::cout << "    [" << i << "] ID=" << entity.entity_id << " Type=0x"
                   << std::hex << static_cast<int>(entity.entity_type)
                   << std::dec << " Pos=(" << entity.pos_x << ","
-                  << entity.pos_y << ") Angle=" << entity.angle << std::endl;
+                  << entity.pos_y << ") Angle=" << entity.angle << " Vel=("
+                  << entity.velocity_x << "," << entity.velocity_y << ")"
+                  << std::endl;
     }
     std::cout << std::flush;
 }
@@ -208,7 +228,23 @@ static void UpdateExistingEntityTransform(GameWorld &game_world,
     if (transform.has_value()) {
         transform->x = static_cast<float>(entity_data.pos_x);
         transform->y = static_cast<float>(entity_data.pos_y);
-        transform->rotationDegrees = static_cast<float>(entity_data.angle);
+        transform->rotationDegrees =
+            static_cast<float>(entity_data.angle / 10.0f);
+    }
+    try {
+        auto &velocity =
+            game_world.registry_
+                .GetComponents<Component::Velocity>()[entity_index];
+        if (velocity.has_value()) {
+            // Decode velocity from bias encoding: [0, 65535] -> [-32768,
+            // 32767]
+            velocity->vx = static_cast<float>(
+                static_cast<int32_t>(entity_data.velocity_x) - 32768);
+            velocity->vy = static_cast<float>(
+                static_cast<int32_t>(entity_data.velocity_y) - 32768);
+        }
+    } catch (const std::exception &e) {
+        // Velocity component might not exist; ignore if so
     }
 }
 
@@ -353,18 +389,19 @@ void ClientApplication::RunGameLoop(GameWorld &game_world) {
         // (outside game-start check, runs each frame)
         if (game_world.server_connection_) {
             // Process all queued snapshots each frame to avoid backlog
-            static int packet_count = 0;
+            // static int packet_count = 0;
             while (true) {
                 auto snapshot = game_world.server_connection_->PollSnapshot();
                 if (!snapshot.has_value())
                     break;
 
-                packet_count++;
-                if (packet_count <= 5 || packet_count % 60 == 0) {
-                    std::cout << "[Client] Received UDP snapshot #"
-                              << packet_count << " (tick=" << snapshot->tick
-                              << ")\n";
-                }
+                // packet_count++;
+                //  if (packet_count <= 5 || packet_count % 60 == 0) {
+                //      std::cout << "[Client] Received UDP snapshot #"
+                //                << packet_count << " (tick=" <<
+                //                snapshot->tick
+                //                << ")\n";
+                //  }
 
                 // Apply snapshot data to registry entities
                 ApplySnapshotToRegistry(game_world, *snapshot);

@@ -30,12 +30,11 @@ class PacketSenderTest : public ::testing::Test {
  protected:
     void SetUp() override {
         io_context_ = std::make_unique<boost::asio::io_context>();
-        config_ = std::make_unique<server::Config>();
-        config_->SetUdpAddress("127.0.0.1");
-        config_->SetUdpPort(0);  // Use random available port
-        config_->SetTcpAddress("127.0.0.1");
-        config_->SetTcpPort(0);  // Use random available port
-        config_->SetMaxPlayers(4);
+
+        // Create a test config using Parse with minimal arguments
+        const char *test_args[] = {"test_program"};
+        config_ = std::make_unique<server::Config>(
+            server::Config::Parse(1, const_cast<char **>(test_args)));
 
         network_ = std::make_unique<server::Network>(*config_, *io_context_);
         connection_manager_ =

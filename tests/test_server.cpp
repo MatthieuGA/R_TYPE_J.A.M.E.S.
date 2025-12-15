@@ -88,8 +88,8 @@ TEST(ServerTest, SpawnEntityWithPosition) {
     Engine::registry &reg = server.GetRegistry();
     auto entity = reg.SpawnEntity();
 
-    auto &pos = reg.AddComponent(
-        entity, server::Component::Transform(100.0f, 200.0f, {1.0f, 1.0f}));
+    auto &pos = reg.AddComponent(entity,
+        server::Component::Transform(100.0f, 200.0f, 0.0f, {1.0f, 1.0f}));
 
     EXPECT_TRUE(pos.has_value());
     EXPECT_EQ(pos->x, 100.0f);
@@ -106,7 +106,7 @@ TEST(ServerTest, SpawnPlayerEntity) {
     auto player = reg.SpawnEntity();
 
     reg.AddComponent(
-        player, server::Component::Transform{0.0f, 0.0f, {1.0f, 1.0f}});
+        player, server::Component::Transform{0.0f, 0.0f, 0.0f, {1.0f, 1.0f}});
     reg.AddComponent(player, server::Component::Velocity{0.0f, 0.0f});
     reg.AddComponent(player, server::Component::Health{100});
     reg.AddComponent(player, server::Component::PlayerTag{1});
@@ -127,8 +127,8 @@ TEST(ServerTest, SpawnEnemyEntity) {
     Engine::registry &reg = server.GetRegistry();
     auto enemy = reg.SpawnEntity();
 
-    reg.AddComponent(
-        enemy, server::Component::Transform{500.0f, 300.0f, {1.0f, 1.0f}});
+    reg.AddComponent(enemy,
+        server::Component::Transform{500.0f, 300.0f, 0.0f, {1.0f, 1.0f}});
     reg.AddComponent(enemy, server::Component::Velocity{-2.0f, 0.0f});
     reg.AddComponent(enemy, server::Component::Health{50});
     reg.AddComponent(enemy, server::Component::EnemyTag{10});
@@ -151,20 +151,21 @@ TEST(ServerTest, MultipleEntitiesWithDifferentComponents) {
     // Create player
     auto player = reg.SpawnEntity();
     reg.AddComponent(
-        player, server::Component::Transform{0.0f, 0.0f, {1.0f, 1.0f}});
+        player, server::Component::Transform{0.0f, 0.0f, 0.0f, {1.0f, 1.0f}});
     reg.AddComponent(player, server::Component::PlayerTag{1});
-    reg.AddComponent(player, server::Component::Health{100, 100});
+    reg.AddComponent(player, server::Component::Health{100});
 
     // Create enemy
     auto enemy = reg.SpawnEntity();
-    reg.AddComponent(enemy, server::Component::Transform{100.0f, 100.0f});
+    reg.AddComponent(enemy,
+        server::Component::Transform{100.0f, 100.0f, 0.0f, {1.0f, 1.0f}});
     reg.AddComponent(enemy, server::Component::EnemyTag{15});
     reg.AddComponent(enemy, server::Component::Velocity{-1.0f, 0.0f});
 
     // Create projectile
     auto projectile = reg.SpawnEntity();
-    reg.AddComponent(
-        projectile, server::Component::Transform{50.0f, 50.0f, {1.0f, 1.0f}});
+    reg.AddComponent(projectile,
+        server::Component::Transform{50.0f, 50.0f, 0.0f, {1.0f, 1.0f}});
     reg.AddComponent(projectile, server::Component::Velocity{5.0f, 0.0f});
 
     auto &positions = reg.GetComponents<server::Component::Transform>();
@@ -196,7 +197,7 @@ TEST(ServerTest, MovementSystemUpdatesPosition) {
     auto entity = reg.SpawnEntity();
 
     reg.AddComponent(
-        entity, server::Component::Transform{0.0f, 0.0f, {1.0f, 1.0f}});
+        entity, server::Component::Transform{0.0f, 0.0f, 0.0f, {1.0f, 1.0f}});
     reg.AddComponent(entity, server::Component::Velocity{1.0f, 2.0f});
 
     auto &positions = reg.GetComponents<server::Component::Transform>();
@@ -227,17 +228,17 @@ TEST(ServerTest, MovementSystemMultipleEntities) {
 
     auto e1 = reg.SpawnEntity();
     reg.AddComponent(
-        e1, server::Component::Transform{0.0f, 0.0f, {1.0f, 1.0f}});
+        e1, server::Component::Transform{0.0f, 0.0f, 0.0f, {1.0f, 1.0f}});
     reg.AddComponent(e1, server::Component::Velocity{1.0f, 0.0f});
 
     auto e2 = reg.SpawnEntity();
     reg.AddComponent(
-        e2, server::Component::Transform{10.0f, 10.0f, {1.0f, 1.0f}});
+        e2, server::Component::Transform{10.0f, 10.0f, 0.0f, {1.0f, 1.0f}});
     reg.AddComponent(e2, server::Component::Velocity{-2.0f, 3.0f});
 
     auto e3 = reg.SpawnEntity();
     reg.AddComponent(
-        e3, server::Component::Transform{50.0f, 50.0f, {1.0f, 1.0f}});
+        e3, server::Component::Transform{50.0f, 50.0f, 0.0f, {1.0f, 1.0f}});
     reg.AddComponent(e3, server::Component::Velocity{0.5f, -1.0f});
 
     auto &positions = reg.GetComponents<server::Component::Transform>();
@@ -264,13 +265,14 @@ TEST(ServerTest, MovementSystemIgnoresEntitiesWithoutVelocity) {
 
     // Entity with position and velocity
     auto moving = reg.SpawnEntity();
-    reg.AddComponent(moving, server::Component::Transform{0.0f, 0.0f});
+    reg.AddComponent(
+        moving, server::Component::Transform{0.0f, 0.0f, 0.0f, {1.0f, 1.0f}});
     reg.AddComponent(moving, server::Component::Velocity{1.0f, 1.0f});
 
     // Entity with only position (no velocity)
     auto stationary = reg.SpawnEntity();
-    reg.AddComponent(
-        stationary, server::Component::Transform{10.0f, 10.0f, {1.0f, 1.0f}});
+    reg.AddComponent(stationary,
+        server::Component::Transform{10.0f, 10.0f, 0.0f, {1.0f, 1.0f}});
 
     auto &positions = reg.GetComponents<server::Component::Transform>();
 
@@ -315,7 +317,7 @@ TEST(ServerTest, HealthComponentModification) {
     Engine::registry &reg = server.GetRegistry();
     auto entity = reg.SpawnEntity();
 
-    reg.AddComponent(entity, server::Component::Health{100, 100});
+    reg.AddComponent(entity, server::Component::Health{100});
 
     auto &healths = reg.GetComponents<server::Component::Health>();
 
@@ -347,14 +349,16 @@ TEST(ServerTest, SimpleGameScenario) {
 
     // Spawn player at spawn point
     auto player = reg.SpawnEntity();
-    reg.AddComponent(player, server::Component::Transform{50.0f, 400.0f});
+    reg.AddComponent(player,
+        server::Component::Transform{50.0f, 400.0f, 0.0f, {1.0f, 1.0f}});
     reg.AddComponent(player, server::Component::Velocity{0.0f, 0.0f});
-    reg.AddComponent(player, server::Component::Health{100, 100});
+    reg.AddComponent(player, server::Component::Health{100});
     reg.AddComponent(player, server::Component::PlayerTag{1});
 
     // Spawn enemy moving towards player
     auto enemy = reg.SpawnEntity();
-    reg.AddComponent(enemy, server::Component::Transform{800.0f, 400.0f});
+    reg.AddComponent(enemy,
+        server::Component::Transform{800.0f, 400.0f, 0.0f, {1.0f, 1.0f}});
     reg.AddComponent(enemy, server::Component::Velocity{-3.0f, 0.0f});
     reg.AddComponent(enemy, server::Component::Health{30});
     reg.AddComponent(enemy, server::Component::EnemyTag{20});
@@ -387,8 +391,9 @@ TEST(ServerTest, EntityCleanup) {
     std::vector<Engine::entity> entities;
     for (int i = 0; i < 5; i++) {
         auto e = reg.SpawnEntity();
-        reg.AddComponent(e,
-            server::Component::Transform{static_cast<float>(i * 10.0f), 0.0f});
+        reg.AddComponent(
+            e, server::Component::Transform{
+                   static_cast<float>(i * 10.0f), 0.0f, 0.0f, {1.0f, 1.0f}});
         entities.push_back(e);
     }
 
@@ -427,8 +432,8 @@ TEST(ServerTest, StressManyEntities) {
 
     for (int i = 0; i < 100; i++) {
         auto e = reg.SpawnEntity();
-        reg.AddComponent(e, server::Component::Transform{
-                                static_cast<float>(i), static_cast<float>(i)});
+        reg.AddComponent(e, server::Component::Transform{static_cast<float>(i),
+                                static_cast<float>(i), 0.0f, {1.0f, 1.0f}});
         reg.AddComponent(e, server::Component::Velocity{1.0f, 1.0f});
         entities.push_back(e);
     }
@@ -454,7 +459,8 @@ TEST(ServerTest, StressMultipleUpdates) {
     Engine::registry &reg = server.GetRegistry();
 
     auto entity = reg.SpawnEntity();
-    reg.AddComponent(entity, server::Component::Transform{0.0f, 0.0f});
+    reg.AddComponent(
+        entity, server::Component::Transform{0.0f, 0.0f, 0.0f, {1.0f, 1.0f}});
     reg.AddComponent(entity, server::Component::Velocity{0.1f, 0.1f});
 
     auto &positions = reg.GetComponents<server::Component::Transform>();
@@ -546,7 +552,6 @@ TEST(ServerTcpTest, ConnectAckPacketSerializeOK) {
     server::network::ConnectAckPacket ack;
     ack.player_id = server::network::PlayerId{42};
     ack.status = server::network::ConnectAckPacket::OK;
-    ack.reserved = {0, 0};
 
     server::network::PacketBuffer buffer;
     ack.Serialize(buffer);
@@ -571,7 +576,6 @@ TEST(ServerTcpTest, ConnectAckPacketSerializeServerFull) {
     server::network::ConnectAckPacket ack;
     ack.player_id = server::network::PlayerId{0};  // No ID assigned
     ack.status = server::network::ConnectAckPacket::ServerFull;
-    ack.reserved = {0, 0};
 
     server::network::PacketBuffer buffer;
     ack.Serialize(buffer);
@@ -587,7 +591,6 @@ TEST(ServerTcpTest, ConnectAckPacketSerializeBadUsername) {
     server::network::ConnectAckPacket ack;
     ack.player_id = server::network::PlayerId{0};
     ack.status = server::network::ConnectAckPacket::BadUsername;
-    ack.reserved = {0, 0};
 
     server::network::PacketBuffer buffer;
     ack.Serialize(buffer);
@@ -603,7 +606,6 @@ TEST(ServerTcpTest, ConnectAckPacketSerializeInGame) {
     server::network::ConnectAckPacket ack;
     ack.player_id = server::network::PlayerId{0};
     ack.status = server::network::ConnectAckPacket::InGame;
-    ack.reserved = {0, 0};
 
     server::network::PacketBuffer buffer;
     ack.Serialize(buffer);
@@ -620,7 +622,6 @@ TEST(ServerTcpTest, ConnectAckPacketDeserialize) {
     server::network::ConnectAckPacket original;
     original.player_id = server::network::PlayerId{7};
     original.status = server::network::ConnectAckPacket::OK;
-    original.reserved = {0, 0};
 
     // Serialize
     server::network::PacketBuffer write_buffer;
@@ -642,7 +643,6 @@ TEST(ServerTcpTest, ConnectAckPacketRoundTrip) {
         original.player_id =
             server::network::PlayerId{static_cast<uint8_t>(status_val + 1)};
         original.status = status_val;
-        original.reserved = {0, 0};
 
         server::network::PacketBuffer write_buffer;
         original.Serialize(write_buffer);
@@ -736,7 +736,6 @@ TEST(ServerTcpTest, MultipleConnectAckStatuses) {
         server::network::ConnectAckPacket ack;
         ack.player_id = server::network::PlayerId{1};
         ack.status = status;
-        ack.reserved = {0, 0};
 
         server::network::PacketBuffer buffer;
         EXPECT_NO_THROW(ack.Serialize(buffer));
@@ -921,7 +920,6 @@ TEST(ServerTcpEdgeCaseTest, ConnectAckExactSize) {
     server::network::ConnectAckPacket ack;
     ack.player_id = server::network::PlayerId{1};
     ack.status = server::network::ConnectAckPacket::OK;
-    ack.reserved = {0, 0};
 
     server::network::PacketBuffer buffer;
     ack.Serialize(buffer);
@@ -942,7 +940,6 @@ TEST(ServerTcpEdgeCaseTest, SerializeMultiplePacketsSequentially) {
         server::network::ConnectAckPacket ack;
         ack.player_id = server::network::PlayerId{i};
         ack.status = server::network::ConnectAckPacket::OK;
-        ack.reserved = {0, 0};
 
         server::network::PacketBuffer temp;
         ack.Serialize(temp);
@@ -1087,7 +1084,6 @@ TEST(ServerTcpEdgeCaseTest, ConnectAckReservedFieldsZero) {
     server::network::ConnectAckPacket ack;
     ack.player_id = server::network::PlayerId{1};
     ack.status = server::network::ConnectAckPacket::OK;
-    ack.reserved = {0, 0};
 
     server::network::PacketBuffer buffer;
     ack.Serialize(buffer);
@@ -1103,7 +1099,6 @@ TEST(ServerTcpEdgeCaseTest, ConnectAckReservedFieldsNonZero) {
     server::network::ConnectAckPacket ack;
     ack.player_id = server::network::PlayerId{1};
     ack.status = server::network::ConnectAckPacket::OK;
-    ack.reserved = {0xAB, 0xCD};  // Non-zero reserved values
 
     server::network::PacketBuffer buffer;
     ack.Serialize(buffer);
@@ -1123,7 +1118,6 @@ TEST(ServerTcpEdgeCaseTest, PlayerIdZero) {
     server::network::ConnectAckPacket ack;
     ack.player_id = server::network::PlayerId{0};  // Reserved/invalid ID
     ack.status = server::network::ConnectAckPacket::BadUsername;
-    ack.reserved = {0, 0};
 
     server::network::PacketBuffer buffer;
     ack.Serialize(buffer);
@@ -1136,7 +1130,6 @@ TEST(ServerTcpEdgeCaseTest, PlayerIdMaxValue) {
     server::network::ConnectAckPacket ack;
     ack.player_id = server::network::PlayerId{255};
     ack.status = server::network::ConnectAckPacket::OK;
-    ack.reserved = {0, 0};
 
     server::network::PacketBuffer buffer;
     ack.Serialize(buffer);

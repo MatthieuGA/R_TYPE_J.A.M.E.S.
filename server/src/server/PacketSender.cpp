@@ -90,7 +90,7 @@ void PacketSender::SendSnapshot(network::EntityState entity_state) {
     // Write WORLD_SNAPSHOT header (opcode 0x20 with entity data as payload)
     network::CommonHeader header(
         static_cast<uint8_t>(network::PacketType::WorldSnapshot),
-        12,  // payload_size = 12 bytes (one EntityState)
+        16,  // payload_size = 16 bytes (one EntityState)
         0,   // tick_id = 0 (TODO: use actual tick)
         0,   // packet_index = 0
         1);  // packet_count = 1
