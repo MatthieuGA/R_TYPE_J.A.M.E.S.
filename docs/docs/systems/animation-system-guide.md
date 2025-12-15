@@ -18,7 +18,7 @@ animated_sprite->AddAnimation(
     8,                              // Nombre total de frames
     0.1f,                           // Durée de chaque frame (secondes)
     true,                           // Boucle l'animation
-    sf::Vector2f(0.0f, 0.0f)       // Position de la première frame (optionnel)
+    Engine::Graphics::Vector2f(0.0f, 0.0f)  // Position de la première frame (optionnel)
 );
 
 // Add an attack animation

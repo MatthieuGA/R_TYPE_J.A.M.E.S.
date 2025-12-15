@@ -17,12 +17,13 @@
 ## Main signature
 
 ```cpp
-void PlayfieldLimitSystem(Eng::registry &reg, const sf::RenderWindow &window,
+void PlayfieldLimitSystem(Eng::registry &reg, const GameWorld &game_world,
     Eng::sparse_array<Com::Transform> &transforms,
     Eng::sparse_array<Com::PlayerTag> const &player_tags);
 ```
 
 ## Notes
 
-- Uses the provided SFML window size.
+- Uses `game_world.window_size_` (backend-agnostic) for bounds checking.
+- Only processes players with `isInPlay == true`.
 - Simple bounds logic; can be extended (margins, wrap, etc.).

@@ -25,7 +25,7 @@ graph TD
     subgraph Client ["Client Application (Single Thread)"]
         C_Main[Main Event Loop]
         C_ASIO[ASIO Async I/O]
-        C_Render[SFML Rendering]
+        C_Render[RenderingEngine + Plugin]
         C_Input[Input Handling]
 
         C_Main --> C_ASIO
