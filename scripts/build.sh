@@ -175,16 +175,49 @@ echo "========================================="
 echo "✓ Build completed successfully!"
 echo "========================================="
 echo ""
+
+# Verify critical build artifacts
 echo "Build artifacts:"
-echo "  Client: build/client/r-type_client"
-echo "  Server: build/server/r-type_server"
-echo "  Video Plugin: build/lib/sfml_video_module.so"
-echo "  Audio Plugin: build/lib/sfml_audio_module.so"
-echo "  Assets: build/client/assets/"
+if [ -f "build/client/r-type_client" ]; then
+    echo "  ✓ Client: build/client/r-type_client"
+else
+    echo "  ✗ Client: MISSING"
+fi
+
+if [ -f "build/server/r-type_server" ]; then
+    echo "  ✓ Server: build/server/r-type_server"
+else
+    echo "  ✗ Server: MISSING"
+fi
+
+if [ -f "build/lib/sfml_video_module.so" ]; then
+    echo "  ✓ Video Plugin: build/lib/sfml_video_module.so"
+else
+    echo "  ✗ Video Plugin: MISSING"
+fi
+
+if [ -f "build/lib/sfml_audio_module.so" ]; then
+    echo "  ✓ Audio Plugin: build/lib/sfml_audio_module.so"
+else
+    echo "  ✗ Audio Plugin: MISSING"
+fi
+
+if [ -d "build/client/assets" ]; then
+    echo "  ✓ Assets: build/client/assets/"
+else
+    echo "  ✗ Assets: MISSING"
+fi
+
+echo ""
+echo "Plugin loading paths (relative to client binary):"
+echo "  Video: ../lib/sfml_video_module.so"
+echo "  Audio: ../lib/sfml_audio_module.so"
 echo ""
 echo "To run the client:"
-echo "  cd build/client && ./r-type_client"
+echo "  cd build/client && ./r-type_client [server_ip] [tcp_port] [udp_port]"
+echo "  Example: cd build/client && ./r-type_client 127.0.0.1 50000 50001"
 echo ""
 echo "To run the server:"
-echo "  cd build/server && ./r-type_server"
+echo "  cd build/server && ./r-type_server [tcp_port] [udp_port]"
+echo "  Example: cd build/server && ./r-type_server 50000 50001"
 echo ""
