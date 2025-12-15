@@ -1,5 +1,0 @@
-Entity 0 is controllable.
-Entity 0 Position: (100, 100) Velocity: (0, 1)
-Drawing entity 0 at position (100, 100) with sprite: hero.png scaled by 1
-Drawing entity 1 at position (400, 100) with sprite: enemy.png scaled by 0.5
-Drawing entity 2 at position (400, 200) with sprite: enemy.png scaled by 0.5
