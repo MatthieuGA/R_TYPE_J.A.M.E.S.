@@ -1,8 +1,8 @@
 Network Working Group                                           J.A.M.E.S
 Request for Comments: 1                                    Epitech Nantes
 Category: Standards Track                                   December 2025
-Version: 3.2.0
-Based on: docs/PROTOCOL.md (v3.2.0)
+Version: 3.3.0
+Based on: docs/PROTOCOL.md (v3.3.0)
 
                      R-Type Game Protocol Specification
 
@@ -211,6 +211,29 @@ Table of Contents
 
    When all the players in the lobby have sent IsReady = 1, the server
    automatically starts the game by sending GAME_START to all clients.
+
+   5.8.  NOTIFY_CONNECT (0x08)
+
+   Direction: Server -> Client
+   Description: Notify clients of a new player's connection.
+   Payload Size: 36 bytes
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |   PlayerId    |                    Reserved                   |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                           Username                            |
+   |                       (Fixed 32 bytes)                        |
+   |                    (Null-Terminated String)                   |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   PlayerId: Unique session ID assigned by the server.
+   Username: The new player's username.
+
+   Immediately after a successful CONNECT_REQ, the server sends
+   NOTIFY_CONNECT to all connected clients (including the new player)
+   to inform them of the new participant.
 
 6.  UDP Protocol (Real-time Gameplay)
 
