@@ -31,10 +31,10 @@ void ButtonClickSystem(Eng::registry &reg, GameWorld &game_world,
 
         const float width_computed =
             hit_box.width *
-            (hit_box.scaleWithTransform ? transform.scale : 1.0f);
+            (hit_box.scaleWithTransform ? transform.scale.x : 1.0f);
         const float height_computed =
             hit_box.height *
-            (hit_box.scaleWithTransform ? transform.scale : 1.0f);
+            (hit_box.scaleWithTransform ? transform.scale.y : 1.0f);
 
         const sf::Vector2f offsetOrigin = GetOffsetFromTransform(
             transform, sf::Vector2f(width_computed, height_computed));

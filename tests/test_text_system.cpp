@@ -49,7 +49,7 @@ TEST(TextRenderSystem, LoadsAndAppliesTransform) {
     transforms.insert_at(0, transform);
     texts.insert_at(0, std::move(text));
 
-    Rtype::Client::GameWorld game_world;
+    Rtype::Client::GameWorld game_world("127.0.0.1", 50000, 50000);
     game_world.window_.create(
         sf::VideoMode({10u, 10u}), "text-test", sf::Style::None);
 

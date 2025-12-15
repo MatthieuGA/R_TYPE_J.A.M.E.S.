@@ -15,13 +15,22 @@ void InitRegistryComponents(Engine::registry &reg) {
     reg.RegisterComponent<Rtype::Client::Component::Inputs>();
     reg.RegisterComponent<Rtype::Client::Component::Clickable>();
     reg.RegisterComponent<Rtype::Client::Component::Text>();
+    reg.RegisterComponent<Rtype::Client::Component::ParticleEmitter>();
+    reg.RegisterComponent<Rtype::Client::Component::TimedEvents>();
+    reg.RegisterComponent<Rtype::Client::Component::FrameEvents>();
+    reg.RegisterComponent<Rtype::Client::Component::PatternMovement>();
+    reg.RegisterComponent<Rtype::Client::Component::SoundRequest>();
     // Register gameplay components
     reg.RegisterComponent<Rtype::Client::Component::PlayerTag>();
     reg.RegisterComponent<Rtype::Client::Component::EnemyTag>();
+    reg.RegisterComponent<Rtype::Client::Component::EnemyShootTag>();
     reg.RegisterComponent<Rtype::Client::Component::Projectile>();
     reg.RegisterComponent<Rtype::Client::Component::Health>();
     reg.RegisterComponent<Rtype::Client::Component::StatsGame>();
     reg.RegisterComponent<Rtype::Client::Component::ParrallaxLayer>();
+    reg.RegisterComponent<Rtype::Client::Component::AnimationEnterPlayer>();
+    reg.RegisterComponent<Rtype::Client::Component::AnimationDeath>();
+    reg.RegisterComponent<Rtype::Client::Component::HealthBar>();
     // Register networking components
     reg.RegisterComponent<Rtype::Client::Component::NetworkId>();
     reg.RegisterComponent<Rtype::Client::Component::InterpolatedPosition>();

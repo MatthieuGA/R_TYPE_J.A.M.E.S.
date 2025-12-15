@@ -1,30 +1,33 @@
 # Drawable System
 
-**Fichier source:** `client/engine/systems/SystemsFunctions/DrawableSystem.cpp`
+**Source:** `client/engine/systems/SystemsFunctions/DrawableSystem.cpp`
 
-**But:** Gérer le rendu des entités avec un `Drawable` : charger les textures, positionner et dessiner les sprites.
+**Purpose:** Render entities with `Drawable` components: load textures, position sprites, and draw them.
 
-**Composants utilisés:**
+**Components used:**
 
 - `Drawable`
 - `Transform`
-- `Shader` (optionnel)
+- `Shader` (optional)
 
-## Comportement
+## Behavior
 
-- Initialise (`InitializeDrawable`) les textures non chargées depuis `drawable.spritePath`.
-- Calcule l'origine du sprite via `GetOffsetFromTransform` et l'applique.
-- Trie les entités par `z_index` pour respecter l'ordre de dessin.
-- Pour chaque entité, met à jour la position, l'échelle, la rotation et l'opacité, et dessine le sprite sur `game_world.window_`.
-- Si un shader est associé et chargé, il est appliqué et le `time` uniform est mis à jour.
+- Initialize textures not yet loaded from `drawable.spritePath` (`InitializeDrawable`).
+- Compute the sprite origin via `GetOffsetFromTransform` and apply it.
+- Sort entities by `z_index` to honor draw order.
+- For each entity, update position, scale, rotation, and opacity, then draw the sprite on `game_world.window_`.
+- If a shader is attached and loaded, apply it and update the `time` uniform.
 
-## Signature principale
+## Main signature
 
 ```cpp
-void DrawableSystem(    Eng::registry &reg, GameWorld &game_world,    Eng::sparse_array<Com::Transform> const &transforms,    Eng::sparse_array<Com::Drawable> &drawables,    Eng::sparse_array<Com::Shader> &shaders);
+void DrawableSystem(Eng::registry &reg, GameWorld &game_world,
+	Eng::sparse_array<Com::Transform> const &transforms,
+	Eng::sparse_array<Com::Drawable> &drawables,
+	Eng::sparse_array<Com::Shader> &shaders);
 ```
 
 ## Notes
 
-- Les erreurs de chargement de texture sont loggées dans `std::cerr`.
-- Le système dépend du `game_world` pour le `window_` et la `total_time_clock_`.
+- Texture load failures are logged to `std::cerr`.
+- Depends on `game_world` for `window_` and `total_time_clock_`.

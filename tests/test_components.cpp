@@ -14,7 +14,8 @@ TEST(ComponentsCore, TransformAndVelocity) {
     EXPECT_FLOAT_EQ(t.x, 10.0f);
     EXPECT_FLOAT_EQ(t.y, 20.0f);
     EXPECT_FLOAT_EQ(t.rotationDegrees, 45.0f);
-    EXPECT_FLOAT_EQ(t.scale, 1.25f);
+    EXPECT_FLOAT_EQ(t.scale.x, 1.25f);
+    EXPECT_FLOAT_EQ(t.scale.y, 1.25f);
 
     Com::Velocity rb{3.0f, -1.5f};
     EXPECT_FLOAT_EQ(rb.vx, 3.0f);
@@ -62,16 +63,15 @@ TEST(ComponentsGameplay, TagsAndProjectile) {
     EXPECT_FLOAT_EQ(p.shoot_cooldown_max, 0.5f);
     EXPECT_FLOAT_EQ(p.shoot_cooldown, 0.0f);
 
-    Com::EnemyTag e{Com::EnemyTag::EnemyType::ADVANCED};
-    EXPECT_EQ(e.type, Com::EnemyTag::EnemyType::ADVANCED);
+    Com::EnemyTag e{};
 
-    Com::Projectile proj{12.5f, 250.0f, 1};
-    EXPECT_FLOAT_EQ(proj.damage, 12.5f);
+    Com::Projectile proj{12, {0.0f, -1.0f}, 250.0f, 1, true};
+    EXPECT_EQ(proj.damage, 12);
     EXPECT_FLOAT_EQ(proj.speed, 250.0f);
     EXPECT_EQ(proj.ownerId, 1);
 
-    Com::Health h{75, 100};
-    EXPECT_EQ(h.currentHealth, 75);
+    Com::Health h(100);
+    EXPECT_EQ(h.currentHealth, 100);
     EXPECT_EQ(h.maxHealth, 100);
 
     Com::StatsGame stats{9000};

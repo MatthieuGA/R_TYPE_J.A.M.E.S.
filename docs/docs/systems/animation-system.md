@@ -1,22 +1,22 @@
 # Animation System
 
-**Fichier source:** `client/engine/systems/SystemsFunctions/AnimationSystem.cpp`
+**Source file:** `client/engine/systems/SystemsFunctions/AnimationSystem.cpp`
 
-**But:** Mettre à jour les sprites animés en fonction du temps et faire avancer les frames.
+**Purpose:** Update animated sprites over time and advance frames.
 
-**Composants utilisés:**
+**Components used:**
 
-- `AnimatedSprite` (animation state, frames, durée)
+- `AnimatedSprite` (animation state, frames, duration)
 - `Drawable` (sprite, texture)
 
-## Comportement
+## Behavior
 
-- Calcule la cellule de texture à afficher (`SetFrame`) en fonction de la frame courante et de la largeur/hauteur d'une frame.
-- Avance la frame lorsque le temps écoulé dépasse `frameDuration` (`NextFrame`).
-- Respecte la propriété `loop` pour boucler ou rester sur la dernière frame.
-- Si la texture n'est pas prête ou l'animation est désactivée, la frame est recalculée mais l'avancement n'est pas effectué.
+- Computes the texture rect to display (`SetFrame`) based on current frame and frame dimensions.
+- Advances the frame when elapsed time exceeds `frameDuration` (`NextFrame`).
+- Honours `loop`: either wraps or stays on the last frame.
+- If the texture is not ready or animation is disabled, the frame rect is recomputed but frame advancement is skipped.
 
-## Signature principale
+## Main signature
 
 ```cpp
 void AnimationSystem(Eng::registry &reg, const float dt,
@@ -26,5 +26,5 @@ void AnimationSystem(Eng::registry &reg, const float dt,
 
 ## Notes
 
-- Le système utilise `dt` (delta time) pour accumuler `elapsedTime`.
-- Prend en charge plusieurs frames par sprite-sheet (colonnes/rows).
+- Uses `dt` (delta time) to accumulate `elapsedTime`.
+- Supports multi-row/column spritesheets.

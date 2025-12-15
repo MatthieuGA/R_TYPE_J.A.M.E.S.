@@ -1,0 +1,122 @@
+#pragma once
+/**
+ * @brief Client-side network layer using Boost.Asio (TCP/UDP).
+ *
+ * Provides connection management, input sending, and snapshot reception.
+ */
+#include <array>
+#include <atomic>
+#include <cstdint>
+#include <optional>
+#include <string>
+#include <vector>
+
+#include <boost/asio.hpp>
+#include <boost/lockfree/spsc_queue.hpp>
+
+namespace client {
+
+/**
+ * @brief Client-local snapshot packet.
+ *
+ * Uses fixed-size buffer to ensure trivial copyability for lock-free queue.
+ * Max payload size is MTU (1500) - IP header (20) - UDP header (8) -
+ * Our header (12) = 1460 bytes.
+ */
+struct SnapshotPacket {
+    uint32_t tick{0};
+    std::array<uint8_t, 1460> payload;
+    uint16_t payload_size{0};
+};
+
+/**
+ * @brief Client network manager handling TCP handshake and UDP gameplay.
+ */
+class ServerConnection {
+ public:
+    /**
+     * @brief Construct a new Network instance.
+     * @param io Boost.Asio io_context reference.
+     * @param server_ip Server IPv4/IPv6 address or hostname.
+     * @param tcp_port TCP control port.
+     * @param udp_port UDP gameplay port.
+     */
+    ServerConnection(boost::asio::io_context &io, const std::string &server_ip,
+        uint16_t tcp_port, uint16_t udp_port);
+
+    /**
+     * @brief Destructor. Closes sockets.
+     */
+    ~ServerConnection();
+
+    /**
+     * @brief Connect to server and send CONNECT_REQ.
+     * @param username Player username (max 32 bytes, padded).
+     */
+    void ConnectToServer(const std::string &username);
+
+    /**
+     * @brief Send DISCONNECT_REQ and close sockets.
+     */
+    void Disconnect();
+
+    /**
+     * @brief Connection state accessor.
+     * @return true if connected to server, false otherwise.
+     */
+    bool is_connected() const {
+        return connected_.load();
+    }
+
+    /**
+     * @brief Player identifier accessor.
+     * @return Player ID assigned by server, or 0 if not connected.
+     */
+    uint8_t player_id() const {
+        return player_id_.load();
+    }
+
+    /**
+     * @brief Send input flags to server via UDP.
+     * @param input_flags Bitfield of inputs.
+     */
+    void SendInput(uint8_t input_flags);
+
+    /**
+     * @brief Pop a world snapshot if available.
+     */
+    std::optional<client::SnapshotPacket> PollSnapshot();
+
+ private:
+    // Async handlers
+    void AsyncReceiveUDP();
+    void AsyncReceiveTCP();
+    void HandleConnectAck(const std::vector<uint8_t> &data);
+
+    // ASIO components
+    boost::asio::io_context &io_context_;
+    boost::asio::ip::udp::socket udp_socket_;
+    boost::asio::ip::tcp::socket tcp_socket_;
+    boost::asio::ip::udp::endpoint server_udp_endpoint_;
+
+    // State (atomic for thread-safe access from async handlers)
+    std::atomic<bool> connected_;
+    std::atomic<uint8_t> player_id_;
+    uint32_t current_tick_;
+
+    // Buffers
+    std::array<uint8_t, 1472> udp_buffer_{};
+    std::array<uint8_t, 512> tcp_buffer_{};
+
+    // Snapshot queue (lock-free for async safety)
+    boost::lockfree::spsc_queue<client::SnapshotPacket,
+        boost::lockfree::capacity<256>>
+        snapshot_queue_;
+
+    // Connection params
+    std::string server_ip_;
+    uint16_t tcp_port_;
+    uint16_t udp_port_;
+};
+
+}  // namespace client

@@ -1,6 +1,11 @@
 #pragma once
+#include <cstdint>
 #include <functional>
+#include <map>
+#include <memory>
 #include <optional>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include <SFML/Graphics.hpp>
@@ -16,7 +21,7 @@ struct Transform {
     float x;
     float y;
     float rotationDegrees;
-    float scale;
+    sf::Vector2f scale;
 
     enum OriginPoint {
         TOP_LEFT,
@@ -40,7 +45,7 @@ struct Transform {
 
     Transform() = default;
 
-    Transform(float x, float y, float rotationDegrees, float scale,
+    Transform(float x, float y, float rotationDegrees, sf::Vector2f scale,
         OriginPoint origin = CENTER,
         sf::Vector2f customOrigin = sf::Vector2f(0.0f, 0.0f),
         std::optional<std::size_t> parent_entity = std::nullopt)
@@ -53,14 +58,25 @@ struct Transform {
           parent_entity(parent_entity),
           children() {}
 
+    Transform(float x, float y, float rotationDegrees, float scale,
+        OriginPoint origin = CENTER,
+        sf::Vector2f customOrigin = sf::Vector2f(0.0f, 0.0f),
+        std::optional<std::size_t> parent_entity = std::nullopt)
+        : x(x),
+          y(y),
+          rotationDegrees(rotationDegrees),
+          scale({scale, scale}),
+          origin(origin),
+          customOrigin(customOrigin),
+          parent_entity(parent_entity),
+          children() {}
+
     /**
      * @brief Gets the cumulative rotation including parent rotations.
      * @note This only uses local rotation; parent rotations must be added by
      * the render system.
      */
-    float GetWorldRotation() const {
-        return rotationDegrees;
-    }
+    float GetWorldRotation() const;
 };
 
 struct Velocity {
@@ -112,6 +128,12 @@ struct Clickable {
     sf::Color clickColor = sf::Color(150, 150, 150);
     bool isHovered = false;
     bool isClicked = false;
+};
+
+struct SoundRequest {
+    std::string sound_id;
+    float volume = 1.0f;
+    bool loop = false;
 };
 
 }  // namespace Rtype::Client::Component

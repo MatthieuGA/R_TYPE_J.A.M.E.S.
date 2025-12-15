@@ -1,22 +1,22 @@
-# Initialize Drawable Animated
+# Initialize Drawable Animated System
 
-**Fichier source:** `client/engine/systems/SystemsFunctions/InitializeAnimationSystem.cpp`
+**Source:** `client/engine/systems/SystemsFunctions/InitializeAnimationSystem.cpp`
 
-**But:** Initialiser les `Drawable` des entités qui ont des `AnimatedSprite` (charger la texture, définir l'origine et la région de la frame initiale).
+**Purpose:** Initialize `Drawable` components for entities that have an `AnimatedSprite` by loading the texture, setting the origin, and configuring the initial frame region.
 
-**Composants utilisés:**
+**Components used:**
 
 - `AnimatedSprite`
 - `Drawable`
 - `Transform`
 
-## Comportement
+## Behavior
 
-- Charge la texture depuis `drawable.spritePath` si elle n'est pas encore chargée.
-- Définit l'origine du sprite en tenant compte de l'animation (taille de frame et transform).
-- Définit le `IntRect` du sprite à la frame courante.
+- Load the texture from `drawable.spritePath` if not already loaded.
+- Set the sprite origin accounting for animation frame size and the transform.
+- Set the sprite `IntRect` to the current frame.
 
-## Signature principale
+## Main signature
 
 ```cpp
 void InitializeDrawableAnimatedSystem(Eng::registry &reg,
@@ -27,4 +27,4 @@ void InitializeDrawableAnimatedSystem(Eng::registry &reg,
 
 ## Notes
 
-- Affiche un message d'erreur sur `std::cerr` si le chargement échoue.
+- Logs an error to `std::cerr` if texture loading fails.

@@ -1,23 +1,23 @@
 # Draw Text System
 
-**Fichier source:** `client/engine/systems/SystemsFunctions/Render/DrawTextSystem.cpp`
+**Source:** `client/engine/systems/SystemsFunctions/Render/DrawTextSystem.cpp`
 
-**But:** Gerer le rendu des entites possedant un composant `Text` en appliquant les transformations hierarchiques (position, rotation, echelle) et en respectant l'ordre de dessin via `z_index`.
+**Purpose:** Render entities with a `Text` component while applying hierarchical transforms (position, rotation, scale) and respecting draw order via `z_index`.
 
-**Composants utilises:**
+**Components used:**
 
 - `Transform`
 - `Text`
 
-## Comportement
+## Behavior
 
-- Charge la police depuis `Text::fontPath` au premier passage (`InitializeText`).
-- Calcule l'origine du texte via `GetOffsetFromTransform` pour aligner selon l'origine du `Transform`.
-- Applique les decalages locaux (`offset`), la hierarchie des parents et la rotation locale.
-- Met a l'echelle cumulee (`CalculateCumulativeScale`) et ajuste l'opacite via `Text::opacity`.
-- Trie les entites par `z_index` avant dessin pour garantir l'ordre d'affichage.
+- Load the font from `Text::fontPath` on first pass (`InitializeText`).
+- Compute the text origin via `GetOffsetFromTransform` to align with the `Transform` origin.
+- Apply local offsets (`offset`), parent hierarchy transforms, and local rotation.
+- Apply cumulative scale (`CalculateCumulativeScale`) and adjust opacity via `Text::opacity`.
+- Sort entities by `z_index` before drawing to guarantee order.
 
-## Signature principale
+## Main signature
 
 ```cpp
 void DrawTextRenderSystem(
@@ -29,6 +29,6 @@ void DrawTextRenderSystem(
 
 ## Notes
 
-- `InitializeText` fixe la taille du texte a `characterSize * 10` puis applique l'echelle cumulee divisee par 10 pour garder une coherence avec les sprites.
-- En cas d'echec de chargement de police, une erreur est loggee dans `std::cerr` mais `is_loaded` passe a `true` pour eviter des relances infinies.
-- Le champ `offset` permet de decaler le texte localement par rapport a la position du `Transform` sans modifier la hierarchie.
+- `InitializeText` sets the text size to `characterSize * 10` then applies cumulative scale divided by 10 to stay consistent with sprites.
+- If font loading fails, an error is logged to `std::cerr` but `is_loaded` flips to `true` to avoid endless retries.
+- The `offset` field lets you locally shift text relative to the `Transform` without changing hierarchy.
