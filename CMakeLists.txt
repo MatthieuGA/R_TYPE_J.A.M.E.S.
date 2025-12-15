@@ -108,6 +108,13 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
+# Copy CTestCustom.cmake to build directory for CI test exclusion
+configure_file(
+    ${CMAKE_SOURCE_DIR}/CTestCustom.cmake
+    ${CMAKE_BINARY_DIR}/CTestCustom.cmake
+    COPYONLY
+)
+
 # ===========================
 # Sous-répertoires
 # ===========================

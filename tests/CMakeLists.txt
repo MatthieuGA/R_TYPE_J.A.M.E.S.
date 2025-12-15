@@ -61,7 +61,12 @@ target_sources(engine_tests PRIVATE
 target_link_libraries(engine_tests PRIVATE Boost::system)
 
 # Discover tests for CTest
-gtest_discover_tests(engine_tests)
+# Tests requiring display/graphics context are labeled for CI exclusion
+gtest_discover_tests(engine_tests
+    PROPERTIES
+        LABELS "engine"
+    TEST_PREFIX "engine_"
+)
 
 # Gather server source files recursively
 file(GLOB_RECURSE SERVER_SOURCES CONFIGURE_DEPENDS

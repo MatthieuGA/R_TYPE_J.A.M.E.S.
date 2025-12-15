@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include <atomic>
 #include <string>
 #include <vector>
 
@@ -13,10 +14,17 @@
 #include "server/Server.hpp"
 #include "server/Vector2f.hpp"
 
-// Helper function to create a config for testing
-server::Config &getTestConfig() {
-    static const char *argv[] = {"test_server"};
-    return server::Config::FromCommandLine(1, const_cast<char **>(argv));
+// Helper function to create a config for testing with unique ports
+server::Config getTestConfig() {
+    // Use incrementing ports to avoid conflicts between parallel tests
+    static std::atomic<int> port_counter{50200};
+    int base_port = port_counter.fetch_add(2);
+
+    std::string tcp_port = std::to_string(base_port);
+    std::string udp_port = std::to_string(base_port + 1);
+
+    const char *argv[] = {"test_server", tcp_port.c_str(), udp_port.c_str()};
+    return server::Config::Parse(3, const_cast<char **>(argv));
 }
 
 // ============================================================================
@@ -25,14 +33,14 @@ server::Config &getTestConfig() {
 
 TEST(ServerTest, ServerConstruction) {
     boost::asio::io_context io;
-    server::Config &config = getTestConfig();
+    server::Config config = getTestConfig();
 
     EXPECT_NO_THROW({ server::Server server(config, io); });
 }
 
 TEST(ServerTest, ServerInitialize) {
     boost::asio::io_context io;
-    server::Config &config = getTestConfig();
+    server::Config config = getTestConfig();
     server::Server server(config, io);
 
     EXPECT_NO_THROW(server.Initialize());
@@ -40,7 +48,7 @@ TEST(ServerTest, ServerInitialize) {
 
 TEST(ServerTest, GetRegistryAfterInit) {
     boost::asio::io_context io;
-    server::Config &config = getTestConfig();
+    server::Config config = getTestConfig();
     server::Server server(config, io);
 
     server.Initialize();
@@ -59,7 +67,7 @@ TEST(ServerTest, GetRegistryAfterInit) {
 
 TEST(ServerTest, ComponentsRegisteredAfterInit) {
     boost::asio::io_context io;
-    server::Config &config = getTestConfig();
+    server::Config config = getTestConfig();
     server::Server server(config, io);
 
     server.Initialize();
@@ -81,7 +89,7 @@ TEST(ServerTest, ComponentsRegisteredAfterInit) {
 
 TEST(ServerTest, SpawnEntityWithPosition) {
     boost::asio::io_context io;
-    server::Config &config = getTestConfig();
+    server::Config config = getTestConfig();
     server::Server server(config, io);
     server.Initialize();
 
@@ -99,7 +107,7 @@ TEST(ServerTest, SpawnEntityWithPosition) {
 
 TEST(ServerTest, SpawnPlayerEntity) {
     boost::asio::io_context io;
-    server::Config &config = getTestConfig();
+    server::Config config = getTestConfig();
     server::Server server(config, io);
     server.Initialize();
 
@@ -120,7 +128,7 @@ TEST(ServerTest, SpawnPlayerEntity) {
 
 TEST(ServerTest, SpawnEnemyEntity) {
     boost::asio::io_context io;
-    server::Config &config = getTestConfig();
+    server::Config config = getTestConfig();
     server::Server server(config, io);
     server.Initialize();
 
@@ -141,7 +149,7 @@ TEST(ServerTest, SpawnEnemyEntity) {
 
 TEST(ServerTest, MultipleEntitiesWithDifferentComponents) {
     boost::asio::io_context io;
-    server::Config &config = getTestConfig();
+    server::Config config = getTestConfig();
     server::Server server(config, io);
     server.Initialize();
 
@@ -185,7 +193,7 @@ TEST(ServerTest, MultipleEntitiesWithDifferentComponents) {
 
 TEST(ServerTest, MovementSystemUpdatesPosition) {
     boost::asio::io_context io;
-    server::Config &config = getTestConfig();
+    server::Config config = getTestConfig();
     server::Server server(config, io);
     server.Initialize();
 
@@ -201,21 +209,23 @@ TEST(ServerTest, MovementSystemUpdatesPosition) {
     EXPECT_EQ(positions[entity.getId()]->y, 0.0f);
 
     // Run one update cycle
+    // Movement system applies: pos += vel * (TICK_RATE_MS / 1000.0f)
+    // TICK_RATE_MS = 16ms => 0.016 seconds
     server.Update();
 
-    EXPECT_EQ(positions[entity.getId()]->x, 1.0f);
-    EXPECT_EQ(positions[entity.getId()]->y, 2.0f);
+    EXPECT_FLOAT_EQ(positions[entity.getId()]->x, 1.0f * 0.016f);
+    EXPECT_FLOAT_EQ(positions[entity.getId()]->y, 2.0f * 0.016f);
 
     // Run another update cycle
     server.Update();
 
-    EXPECT_EQ(positions[entity.getId()]->x, 2.0f);
-    EXPECT_EQ(positions[entity.getId()]->y, 4.0f);
+    EXPECT_FLOAT_EQ(positions[entity.getId()]->x, 1.0f * 0.016f * 2);
+    EXPECT_FLOAT_EQ(positions[entity.getId()]->y, 2.0f * 0.016f * 2);
 }
 
 TEST(ServerTest, MovementSystemMultipleEntities) {
     boost::asio::io_context io;
-    server::Config &config = getTestConfig();
+    server::Config config = getTestConfig();
     server::Server server(config, io);
     server.Initialize();
 
@@ -239,19 +249,20 @@ TEST(ServerTest, MovementSystemMultipleEntities) {
 
     server.Update();
 
-    EXPECT_EQ(positions[e1.getId()]->x, 1.0f);
-    EXPECT_EQ(positions[e1.getId()]->y, 0.0f);
+    // Delta time = 0.016 seconds (16ms)
+    EXPECT_FLOAT_EQ(positions[e1.getId()]->x, 1.0f * 0.016f);
+    EXPECT_FLOAT_EQ(positions[e1.getId()]->y, 0.0f);
 
-    EXPECT_EQ(positions[e2.getId()]->x, 8.0f);
-    EXPECT_EQ(positions[e2.getId()]->y, 13.0f);
+    EXPECT_FLOAT_EQ(positions[e2.getId()]->x, 10.0f + (-2.0f * 0.016f));
+    EXPECT_FLOAT_EQ(positions[e2.getId()]->y, 10.0f + (3.0f * 0.016f));
 
-    EXPECT_EQ(positions[e3.getId()]->x, 50.5f);
-    EXPECT_EQ(positions[e3.getId()]->y, 49.0f);
+    EXPECT_FLOAT_EQ(positions[e3.getId()]->x, 50.0f + (0.5f * 0.016f));
+    EXPECT_FLOAT_EQ(positions[e3.getId()]->y, 50.0f + (-1.0f * 0.016f));
 }
 
 TEST(ServerTest, MovementSystemIgnoresEntitiesWithoutVelocity) {
     boost::asio::io_context io;
-    server::Config &config = getTestConfig();
+    server::Config config = getTestConfig();
     server::Server server(config, io);
     server.Initialize();
 
@@ -271,13 +282,13 @@ TEST(ServerTest, MovementSystemIgnoresEntitiesWithoutVelocity) {
 
     server.Update();
 
-    // Moving entity should have moved
-    EXPECT_EQ(positions[moving.getId()]->x, 1.0f);
-    EXPECT_EQ(positions[moving.getId()]->y, 1.0f);
+    // Moving entity should have moved (velocity * delta_time)
+    EXPECT_FLOAT_EQ(positions[moving.getId()]->x, 1.0f * 0.016f);
+    EXPECT_FLOAT_EQ(positions[moving.getId()]->y, 1.0f * 0.016f);
 
     // Stationary entity should not have moved
-    EXPECT_EQ(positions[stationary.getId()]->x, 10.0f);
-    EXPECT_EQ(positions[stationary.getId()]->y, 10.0f);
+    EXPECT_FLOAT_EQ(positions[stationary.getId()]->x, 10.0f);
+    EXPECT_FLOAT_EQ(positions[stationary.getId()]->y, 10.0f);
 }
 
 // ============================================================================
@@ -286,7 +297,7 @@ TEST(ServerTest, MovementSystemIgnoresEntitiesWithoutVelocity) {
 
 TEST(ServerTest, HealthComponentInitialization) {
     boost::asio::io_context io;
-    server::Config &config = getTestConfig();
+    server::Config config = getTestConfig();
     server::Server server(config, io);
     server.Initialize();
 
@@ -303,7 +314,7 @@ TEST(ServerTest, HealthComponentInitialization) {
 
 TEST(ServerTest, HealthComponentModification) {
     boost::asio::io_context io;
-    server::Config &config = getTestConfig();
+    server::Config config = getTestConfig();
     server::Server server(config, io);
     server.Initialize();
 
@@ -334,7 +345,7 @@ TEST(ServerTest, HealthComponentModification) {
 
 TEST(ServerTest, SimpleGameScenario) {
     boost::asio::io_context io;
-    server::Config &config = getTestConfig();
+    server::Config config = getTestConfig();
     server::Server server(config, io);
     server.Initialize();
 
@@ -342,14 +353,16 @@ TEST(ServerTest, SimpleGameScenario) {
 
     // Spawn player at spawn point
     auto player = reg.SpawnEntity();
-    reg.AddComponent(player, server::Component::Transform());
+    reg.AddComponent(
+        player, server::Component::Transform(50.0f, 400.0f, 0.0f, 1.0f));
     reg.AddComponent(player, server::Component::Velocity{0.0f, 0.0f});
     reg.AddComponent(player, server::Component::Health(100));
     reg.AddComponent(player, server::Component::PlayerTag{1});
 
     // Spawn enemy moving towards player
     auto enemy = reg.SpawnEntity();
-    reg.AddComponent(enemy, server::Component::Transform());
+    reg.AddComponent(
+        enemy, server::Component::Transform(800.0f, 400.0f, 0.0f, 1.0f));
     reg.AddComponent(enemy, server::Component::Velocity{-3.0f, 0.0f});
     reg.AddComponent(enemy, server::Component::Health{30});
     reg.AddComponent(enemy, server::Component::EnemyTag{20});
@@ -357,22 +370,25 @@ TEST(ServerTest, SimpleGameScenario) {
     auto &positions = reg.GetComponents<server::Component::Transform>();
 
     // Run 10 game ticks
+    // Delta time = 0.016s per tick
+    // Enemy displacement: -3.0 * 0.016 * 10 = -0.48
     for (int i = 0; i < 10; i++) {
         server.Update();
     }
 
-    // Enemy should have moved 30 pixels left
-    EXPECT_EQ(positions[enemy.getId()]->x, 770.0f);
-    EXPECT_EQ(positions[enemy.getId()]->y, 400.0f);
+    // Enemy should have moved left by velocity * delta * ticks
+    EXPECT_FLOAT_EQ(
+        positions[enemy.getId()]->x, 800.0f + (-3.0f * 0.016f * 10));
+    EXPECT_FLOAT_EQ(positions[enemy.getId()]->y, 400.0f);
 
     // Player should not have moved (velocity is 0)
-    EXPECT_EQ(positions[player.getId()]->x, 50.0f);
-    EXPECT_EQ(positions[player.getId()]->y, 400.0f);
+    EXPECT_FLOAT_EQ(positions[player.getId()]->x, 50.0f);
+    EXPECT_FLOAT_EQ(positions[player.getId()]->y, 400.0f);
 }
 
 TEST(ServerTest, EntityCleanup) {
     boost::asio::io_context io;
-    server::Config &config = getTestConfig();
+    server::Config config = getTestConfig();
     server::Server server(config, io);
     server.Initialize();
 
@@ -411,7 +427,7 @@ TEST(ServerTest, EntityCleanup) {
 
 TEST(ServerTest, StressManyEntities) {
     boost::asio::io_context io;
-    server::Config &config = getTestConfig();
+    server::Config config = getTestConfig();
     server::Server server(config, io);
     server.Initialize();
 
@@ -431,17 +447,19 @@ TEST(ServerTest, StressManyEntities) {
 
     server.Update();
 
+    // After one update with delta time 0.016:
+    // new_pos = initial_pos + velocity * 0.016
     for (int i = 0; i < 100; i++) {
-        EXPECT_EQ(
-            positions[entities[i].getId()]->x, static_cast<float>(i + 1));
-        EXPECT_EQ(
-            positions[entities[i].getId()]->y, static_cast<float>(i + 1));
+        EXPECT_FLOAT_EQ(positions[entities[i].getId()]->x,
+            static_cast<float>(i) + (1.0f * 0.016f));
+        EXPECT_FLOAT_EQ(positions[entities[i].getId()]->y,
+            static_cast<float>(i) + (1.0f * 0.016f));
     }
 }
 
 TEST(ServerTest, StressMultipleUpdates) {
     boost::asio::io_context io;
-    server::Config &config = getTestConfig();
+    server::Config config = getTestConfig();
     server::Server server(config, io);
     server.Initialize();
 
@@ -459,10 +477,11 @@ TEST(ServerTest, StressMultipleUpdates) {
         server.Update();
     }
 
-    // Position should be NUM_UPDATES * velocity (with tolerance for FP
-    // errors)
-    EXPECT_NEAR(positions[entity.getId()]->x, 100.0f, 0.01f);
-    EXPECT_NEAR(positions[entity.getId()]->y, 100.0f, 0.01f);
+    // Position should be NUM_UPDATES * velocity * delta_time
+    // velocity = 0.1, delta_time = 0.016, updates = 1000
+    // expected = 0.1 * 0.016 * 1000 = 1.6
+    EXPECT_NEAR(positions[entity.getId()]->x, 0.1f * 0.016f * 1000, 0.01f);
+    EXPECT_NEAR(positions[entity.getId()]->y, 0.1f * 0.016f * 1000, 0.01f);
 }
 
 // ============================================================================
@@ -708,7 +727,7 @@ TEST(ServerTcpTest, UsernameUnicodeHandling) {
 
 TEST(ServerTcpTest, ServerInitializationWithNetworking) {
     boost::asio::io_context io;
-    server::Config &config = getTestConfig();
+    server::Config config = getTestConfig();
     server::Server server(config, io);
 
     EXPECT_NO_THROW(server.Initialize());
@@ -1090,13 +1109,16 @@ TEST(ServerTcpEdgeCaseTest, ConnectAckReservedFieldsNonZero) {
     server::network::ConnectAckPacket ack;
     ack.player_id = server::network::PlayerId{1};
     ack.status = server::network::ConnectAckPacket::OK;
+    // Bytes 14-15 are now udp_port (not reserved)
+    // Set udp_port to 0xCDAB (little-endian: AB CD)
+    ack.udp_port = 0xCDAB;
 
     server::network::PacketBuffer buffer;
     ack.Serialize(buffer);
 
     const auto &data = buffer.Data();
 
-    // Should serialize whatever values are set
+    // Should serialize udp_port in little-endian
     EXPECT_EQ(data[14], 0xAB);
     EXPECT_EQ(data[15], 0xCD);
 }
