@@ -10,12 +10,15 @@
 #include <gtest/gtest.h>
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 
 #include <boost/asio.hpp>
 
 #include "server/ClientConnectionManager.hpp"
+#include "server/Config.hpp"
+#include "server/Network.hpp"
 #include "server/PacketHandler.hpp"
 #include "server/PacketSender.hpp"
 #include "server/Packets.hpp"
@@ -27,12 +30,19 @@ class PacketHandlerTest : public ::testing::Test {
  protected:
     void SetUp() override {
         io_context_ = std::make_unique<boost::asio::io_context>();
+
+        // Parse config with test ports
+        const char *argv[] = {"test_server", "50102", "50103"};
+        config_.emplace(server::Config::Parse(3, const_cast<char **>(argv)));
+
+        network_ = std::make_unique<server::Network>(*config_, *io_context_);
         connection_manager_ =
-            std::make_unique<server::ClientConnectionManager>(4);
-        packet_sender_ =
-            std::make_unique<server::PacketSender>(*connection_manager_);
+            std::make_unique<server::ClientConnectionManager>(
+                config_->GetMaxPlayers());
+        packet_sender_ = std::make_unique<server::PacketSender>(
+            *connection_manager_, *network_);
         packet_handler_ = std::make_unique<server::PacketHandler>(
-            *connection_manager_, *packet_sender_);
+            *connection_manager_, *packet_sender_, *network_);
 
         // Register handlers
         packet_handler_->RegisterHandlers();
@@ -70,6 +80,8 @@ class PacketHandlerTest : public ::testing::Test {
     }
 
     std::unique_ptr<boost::asio::io_context> io_context_;
+    std::optional<server::Config> config_;
+    std::unique_ptr<server::Network> network_;
     std::unique_ptr<server::ClientConnectionManager> connection_manager_;
     std::unique_ptr<server::PacketSender> packet_sender_;
     std::unique_ptr<server::PacketHandler> packet_handler_;
@@ -157,10 +169,10 @@ TEST_F(PacketHandlerTest, HandleConnectReqDuplicateUsername) {
 TEST_F(PacketHandlerTest, HandleConnectReqServerFull) {
     // Create manager with max 2 clients
     connection_manager_ = std::make_unique<server::ClientConnectionManager>(2);
-    packet_sender_ =
-        std::make_unique<server::PacketSender>(*connection_manager_);
+    packet_sender_ = std::make_unique<server::PacketSender>(
+        *connection_manager_, *network_);
     packet_handler_ = std::make_unique<server::PacketHandler>(
-        *connection_manager_, *packet_sender_);
+        *connection_manager_, *packet_sender_, *network_);
     packet_handler_->RegisterHandlers();
 
     // Authenticate two clients (fill server)
