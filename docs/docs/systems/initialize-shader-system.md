@@ -1,6 +1,7 @@
 # Initialize Shader System
 
-**Source:** `client/engine/systems/systems_functions/render/InitializeShaderSystem.cpp`
+# Add to your ~/.bashrc or ~/.bash_profile:
+export VCPKG_ROOT="/home/matt/tek3/RTYPE/R_TYPE_J.A.M.E.S./vcpkg"**Source:** `client/engine/systems/systems_functions/render/InitializeShaderSystem.cpp`
 
 **Purpose:** Load and initialize fragment shaders for `Shader` components via the `RenderingEngine` plugin API.
 
