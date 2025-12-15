@@ -18,4 +18,8 @@ void PlayerMovementSystem(Engine::registry &reg,
     Engine::sparse_array<Component::Inputs> const &inputs,
     Engine::sparse_array<Component::Velocity> &velocities);
 
+void PlayerLimitPlayfield(Engine::registry &reg,
+    Engine::sparse_array<Component::Transform> &transforms,
+    Engine::sparse_array<Component::PlayerTag> const &player_tags);
+
 }  // namespace server

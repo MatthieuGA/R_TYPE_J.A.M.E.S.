@@ -17,6 +17,9 @@ void Server::RegisterSystems() {
 
     registry_.AddSystem<Engine::sparse_array<Component::Transform>,
         Engine::sparse_array<Component::Velocity>>(MovementSystem);
+
+    registry_.AddSystem<Engine::sparse_array<Component::Transform>,
+        Engine::sparse_array<Component::PlayerTag>>(PlayerLimitPlayfield);
 }
 
 }  // namespace server
