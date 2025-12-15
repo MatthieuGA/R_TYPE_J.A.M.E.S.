@@ -1,7 +1,7 @@
 # R-Type Network Protocol Specification
 
-> **Version:** 3.2.0
-> **Last Updated:** 1st December 2025
+> **Version:** 3.3.0
+> **Last Updated:** 15th December 2025
 
 ## Table of Contents
 
@@ -24,6 +24,7 @@
    - [`0x05` GAME_START](#0x05---game_start)
    - [`0x06` GAME_END](#0x06---game_end)
    - [`0x07` READY_STATUS](#0x07---ready_status)
+   - [`0x08` NOTIFY_CONNECT](#0x08---notify_connect)
 5. [UDP Commands (Real-time Gameplay)](#5-udp-commands-real-time-gameplay)
    - [`0x10` PLAYER_INPUT](#0x10---player_input)
    - [`0x20` WORLD_SNAPSHOT](#0x20---world_snapshot)
@@ -230,6 +231,21 @@ If the Client and Server disagree on a position (e.g., due to lag or cheating), 
 - **When to send:** When the user toggles the "Ready" button in the lobby.
 
 When all the players in the lobby have sent `IsReady = 1`, the server automatically starts the game by sending GAME_START to all clients.
+
+### `0x08` - NOTIFY_CONNECT
+
+**Direction:** Server -> Client
+**Description:** Notify clients of a new player's connection.
+**Payload:** _36 bytes_
+
+| Field | Type | Size | Description |
+| :--- | :--- | :--- | :--- |
+| `PlayerId` | `u8` | 1 | The unique ID assigned to the new player. |
+| `Reserved` | `u8[3]` | 3 | Padding to align with 4 bytes. |
+| `Username` | `char[32]` | 32 | The username of the newly connected player (ASCII, null-terminated). |
+
+- **Client Behavior:** Add the new player to the lobby UI.
+- **When to send:** Immediately after processing a successful CONNECT_REQ from a new client.
 
 ---
 
