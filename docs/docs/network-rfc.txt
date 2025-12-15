@@ -1,7 +1,7 @@
 Network Working Group                                           J.A.M.E.S
 Request for Comments: 1                                    Epitech Nantes
 Category: Standards Track                                   December 2025
-Version: 3.4.0
+Version: 3.4.1
 Based on: docs/PROTOCOL.md (v3.4.0)
 
                      R-Type Game Protocol Specification
@@ -229,7 +229,9 @@ Table of Contents
       0: Not Ready
       1: Ready
 
-   Sent whenever a player changes their readiness status in the lobby.
+   Broadcasted to all clients when a player changes their ready status
+   in the lobby. Clients MUST update the displayed ready status for the
+   specified player upon receiving this message.
 
 6.  UDP Protocol (Real-time Gameplay)
 
