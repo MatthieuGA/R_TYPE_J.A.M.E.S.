@@ -98,11 +98,11 @@ cmake --build build -j
 - **Run Tests in CI Mode (exclude display-dependent tests):**
 
   Some tests require a display/graphics context (Audio/Video plugins, rendering systems).
-  In CI environments without display capabilities, set the `CI` environment variable:
+  In CI environments without display capabilities, exclude these tests:
 
   ```bash
   cd build
-  CI=true ctest --output-on-failure
+  ctest --output-on-failure -E "AudioPluginTest|VideoPluginTest|TextRenderSystem|SendInputWhenConnectedSendsUdpPacket"
   ```
 
   This excludes 16 tests that require:
