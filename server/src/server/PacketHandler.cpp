@@ -190,6 +190,9 @@ void PacketHandler::HandleConnectReq(
     // Send success response with assigned player_id and server's UDP port
     packet_sender_.SendConnectAck(client, network::ConnectAckPacket::OK,
         player_id, network_.GetUdpPort());
+
+    // Broadcast updated lobby status to all players
+    packet_sender_.SendLobbyStatus();
 }
 
 void PacketHandler::HandleReadyStatus(
@@ -223,6 +226,9 @@ void PacketHandler::HandleReadyStatus(
     std::cout << "Players ready: " << ready_count << "/" << total_authenticated
               << std::endl;
 
+    // Broadcast updated lobby status to all players
+    packet_sender_.SendLobbyStatus();
+
     // Check if all authenticated players are ready
     if (connection_manager_.AllPlayersReady()) {
         size_t connected_players = connection_manager_.GetAuthenticatedCount();
@@ -239,7 +245,9 @@ void PacketHandler::HandleDisconnectReq(
     ClientConnection &client, const network::DisconnectReqPacket &packet) {
     (void)packet;  // No payload in DISCONNECT_REQ
 
-    if (client.player_id_ != 0) {
+    bool was_authenticated = (client.player_id_ != 0);
+
+    if (was_authenticated) {
         std::cout << "Player " << static_cast<int>(client.player_id_) << " ('"
                   << client.username_ << "') requested disconnect"
                   << std::endl;
@@ -250,8 +258,11 @@ void PacketHandler::HandleDisconnectReq(
 
     // Remove client (graceful shutdown)
     connection_manager_.RemoveClient(client.client_id_);
-    // TODO(future): Notify other clients about disconnection
-    // (NOTIFY_DISCONNECT)
+
+    // Broadcast updated lobby status if an authenticated player left
+    if (was_authenticated) {
+        packet_sender_.SendLobbyStatus();
+    }
 }
 
 std::string PacketHandler::Trim(

@@ -165,4 +165,53 @@ void PacketSender::SendSnapshot(network::EntityState entity_state, int tick) {
     }
 }
 
+void PacketSender::SendLobbyStatus() {
+    // Count authenticated players and ready players
+    uint8_t connected_count = 0;
+    uint8_t ready_count = 0;
+
+    auto &clients = connection_manager_.GetClients();
+    for (const auto &[client_id, client_ref] : clients) {
+        if (client_ref.player_id_ != 0) {
+            connected_count++;
+            if (client_ref.ready_) {
+                ready_count++;
+            }
+        }
+    }
+
+    // Build LOBBY_STATUS packet
+    network::LobbyStatusPacket lobby_status;
+    lobby_status.connected_count = connected_count;
+    lobby_status.ready_count = ready_count;
+    lobby_status.max_players = connection_manager_.GetMaxClients();
+    lobby_status.reserved = 0;
+
+    network::PacketBuffer buffer;
+    lobby_status.Serialize(buffer);
+    const auto &data = buffer.Data();
+
+    // Send to all authenticated players via TCP
+    for (auto &[client_id, client_ref] : clients) {
+        if (client_ref.player_id_ == 0) {
+            continue;  // Skip unauthenticated clients
+        }
+
+        auto data_copy = std::make_shared<std::vector<uint8_t>>(data);
+        client_ref.tcp_socket_.async_send(boost::asio::buffer(*data_copy),
+            [data_copy, connected_count, ready_count](
+                boost::system::error_code ec, std::size_t) {
+                if (ec) {
+                    std::cerr << "Error sending LOBBY_STATUS: " << ec.message()
+                              << std::endl;
+                }
+            });
+    }
+
+    std::cout << "Sent LOBBY_STATUS: " << static_cast<int>(connected_count)
+              << "/" << static_cast<int>(connection_manager_.GetMaxClients())
+              << " players, " << static_cast<int>(ready_count) << " ready"
+              << std::endl;
+}
+
 }  // namespace server

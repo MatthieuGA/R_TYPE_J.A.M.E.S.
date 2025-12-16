@@ -247,6 +247,42 @@ struct ReadyStatusPacket {
     }
 };
 
+/**
+ * @brief TCP 0x08: LOBBY_STATUS - Server broadcasts lobby state
+ * Payload: 4 bytes (ConnectedCount u8 + ReadyCount u8 + MaxPlayers u8 +
+ * Reserved u8)
+ */
+struct LobbyStatusPacket {
+    static constexpr PacketType type = PacketType::LobbyStatus;
+    static constexpr size_t PAYLOAD_SIZE = 4;
+
+    uint8_t connected_count;  // Number of authenticated players
+    uint8_t ready_count;      // Number of players who are ready
+    uint8_t max_players;      // Maximum players allowed
+    uint8_t reserved;         // Reserved for alignment
+
+    CommonHeader MakeHeader() const {
+        return CommonHeader(static_cast<uint8_t>(type), PAYLOAD_SIZE);
+    }
+
+    void Serialize(PacketBuffer &buffer) const {
+        buffer.WriteHeader(MakeHeader());
+        buffer.WriteUint8(connected_count);
+        buffer.WriteUint8(ready_count);
+        buffer.WriteUint8(max_players);
+        buffer.WriteUint8(reserved);
+    }
+
+    static LobbyStatusPacket Deserialize(PacketBuffer &buffer) {
+        LobbyStatusPacket packet;
+        packet.connected_count = buffer.ReadUint8();
+        packet.ready_count = buffer.ReadUint8();
+        packet.max_players = buffer.ReadUint8();
+        packet.reserved = buffer.ReadUint8();
+        return packet;
+    }
+};
+
 // ============================================================================
 // UDP PACKETS (Real-time Gameplay - RFC Section 6)
 // ============================================================================

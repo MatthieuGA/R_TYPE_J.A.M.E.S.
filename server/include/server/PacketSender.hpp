@@ -54,6 +54,15 @@ class PacketSender {
      */
     void SendGameStart();
 
+    /**
+     * @brief Send LOBBY_STATUS packet to all authenticated players
+     *
+     * Broadcasts current lobby state (connected count, ready count, max
+     * players). Should be called when players connect, disconnect, or change
+     * ready status.
+     */
+    void SendLobbyStatus();
+
     void SendSnapshot(network::EntityState entity_state, int tick);
 
  private:
