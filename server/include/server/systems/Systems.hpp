@@ -32,4 +32,9 @@ void ProjectileSystem(Engine::registry &reg,
     Engine::sparse_array<Component::Transform> &transforms,
     Engine::sparse_array<Component::Projectile> &projectiles);
 
+void PaternMovementSystem(Engine::registry &reg,
+    Engine::sparse_array<Component::Transform> &transforms,
+    Engine::sparse_array<Component::Velocity> &velocities,
+    Engine::sparse_array<Component::PatternMovement> &patern_movements);
+
 }  // namespace server

@@ -27,6 +27,7 @@ void Server::RegisterComponents() {
     registry_.RegisterComponent<Component::ParrallaxLayer>();
     registry_.RegisterComponent<Component::AnimationDeath>();
     registry_.RegisterComponent<Component::NetworkId>();
+    registry_.RegisterComponent<Component::PatternMovement>();
 
     std::cout << "Registered all components" << std::endl;
 }

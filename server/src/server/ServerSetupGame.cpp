@@ -8,6 +8,68 @@
 
 namespace server {
 
+constexpr const float MERMAID_SPEED = 50.0f;
+constexpr const float MERMAID_SHOOT_COOLDOWN = 2.0f;
+constexpr const int MERMAID_HEALTH = 30;
+constexpr const float MERMAID_PROJECTILE_SPEED = 200.0f;
+constexpr const float MERMAID_PROJECTILE_DAMAGE = 10.0f;
+
+void CreateMermaidActor(Engine::entity &entity, Engine::registry &reg) {
+    // Add basic enemy components
+    reg.AddComponent<Component::PatternMovement>(
+        entity, Component::PatternMovement(
+                    Component::PatternMovement::PatternType::SineHorizontal,
+                    {0.f, 50.f}, {0.f, 1.f}, {0.f, 0.f}, MERMAID_SPEED));
+    reg.AddComponent<Component::PatternMovement>(
+        entity, Component::PatternMovement(
+                    MERMAID_SPEED, 100.f, vector2f{600.f, 300.f}));
+
+    // Add enemy shooting component
+    // Component::EnemyShootTag enemy_shoot_tag(MERMAID_PROJECTILE_SPEED,
+    //     MERMAID_PROJECTILE_DAMAGE, {-3.0f, -15.0f});
+
+    // Add frame event with custom action
+    // reg.AddComponent<Component::FrameEvents>(entity,
+    //     Component::FrameEvents("Attack", 5, [this, &reg](int entity_id) {
+    //         // Custom action executed at frame 5 of Attack animation
+    //         try {
+    //             auto &transform = reg.GetComponent<Component::Transform>(
+    //                 reg.EntityFromIndex(entity_id));
+    //             auto &enemy_shoot =
+    //             reg.GetComponent<Component::EnemyShootTag>(
+    //                 reg.EntityFromIndex(entity_id));
+
+    //             vector2f shoot_direction = (-1.0f, 0.0f);
+    //             CreateEnemyProjectile(
+    //                 reg, shoot_direction, enemy_shoot, entity_id,
+    //                 transform);
+    //         } catch (const std::exception &e) {
+    //             return;
+    //         }
+    //     }));
+    // reg.AddComponent<Component::TimedEvents>(
+    //     entity, Component::TimedEvents(
+    //                 [this, &reg](int entity_id) {
+    //                     // Default cooldown action: trigger Attack animation
+    //                     try {
+    //                         auto &animSprite =
+    //                             reg.GetComponent<Component::AnimatedSprite>(
+    //                                 reg.EntityFromIndex(entity_id));
+    //                         auto &health =
+    //                         reg.GetComponent<Component::Health>(
+    //                             reg.EntityFromIndex(entity_id));
+    //                         if (health.currentHealth <= 0)
+    //                             return;
+    //                         animSprite.SetCurrentAnimation("Attack");
+    //                     } catch (const std::exception &e) {
+    //                         return;
+    //                     }
+    //                 },
+    //                 MERMAID_SHOOT_COOLDOWN));
+    // reg.AddComponent<Component::EnemyShootTag>(
+    //     entity, std::move(enemy_shoot_tag));
+}
+
 void Server::SetupEntityiesGame() {
     // Create one player entity per authenticated client, using the
     // client's assigned player_id as the NetworkId so clients can map
@@ -39,6 +101,7 @@ void Server::SetupEntityiesGame() {
     registry_.add_component(enemy, Component::Velocity{});
     registry_.add_component(
         enemy, Component::NetworkId{Server::GetNextNetworkId()});
+    CreateMermaidActor(enemy, registry_);
     std::cout << "Created enemy entity" << std::endl;
 }
 }  // namespace server

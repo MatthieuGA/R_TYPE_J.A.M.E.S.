@@ -16,6 +16,11 @@ void Server::RegisterSystems() {
         Engine::sparse_array<Component::Velocity>>(PlayerMovementSystem);
 
     registry_.AddSystem<Engine::sparse_array<Component::Transform>,
+        Engine::sparse_array<Component::Velocity>,
+        Engine::sparse_array<Component::PatternMovement>>(
+        PaternMovementSystem);
+
+    registry_.AddSystem<Engine::sparse_array<Component::Transform>,
         Engine::sparse_array<Component::Velocity>>(MovementSystem);
 
     registry_.AddSystem<Engine::sparse_array<Component::Transform>,
