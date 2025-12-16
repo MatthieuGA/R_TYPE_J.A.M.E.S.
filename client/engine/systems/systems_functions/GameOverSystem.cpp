@@ -58,12 +58,26 @@ void GameOverSystem(Engine::registry &reg, GameWorld &game_world,
 
         // Check if server sent game end signal
         if (server_connection.HasGameEnded() && !state.is_active) {
-            std::cout << "[GameOverSystem] Game ended! Starting fade to black."
+            std::cout << "[GameOverSystem] Game ended! Showing GAME OVER text."
                       << std::endl;
             state.is_active = true;
-            state.fade_timer = 0.0f;
-            state.text_phase = false;  // Skip text, go straight to fade
+            state.display_timer = 0.0f;
+            state.text_phase = true;  // show text phase only
             server_connection.ResetGameEnded();
+
+            // Make the "GAME OVER" text visible and red
+            for (std::size_t j = 0; j < texts.size(); ++j) {
+                if (!texts.has(j))
+                    continue;
+                auto &go_text = texts[j].value();
+                go_text.visible = true;
+
+                if (text_comps.has(j)) {
+                    auto &txt = text_comps[j].value();
+                    txt.opacity = 1.0f;  // Fully visible
+                    txt.color = sf::Color(255, 0, 0, 255);  // Full red
+                }
+            }
         }
 
         if (!state.is_active)
@@ -72,8 +86,47 @@ void GameOverSystem(Engine::registry &reg, GameWorld &game_world,
         // Use actual delta time from game world
         float delta_time = game_world.last_delta_;
 
-        // Fade to black over 1.5 seconds then transition to lobby
-        state.fade_timer += delta_time;
+        // Text-only phase: show GAME OVER for configured duration then immediately
+        // transition to the lobby (no fade)
+        if (state.text_phase) {
+            state.display_timer += delta_time;
+
+            if (state.display_timer >= Component::GameOverState::kTextDuration) {
+                std::cout << "[GameOverSystem] GAME OVER display complete. "
+                             "Transitioning to lobby."
+                          << std::endl;
+
+                // Hide the GAME OVER text
+                for (std::size_t j = 0; j < texts.size(); ++j) {
+                    if (!texts.has(j))
+                        continue;
+                    auto &go_text = texts[j].value();
+                    go_text.visible = false;
+                    if (text_comps.has(j)) {
+                        auto &txt = text_comps[j].value();
+                        txt.opacity = 0.0f;
+                    }
+                }
+
+                // Reset state
+                state.is_active = false;
+                state.display_timer = 0.0f;
+                state.text_phase = true;
+
+                // Trigger scene transition to main menu immediately
+                for (std::size_t k = 0; k < scene_mgmt.size(); ++k) {
+                    if (!scene_mgmt.has(k))
+                        continue;
+                    auto &scene = scene_mgmt[k].value();
+                    scene.next = "MainMenuScene";
+                    std::cout << "[GameOverSystem] Set next scene to "
+                                 "MainMenuScene."
+                              << std::endl;
+                    break;
+                }
+
+            }
+        }
 
             float fade_progress = std::min(
                 state.fade_timer / Component::GameOverState::kFadeDuration,
