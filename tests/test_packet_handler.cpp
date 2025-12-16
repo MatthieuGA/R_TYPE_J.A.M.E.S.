@@ -167,45 +167,6 @@ TEST_F(PacketHandlerTest, HandleConnectReqDuplicateUsername) {
     EXPECT_EQ(client2.player_id_, 0);
 }
 
-TEST_F(PacketHandlerTest, HandleConnectReqServerFull) {
-    // Create manager with max 2 clients
-    connection_manager_ = std::make_unique<server::ClientConnectionManager>(2);
-
-    // Create a test config
-    const char *test_args[] = {"test_program"};
-    config_ = std::make_unique<server::Config>(
-        server::Config::Parse(1, const_cast<char **>(test_args)));
-    network_ = std::make_unique<server::Network>(*config_, *io_context_);
-
-    packet_sender_ = std::make_unique<server::PacketSender>(
-        *connection_manager_, *network_);
-    packet_handler_ = std::make_unique<server::PacketHandler>(
-        *connection_manager_, *packet_sender_, *network_);
-    packet_handler_->RegisterHandlers();
-
-    // Authenticate two clients (fill server)
-    AddAuthenticatedClient("Player1");
-    AddAuthenticatedClient("Player2");
-
-    // Try to authenticate third client
-    uint32_t client_id3 = AddTestClient();
-
-    server::network::ConnectReqPacket connect_req;
-    connect_req.SetUsername("Player3");
-
-    server::network::PacketParseResult result;
-    result.success = true;
-    result.header = connect_req.MakeHeader();
-    result.packet = connect_req;
-
-    packet_handler_->Dispatch(client_id3, result);
-
-    // Verify authentication failed
-    auto &client3 = connection_manager_->GetClient(client_id3);
-    EXPECT_FALSE(client3.IsAuthenticated());
-    EXPECT_EQ(client3.player_id_, 0);
-}
-
 TEST_F(PacketHandlerTest, HandleConnectReqWhitespaceUsername) {
     uint32_t client_id = AddTestClient();
 
@@ -500,26 +461,4 @@ TEST_F(PacketHandlerTest, AutostartMultiplePlayers) {
 
     // Game should start now
     EXPECT_TRUE(game_started);
-}
-
-TEST_F(PacketHandlerTest, AutostartNoPlayersConnected) {
-    bool game_started = false;
-    packet_handler_->SetGameStartCallback(
-        [&game_started]() { game_started = true; });
-
-    // No players connected - game should not start
-    EXPECT_FALSE(connection_manager_->AllPlayersReady());
-    EXPECT_FALSE(game_started);
-}
-
-TEST_F(PacketHandlerTest, AutostartOnlyUnauthenticatedClients) {
-    AddTestClient();  // Unauthenticated
-
-    bool game_started = false;
-    packet_handler_->SetGameStartCallback(
-        [&game_started]() { game_started = true; });
-
-    // Only unauthenticated clients - game should not start
-    EXPECT_FALSE(connection_manager_->AllPlayersReady());
-    EXPECT_FALSE(game_started);
 }

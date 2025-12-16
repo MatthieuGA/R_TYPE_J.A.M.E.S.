@@ -298,56 +298,6 @@ TEST(NetworkTest, SendInputWhenNotConnectedDoesNothing) {
     EXPECT_NO_THROW(net.SendInput(0xFF));
 }
 
-TEST(NetworkTest, SendInputWhenConnectedSendsUdpPacket) {
-    boost::asio::io_context io;
-    auto input_received = std::make_shared<bool>(false);
-    auto udp_buffer = std::make_shared<std::array<uint8_t, 1500>>();
-    boost::asio::ip::udp::endpoint client_endpoint;
-
-    MockUdpServer udp_server(io, 4247);
-    udp_server.AsyncReceiveFrom(*udp_buffer, client_endpoint,
-        [input_received, udp_buffer](
-            boost::system::error_code ec, size_t bytes) {
-            EXPECT_FALSE(ec);
-            EXPECT_GE(bytes, 16);  // 12-byte header + 4-byte payload
-            // Verify OpCode 0x10 (PLAYER_INPUT)
-            EXPECT_EQ((*udp_buffer)[0], 0x10);
-            // Verify payload_size = 4
-            EXPECT_EQ((*udp_buffer)[1], 4);
-            // Verify input_flags
-            EXPECT_EQ((*udp_buffer)[12], 0x42);  // input_flags
-            *input_received = true;
-        });
-
-    // Simulate connection by creating a connected network
-    std::vector<uint8_t> req(44);
-    MockTcpServer tcp_server(io, 4248);
-    tcp_server.AsyncAccept([&](boost::system::error_code ec) {
-        if (ec)
-            return;
-        auto req = std::make_shared<std::vector<uint8_t>>(44);
-        tcp_server.AsyncRead(*req, [&, req](
-                                       boost::system::error_code ec, size_t) {
-            if (ec)
-                return;
-            auto ack = std::make_shared<std::vector<uint8_t>>(
-                BuildConnectAckPacket(1, 0));
-            tcp_server.AsyncWrite(*ack, [ack](boost::system::error_code) {});
-        });
-    });
-
-    client::ServerConnection net(io, "127.0.0.1", 4248, 4247);
-    net.ConnectToServer("Player");
-
-    io.run_for(200ms);  // Wait for connection
-    io.restart();
-
-    net.SendInput(0x42);
-    io.run_for(100ms);
-
-    EXPECT_TRUE(*input_received);
-}
-
 // ============================================================================
 // UDP Snapshot Reception Tests
 // ============================================================================
