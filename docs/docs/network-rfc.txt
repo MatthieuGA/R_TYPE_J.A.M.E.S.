@@ -1,8 +1,8 @@
 Network Working Group                                           J.A.M.E.S
 Request for Comments: 1                                    Epitech Nantes
 Category: Standards Track                                   December 2025
-Version: 3.3.0
-Based on: docs/PROTOCOL.md (v3.3.0)
+Version: 3.4.2
+Based on: docs/PROTOCOL.md (v3.4.0)
 
                      R-Type Game Protocol Specification
 
@@ -234,6 +234,26 @@ Table of Contents
    Immediately after a successful CONNECT_REQ, the server sends
    NOTIFY_CONNECT to all connected clients (including the new player)
    to inform them of the new participant.
+
+   5.9.  NOTIFY_READY (0x09)
+
+   Direction: Server -> Client
+   Description: Notify clients of a player's readiness status.
+   Payload Size: 4 bytes
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |   PlayerId    |    IsReady    |            Reserved           |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   IsReady:
+      0: Not Ready
+      1: Ready
+
+   Broadcasted to all clients when a player changes their ready status
+   in the lobby. Clients MUST update the displayed ready status for the
+   specified player upon receiving this message.
 
 6.  UDP Protocol (Real-time Gameplay)
 

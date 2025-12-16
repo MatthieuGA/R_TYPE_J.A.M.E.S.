@@ -1,6 +1,6 @@
 # R-Type Network Protocol Specification
 
-> **Version:** 3.3.0
+> **Version:** 3.4.0
 > **Last Updated:** 15th December 2025
 
 ## Table of Contents
@@ -25,6 +25,7 @@
    - [`0x06` GAME_END](#0x06---game_end)
    - [`0x07` READY_STATUS](#0x07---ready_status)
    - [`0x08` NOTIFY_CONNECT](#0x08---notify_connect)
+   - [`0x09` NOTIFY_READY](#0x09---notify_ready)
 5. [UDP Commands (Real-time Gameplay)](#5-udp-commands-real-time-gameplay)
    - [`0x10` PLAYER_INPUT](#0x10---player_input)
    - [`0x20` WORLD_SNAPSHOT](#0x20---world_snapshot)
@@ -246,6 +247,21 @@ When all the players in the lobby have sent `IsReady = 1`, the server automatica
 
 - **Client Behavior:** Add the new player to the lobby UI.
 - **When to send:** Immediately after processing a successful CONNECT_REQ from a new client.
+
+### `0x09` - NOTIFY_READY
+
+**Direction:** Server -> Client
+**Description:** Broadcasted to all clients when a player changes their ready status.
+**Payload:** _4 bytes_
+
+| Field | Type | Size | Description |
+| :--- | :--- | :--- | :--- |
+| `PlayerId` | `u8` | 1 | The ID of the player who changed status. |
+| `IsReady` | `u8` | 1 | `0` = Not Ready, `1` = Ready. |
+| `Reserved` | `u8[2]` | 2 | Padding to align with 4 bytes. |
+
+- **Client Behavior:** Update the lobby UI to reflect the player's new ready status.
+- **When to send:** Whenever a player sends a READY_STATUS packet.
 
 ---
 
