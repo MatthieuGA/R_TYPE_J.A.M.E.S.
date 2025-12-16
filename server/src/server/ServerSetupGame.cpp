@@ -9,7 +9,7 @@
 
 namespace server {
 
-void Server::SetupEntityiesGame() {
+void Server::SetupEntitiesGame() {
     // Setup factory enemy info map
     FactoryActors::GetInstance().InitializeEnemyInfoMap("data/");
 
