@@ -1,44 +1,66 @@
 #include <iostream>
-#include <cstdio>
+#include <memory>
+#include <utility>
+
 #include <SFML/Graphics.hpp>
 
+#include "engine/GameWorld.hpp"
+#include "engine/audio/AudioManager.hpp"
+#include "engine/audio/SFMLAudioBackend.hpp"
+#include "game/ClientApplication.hpp"
+#include "game/CommandLineParser.hpp"
+#include "game/InitRegistry.hpp"
+#include "game/factory/factory_ennemies/FactoryActors.hpp"
+#include "game/scenes_management/InitScenes.hpp"
 #include "include/registry.hpp"
-#include "Engine/initRegistryComponent.hpp"
-#include "Engine/initRegistrySystems.hpp"
 
-using Engine::registry;
 namespace RC = Rtype::Client;
-namespace Component = Rtype::Client::Component;
+namespace Audio = Rtype::Client::Audio;
 
-void init_registry(registry &reg, sf::RenderWindow &window) {
-    RC::init_registry_components(reg);
-    RC::init_registry_systems(reg, window);
-}
+int main(int argc, char *argv[]) {
+    try {
+        // Parse command-line arguments
+        RC::ClientConfig config = RC::CommandLineParser::Parse(argc, argv);
 
-int main() {
-    registry reg;
-    sf::RenderWindow window(sf::VideoMode({800, 600}), "SFML");
-    init_registry(reg, window);
+        // Display connection parameters
+        std::cout << "[Client] Starting R-Type client...\n"
+                  << "[Client] Server IP: " << config.server_ip << "\n"
+                  << "[Client] TCP Port: " << config.tcp_port << "\n"
+                  << "[Client] UDP Port: " << config.udp_port << "\n"
+                  << "[Client] Username: " << config.username << std::endl;
 
-    for (int i = 0; i < 4; ++i) {
-        auto entity = reg.spawn_entity();
-        reg.emplace_component<Component::Transform>(entity,
-            Component::Transform{(i+1) * 150.0f, 100.0f, i * 10.f, 0.2f});
-        reg.emplace_component<Component::Drawable>(entity,
-            Component::Drawable("Logo.png", 0, Component::Drawable::CENTER));
-    }
+        // Initialize game world with network parameters
+        RC::GameWorld game_world(
+            config.server_ip, config.tcp_port, config.udp_port);
 
-    while (window.isOpen()) {
-        sf::Event event;
-        while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed)
-                window.close();
+        // Initialize audio subsystem with proper lifetime
+        // AudioManager must outlive the game loop to prevent dangling pointer
+        auto audio_backend = std::make_unique<Audio::SFMLAudioBackend>();
+        Audio::AudioManager audio_manager(std::move(audio_backend));
+        game_world.audio_manager_ = &audio_manager;
+
+        RC::FactoryActors::GetInstance().InitializeEnemyInfoMap("data/");
+        // Initialize application (registry and scenes)
+        RC::ClientApplication::InitializeApplication(game_world);
+
+        // Connect to server with retry mechanism
+        if (!RC::ClientApplication::ConnectToServerWithRetry(
+                game_world, config)) {
+            return EXIT_FAILURE;
         }
 
-        window.clear(sf::Color::Black);
-        reg.run_systems();
-        window.display();
-    }
+        // Run the main game loop (includes GAME_START handling)
+        RC::ClientApplication::RunGameLoop(game_world);
 
-    return 0;
+        // Disconnect gracefully when closing
+        if (game_world.server_connection_) {
+            std::cout << "[Network] Disconnecting from server..." << std::endl;
+            game_world.server_connection_->Disconnect();
+        }
+
+        return EXIT_SUCCESS;
+    } catch (const std::exception &e) {
+        std::cerr << "Exception: " << e.what() << std::endl;
+        return EXIT_FAILURE;
+    }
 }

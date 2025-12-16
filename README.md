@@ -53,9 +53,9 @@ This repository contains both the engine and the game powered by it.
 
 ## 📋 Prerequisites
 
-- **C++ Compiler** (GCC 7+ / MSVC 2019+ / Clang 11+)
-- **CMake** 3.23 or higher
-- **vcpkg** (configured with `VCPKG_ROOT` environment variable)
+* **C++ Compiler** (GCC 7+ / MSVC 2019+ / Clang 11+)
+* **CMake** 3.23 or higher
+* **vcpkg** (configured with `VCPKG_ROOT` environment variable)
 
 ## 🚀 Build & Run
 
@@ -64,24 +64,33 @@ rm -rf build && mkdir build && cd build && cmake .. -DCMAKE_TOOLCHAIN_FILE="../v
 ```
 
 Then run:
+
 ```bash
 ./r-type_client
 ```
 
 ## 📦 Dependencies
 
-Dependencies (SFML, Boost.Asio) are automatically installed via vcpkg during CMake configuration
+Dependencies are automatically installed via vcpkg during CMake configuration:
+
+* **SFML 2.6.2** - Graphics, window, network, audio, system
+* **Boost.Asio** - Asynchronous I/O and networking
+* **Boost.System** - System error codes for Boost libraries
+* **Boost.Lockfree** - Lock-free data structures for high-performance concurrent operations
+* **GoogleTest** - Unit testing framework (fetched automatically)
 
 ---
 
 ## 🔧 Alternative: Using Build Scripts
 
 **Linux:**
+
 ```bash
 ./build.sh
 ```
 
 **Windows:**
+
 ```cmd
 build.bat
 ```
@@ -180,7 +189,7 @@ Documentation includes:
 * Implementation details
 * Accessibility documentation
 
-### Accessing local doc :
+### Accessing local doc
 
 All docs are available under `/docs`.
 
@@ -189,25 +198,29 @@ All docs are available under `/docs`.
 The project uses [Docusaurus](https://docusaurus.io/) for documentation.
 
 #### Prerequisites
-- Node.js 20.0 or higher
-- npm (comes with Node.js)
+
+* Node.js 20.0 or higher
+* npm (comes with Node.js)
 
 #### Setup and Run
 
 1. Navigate to the docs directory:
-```bash
-cd docs
-```
+
+    ```bash
+    cd docs
+    ```
 
 2. Install dependencies (first time only):
-```bash
-npm install
-```
+
+    ```bash
+    npm install
+    ```
 
 3. Start the development server:
-```bash
-npm start
-```
+
+    ```bash
+    npm start
+    ```
 
 The documentation will be available at [http://localhost:3000](http://localhost:3000)
 
@@ -230,7 +243,6 @@ To serve the production build locally:
 cd docs
 npm run serve
 ```
-
 
 ---
 
@@ -255,7 +267,7 @@ npm run serve
 
 ---
 
-## 👥 Team J.A.M.E.S.
+## 👥 Team J.A.M.E.S
 
 | Member      | Role                     |
 | ----------- | ------------------------ |
@@ -280,6 +292,6 @@ See `CONTRIBUTING.md` for details.
 
 ## ℹ️ Additional Information
 
-- **vcpkg setup**: If you don't have vcpkg, see [vcpkg.io](https://vcpkg.io/)
-- **Cross-platform**: Works on Linux and Windows
-- **Authors**: J.A.M.E.S. Development Team
+* **vcpkg setup**: If you don't have vcpkg, see [vcpkg.io](https://vcpkg.io/)
+* **Cross-platform**: Works on Linux and Windows
+* **Authors**: J.A.M.E.S. Development Team

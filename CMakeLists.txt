@@ -8,8 +8,14 @@ project(RTypeProject LANGUAGES CXX)
 option(ENABLE_COVERAGE "Enable code coverage" OFF)
 
 # Set C++ standard
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
+
+# Target Windows 7 APIs or newer when building on Windows to silence
+# `_WIN32_WINNT` warnings from system headers (e.g., ASIO/SFML).
+if (WIN32)
+    add_compile_definitions(_WIN32_WINNT=0x0601 _WIN32_WINDOWS=0x0601)
+endif()
 
 # Export compile commands for clang-tidy and other tools
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -23,9 +29,22 @@ if (ENABLE_COVERAGE AND NOT MSVC)
 endif()
 
 # Find required packages (vcpkg integration)
+# SFML 2.6.2 uses lowercase component names
 find_package(SFML COMPONENTS system window graphics network audio CONFIG REQUIRED)
-find_package(asio CONFIG REQUIRED)
-find_package(Boost REQUIRED COMPONENTS system)
+
+# Boost components for networking and lock-free data structures
+# Use CONFIG mode with vcpkg (CMP0167 compliance)
+find_package(Boost REQUIRED COMPONENTS system CONFIG)
+find_package(Threads REQUIRED)
+find_package(fmt CONFIG REQUIRED)
+
+# Explanation: vcpkg's OpenAL-soft has a missing dependency on fmt
+# Add fmt as an INTERFACE dependency to SFML::Audio so it's linked in correct order
+if (TARGET SFML::Audio)
+    target_link_libraries(SFML::Audio INTERFACE fmt::fmt)
+elseif (TARGET sfml-audio)
+    target_link_libraries(sfml-audio INTERFACE fmt::fmt)
+endif()
 
 # Provide compatibility aliases so code using SFML::Name targets works with
 # vcpkg-provided SFML 2.x (which exports sfml-name targets).
@@ -113,7 +132,11 @@ message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 message(STATUS "C++ Compiler: ${CMAKE_CXX_COMPILER}")
 message(STATUS "C++ Standard: ${CMAKE_CXX_STANDARD}")
 message(STATUS "SFML Found: ${SFML_FOUND}")
-message(STATUS "Asio Found: ${asio_FOUND}")
 message(STATUS "Boost Found: ${Boost_FOUND}")
+if(Boost_FOUND)
+    message(STATUS "  Boost Version: ${Boost_VERSION}")
+    message(STATUS "  Boost Include: ${Boost_INCLUDE_DIRS}")
+endif()
 message(STATUS "Coverage enabled: ${ENABLE_COVERAGE}")
+message(STATUS "Toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
 message(STATUS "==============================================")

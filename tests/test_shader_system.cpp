@@ -1,0 +1,28 @@
+#include <gtest/gtest.h>
+
+#include "engine/systems/InitRegistrySystems.hpp"
+#include "include/components/RenderComponent.hpp"
+
+namespace Com = Rtype::Client::Component;
+namespace Eng = Engine;
+
+using Rtype::Client::InitializeShaderSystem;
+
+TEST(ShaderSystem, LoadsShaderFromAssets) {
+    Eng::registry reg;
+
+    Eng::sparse_array<Com::Shader> shaders;
+
+    // Use the existing test shader placed in client/assets/shaders/wave.frag
+    Com::Shader shade("error.frag");
+    shaders.insert_at(0, shade);
+
+    // Initially not loaded
+    EXPECT_FALSE(shaders[0]->isLoaded);
+
+    // Run the initialize system which should load the shader
+    InitializeShaderSystem(reg, shaders);
+
+    // The shader asset should not exist, so loading should fail
+    EXPECT_FALSE(shaders[0]->isLoaded);
+}

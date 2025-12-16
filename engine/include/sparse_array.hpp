@@ -1,8 +1,9 @@
 #pragma once
-#include <vector>
-#include <memory>
 #include <cstddef>
+#include <memory>
 #include <optional>
+#include <vector>
+
 namespace Engine {
 
 template <typename Component>
@@ -18,7 +19,7 @@ class sparse_array {
 
  public:
     sparse_array();
-    sparse_array(sparse_array const &);  // copy constructor
+    sparse_array(sparse_array const &);      // copy constructor
     sparse_array(sparse_array &&) noexcept;  // move constructor
     ~sparse_array();
 
@@ -37,15 +38,15 @@ class sparse_array {
     size_type size() const;
     bool has(size_type idx) const;
     reference_type insert_at(size_type pos, Component &&);
-    reference_type insert_at(size_type pos, Component const&);
+    reference_type insert_at(size_type pos, Component const &);
 
     template <class... Params>
     reference_type emplace_at(size_type pos, Params &&...);
     void erase(size_type pos);
-    size_type get_index(value_type const &) const;
+    size_type GetIndex(value_type const &) const;
 
  private:
-    container_t _data;
+    container_t data_;
 };
 
 }  // namespace Engine

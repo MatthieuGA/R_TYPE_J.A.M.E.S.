@@ -1,0 +1,20 @@
+{
+    "tag": "mermaid",
+    "health": 30,
+    "speed": 100.0,
+    "spritePath": "ennemies/4/Idle.png",
+    "hitbox": {
+        "x": 8.0,
+        "y": 32.0
+    },
+    "offset_healthbar": {
+        "x": 7.0,
+        "y": 25.0
+    },
+    "transform" : {
+        "scale": {
+            "x": -3.0,
+            "y": 3.0
+        }
+    }
+}

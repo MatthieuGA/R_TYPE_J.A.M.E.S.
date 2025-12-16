@@ -1,65 +1,102 @@
 #include "server/Server.hpp"
 
 #include <iostream>
+#include <utility>
+#include <vector>
 
-#include "server/Components.hpp"
+#include "server/CoreComponents.hpp"
+#include "server/NetworkComponents.hpp"
 
 namespace server {
 
 Server::Server(Config &config, boost::asio::io_context &io_context)
-: config_(config), io_context_(io_context),
-network_(std::make_unique<Network>(config, io_context)),
-registry_(), tick_timer_(io_context), running_(false) {}
+    : config_(config),
+      io_context_(io_context),
+      network_(config, io_context),
+      registry_(),
+      tick_timer_(io_context),
+      running_(false),
+      connection_manager_(config.GetMaxPlayers(), config.GetUdpPort()),
+      packet_sender_(connection_manager_, network_),
+      packet_handler_(connection_manager_, packet_sender_, network_) {
+    // Set game start callback
+    packet_handler_.SetGameStartCallback([this]() { Start(); });
+}
 
 Server::~Server() {
     running_ = false;
 }
 
-void Server::initialize() {
+void Server::Initialize() {
     std::cout << "Initializing server..." << std::endl;
-    registerComponents();
-    registerSystems();
-    std::cout << "Server initialized successfully" << std::endl;
-}
+    RegisterComponents();
+    RegisterSystems();
 
-void Server::registerComponents() {
-    registry_.register_component<Component::Position>();
-    registry_.register_component<Component::Velocity>();
-    registry_.register_component<Component::Health>();
-    registry_.register_component<Component::NetworkId>();
-    registry_.register_component<Component::Player>();
-    registry_.register_component<Component::Enemy>();
+    // Register packet handlers
+    packet_handler_.RegisterHandlers();
 
-    std::cout << "Registered all components" << std::endl;
-}
+    // Register TCP accept callback
+    network_.GetTcp().SetAcceptCallback(
+        [this](boost::asio::ip::tcp::socket socket) {
+            HandleTcpAccept(std::move(socket));
+        });
 
-void Server::registerSystems() {
-    registry_.add_system<Engine::sparse_array<Component::Position>,
-        Engine::sparse_array<Component::Velocity>>(
-        [](Engine::registry &reg,
-            Engine::sparse_array<Component::Position> &positions,
-            Engine::sparse_array<Component::Velocity> &velocities) {
-            for (size_t i = 0; i < positions.size() && i < velocities.size();
-                ++i) {
-                if (positions.has(i) && velocities.has(i)) {
-                    auto &pos = positions[i];
-                    auto &vel = velocities[i];
-                    pos->x += vel->vx;
-                    pos->y += vel->vy;
+    // Register UDP receive callback to update client endpoints
+    // Prefer using player_id carried in PLAYER_INPUT (discovery) packets
+    network_.SetUdpReceiveCallback(
+        [this](const boost::asio::ip::udp::endpoint &endpoint,
+            const std::vector<uint8_t> &data) {
+            // Basic validation: need at least header + 1 payload byte
+            if (data.size() >= 13) {
+                uint8_t opcode = data[0];
+                // PLAYER_INPUT opcode is 0x10
+                if (opcode == 0x10) {
+                    bool handled = HandleUdpPlayerInput(endpoint, data);
+                    if (handled) {
+                        return;  // packet processed
+                    }
                 }
+            }
+
+            // Fallback: match by IP address (legacy behavior)
+            ClientConnection *client =
+                connection_manager_.FindClientByIp(endpoint.address());
+            if (client) {
+                connection_manager_.UpdateClientUdpEndpoint(
+                    client->client_id_, endpoint);
             }
         });
 
-    std::cout << "Registered all systems" << std::endl;
+    std::cout << "Server initialized successfully" << std::endl;
 }
 
-void Server::start() {
-    std::cout << "Starting server..." << std::endl;
+void Server::Start() {
+    if (running_) {
+        return;
+    }
+    std::cout << "Starting game..." << std::endl;
     running_ = true;
-    setupGameTick();
+
+    SetupEntitiesGame();
+    SetupGameTick();
 }
 
-void Server::setupGameTick() {
+void Server::Stop() {
+    std::cout << "Stopping game..." << std::endl;
+    running_ = false;
+    tick_timer_.cancel();
+    std::cout << "Game stopped" << std::endl;
+}
+
+void Server::Close() {
+    std::cout << "Closing server..." << std::endl;
+    Stop();
+    // Client sockets will be closed automatically when connection_manager_ is
+    // destroyed (when the Server object is destroyed)
+    std::cout << "Server closed" << std::endl;
+}
+
+void Server::SetupGameTick() {
     if (!running_) {
         return;
     }
@@ -67,21 +104,36 @@ void Server::setupGameTick() {
     tick_timer_.expires_after(std::chrono::milliseconds(TICK_RATE_MS));
     tick_timer_.async_wait([this](const boost::system::error_code &ec) {
         if (!ec && running_) {
-            update();
-            setupGameTick();
+            Update();
+            SetupGameTick();
         }
     });
 }
 
-void Server::update() {
+void Server::Update() {
     registry_.run_systems();
 
+    SendSnapshotsToAllClients();
     // TODO(someone): Process network messages from the SPSC queue
     // TODO(someone): Send state updates to clients
 }
 
-Engine::registry &Server::getRegistry() {
+Engine::registry &Server::GetRegistry() {
     return registry_;
+}
+
+uint32_t Server::GetNextNetworkId() {
+    static uint32_t next_id = 1;
+    uint32_t id = next_id++;
+    return id;
+}
+
+void Server::HandleTcpAccept(boost::asio::ip::tcp::socket socket) {
+    // Add client to connection manager
+    uint32_t client_id = connection_manager_.AddClient(std::move(socket));
+
+    // Start handling messages immediately
+    packet_handler_.StartReceiving(client_id);
 }
 
 }  // namespace server

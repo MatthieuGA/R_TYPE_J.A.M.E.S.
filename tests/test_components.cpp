@@ -1,28 +1,31 @@
 #include <gtest/gtest.h>
 
-#include "../client/include/Components/CoreComponents.hpp"
-#include "../client/include/Components/GameplayComponents.hpp"
-#include "../client/include/Components/NetworkingComponents.hpp"
+#include <string>
+
+#include "include/components/CoreComponents.hpp"
+#include "include/components/GameplayComponents.hpp"
+#include "include/components/NetworkingComponents.hpp"
+#include "include/components/RenderComponent.hpp"
 
 namespace Com = Rtype::Client::Component;
 
-TEST(ComponentsCore, TransformAndRigidBody) {
+TEST(ComponentsCore, TransformAndVelocity) {
     Com::Transform t{10.0f, 20.0f, 45.0f, 1.25f};
     EXPECT_FLOAT_EQ(t.x, 10.0f);
     EXPECT_FLOAT_EQ(t.y, 20.0f);
     EXPECT_FLOAT_EQ(t.rotationDegrees, 45.0f);
-    EXPECT_FLOAT_EQ(t.scale, 1.25f);
+    EXPECT_FLOAT_EQ(t.scale.x, 1.25f);
+    EXPECT_FLOAT_EQ(t.scale.y, 1.25f);
 
-    Com::RigidBody rb{3.0f, -1.5f};
+    Com::Velocity rb{3.0f, -1.5f};
     EXPECT_FLOAT_EQ(rb.vx, 3.0f);
     EXPECT_FLOAT_EQ(rb.vy, -1.5f);
 }
 
 TEST(ComponentsCore, DrawableBasics) {
-    Com::Drawable d("Logo.png", 5, Com::Drawable::CENTER);
-    EXPECT_EQ(d.spritePath, std::string("Assets/Logo.png"));
+    Com::Drawable d("Logo.png", 5);
+    EXPECT_EQ(d.spritePath, std::string("assets/images/Logo.png"));
     EXPECT_EQ(d.z_index, 5);
-    EXPECT_EQ(d.origin, Com::Drawable::CENTER);
     EXPECT_FALSE(d.isLoaded);
 }
 
@@ -39,7 +42,7 @@ TEST(ComponentsCore, ControllableAndInput) {
 }
 
 TEST(ComponentsCore, HitBox) {
-    Com::HitBox hb{16.0f, 8.0f, 1.0f, 2.0f};
+    Com::HitBox hb{16.0f, 8.0f, true, 1.0f, 2.0f};
     EXPECT_FLOAT_EQ(hb.width, 16.0f);
     EXPECT_FLOAT_EQ(hb.height, 8.0f);
     EXPECT_FLOAT_EQ(hb.offsetX, 1.0f);
@@ -47,19 +50,28 @@ TEST(ComponentsCore, HitBox) {
 }
 
 TEST(ComponentsGameplay, TagsAndProjectile) {
-    Com::PlayerTag p{2};
-    EXPECT_EQ(p.playerNumber, 2);
+    Com::PlayerTag p;
+    p.speed_max = 400.f;
+    p.shoot_cooldown_max = 0.5f;
+    p.charge_time_min = 0.0f;
+    p.shoot_cooldown = 0.0f;
+    p.charge_time = 0.0f;
+    p.id_player = 2;
 
-    Com::EnemyTag e{Com::EnemyTag::EnemyType::ADVANCED};
-    EXPECT_EQ(e.type, Com::EnemyTag::EnemyType::ADVANCED);
+    EXPECT_EQ(p.id_player, 2);
+    EXPECT_FLOAT_EQ(p.speed_max, 400.f);
+    EXPECT_FLOAT_EQ(p.shoot_cooldown_max, 0.5f);
+    EXPECT_FLOAT_EQ(p.shoot_cooldown, 0.0f);
 
-    Com::Projectile proj{12.5f, 250.0f, 1};
-    EXPECT_FLOAT_EQ(proj.damage, 12.5f);
+    Com::EnemyTag e{};
+
+    Com::Projectile proj{12, {0.0f, -1.0f}, 250.0f, 1, true};
+    EXPECT_EQ(proj.damage, 12);
     EXPECT_FLOAT_EQ(proj.speed, 250.0f);
     EXPECT_EQ(proj.ownerId, 1);
 
-    Com::Health h{75, 100};
-    EXPECT_EQ(h.currentHealth, 75);
+    Com::Health h(100);
+    EXPECT_EQ(h.currentHealth, 100);
     EXPECT_EQ(h.maxHealth, 100);
 
     Com::StatsGame stats{9000};
