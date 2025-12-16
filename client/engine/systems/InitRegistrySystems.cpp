@@ -291,6 +291,16 @@ void InitSceneManagementSystem(Rtype::Client::GameWorld &game_world) {
             Eng::sparse_array<Com::SceneManagement> &sceneManagements) {
             GameStateSystem(r, game_world, sceneManagements);
         });
+
+    // Lobby UI system
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::LobbyUI>,
+        Eng::sparse_array<Com::Text>, Eng::sparse_array<Com::Drawable>>(
+        [&game_world](Eng::registry &r,
+            Eng::sparse_array<Com::LobbyUI> &lobby_uis,
+            Eng::sparse_array<Com::Text> &texts,
+            Eng::sparse_array<Com::Drawable> &drawables) {
+            LobbyUISystem(r, game_world, lobby_uis, texts, drawables);
+        });
 }
 
 /**

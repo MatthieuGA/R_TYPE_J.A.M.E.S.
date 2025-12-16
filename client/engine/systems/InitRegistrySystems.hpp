@@ -166,4 +166,11 @@ void AudioSystem(Eng::registry &reg, Audio::AudioManager &audio_manager,
 void KillEntitiesSystem(
     Eng::registry &reg, Eng::sparse_array<Com::NetworkId> &network_ids);
 
+// LOBBY UI SYSTEM
+
+void LobbyUISystem(Eng::registry &reg, GameWorld &game_world,
+    Eng::sparse_array<Com::LobbyUI> &lobby_uis,
+    Eng::sparse_array<Com::Text> &texts,
+    Eng::sparse_array<Com::Drawable> &drawables);
+
 }  // namespace Rtype::Client

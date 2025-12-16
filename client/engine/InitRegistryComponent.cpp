@@ -36,5 +36,6 @@ void InitRegistryComponents(Engine::registry &reg) {
     reg.RegisterComponent<Rtype::Client::Component::InterpolatedPosition>();
     // Register scenes components
     reg.RegisterComponent<Rtype::Client::Component::SceneManagement>();
+    reg.RegisterComponent<Rtype::Client::Component::LobbyUI>();
 }
 }  // namespace Rtype::Client
