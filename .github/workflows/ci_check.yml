@@ -43,7 +43,7 @@ jobs:
       run: pip install cpplint
     - name: "Run cpplint"
       run: |
-        find . -type f \( -name '*.cpp' -o -name '*.hpp' \) ! -path './tests/*' ! -path './build/*' ! -path './external/*' | xargs cpplint --repository=. --quiet --output=vs7 --filter=-legal/copyright,-build/c++17,+build/c++23,-whitespace/indent_namespace,-runtime/references
+        find . -type f \( -name '*.cpp' -o -name '*.hpp' \) ! -path './tests/*' ! -path './build/*' ! -path './external/*' | xargs cpplint --repository=. --quiet --output=vs7 --filter=-legal/copyright,-build/c++17,+build/c++20,-whitespace/indent_namespace,-runtime/references
   check_cmake_compilation_and_tests:
     needs: [check_coding_style]
     runs-on: ubuntu-latest

@@ -1,6 +1,6 @@
 # 📘 R-Type — Networked Multiplayer Game (J.A.M.E.S.)
 
-*A modern C++23 multiplayer shoot’em up with an original custom engine, an authoritative server, and a SFML-based client.*
+*A modern C++20 multiplayer shoot’em up with an original custom engine, an authoritative server, and a SFML-based client.*
 
 ---
 
@@ -163,7 +163,7 @@ cmake --build build -j
 
 ## 🛠️ Engineering Practices
 
-* C++23
+* C++20
 * CMake
 * Dependency manager: vcpkg / conan
 * GitHub Actions CI (build + format + tests)

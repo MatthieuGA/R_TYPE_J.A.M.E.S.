@@ -24,7 +24,7 @@ This document justifies the key technology choices for the R-Type project. Each 
 - **Project Requirements:** Binary UDP protocol, multithreaded server, cross-platform (Linux/Windows)
 - **Performance:** Real-time 60 FPS rendering and low-latency networking
 - **Team Expertise:** Leveraging existing knowledge to maximize productivity
-- **Integration:** Seamless compatibility with our toolchain (CMake, C++23)
+- **Integration:** Seamless compatibility with our toolchain (CMake, C++20)
 
 ---
 
@@ -53,7 +53,7 @@ This document justifies the key technology choices for the R-Type project. Each 
 
 - ✅ Cross-platform (Linux/Windows requirement)
 - ✅ 60 FPS 2D rendering capability
-- ✅ Modern C++23 compatible
+- ✅ Modern C++20 compatible
 - ✅ vcpkg integration
 
 ---
@@ -74,7 +74,32 @@ This document justifies the key technology choices for the R-Type project. Each 
 
 **Why Async I/O Matters:**
 
+```cpp
+// SFML (blocking): Thread waits idle for data
+socket.receive(packet);  // BLOCKS ❌
 
+// Boost.Asio (async): Thread handles other clients while waiting
+socket.async_receive_from(buffer, endpoint,
+    [](asio::error_code ec, size_t bytes) {
+        // Called when data arrives ✅
+    });
+```
+
+**Project Requirements:**
+
+- ✅ Multithreaded server → Boost.Asio's `io_context` handles multiple clients per thread
+- ✅ UDP networking → Native async UDP support
+- ✅ Cross-platform → No `#ifdef` needed (abstracts epoll/IOCP/kqueue)
+- ✅ Custom binary protocol → Low-level socket control
+
+**Performance:**
+
+- 1 thread handles 100+ clients (vs thread-per-client with blocking I/O)
+- Non-blocking operations prevent slow clients from affecting others
+
+---
+
+## Dependency Manager: vcpkg
 
 ### Quick Comparison
 
@@ -170,7 +195,7 @@ This document justifies the key technology choices for the R-Type project. Each 
 - **Project Requirements:** Binary UDP protocol, multithreaded server, cross-platform (Linux/Windows)
 - **Performance:** Real-time 60 FPS rendering and low-latency networking
 - **Team Expertise:** Leveraging existing knowledge to maximize productivity
-- **Integration:** Seamless compatibility with our toolchain (CMake, C++23)
+- **Integration:** Seamless compatibility with our toolchain (CMake, C++20)
 
 ---
 
@@ -199,7 +224,7 @@ This document justifies the key technology choices for the R-Type project. Each 
 
 - ✅ Cross-platform (Linux/Windows requirement)
 - ✅ 60 FPS 2D rendering capability
-- ✅ Modern C++23 compatible
+- ✅ Modern C++20 compatible
 - ✅ vcpkg integration
 
 ---
@@ -330,9 +355,8 @@ cmake -DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake
 
 ### R-Type Project Documentation
 
-- [RFC-0001: Engine Architecture](./rfcs/RFC-0001-engine-architecture.md)
-- [README.md](../README.md)
-- [CONTRIBUTING.md](../CONTRIBUTING.md)
+- [README.md](https://github.com/MatthieuGA/R_TYPE_J.A.M.E.S./blob/main/README.md)
+- [CONTRIBUTING.md](https://github.com/MatthieuGA/R_TYPE_J.A.M.E.S./blob/main/CONTRIBUTING.md)
 
 ---
 
