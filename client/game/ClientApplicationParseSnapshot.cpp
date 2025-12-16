@@ -54,12 +54,13 @@ static uint8_t Get1ByteAsUint8(
 void ParseSnapshotPlayer(
     std::vector<ClientApplication::ParsedEntity> &entities,
     const client::SnapshotPacket &snapshot) {
-    const size_t kEntityStateSize = 18;  // 16 bytes per EntityState
+    const size_t kEntityStateSize =
+        18;  // 18 bytes per EntityState (with health)
 
     // Check if payload contains WorldSnapshotPacket format (header + entities)
     // or just a single EntityState (current server implementation)
     if (snapshot.payload_size == kEntityStateSize) {
-        // Single EntityState format (12 bytes) - current server implementation
+        // Single EntityState format (18 bytes) - current server implementation
         ClientApplication::ParsedEntity entity;
 
         entity.entity_id = Get4BytesAsUint32(snapshot.payload, 0);
@@ -122,12 +123,13 @@ void ParseSnapshotPlayer(
 // - velocity_y (u16, 2 bytes)
 void ParseSnapshotEnemy(std::vector<ClientApplication::ParsedEntity> &entities,
     const client::SnapshotPacket &snapshot) {
-    const size_t kEntityStateSize = 20;  // 20 bytes per EntityState
+    const size_t kEntityStateSize =
+        20;  // 20 bytes per EntityState (with animation + health)
 
     // Check if payload contains WorldSnapshotPacket format (header + entities)
     // or just a single EntityState (current server implementation)
     if (snapshot.payload_size == kEntityStateSize) {
-        // Single EntityState format (12 bytes) - current server implementation
+        // Single EntityState format (20 bytes) - current server implementation
         ClientApplication::ParsedEntity entity;
 
         entity.entity_id = Get4BytesAsUint32(snapshot.payload, 0);

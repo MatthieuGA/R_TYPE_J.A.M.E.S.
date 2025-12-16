@@ -70,6 +70,16 @@ void SendServerSnapshotPlayer(network::EntityState &entity_state,
     while (normalized_angle >= 360.0f)
         normalized_angle -= 360.0f;
     entity_state.angle = static_cast<uint16_t>(normalized_angle * 10.0f);
+
+    // Set health if applicable
+    try {
+        auto &health = registry_.GetComponent<Component::Health>(
+            registry_.EntityFromIndex(i));
+        entity_state.health =
+            static_cast<uint16_t>(std::clamp(health.currentHealth, 0, 65535));
+    } catch (const std::exception &e) {
+        entity_state.health = 0;
+    }
 }
 
 void SendServerSnapshotEnemy(network::EntityState &entity_state,
@@ -146,6 +156,16 @@ void SendServerSnapshotEnemy(network::EntityState &entity_state,
     } catch (const std::exception &e) {
         entity_state.current_animation = 0;  // Default animation frame
         entity_state.current_frame = 0;
+    }
+
+    // Set health if applicable
+    try {
+        auto &health = registry_.GetComponent<Component::Health>(
+            registry_.EntityFromIndex(i));
+        entity_state.health =
+            static_cast<uint16_t>(std::clamp(health.currentHealth, 0, 65535));
+    } catch (const std::exception &e) {
+        entity_state.health = 0;
     }
 }
 

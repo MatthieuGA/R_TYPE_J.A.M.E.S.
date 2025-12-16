@@ -101,6 +101,8 @@ void CreateMermaidActor(Engine::entity &entity, Engine::registry &reg) {
                     MERMAID_SHOOT_COOLDOWN));
     reg.AddComponent<Component::EnemyShootTag>(
         entity, std::move(enemy_shoot_tag));
+    reg.AddComponent<Component::HitBox>(
+        entity, Component::HitBox{8.0f, 32.0f});
 }
 
 void Server::SetupEntityiesGame() {
@@ -120,6 +122,8 @@ void Server::SetupEntityiesGame() {
         registry_.add_component(entity, Component::Velocity{1.0f, 0.0f});
         registry_.add_component(entity, Component::PlayerTag{400.0f});
         registry_.add_component(entity, Component::Controllable{});
+        registry_.add_component(entity, Component::HitBox{30.0f, 10.0f});
+        registry_.add_component(entity, Component::Health{100});
         registry_.add_component(
             entity, Component::NetworkId{Server::GetNextNetworkId()});
         std::cout << "Created entity for Player "
