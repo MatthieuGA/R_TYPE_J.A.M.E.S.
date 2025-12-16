@@ -24,6 +24,9 @@ void ButtonClickSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Clickable> &clickables,
     Eng::sparse_array<Com::Drawable> &drawables,
     Eng::sparse_array<Com::Transform> &transforms) {
+    if (!game_world.window_.hasFocus())
+        return;
+
     for (auto &&[i, hit_box, clickable, drawable, transform] :
         make_indexed_zipper(hit_boxes, clickables, drawables, transforms)) {
         sf::Vector2f mousePos = game_world.window_.mapPixelToCoords(

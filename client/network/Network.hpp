@@ -27,6 +27,7 @@ struct SnapshotPacket {
     uint32_t tick{0};
     std::array<uint8_t, 1460> payload;
     uint16_t payload_size{0};
+    uint8_t entity_type{0xFF};  // 0=Player, 1=Enemy, 2=Projectile, 0xFF=N/A
 };
 
 /**
@@ -83,15 +84,46 @@ class ServerConnection {
     void SendInput(uint8_t input_flags);
 
     /**
+     * @brief Send ready status to server via TCP.
+     * @param is_ready True if player is ready to start, false otherwise.
+     */
+    void SendReadyStatus(bool is_ready);
+
+    /**
      * @brief Pop a world snapshot if available.
      */
     std::optional<client::SnapshotPacket> PollSnapshot();
+
+    /**
+     * @brief Check if game has started (received GAME_START packet).
+     * @return true if GAME_START was received, false otherwise.
+     */
+    bool HasGameStarted() const {
+        return game_started_.load();
+    }
+
+    /**
+     * @brief Controlled entity id accessor (set by GAME_START)
+     * @return Network entity id assigned to this client, or 0 if unknown
+     */
+    uint32_t controlled_entity_id() const {
+        return controlled_entity_id_;
+    }
+
+    /**
+     * @brief Reset the game started flag.
+     * Useful after handling the GAME_START event.
+     */
+    void ResetGameStarted() {
+        game_started_.store(false);
+    }
 
  private:
     // Async handlers
     void AsyncReceiveUDP();
     void AsyncReceiveTCP();
     void HandleConnectAck(const std::vector<uint8_t> &data);
+    void HandleGameStart(const std::vector<uint8_t> &data);
 
     // ASIO components
     boost::asio::io_context &io_context_;
@@ -102,7 +134,10 @@ class ServerConnection {
     // State (atomic for thread-safe access from async handlers)
     std::atomic<bool> connected_;
     std::atomic<uint8_t> player_id_;
+    std::atomic<bool> game_started_;
     uint32_t current_tick_;
+    // Entity id the server told us we control (from GAME_START packet)
+    uint32_t controlled_entity_id_{0};
 
     // Buffers
     std::array<uint8_t, 1472> udp_buffer_{};

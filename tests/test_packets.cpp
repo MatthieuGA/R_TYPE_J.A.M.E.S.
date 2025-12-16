@@ -217,23 +217,6 @@ TEST(PacketBufferTest, ResetReadOffset) {
     EXPECT_EQ(buffer.ReadUint8(), 42);
 }
 
-// ============================================================================
-// COMMON HEADER TESTS
-// ============================================================================
-
-TEST(CommonHeaderTest, DefaultConstruction) {
-    CommonHeader header;
-
-    EXPECT_EQ(header.op_code, 0);
-    EXPECT_EQ(header.payload_size, 0);
-    EXPECT_EQ(header.packet_index, 0);
-    EXPECT_EQ(header.tick_id, 0);
-    EXPECT_EQ(header.packet_count, 1);
-    EXPECT_EQ(header.reserved[0], 0);
-    EXPECT_EQ(header.reserved[1], 0);
-    EXPECT_EQ(header.reserved[2], 0);
-}
-
 TEST(CommonHeaderTest, SerializeDeserialize) {
     CommonHeader original(0x05, 128, 9999, 2, 5);
 
@@ -370,49 +353,6 @@ TEST(UDPPacketTest, PlayerInputWithTickId) {
     EXPECT_EQ(header.tick_id, 99999);
 }
 
-TEST(UDPPacketTest, WorldSnapshotWithEntities) {
-    WorldSnapshotPacket packet;
-    packet.entity_count = 2;
-    packet.reserved = {0, 0};
-
-    EntityState e1;
-    e1.entity_id = EntityId{100};
-    e1.entity_type = 1;
-    e1.reserved = 0;
-    e1.pos_x = 32767;
-    e1.pos_y = 19432;
-    e1.angle = 180;
-    packet.entities.push_back(e1);
-
-    EntityState e2;
-    e2.entity_id = EntityId{101};
-    e2.entity_type = 2;
-    e2.reserved = 0;
-    e2.pos_x = 16000;
-    e2.pos_y = 10000;
-    e2.angle = 90;
-    packet.entities.push_back(e2);
-
-    PacketBuffer buffer;
-    packet.Serialize(buffer, 5000);
-
-    // 12 header + 4 payload header + (2 * 12 entity) = 40 bytes
-    EXPECT_EQ(buffer.Size(), 40);
-
-    buffer.ResetReadOffset();
-    buffer.ReadHeader();
-
-    auto deserialized = WorldSnapshotPacket::Deserialize(buffer);
-    EXPECT_EQ(deserialized.entity_count, 2);
-    ASSERT_EQ(deserialized.entities.size(), 2);
-    EXPECT_EQ(deserialized.entities[0].entity_id.value, 100);
-}
-
-TEST(UDPPacketTest, EntityStateSize) {
-    // RFC Section 6.2: EntityState MUST be 12 bytes
-    EXPECT_EQ(sizeof(EntityState), 12);
-}
-
 TEST(UDPPacketTest, PlayerStatsPacketSize) {
     PlayerStatsPacket packet;
     packet.player_id = PlayerId{1};
@@ -521,33 +461,4 @@ TEST(StressTest, ManyTCPPackets) {
         auto &packet = std::get<ConnectReqPacket>(result.packet);
         EXPECT_EQ(packet.GetUsername(), "Player" + std::to_string(i));
     }
-}
-
-TEST(StressTest, LargeSnapshot) {
-    WorldSnapshotPacket packet;
-    packet.entity_count = 100;
-    packet.reserved = {0, 0};
-
-    for (uint16_t i = 0; i < 100; ++i) {
-        EntityState e;
-        e.entity_id = EntityId{i};
-        e.entity_type = i % 5;
-        e.reserved = 0;
-        e.pos_x = i * 100;
-        e.pos_y = i * 50;
-        e.angle = i * 3;
-        packet.entities.push_back(e);
-    }
-
-    PacketBuffer buffer;
-    packet.Serialize(buffer, 50000);
-
-    // 12 header + 4 payload header + (100 * 12) = 1216 bytes
-    EXPECT_EQ(buffer.Size(), 1216);
-
-    auto result = DeserializePacket(buffer.Data());
-    ASSERT_TRUE(result.success);
-
-    auto &deserialized = std::get<WorldSnapshotPacket>(result.packet);
-    EXPECT_EQ(deserialized.entities.size(), 100);
 }

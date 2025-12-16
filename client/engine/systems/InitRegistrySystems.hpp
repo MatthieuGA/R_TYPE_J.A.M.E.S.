@@ -105,6 +105,10 @@ void ShootPlayerSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> &transforms,
     Eng::sparse_array<Com::Inputs> const &inputs,
     Eng::sparse_array<Com::PlayerTag> &player_tags);
+void CreateProjectile(Eng::registry &reg, float x, float y, int ownerId,
+    Eng::registry::entity_t projectile_entity);
+void createChargedProjectile(Eng::registry &reg, float x, float y, int ownerId,
+    Eng::registry::entity_t projectile_entity);
 
 void ProjectileSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> &transforms,
@@ -158,5 +162,9 @@ uint8_t InputToBitfield(const Com::Inputs &input);
 
 void AudioSystem(Eng::registry &reg, Audio::AudioManager &audio_manager,
     Eng::sparse_array<Com::SoundRequest> &sound_requests);
+
+void KillEntitiesSystem(Eng::registry &reg,
+    Eng::sparse_array<Com::NetworkId> &network_ids,
+    Eng::sparse_array<Com::AnimationDeath> &animation_deaths);
 
 }  // namespace Rtype::Client

@@ -13,8 +13,8 @@
 ## Behavior
 
 - For each player, decrement `shoot_cooldown` using `game_world.last_delta_`.
-- If `shoot` input is active and cooldown elapsed, create a projectile via `createProjectile` and reset cooldown to `shoot_cooldown_max`.
-- `createProjectile` adds `Transform`, `Drawable`, `AnimatedSprite`, and `Projectile` components to the new entity.
+- If `shoot` input is active and cooldown elapsed, create a projectile via `CreateProjectile` and reset cooldown to `shoot_cooldown_max`.
+- `CreateProjectile` adds `Transform`, `Drawable`, `AnimatedSprite`, and `Projectile` components to the new entity.
 
 ## Main signature
 
@@ -27,5 +27,5 @@ void ShootPlayerSystem(Eng::registry &reg, GameWorld &game_world,
 
 ## Notes
 
-- Projectile defaults (speed, sprite, etc.) are hard-coded in `createProjectile`.
-- `createProjectile` uses `reg.SpawnEntity()` then `reg.AddComponent<...>`.
+- Projectile defaults (speed, sprite, etc.) are hard-coded in `CreateProjectile`.
+- `CreateProjectile` uses `reg.SpawnEntity()` then `reg.AddComponent<...>`.

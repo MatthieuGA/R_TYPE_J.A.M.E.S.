@@ -1,17 +1,15 @@
 add_executable(r-type_server)
-target_sources(r-type_server PRIVATE
-    main.cpp
-    src/server/ClientConnectionManager.cpp
-    src/server/Config.cpp
-    src/server/Network.cpp
-    src/server/PacketHandler.cpp
-    src/server/PacketSender.cpp
-    src/server/Server.cpp
+file(GLOB_RECURSE SERVER_SOURCES 
+    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
 )
+
+target_sources(r-type_server PRIVATE ${SERVER_SOURCES})
 
 # Include directories
 target_include_directories(r-type_server PRIVATE 
     ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/external
+    ${CMAKE_SOURCE_DIR}/engine/include
     ${Boost_INCLUDE_DIRS}
 )
 
@@ -27,3 +25,10 @@ if(WIN32)
     # Windows requires ws2_32 for Boost.Asio
     target_link_libraries(r-type_server PRIVATE ws2_32 wsock32)
 endif()
+
+# Post build copy data folder
+add_custom_command(TARGET r-type_server POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    "${CMAKE_SOURCE_DIR}/data"
+    $<TARGET_FILE_DIR:r-type_server>/data
+)

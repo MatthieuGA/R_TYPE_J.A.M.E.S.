@@ -58,15 +58,15 @@ struct ConnectReqPacket {
 /**
  * @brief TCP 0x02: CONNECT_ACK - Server responds to login
  * RFC Section 5.2
- * Payload: 4 bytes (PlayerId u8 + Status u8 + Reserved u8[2])
+ * Payload: 4 bytes (PlayerId u8 + Status u8 + UdpPort u16)
  */
 struct ConnectAckPacket {
     static constexpr PacketType type = PacketType::ConnectAck;
     static constexpr size_t PAYLOAD_SIZE = 4;
 
     PlayerId player_id;
-    uint8_t status;  // 0=OK, 1=ServerFull, 2=BadUsername, 3=InGame
-    std::array<uint8_t, 2> reserved;
+    uint8_t status;     // 0=OK, 1=ServerFull, 2=BadUsername, 3=InGame
+    uint16_t udp_port;  // Server's UDP port (for client to send to)
 
     enum Status : uint8_t {
         OK = 0,
@@ -83,16 +83,14 @@ struct ConnectAckPacket {
         buffer.WriteHeader(MakeHeader());
         buffer.WriteUint8(player_id.value);
         buffer.WriteUint8(status);
-        buffer.WriteUint8(reserved[0]);
-        buffer.WriteUint8(reserved[1]);
+        buffer.WriteUint16(udp_port);
     }
 
     static ConnectAckPacket Deserialize(PacketBuffer &buffer) {
         ConnectAckPacket packet;
         packet.player_id = PlayerId{buffer.ReadUint8()};
         packet.status = buffer.ReadUint8();
-        packet.reserved[0] = buffer.ReadUint8();
-        packet.reserved[1] = buffer.ReadUint8();
+        packet.udp_port = buffer.ReadUint16();
         return packet;
     }
 };
@@ -293,30 +291,84 @@ struct PlayerInputPacket {
  * RFC Section 6.2: 12 bytes per entity (aligned)
  */
 struct EntityState {
-    EntityId entity_id;   // 4 bytes
-    uint8_t entity_type;  // 1 byte (sprite/prefab ID)
-    uint8_t reserved;     // 1 byte padding
-    uint16_t pos_x;       // 2 bytes (normalized 0..65535)
-    uint16_t pos_y;       // 2 bytes (normalized 0..38864)
-    uint16_t angle;       // 2 bytes (degrees 0..360)
+    enum class EntityType : uint8_t {
+        Player = 0x00,
+        Enemy = 0x01,
+        Projectile = 0x02
+    };
+    EntityId entity_id;         // 4 bytes
+    uint8_t entity_type;        // 1 byte (sprite/prefab ID)
+    uint8_t reserved;           // 1 byte padding
+    uint16_t pos_x;             // 2 bytes (normalized 0..65535)
+    uint16_t pos_y;             // 2 bytes (normalized 0..38864)
+    uint16_t angle;             // 2 bytes (degrees 0..360)
+    uint16_t velocity_x;        // 2 bytes (normalized -32768..32767)
+    uint16_t velocity_y;        // 2 bytes (normalized -32768..32767)
+    uint8_t projectile_type;    // 1 byte (for projectiles)
+    uint8_t current_animation;  // 1 byte (for animated entities)
+    uint8_t current_frame;      // 1 byte (for animated entities)
+    uint16_t health;            // 2 bytes (health or hit points)
 
-    void Serialize(PacketBuffer &buffer) const {
-        buffer.WriteUint32(entity_id.value);
-        buffer.WriteUint8(entity_type);
-        buffer.WriteUint8(reserved);
-        buffer.WriteUint16(pos_x);
-        buffer.WriteUint16(pos_y);
-        buffer.WriteUint16(angle);
+    void Serialize(PacketBuffer &buffer, EntityType type) const {
+        buffer.WriteUint32(entity_id.value);  // 4 bytes
+        buffer.WriteUint8(entity_type);       // 1 byte
+        buffer.WriteUint8(reserved);          // 1 byte
+        if (type == EntityType::Player) {
+            buffer.WriteUint16(pos_x);       // 2 bytes
+            buffer.WriteUint16(pos_y);       // 2 bytes
+            buffer.WriteUint16(angle);       // 2 bytes
+            buffer.WriteUint16(velocity_x);  // 2 bytes
+            buffer.WriteUint16(velocity_y);  // 2 bytes
+            buffer.WriteUint16(health);      // 2 byte
+        } else if (type == EntityType::Enemy) {
+            buffer.WriteUint16(pos_x);             // 2 bytes
+            buffer.WriteUint16(pos_y);             // 2 bytes
+            buffer.WriteUint16(angle);             // 2 bytes
+            buffer.WriteUint16(velocity_x);        // 2 bytes
+            buffer.WriteUint16(velocity_y);        // 2 bytes
+            buffer.WriteUint8(current_animation);  // 1 byte
+            buffer.WriteUint8(current_frame);      // 1 byte
+            buffer.WriteUint16(health);            // 2 byte
+        } else if (type == EntityType::Projectile) {
+            buffer.WriteUint16(pos_x);           // 2 bytes
+            buffer.WriteUint16(pos_y);           // 2 bytes
+            buffer.WriteUint16(angle);           // 2 bytes
+            buffer.WriteUint16(velocity_x);      // 2 bytes
+            buffer.WriteUint16(velocity_y);      // 2 bytes
+            buffer.WriteUint8(projectile_type);  // 1 byte
+        }
     }
 
-    static EntityState Deserialize(PacketBuffer &buffer) {
+    static EntityState Deserialize(
+        PacketBuffer &buffer, EntityType type = EntityType::Player) {
         EntityState state;
         state.entity_id = EntityId{buffer.ReadUint32()};
         state.entity_type = buffer.ReadUint8();
         state.reserved = buffer.ReadUint8();
-        state.pos_x = buffer.ReadUint16();
-        state.pos_y = buffer.ReadUint16();
-        state.angle = buffer.ReadUint16();
+        if (type == EntityType::Player) {
+            state.pos_x = buffer.ReadUint16();
+            state.pos_y = buffer.ReadUint16();
+            state.angle = buffer.ReadUint16();
+            state.velocity_x = buffer.ReadUint16();
+            state.velocity_y = buffer.ReadUint16();
+            state.health = buffer.ReadUint16();
+        } else if (type == EntityType::Enemy) {
+            state.pos_x = buffer.ReadUint16();
+            state.pos_y = buffer.ReadUint16();
+            state.angle = buffer.ReadUint16();
+            state.velocity_x = buffer.ReadUint16();
+            state.velocity_y = buffer.ReadUint16();
+            state.current_animation = buffer.ReadUint8();
+            state.current_frame = buffer.ReadUint8();
+            state.health = buffer.ReadUint16();
+        } else if (type == EntityType::Projectile) {
+            state.pos_x = buffer.ReadUint16();
+            state.pos_y = buffer.ReadUint16();
+            state.angle = buffer.ReadUint16();
+            state.velocity_x = buffer.ReadUint16();
+            state.velocity_y = buffer.ReadUint16();
+            state.projectile_type = buffer.ReadUint8();
+        }
         return state;
     }
 };
@@ -353,18 +405,20 @@ struct WorldSnapshotPacket {
         buffer.WriteUint8(reserved[0]);
         buffer.WriteUint8(reserved[1]);
         for (const auto &entity : entities) {
-            entity.Serialize(buffer);
+            entity.Serialize(buffer,
+                static_cast<EntityState::EntityType>(entity.entity_type));
         }
     }
 
-    static WorldSnapshotPacket Deserialize(PacketBuffer &buffer) {
+    static WorldSnapshotPacket Deserialize(PacketBuffer &buffer,
+        EntityState::EntityType type = EntityState::EntityType::Player) {
         WorldSnapshotPacket packet;
         packet.entity_count = buffer.ReadUint16();
         packet.reserved[0] = buffer.ReadUint8();
         packet.reserved[1] = buffer.ReadUint8();
         packet.entities.reserve(packet.entity_count);
         for (uint16_t i = 0; i < packet.entity_count; ++i) {
-            packet.entities.push_back(EntityState::Deserialize(buffer));
+            packet.entities.push_back(EntityState::Deserialize(buffer, type));
         }
         return packet;
     }

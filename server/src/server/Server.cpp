@@ -2,8 +2,10 @@
 
 #include <iostream>
 #include <utility>
+#include <vector>
 
-#include "server/Components.hpp"
+#include "server/CoreComponents.hpp"
+#include "server/NetworkComponents.hpp"
 
 namespace server {
 
@@ -14,9 +16,9 @@ Server::Server(Config &config, boost::asio::io_context &io_context)
       registry_(),
       tick_timer_(io_context),
       running_(false),
-      connection_manager_(config.GetMaxPlayers()),
-      packet_sender_(connection_manager_),
-      packet_handler_(connection_manager_, packet_sender_) {
+      connection_manager_(config.GetMaxPlayers(), config.GetUdpPort()),
+      packet_sender_(connection_manager_, network_),
+      packet_handler_(connection_manager_, packet_sender_, network_) {
     // Set game start callback
     packet_handler_.SetGameStartCallback([this]() { Start(); });
 }
@@ -39,38 +41,33 @@ void Server::Initialize() {
             HandleTcpAccept(std::move(socket));
         });
 
-    std::cout << "Server initialized successfully" << std::endl;
-}
-
-void Server::RegisterComponents() {
-    registry_.RegisterComponent<Component::Position>();
-    registry_.RegisterComponent<Component::Velocity>();
-    registry_.RegisterComponent<Component::Health>();
-    registry_.RegisterComponent<Component::NetworkId>();
-    registry_.RegisterComponent<Component::Player>();
-    registry_.RegisterComponent<Component::Enemy>();
-
-    std::cout << "Registered all components" << std::endl;
-}
-
-void Server::RegisterSystems() {
-    registry_.AddSystem<Engine::sparse_array<Component::Position>,
-        Engine::sparse_array<Component::Velocity>>(
-        [](Engine::registry &reg,
-            Engine::sparse_array<Component::Position> &positions,
-            Engine::sparse_array<Component::Velocity> &velocities) {
-            for (size_t i = 0; i < positions.size() && i < velocities.size();
-                ++i) {
-                if (positions.has(i) && velocities.has(i)) {
-                    auto &pos = positions[i];
-                    auto &vel = velocities[i];
-                    pos->x += vel->vx;
-                    pos->y += vel->vy;
+    // Register UDP receive callback to update client endpoints
+    // Prefer using player_id carried in PLAYER_INPUT (discovery) packets
+    network_.SetUdpReceiveCallback(
+        [this](const boost::asio::ip::udp::endpoint &endpoint,
+            const std::vector<uint8_t> &data) {
+            // Basic validation: need at least header + 1 payload byte
+            if (data.size() >= 13) {
+                uint8_t opcode = data[0];
+                // PLAYER_INPUT opcode is 0x10
+                if (opcode == 0x10) {
+                    bool handled = HandleUdpPlayerInput(endpoint, data);
+                    if (handled) {
+                        return;  // packet processed
+                    }
                 }
+            }
+
+            // Fallback: match by IP address (legacy behavior)
+            ClientConnection *client =
+                connection_manager_.FindClientByIp(endpoint.address());
+            if (client) {
+                connection_manager_.UpdateClientUdpEndpoint(
+                    client->client_id_, endpoint);
             }
         });
 
-    std::cout << "Registered all systems" << std::endl;
+    std::cout << "Server initialized successfully" << std::endl;
 }
 
 void Server::Start() {
@@ -79,6 +76,8 @@ void Server::Start() {
     }
     std::cout << "Starting game..." << std::endl;
     running_ = true;
+
+    SetupEntitiesGame();
     SetupGameTick();
 }
 
@@ -114,12 +113,19 @@ void Server::SetupGameTick() {
 void Server::Update() {
     registry_.run_systems();
 
+    SendSnapshotsToAllClients();
     // TODO(someone): Process network messages from the SPSC queue
     // TODO(someone): Send state updates to clients
 }
 
 Engine::registry &Server::GetRegistry() {
     return registry_;
+}
+
+uint32_t Server::GetNextNetworkId() {
+    static uint32_t next_id = 1;
+    uint32_t id = next_id++;
+    return id;
 }
 
 void Server::HandleTcpAccept(boost::asio::ip::tcp::socket socket) {

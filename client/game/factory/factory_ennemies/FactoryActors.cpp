@@ -13,8 +13,8 @@ namespace fs = std::filesystem;
 
 namespace Rtype::Client {
 
-void FactoryActors::CreateActor(
-    Engine::entity &entity, Engine::registry &reg, std::string const &tag) {
+void FactoryActors::CreateActor(Engine::entity &entity, Engine::registry &reg,
+    std::string const &tag, bool is_local) {
     auto it = enemy_info_map_.find(tag);
     if (it == enemy_info_map_.end()) {
         std::cerr << "Enemy tag not found: " << tag << std::endl;
@@ -24,7 +24,7 @@ void FactoryActors::CreateActor(
 
     CreateBasicActor(entity, reg, info);
     if (info.tag == "player") {
-        CreatePlayerActor(entity, reg, info);
+        CreatePlayerActor(entity, reg, info, is_local);
         return;
     }
 
@@ -40,14 +40,14 @@ void FactoryActors::CreateBasicActor(
         entity, {0.f, 0.f, 0.0f, info.scale, Component::Transform::CENTER});
     reg.AddComponent<Component::Health>(
         entity, Component::Health(info.health));
+    printf(
+        "Creating actor '%s' with %d health\n", info.tag.c_str(), info.health);
     reg.AddComponent<Component::HealthBar>(entity,
         Component::HealthBar{
             sf::Vector2f(info.offset_healthbar.x, info.offset_healthbar.y)});
     reg.AddComponent<Component::HitBox>(
         entity, Component::HitBox{info.hitbox.x, info.hitbox.y});
     reg.AddComponent<Component::Velocity>(entity, Component::Velocity{});
-    reg.AddComponent<Component::Drawable>(
-        entity, Component::Drawable{info.spritePath, LAYER_ACTORS});
     reg.AddComponent<Component::Drawable>(
         entity, Component::Drawable{info.spritePath, LAYER_ACTORS});
 }
@@ -72,7 +72,7 @@ void FactoryActors::CreateBasicEnnemy(
         entity, std::move(animated_sprite));
 }
 
-void FactoryActors::CreateEnemyProjectile(Engine::registry &reg,
+void FactoryActors::CreateMermaidProjectile(Engine::registry &reg,
     sf::Vector2f direction, Component::EnemyShootTag &enemy_shoot, int ownerId,
     Component::Transform const &transform) {
     auto projectile_entity = reg.SpawnEntity();

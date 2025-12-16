@@ -50,14 +50,20 @@ void NetworkInputSystem(Eng::registry &reg, GameWorld &game_world,
 
         // Log packet transmission only when input changes (reduce spam)
         if (input_bitfield != last_sent_input_) {
-            std::cout << "[Network] Sent PLAYER_INPUT: bitfield=0x" << std::hex
-                      << static_cast<int>(input_bitfield) << std::dec
-                      << " (Up=" << ((input_bitfield & (1 << 0)) ? "1" : "0")
-                      << " Down=" << ((input_bitfield & (1 << 1)) ? "1" : "0")
-                      << " Left=" << ((input_bitfield & (1 << 2)) ? "1" : "0")
-                      << " Right=" << ((input_bitfield & (1 << 3)) ? "1" : "0")
-                      << " Shoot=" << ((input_bitfield & (1 << 4)) ? "1" : "0")
-                      << ")" << std::endl;
+            // std::cout << "[Network] Sent PLAYER_INPUT: bitfield=0x" <<
+            // std::hex
+            //           << static_cast<int>(input_bitfield) << std::dec
+            //           << " (Up=" << ((input_bitfield & (1 << 0)) ? "1" :
+            //           "0")
+            //           << " Down=" << ((input_bitfield & (1 << 1)) ? "1" :
+            //           "0")
+            //           << " Left=" << ((input_bitfield & (1 << 2)) ? "1" :
+            //           "0")
+            //           << " Right=" << ((input_bitfield & (1 << 3)) ? "1" :
+            //           "0")
+            //           << " Shoot=" << ((input_bitfield & (1 << 4)) ? "1" :
+            //           "0")
+            //           << ")" << std::endl;
             last_sent_input_ = input_bitfield;
         }
     }

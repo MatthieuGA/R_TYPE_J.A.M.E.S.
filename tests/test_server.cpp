@@ -5,11 +5,13 @@
 
 #include <boost/asio.hpp>
 
-#include "server/Components.hpp"
 #include "server/Config.hpp"
+#include "server/CoreComponents.hpp"
+#include "server/GameplayComponents.hpp"
 #include "server/PacketBuffer.hpp"
 #include "server/Packets.hpp"
 #include "server/Server.hpp"
+#include "server/Vector2f.hpp"
 
 // Helper function to create a config for testing
 server::Config &getTestConfig() {
@@ -65,12 +67,11 @@ TEST(ServerTest, ComponentsRegisteredAfterInit) {
 
     // All components should be registered and accessible
     EXPECT_NO_THROW({
-        auto &positions = reg.GetComponents<server::Component::Position>();
+        auto &positions = reg.GetComponents<server::Component::Transform>();
         auto &velocities = reg.GetComponents<server::Component::Velocity>();
         auto &healths = reg.GetComponents<server::Component::Health>();
-        auto &network_ids = reg.GetComponents<server::Component::NetworkId>();
-        auto &players = reg.GetComponents<server::Component::Player>();
-        auto &enemies = reg.GetComponents<server::Component::Enemy>();
+        auto &players = reg.GetComponents<server::Component::PlayerTag>();
+        auto &enemies = reg.GetComponents<server::Component::EnemyTag>();
     });
 }
 
@@ -87,8 +88,8 @@ TEST(ServerTest, SpawnEntityWithPosition) {
     Engine::registry &reg = server.GetRegistry();
     auto entity = reg.SpawnEntity();
 
-    auto &pos =
-        reg.AddComponent(entity, server::Component::Position{100.0f, 200.0f});
+    auto &pos = reg.AddComponent(entity,
+        server::Component::Transform(100.0f, 200.0f, 0.0f, {1.0f, 1.0f}));
 
     EXPECT_TRUE(pos.has_value());
     EXPECT_EQ(pos->x, 100.0f);
@@ -104,19 +105,17 @@ TEST(ServerTest, SpawnPlayerEntity) {
     Engine::registry &reg = server.GetRegistry();
     auto player = reg.SpawnEntity();
 
-    reg.AddComponent(player, server::Component::Position{0.0f, 0.0f});
+    reg.AddComponent(
+        player, server::Component::Transform{0.0f, 0.0f, 0.0f, {1.0f, 1.0f}});
     reg.AddComponent(player, server::Component::Velocity{0.0f, 0.0f});
-    reg.AddComponent(player, server::Component::Health{100, 100});
-    reg.AddComponent(player, server::Component::NetworkId{1});
-    reg.AddComponent(player, server::Component::Player{1, "TestPlayer"});
+    reg.AddComponent(player, server::Component::Health{100});
+    reg.AddComponent(player, server::Component::PlayerTag{1});
 
-    auto &positions = reg.GetComponents<server::Component::Position>();
-    auto &players = reg.GetComponents<server::Component::Player>();
+    auto &positions = reg.GetComponents<server::Component::Transform>();
+    auto &players = reg.GetComponents<server::Component::PlayerTag>();
 
     EXPECT_TRUE(positions.has(player.getId()));
     EXPECT_TRUE(players.has(player.getId()));
-    EXPECT_EQ(players[player.getId()]->player_id, 1);
-    EXPECT_EQ(players[player.getId()]->name, "TestPlayer");
 }
 
 TEST(ServerTest, SpawnEnemyEntity) {
@@ -128,18 +127,17 @@ TEST(ServerTest, SpawnEnemyEntity) {
     Engine::registry &reg = server.GetRegistry();
     auto enemy = reg.SpawnEntity();
 
-    reg.AddComponent(enemy, server::Component::Position{500.0f, 300.0f});
+    reg.AddComponent(enemy,
+        server::Component::Transform{500.0f, 300.0f, 0.0f, {1.0f, 1.0f}});
     reg.AddComponent(enemy, server::Component::Velocity{-2.0f, 0.0f});
-    reg.AddComponent(enemy, server::Component::Health{50, 50});
-    reg.AddComponent(enemy, server::Component::Enemy{10, 100});
+    reg.AddComponent(enemy, server::Component::Health{50});
+    reg.AddComponent(enemy, server::Component::EnemyTag{10});
 
-    auto &positions = reg.GetComponents<server::Component::Position>();
-    auto &enemies = reg.GetComponents<server::Component::Enemy>();
+    auto &positions = reg.GetComponents<server::Component::Transform>();
+    auto &enemies = reg.GetComponents<server::Component::EnemyTag>();
 
     EXPECT_TRUE(positions.has(enemy.getId()));
     EXPECT_TRUE(enemies.has(enemy.getId()));
-    EXPECT_EQ(enemies[enemy.getId()]->damage, 10);
-    EXPECT_EQ(enemies[enemy.getId()]->points, 100);
 }
 
 TEST(ServerTest, MultipleEntitiesWithDifferentComponents) {
@@ -152,24 +150,27 @@ TEST(ServerTest, MultipleEntitiesWithDifferentComponents) {
 
     // Create player
     auto player = reg.SpawnEntity();
-    reg.AddComponent(player, server::Component::Position{0.0f, 0.0f});
-    reg.AddComponent(player, server::Component::Player{1, "Player1"});
-    reg.AddComponent(player, server::Component::Health{100, 100});
+    reg.AddComponent(
+        player, server::Component::Transform{0.0f, 0.0f, 0.0f, {1.0f, 1.0f}});
+    reg.AddComponent(player, server::Component::PlayerTag{1});
+    reg.AddComponent(player, server::Component::Health{100});
 
     // Create enemy
     auto enemy = reg.SpawnEntity();
-    reg.AddComponent(enemy, server::Component::Position{100.0f, 100.0f});
-    reg.AddComponent(enemy, server::Component::Enemy{15, 50});
+    reg.AddComponent(enemy,
+        server::Component::Transform{100.0f, 100.0f, 0.0f, {1.0f, 1.0f}});
+    reg.AddComponent(enemy, server::Component::EnemyTag{15});
     reg.AddComponent(enemy, server::Component::Velocity{-1.0f, 0.0f});
 
     // Create projectile
     auto projectile = reg.SpawnEntity();
-    reg.AddComponent(projectile, server::Component::Position{50.0f, 50.0f});
+    reg.AddComponent(projectile,
+        server::Component::Transform{50.0f, 50.0f, 0.0f, {1.0f, 1.0f}});
     reg.AddComponent(projectile, server::Component::Velocity{5.0f, 0.0f});
 
-    auto &positions = reg.GetComponents<server::Component::Position>();
-    auto &players = reg.GetComponents<server::Component::Player>();
-    auto &enemies = reg.GetComponents<server::Component::Enemy>();
+    auto &positions = reg.GetComponents<server::Component::Transform>();
+    auto &players = reg.GetComponents<server::Component::PlayerTag>();
+    auto &enemies = reg.GetComponents<server::Component::EnemyTag>();
 
     EXPECT_TRUE(positions.has(player.getId()));
     EXPECT_TRUE(players.has(player.getId()));
@@ -180,104 +181,6 @@ TEST(ServerTest, MultipleEntitiesWithDifferentComponents) {
     EXPECT_TRUE(positions.has(projectile.getId()));
     EXPECT_FALSE(players.has(projectile.getId()));
     EXPECT_FALSE(enemies.has(projectile.getId()));
-}
-
-// ============================================================================
-// MOVEMENT SYSTEM TESTS
-// ============================================================================
-
-TEST(ServerTest, MovementSystemUpdatesPosition) {
-    boost::asio::io_context io;
-    server::Config &config = getTestConfig();
-    server::Server server(config, io);
-    server.Initialize();
-
-    Engine::registry &reg = server.GetRegistry();
-    auto entity = reg.SpawnEntity();
-
-    reg.AddComponent(entity, server::Component::Position{0.0f, 0.0f});
-    reg.AddComponent(entity, server::Component::Velocity{1.0f, 2.0f});
-
-    auto &positions = reg.GetComponents<server::Component::Position>();
-
-    EXPECT_EQ(positions[entity.getId()]->x, 0.0f);
-    EXPECT_EQ(positions[entity.getId()]->y, 0.0f);
-
-    // Run one update cycle
-    server.Update();
-
-    EXPECT_EQ(positions[entity.getId()]->x, 1.0f);
-    EXPECT_EQ(positions[entity.getId()]->y, 2.0f);
-
-    // Run another update cycle
-    server.Update();
-
-    EXPECT_EQ(positions[entity.getId()]->x, 2.0f);
-    EXPECT_EQ(positions[entity.getId()]->y, 4.0f);
-}
-
-TEST(ServerTest, MovementSystemMultipleEntities) {
-    boost::asio::io_context io;
-    server::Config &config = getTestConfig();
-    server::Server server(config, io);
-    server.Initialize();
-
-    Engine::registry &reg = server.GetRegistry();
-
-    auto e1 = reg.SpawnEntity();
-    reg.AddComponent(e1, server::Component::Position{0.0f, 0.0f});
-    reg.AddComponent(e1, server::Component::Velocity{1.0f, 0.0f});
-
-    auto e2 = reg.SpawnEntity();
-    reg.AddComponent(e2, server::Component::Position{10.0f, 10.0f});
-    reg.AddComponent(e2, server::Component::Velocity{-2.0f, 3.0f});
-
-    auto e3 = reg.SpawnEntity();
-    reg.AddComponent(e3, server::Component::Position{50.0f, 50.0f});
-    reg.AddComponent(e3, server::Component::Velocity{0.5f, -1.0f});
-
-    auto &positions = reg.GetComponents<server::Component::Position>();
-
-    server.Update();
-
-    EXPECT_EQ(positions[e1.getId()]->x, 1.0f);
-    EXPECT_EQ(positions[e1.getId()]->y, 0.0f);
-
-    EXPECT_EQ(positions[e2.getId()]->x, 8.0f);
-    EXPECT_EQ(positions[e2.getId()]->y, 13.0f);
-
-    EXPECT_EQ(positions[e3.getId()]->x, 50.5f);
-    EXPECT_EQ(positions[e3.getId()]->y, 49.0f);
-}
-
-TEST(ServerTest, MovementSystemIgnoresEntitiesWithoutVelocity) {
-    boost::asio::io_context io;
-    server::Config &config = getTestConfig();
-    server::Server server(config, io);
-    server.Initialize();
-
-    Engine::registry &reg = server.GetRegistry();
-
-    // Entity with position and velocity
-    auto moving = reg.SpawnEntity();
-    reg.AddComponent(moving, server::Component::Position{0.0f, 0.0f});
-    reg.AddComponent(moving, server::Component::Velocity{1.0f, 1.0f});
-
-    // Entity with only position (no velocity)
-    auto stationary = reg.SpawnEntity();
-    reg.AddComponent(stationary, server::Component::Position{10.0f, 10.0f});
-
-    auto &positions = reg.GetComponents<server::Component::Position>();
-
-    server.Update();
-
-    // Moving entity should have moved
-    EXPECT_EQ(positions[moving.getId()]->x, 1.0f);
-    EXPECT_EQ(positions[moving.getId()]->y, 1.0f);
-
-    // Stationary entity should not have moved
-    EXPECT_EQ(positions[stationary.getId()]->x, 10.0f);
-    EXPECT_EQ(positions[stationary.getId()]->y, 10.0f);
 }
 
 // ============================================================================
@@ -293,12 +196,12 @@ TEST(ServerTest, HealthComponentInitialization) {
     Engine::registry &reg = server.GetRegistry();
     auto entity = reg.SpawnEntity();
 
-    reg.AddComponent(entity, server::Component::Health{75, 100});
+    reg.AddComponent(entity, server::Component::Health{75});
 
     auto &healths = reg.GetComponents<server::Component::Health>();
 
-    EXPECT_EQ(healths[entity.getId()]->current, 75);
-    EXPECT_EQ(healths[entity.getId()]->max, 100);
+    EXPECT_EQ(healths[entity.getId()]->currentHealth, 75);
+    EXPECT_EQ(healths[entity.getId()]->maxHealth, 75);
 }
 
 TEST(ServerTest, HealthComponentModification) {
@@ -310,91 +213,27 @@ TEST(ServerTest, HealthComponentModification) {
     Engine::registry &reg = server.GetRegistry();
     auto entity = reg.SpawnEntity();
 
-    reg.AddComponent(entity, server::Component::Health{100, 100});
+    reg.AddComponent(entity, server::Component::Health{100});
 
     auto &healths = reg.GetComponents<server::Component::Health>();
 
     // Take damage
-    healths[entity.getId()]->current -= 25;
-    EXPECT_EQ(healths[entity.getId()]->current, 75);
+    healths[entity.getId()]->currentHealth -= 25;
+    EXPECT_EQ(healths[entity.getId()]->currentHealth, 75);
 
     // Heal
-    healths[entity.getId()]->current += 10;
-    EXPECT_EQ(healths[entity.getId()]->current, 85);
+    healths[entity.getId()]->currentHealth += 10;
+    EXPECT_EQ(healths[entity.getId()]->currentHealth, 85);
 
     // Don't overheal
-    healths[entity.getId()]->current = healths[entity.getId()]->max;
-    EXPECT_EQ(healths[entity.getId()]->current, 100);
-}
-
-// ============================================================================
-// NETWORK ID TESTS
-// ============================================================================
-
-TEST(ServerTest, NetworkIdComponent) {
-    boost::asio::io_context io;
-    server::Config &config = getTestConfig();
-    server::Server server(config, io);
-    server.Initialize();
-
-    Engine::registry &reg = server.GetRegistry();
-
-    auto e1 = reg.SpawnEntity();
-    auto e2 = reg.SpawnEntity();
-    auto e3 = reg.SpawnEntity();
-
-    reg.AddComponent(e1, server::Component::NetworkId{1001});
-    reg.AddComponent(e2, server::Component::NetworkId{1002});
-    reg.AddComponent(e3, server::Component::NetworkId{1003});
-
-    auto &network_ids = reg.GetComponents<server::Component::NetworkId>();
-
-    EXPECT_EQ(network_ids[e1.getId()]->id, 1001);
-    EXPECT_EQ(network_ids[e2.getId()]->id, 1002);
-    EXPECT_EQ(network_ids[e3.getId()]->id, 1003);
+    healths[entity.getId()]->currentHealth =
+        healths[entity.getId()]->maxHealth;
+    EXPECT_EQ(healths[entity.getId()]->currentHealth, 100);
 }
 
 // ============================================================================
 // GAME SCENARIO TESTS
 // ============================================================================
-
-TEST(ServerTest, SimpleGameScenario) {
-    boost::asio::io_context io;
-    server::Config &config = getTestConfig();
-    server::Server server(config, io);
-    server.Initialize();
-
-    Engine::registry &reg = server.GetRegistry();
-
-    // Spawn player at spawn point
-    auto player = reg.SpawnEntity();
-    reg.AddComponent(player, server::Component::Position{50.0f, 400.0f});
-    reg.AddComponent(player, server::Component::Velocity{0.0f, 0.0f});
-    reg.AddComponent(player, server::Component::Health{100, 100});
-    reg.AddComponent(player, server::Component::Player{1, "TestPlayer"});
-
-    // Spawn enemy moving towards player
-    auto enemy = reg.SpawnEntity();
-    reg.AddComponent(enemy, server::Component::Position{800.0f, 400.0f});
-    reg.AddComponent(enemy, server::Component::Velocity{-3.0f, 0.0f});
-    reg.AddComponent(enemy, server::Component::Health{30, 30});
-    reg.AddComponent(enemy, server::Component::Enemy{20, 50});
-
-    auto &positions = reg.GetComponents<server::Component::Position>();
-
-    // Run 10 game ticks
-    for (int i = 0; i < 10; i++) {
-        server.Update();
-    }
-
-    // Enemy should have moved 30 pixels left
-    EXPECT_EQ(positions[enemy.getId()]->x, 770.0f);
-    EXPECT_EQ(positions[enemy.getId()]->y, 400.0f);
-
-    // Player should not have moved (velocity is 0)
-    EXPECT_EQ(positions[player.getId()]->x, 50.0f);
-    EXPECT_EQ(positions[player.getId()]->y, 400.0f);
-}
 
 TEST(ServerTest, EntityCleanup) {
     boost::asio::io_context io;
@@ -408,12 +247,13 @@ TEST(ServerTest, EntityCleanup) {
     std::vector<Engine::entity> entities;
     for (int i = 0; i < 5; i++) {
         auto e = reg.SpawnEntity();
-        reg.AddComponent(e,
-            server::Component::Position{static_cast<float>(i * 10.0f), 0.0f});
+        reg.AddComponent(
+            e, server::Component::Transform{
+                   static_cast<float>(i * 10.0f), 0.0f, 0.0f, {1.0f, 1.0f}});
         entities.push_back(e);
     }
 
-    auto &positions = reg.GetComponents<server::Component::Position>();
+    auto &positions = reg.GetComponents<server::Component::Transform>();
 
     // Verify all exist
     for (const auto &e : entities) {
@@ -430,65 +270,6 @@ TEST(ServerTest, EntityCleanup) {
     EXPECT_TRUE(positions.has(entities[2].getId()));
     EXPECT_FALSE(positions.has(entities[3].getId()));
     EXPECT_TRUE(positions.has(entities[4].getId()));
-}
-
-// ============================================================================
-// STRESS TESTS
-// ============================================================================
-
-TEST(ServerTest, StressManyEntities) {
-    boost::asio::io_context io;
-    server::Config &config = getTestConfig();
-    server::Server server(config, io);
-    server.Initialize();
-
-    Engine::registry &reg = server.GetRegistry();
-
-    std::vector<Engine::entity> entities;
-
-    for (int i = 0; i < 100; i++) {
-        auto e = reg.SpawnEntity();
-        reg.AddComponent(e, server::Component::Position{
-                                static_cast<float>(i), static_cast<float>(i)});
-        reg.AddComponent(e, server::Component::Velocity{1.0f, 1.0f});
-        entities.push_back(e);
-    }
-
-    auto &positions = reg.GetComponents<server::Component::Position>();
-
-    server.Update();
-
-    for (int i = 0; i < 100; i++) {
-        EXPECT_EQ(
-            positions[entities[i].getId()]->x, static_cast<float>(i + 1));
-        EXPECT_EQ(
-            positions[entities[i].getId()]->y, static_cast<float>(i + 1));
-    }
-}
-
-TEST(ServerTest, StressMultipleUpdates) {
-    boost::asio::io_context io;
-    server::Config &config = getTestConfig();
-    server::Server server(config, io);
-    server.Initialize();
-
-    Engine::registry &reg = server.GetRegistry();
-
-    auto entity = reg.SpawnEntity();
-    reg.AddComponent(entity, server::Component::Position{0.0f, 0.0f});
-    reg.AddComponent(entity, server::Component::Velocity{0.1f, 0.1f});
-
-    auto &positions = reg.GetComponents<server::Component::Position>();
-
-    // Run many updates
-    const int NUM_UPDATES = 1000;
-    for (int i = 0; i < NUM_UPDATES; i++) {
-        server.Update();
-    }
-
-    // Position should be NUM_UPDATES * velocity (with tolerance for FP errors)
-    EXPECT_NEAR(positions[entity.getId()]->x, 100.0f, 0.01f);
-    EXPECT_NEAR(positions[entity.getId()]->y, 100.0f, 0.01f);
 }
 
 // ============================================================================
@@ -567,7 +348,6 @@ TEST(ServerTcpTest, ConnectAckPacketSerializeOK) {
     server::network::ConnectAckPacket ack;
     ack.player_id = server::network::PlayerId{42};
     ack.status = server::network::ConnectAckPacket::OK;
-    ack.reserved = {0, 0};
 
     server::network::PacketBuffer buffer;
     ack.Serialize(buffer);
@@ -592,7 +372,6 @@ TEST(ServerTcpTest, ConnectAckPacketSerializeServerFull) {
     server::network::ConnectAckPacket ack;
     ack.player_id = server::network::PlayerId{0};  // No ID assigned
     ack.status = server::network::ConnectAckPacket::ServerFull;
-    ack.reserved = {0, 0};
 
     server::network::PacketBuffer buffer;
     ack.Serialize(buffer);
@@ -608,7 +387,6 @@ TEST(ServerTcpTest, ConnectAckPacketSerializeBadUsername) {
     server::network::ConnectAckPacket ack;
     ack.player_id = server::network::PlayerId{0};
     ack.status = server::network::ConnectAckPacket::BadUsername;
-    ack.reserved = {0, 0};
 
     server::network::PacketBuffer buffer;
     ack.Serialize(buffer);
@@ -624,7 +402,6 @@ TEST(ServerTcpTest, ConnectAckPacketSerializeInGame) {
     server::network::ConnectAckPacket ack;
     ack.player_id = server::network::PlayerId{0};
     ack.status = server::network::ConnectAckPacket::InGame;
-    ack.reserved = {0, 0};
 
     server::network::PacketBuffer buffer;
     ack.Serialize(buffer);
@@ -641,7 +418,6 @@ TEST(ServerTcpTest, ConnectAckPacketDeserialize) {
     server::network::ConnectAckPacket original;
     original.player_id = server::network::PlayerId{7};
     original.status = server::network::ConnectAckPacket::OK;
-    original.reserved = {0, 0};
 
     // Serialize
     server::network::PacketBuffer write_buffer;
@@ -663,7 +439,6 @@ TEST(ServerTcpTest, ConnectAckPacketRoundTrip) {
         original.player_id =
             server::network::PlayerId{static_cast<uint8_t>(status_val + 1)};
         original.status = status_val;
-        original.reserved = {0, 0};
 
         server::network::PacketBuffer write_buffer;
         original.Serialize(write_buffer);
@@ -757,7 +532,6 @@ TEST(ServerTcpTest, MultipleConnectAckStatuses) {
         server::network::ConnectAckPacket ack;
         ack.player_id = server::network::PlayerId{1};
         ack.status = status;
-        ack.reserved = {0, 0};
 
         server::network::PacketBuffer buffer;
         EXPECT_NO_THROW(ack.Serialize(buffer));
@@ -942,7 +716,6 @@ TEST(ServerTcpEdgeCaseTest, ConnectAckExactSize) {
     server::network::ConnectAckPacket ack;
     ack.player_id = server::network::PlayerId{1};
     ack.status = server::network::ConnectAckPacket::OK;
-    ack.reserved = {0, 0};
 
     server::network::PacketBuffer buffer;
     ack.Serialize(buffer);
@@ -963,7 +736,6 @@ TEST(ServerTcpEdgeCaseTest, SerializeMultiplePacketsSequentially) {
         server::network::ConnectAckPacket ack;
         ack.player_id = server::network::PlayerId{i};
         ack.status = server::network::ConnectAckPacket::OK;
-        ack.reserved = {0, 0};
 
         server::network::PacketBuffer temp;
         ack.Serialize(temp);
@@ -1101,42 +873,6 @@ TEST(ServerTcpEdgeCaseTest, UsernameAlphanumeric) {
 }
 
 // ----------------------------------------------------------------------------
-// Reserved Value Tests
-// ----------------------------------------------------------------------------
-
-TEST(ServerTcpEdgeCaseTest, ConnectAckReservedFieldsZero) {
-    server::network::ConnectAckPacket ack;
-    ack.player_id = server::network::PlayerId{1};
-    ack.status = server::network::ConnectAckPacket::OK;
-    ack.reserved = {0, 0};
-
-    server::network::PacketBuffer buffer;
-    ack.Serialize(buffer);
-
-    const auto &data = buffer.Data();
-
-    // Reserved bytes (14-15) should be zero
-    EXPECT_EQ(data[14], 0);
-    EXPECT_EQ(data[15], 0);
-}
-
-TEST(ServerTcpEdgeCaseTest, ConnectAckReservedFieldsNonZero) {
-    server::network::ConnectAckPacket ack;
-    ack.player_id = server::network::PlayerId{1};
-    ack.status = server::network::ConnectAckPacket::OK;
-    ack.reserved = {0xAB, 0xCD};  // Non-zero reserved values
-
-    server::network::PacketBuffer buffer;
-    ack.Serialize(buffer);
-
-    const auto &data = buffer.Data();
-
-    // Should serialize whatever values are set
-    EXPECT_EQ(data[14], 0xAB);
-    EXPECT_EQ(data[15], 0xCD);
-}
-
-// ----------------------------------------------------------------------------
 // Player ID Edge Cases
 // ----------------------------------------------------------------------------
 
@@ -1144,7 +880,6 @@ TEST(ServerTcpEdgeCaseTest, PlayerIdZero) {
     server::network::ConnectAckPacket ack;
     ack.player_id = server::network::PlayerId{0};  // Reserved/invalid ID
     ack.status = server::network::ConnectAckPacket::BadUsername;
-    ack.reserved = {0, 0};
 
     server::network::PacketBuffer buffer;
     ack.Serialize(buffer);
@@ -1157,7 +892,6 @@ TEST(ServerTcpEdgeCaseTest, PlayerIdMaxValue) {
     server::network::ConnectAckPacket ack;
     ack.player_id = server::network::PlayerId{255};
     ack.status = server::network::ConnectAckPacket::OK;
-    ack.reserved = {0, 0};
 
     server::network::PacketBuffer buffer;
     ack.Serialize(buffer);

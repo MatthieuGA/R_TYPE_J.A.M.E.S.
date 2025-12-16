@@ -11,6 +11,12 @@ option(ENABLE_COVERAGE "Enable code coverage" OFF)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
+# Target Windows 7 APIs or newer when building on Windows to silence
+# `_WIN32_WINNT` warnings from system headers (e.g., ASIO/SFML).
+if (WIN32)
+    add_compile_definitions(_WIN32_WINNT=0x0601 _WIN32_WINDOWS=0x0601)
+endif()
+
 # Export compile commands for clang-tidy and other tools
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
