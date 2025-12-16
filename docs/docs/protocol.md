@@ -1,7 +1,7 @@
 # R-Type Network Protocol Specification
 
-> **Version:** 3.4.0
-> **Last Updated:** 15th December 2025
+> **Version:** 4.0.0
+> **Last Updated:** 16th December 2025
 
 ## Table of Contents
 
@@ -27,9 +27,9 @@
    - [`0x08` NOTIFY_CONNECT](#0x08---notify_connect)
    - [`0x09` NOTIFY_READY](#0x09---notify_ready)
 5. [UDP Commands (Real-time Gameplay)](#5-udp-commands-real-time-gameplay)
-   - [`0x10` PLAYER_INPUT](#0x10---player_input)
-   - [`0x20` WORLD_SNAPSHOT](#0x20---world_snapshot)
-   - [`0x21` PLAYER_STATS](#0x21---player_stats)
+   - [`0x40` PLAYER_INPUT](#0x40---player_input)
+   - [`0x80` WORLD_SNAPSHOT](#0x80---world_snapshot)
+   - [`0x81` PLAYER_STATS](#0x81---player_stats)
 6. [Security Considerations](#6-security-considerations)
 
 ## 1. Overview
@@ -270,7 +270,7 @@ When all the players in the lobby have sent `IsReady = 1`, the server automatica
 **Protocol:** UDP (Fast, Unreliable).
 **Usage:** Inputs, Positions, Physics.
 
-### `0x10` - PLAYER_INPUT
+### `0x40` - PLAYER_INPUT
 
 **Direction:** Client -> Server
 **Freq:** Every client tick (e.g., 60Hz).
@@ -311,7 +311,7 @@ The protocol does not send "Press" or "Release" events. It sends the "Hold" stat
 
 _Note: Even if packet 102 was lost, the server recovers the state at tick 103. The shot is triggered only when the bit returns to 0._
 
-### `0x20` - WORLD_SNAPSHOT
+### `0x80` - WORLD_SNAPSHOT
 
 **Direction:** Server -> Client
 **Freq:** 60Hz.
@@ -357,7 +357,7 @@ Example for a client with a 1920x1080 screen:
 - `ScreenX = (NetworkX * 1920) / 65535`
 - `ScreenY = (NetworkY * 1080) / 38864`
 
-### `0x21` - PLAYER_STATS
+### `0x81` - PLAYER_STATS
 
 **Direction:** Server -> Client
 **Freq:** On change.

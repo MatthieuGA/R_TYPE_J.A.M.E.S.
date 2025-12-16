@@ -1,8 +1,8 @@
 Network Working Group                                           J.A.M.E.S
 Request for Comments: 1                                    Epitech Nantes
 Category: Standards Track                                   December 2025
-Version: 3.4.2
-Based on: docs/PROTOCOL.md (v3.4.0)
+Version: 4.0.0
+Based on: docs/PROTOCOL.md (v4.0.0)
 
                      R-Type Game Protocol Specification
 
@@ -257,7 +257,7 @@ Table of Contents
 
 6.  UDP Protocol (Real-time Gameplay)
 
-   6.1.  PLAYER_INPUT (0x10)
+   6.1.  PLAYER_INPUT (0x40)
 
    Direction: Client -> Server
    Frequency: Every client tick.
@@ -280,7 +280,7 @@ Table of Contents
    Charge Logic: Server compares current tick vs previous tick.
    Held 1 -> 1: Charge. 1 -> 0: Fire.
 
-   6.2.  WORLD_SNAPSHOT (0x20)
+   6.2.  WORLD_SNAPSHOT (0x80)
 
    Direction: Server -> Client
    Frequency: 60Hz.
@@ -332,7 +332,7 @@ Table of Contents
    - ScreenX = (NetworkX * 1920) / 65535
    - ScreenY = (NetworkY * 1080) / 38864
 
-   6.3.  PLAYER_STATS (0x21)
+   6.3.  PLAYER_STATS (0x81)
 
    Direction: Server -> Client
    Description: HUD Updates.
