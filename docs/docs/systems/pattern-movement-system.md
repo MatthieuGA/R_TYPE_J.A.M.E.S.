@@ -1,4 +1,4 @@
-# Pattern Movement System
+﻿# Pattern Movement System
 
 **Source file:** `client/engine/systems/systems_functions/PaternMovementSystem.cpp`
 
