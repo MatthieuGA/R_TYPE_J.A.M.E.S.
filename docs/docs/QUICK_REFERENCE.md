@@ -13,7 +13,7 @@ npm install
 npm start
 ```
 
-Visit: <http://localhost:3000/R_TYPE_J.A.M.E.S/>
+Visit the local site: [http://localhost:3000/R_TYPE_J.A.M.E.S/](http://localhost:3000/R_TYPE_J.A.M.E.S/)
 
 ## 📝 Common Tasks
 
@@ -131,7 +131,7 @@ int main() {
 
 ### Tabs
 
-```markdown
+~~~markdown
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -147,7 +147,7 @@ import TabItem from '@theme/TabItem';
     ```
   </TabItem>
 </Tabs>
-```
+~~~
 
 ### Links
 
@@ -249,3 +249,4 @@ npm run build
 - [ ] Test locally
 - [ ] Build with `npm run build` to verify
 - [ ] Commit and push
+```

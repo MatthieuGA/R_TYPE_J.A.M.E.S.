@@ -191,4 +191,28 @@ cmake -DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake
 
 ---
 
+
+### Official Documentation
+
+- [SFML Documentation](https://www.sfml-dev.org/documentation/)
+- [SFML Tutorials](https://www.sfml-dev.org/tutorials/)
+- [Boost.Asio Documentation](https://www.boost.org/doc/libs/release/doc/html/boost_asio.html)
+- [vcpkg Documentation](https://vcpkg.io/en/getting-started.html)
+- [CMake Documentation](https://cmake.org/documentation/)
+
+### Comparative Studies
+
+- [Game Networking Architectures](https://gafferongames.com/post/what_every_programmer_needs_to_know_about_game_networking/)
+- [ECS vs OOP in Game Development](https://www.gamedev.net/tutorials/programming/general-and-gameplay-programming/understanding-component-entity-systems-r3013/)
+- [Binary vs Text Protocols](https://stackoverflow.com/questions/2645708/binary-vs-text-protocols)
+- [UDP vs TCP for Games](https://gafferongames.com/post/udp_vs_tcp/)
+
+### R-Type Project Documentation
+
+- [RFC-0001: Engine Architecture](./rfcs/RFC-0001-engine-architecture.md)
+- [README.md](../README.md)
+- [CONTRIBUTING.md](../CONTRIBUTING.md)
+
+---
+
 *This document will be updated as technologies evolve and new requirements emerge in Part 2 of the project.*
