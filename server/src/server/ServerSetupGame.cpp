@@ -27,7 +27,7 @@ void Server::SetupEntitiesGame() {
     for (int i = 0; i < 5; ++i) {
         auto enemy_entity = registry_.spawn_entity();
         FactoryActors::GetInstance().CreateActor(enemy_entity, registry_,
-            "mermaid", vector2f{800.f + i * 150.f, 200.f}, false);
+            "mermaid", vector2f{1400.f + i * 150.f, 200.f * (i + 1)}, false);
     }
 }
 }  // namespace server

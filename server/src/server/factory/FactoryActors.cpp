@@ -68,6 +68,8 @@ void FactoryActors::CreateMermaidProjectile(Engine::registry &reg,
     vector2f direction, Component::EnemyShootTag &enemy_shoot, int ownerId,
     Component::Transform const &transform) {
     auto projectile_entity = reg.SpawnEntity();
+    reg.AddComponent<Component::NetworkId>(
+        projectile_entity, Component::NetworkId{Server::GetNextNetworkId()});
     // Add components to projectile entity
     reg.AddComponent<Component::Transform>(projectile_entity,
         Component::Transform{
