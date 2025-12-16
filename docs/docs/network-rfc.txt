@@ -1,7 +1,7 @@
 Network Working Group                                           J.A.M.E.S
 Request for Comments: 1                                    Epitech Nantes
 Category: Standards Track                                   December 2025
-Version: 4.1.1
+Version: 4.1.2
 Based on: docs/PROTOCOL.md (v4.1.1)
 
                      R-Type Game Protocol Specification
@@ -291,8 +291,8 @@ Table of Contents
    MaxPlayers: Maximum number of players allowed.
    Status:
       0: Lobby Open
-      1: In Game
-      2: Full
+      1: Full
+      2: In Game
    ServerName: The name of the server.
    ServerDescription: A brief description of the server.
 
