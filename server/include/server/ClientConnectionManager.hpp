@@ -198,6 +198,14 @@ class ClientConnectionManager {
     const std::unordered_map<uint32_t, ClientConnection> &GetClients() const;
 
     /**
+     * @brief Reset ready state for all clients
+     *
+     * Sets ready_ to false for every connected client. Used when
+     * transitioning back to lobby state.
+     */
+    void ResetAllReadyStates();
+
+    /**
      * @brief Update a client's UDP endpoint based on their IP and receiving
      * port
      *

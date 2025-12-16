@@ -63,6 +63,16 @@ class PacketSender {
      */
     void SendLobbyStatus();
 
+    /**
+     * @brief Send GAME_END packet to all authenticated players
+     *
+     * RFC Section 5.6: Notifies all players that the game has ended.
+     * Used when all players are dead (game over) or match concludes.
+     *
+     * @param winning_player_id The player who won (0 = draw/game over)
+     */
+    void SendGameEnd(uint8_t winning_player_id = 0);
+
     void SendSnapshot(network::EntityState entity_state, int tick);
 
  private:

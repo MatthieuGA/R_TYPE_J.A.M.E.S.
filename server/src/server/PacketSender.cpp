@@ -83,6 +83,42 @@ void PacketSender::SendGameStart() {
               << std::endl;
 }
 
+void PacketSender::SendGameEnd(uint8_t winning_player_id) {
+    // Build GAME_END packet
+    network::GameEndPacket game_end;
+    game_end.winning_player_id = network::PlayerId{winning_player_id};
+    game_end.reserved = {0, 0, 0};
+
+    network::PacketBuffer buffer;
+    game_end.Serialize(buffer);
+    const auto &data = buffer.Data();
+
+    // Send to all authenticated players via TCP
+    auto &clients = connection_manager_.GetClients();
+    for (auto &[client_id, client_ref] : clients) {
+        if (client_ref.player_id_ == 0) {
+            continue;  // Skip unauthenticated clients
+        }
+
+        auto data_copy = std::make_shared<std::vector<uint8_t>>(data);
+        client_ref.tcp_socket_.async_send(boost::asio::buffer(*data_copy),
+            [data_copy, player_id = client_ref.player_id_](
+                boost::system::error_code ec, std::size_t) {
+                if (ec) {
+                    std::cerr << "Error sending GAME_END: " << ec.message()
+                              << std::endl;
+                } else {
+                    std::cout << "Sent GAME_END to Player "
+                              << static_cast<int>(player_id) << std::endl;
+                }
+            });
+    }
+
+    std::cout << "GAME_END packet sent to all authenticated players "
+              << "(winning_player_id=" << static_cast<int>(winning_player_id)
+              << ")" << std::endl;
+}
+
 void SendSnapshotPlayerState(int tick, network::EntityState entity_state,
     network::PacketBuffer &buffer) {
     // Serialize entity state into the payload

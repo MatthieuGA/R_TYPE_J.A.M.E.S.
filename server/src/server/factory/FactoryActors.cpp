@@ -85,6 +85,9 @@ void FactoryActors::CreateMermaidProjectile(Engine::registry &reg,
         projectile_entity, Component::HitBox{8.0f, 8.0f});
     reg.AddComponent<Component::Velocity>(
         projectile_entity, Component::Velocity{direction.x, direction.y});
+    // Add NetworkId so the projectile is synced to clients
+    reg.AddComponent<Component::NetworkId>(
+        projectile_entity, Component::NetworkId{Server::GetNextNetworkId()});
 }
 
 void FactoryActors::CreatePlayerActor(Engine::entity &entity,
@@ -106,7 +109,7 @@ void FactoryActors::CreateMermaidActor(
                     vector2f(-1.0f, 0.0f), info.speed));
 
     // Add enemy shooting component
-    Component::EnemyShootTag enemy_shoot_tag(200.0f, 10.0f, {-3.0f, -15.0f});
+    Component::EnemyShootTag enemy_shoot_tag(300.0f, 10.0f, {-3.0f, -15.0f});
 
     // Add frame event for shooting
     reg.AddComponent<Component::FrameEvents>(

@@ -150,12 +150,30 @@ class ServerConnection {
         return is_local_player_ready_.load();
     }
 
+    /**
+     * @brief Check if game has ended (received GAME_END packet).
+     * @return true if GAME_END was received, false otherwise.
+     */
+    bool HasGameEnded() const {
+        return game_ended_.load();
+    }
+
+    /**
+     * @brief Reset the game ended flag.
+     * Useful after handling the GAME_END event.
+     */
+    void ResetGameEnded() {
+        game_ended_.store(false);
+        is_local_player_ready_.store(false);
+    }
+
  private:
     // Async handlers
     void AsyncReceiveUDP();
     void AsyncReceiveTCP();
     void HandleConnectAck(const std::vector<uint8_t> &data);
     void HandleGameStart(const std::vector<uint8_t> &data);
+    void HandleGameEnd(const std::vector<uint8_t> &data);
     void HandleLobbyStatus(const std::vector<uint8_t> &data);
 
     // ASIO components
@@ -168,6 +186,7 @@ class ServerConnection {
     std::atomic<bool> connected_;
     std::atomic<uint8_t> player_id_;
     std::atomic<bool> game_started_;
+    std::atomic<bool> game_ended_{false};
     uint32_t current_tick_;
     // Entity id the server told us we control (from GAME_START packet)
     uint32_t controlled_entity_id_{0};

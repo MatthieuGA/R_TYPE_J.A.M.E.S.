@@ -301,6 +301,23 @@ void InitSceneManagementSystem(Rtype::Client::GameWorld &game_world) {
             Eng::sparse_array<Com::Drawable> &drawables) {
             LobbyUISystem(r, game_world, lobby_uis, texts, drawables);
         });
+
+    // Game over system
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::GameOverState>,
+        Eng::sparse_array<Com::GameOverText>,
+        Eng::sparse_array<Com::FadeOverlay>, Eng::sparse_array<Com::Text>,
+        Eng::sparse_array<Com::Drawable>,
+        Eng::sparse_array<Com::SceneManagement>>(
+        [&game_world](Eng::registry &r,
+            Eng::sparse_array<Com::GameOverState> &states,
+            Eng::sparse_array<Com::GameOverText> &go_texts,
+            Eng::sparse_array<Com::FadeOverlay> &overlays,
+            Eng::sparse_array<Com::Text> &text_comps,
+            Eng::sparse_array<Com::Drawable> &drawables,
+            Eng::sparse_array<Com::SceneManagement> &scene_mgmt) {
+            GameOverSystem(r, game_world, states, go_texts, overlays,
+                text_comps, drawables, scene_mgmt);
+        });
 }
 
 /**

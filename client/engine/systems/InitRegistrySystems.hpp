@@ -173,4 +173,14 @@ void LobbyUISystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Text> &texts,
     Eng::sparse_array<Com::Drawable> &drawables);
 
+// GAME OVER SYSTEM
+
+void GameOverSystem(Eng::registry &reg, GameWorld &game_world,
+    Eng::sparse_array<Com::GameOverState> &states,
+    Eng::sparse_array<Com::GameOverText> &texts,
+    Eng::sparse_array<Com::FadeOverlay> &overlays,
+    Eng::sparse_array<Com::Text> &text_comps,
+    Eng::sparse_array<Com::Drawable> &drawables,
+    Eng::sparse_array<Com::SceneManagement> &scene_mgmt);
+
 }  // namespace Rtype::Client

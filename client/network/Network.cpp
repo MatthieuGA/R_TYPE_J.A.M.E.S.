@@ -213,6 +213,8 @@ void ServerConnection::AsyncReceiveTCP() {
                         HandleConnectAck(data);
                     } else if (opcode == 0x05) {  // kOpGameStart
                         HandleGameStart(data);
+                    } else if (opcode == 0x06) {  // kOpGameEnd
+                        HandleGameEnd(data);
                     } else if (opcode == 0x08) {  // kOpLobbyStatus
                         HandleLobbyStatus(data);
                     } else {
@@ -313,6 +315,8 @@ void ServerConnection::HandleGameStart(const std::vector<uint8_t> &data) {
     // Store controlled entity id for local input mapping
     controlled_entity_id_ = controlled_entity_id;
     game_started_.store(true);
+    // Reset game_ended flag so a new game doesn't immediately end
+    game_ended_.store(false);
 }
 
 void ServerConnection::HandleLobbyStatus(const std::vector<uint8_t> &data) {
@@ -333,6 +337,21 @@ void ServerConnection::HandleLobbyStatus(const std::vector<uint8_t> &data) {
     std::cout << "[Network] LOBBY_STATUS: " << static_cast<int>(connected)
               << "/" << static_cast<int>(max_players) << " players, "
               << static_cast<int>(ready) << " ready" << std::endl;
+}
+
+void ServerConnection::HandleGameEnd(const std::vector<uint8_t> &data) {
+    if (data.size() < 4) {  // Payload is 4 bytes: winning_player_id + reserved
+        std::cerr << "[Network] GAME_END malformed" << std::endl;
+        return;
+    }
+
+    uint8_t winning_player_id = data[0];
+
+    std::cout << "[Network] GAME_END received! WinningPlayerId="
+              << static_cast<int>(winning_player_id) << std::endl;
+
+    game_ended_.store(true);
+    game_started_.store(false);
 }
 
 void ServerConnection::SendInput(uint8_t input_flags) {
