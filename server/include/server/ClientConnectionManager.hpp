@@ -215,7 +215,7 @@ class ClientConnectionManager {
      * @return ClientConnection* Pointer to client if found, nullptr otherwise
      */
     ClientConnection *FindClientByIp(
-        const boost::asio::ip::address &ip_addres);
+        const boost::asio::ip::address &ip_address);
 
     /**
      * @brief Find client by assigned network player id
