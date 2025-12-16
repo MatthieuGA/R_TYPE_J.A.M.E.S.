@@ -7,15 +7,24 @@
 **Components used:**
 
 
+# Pattern Movement System
+
+**Source file:** `client/engine/systems/systems_functions/PaternMovementSystem.cpp`
+
+**Purpose:** Apply movement patterns to entities (enemies, special projectiles) according to the configured `PatternMovement` type.
+
+**Components used:**
+
+
 ## Behavior
 
-  - **Straight**: sets `vx/vy = baseDir * baseSpeed`; kills entity if far outside bounds (x<-100/x>2000/y<-100/y>1200).
-  - **SineHorizontal / ZigZagHorizontal**: advances in X with base speed and oscillates in Y (continuous sine or sign-based zigzag).
-  - **SineVertical / ZigZagVertical**: advances in Y with base speed and oscillates in X.
-  - **Wave**: combines sine offsets on X and Y added to base velocity.
-  - **Waypoints**: moves toward each waypoint until within `waypointThreshold`, then cycles.
-  - **FollowPlayer**: finds the nearest player if `targetEntityId == -1`, then steers toward it; resets if the target vanishes.
-  - **Circular**: writes `transform` to follow a circle around `spawnPos` using `radius` and `baseSpeed` (`elapsed` drives the angle).
+- **Straight**: sets `vx/vy = baseDir * baseSpeed`; kills entity if far outside bounds (x<-100/x>2000/y<-100/y>1200).
+- **SineHorizontal / ZigZagHorizontal**: advances in X with base speed and oscillates in Y (continuous sine or sign-based zigzag).
+- **SineVertical / ZigZagVertical**: advances in Y with base speed and oscillates in X.
+- **Wave**: combines sine offsets on X and Y added to base velocity.
+- **Waypoints**: moves toward each waypoint until within `waypointThreshold`, then cycles.
+- **FollowPlayer**: finds the nearest player if `targetEntityId == -1`, then steers toward it; resets if the target vanishes.
+- **Circular**: writes `transform` to follow a circle around `spawnPos` using `radius` and `baseSpeed` (`elapsed` drives the angle).
 
 ## Main signature
 
