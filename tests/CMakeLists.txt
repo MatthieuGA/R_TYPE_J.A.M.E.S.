@@ -83,6 +83,7 @@ target_include_directories(server_tests
     PRIVATE
         ${CMAKE_SOURCE_DIR}/server/include
         ${CMAKE_SOURCE_DIR}/engine/include
+        ${CMAKE_SOURCE_DIR}/external
 )
 
 # Link with Google Test, engine, and Boost

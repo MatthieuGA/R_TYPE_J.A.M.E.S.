@@ -15,7 +15,7 @@ if not exist "r-type_server.exe" (
     echo ERROR: r-type_server.exe not found in %CD%
     exit /b 1
 )
-r-type_server.exe 8080
+r-type_server.exe
 if %ERRORLEVEL% NEQ 0 (
     echo ERROR: R-TYPE Server exited with an error
     cd /d "%~dp0"
