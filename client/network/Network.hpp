@@ -118,12 +118,45 @@ class ServerConnection {
         game_started_.store(false);
     }
 
+    /**
+     * @brief Get the number of connected players in the lobby.
+     * @return Number of authenticated players (updated by LOBBY_STATUS)
+     */
+    uint8_t lobby_connected_count() const {
+        return lobby_connected_count_.load();
+    }
+
+    /**
+     * @brief Get the number of ready players in the lobby.
+     * @return Number of ready players (updated by LOBBY_STATUS)
+     */
+    uint8_t lobby_ready_count() const {
+        return lobby_ready_count_.load();
+    }
+
+    /**
+     * @brief Get the maximum number of players allowed.
+     * @return Maximum players (updated by LOBBY_STATUS)
+     */
+    uint8_t lobby_max_players() const {
+        return lobby_max_players_.load();
+    }
+
+    /**
+     * @brief Check if this player is ready.
+     * @return true if local player has sent ready status, false otherwise.
+     */
+    bool is_local_player_ready() const {
+        return is_local_player_ready_.load();
+    }
+
  private:
     // Async handlers
     void AsyncReceiveUDP();
     void AsyncReceiveTCP();
     void HandleConnectAck(const std::vector<uint8_t> &data);
     void HandleGameStart(const std::vector<uint8_t> &data);
+    void HandleLobbyStatus(const std::vector<uint8_t> &data);
 
     // ASIO components
     boost::asio::io_context &io_context_;
@@ -138,6 +171,12 @@ class ServerConnection {
     uint32_t current_tick_;
     // Entity id the server told us we control (from GAME_START packet)
     uint32_t controlled_entity_id_{0};
+
+    // Lobby status (updated by LOBBY_STATUS packet)
+    std::atomic<uint8_t> lobby_connected_count_{0};
+    std::atomic<uint8_t> lobby_ready_count_{0};
+    std::atomic<uint8_t> lobby_max_players_{4};  // Default to 4
+    std::atomic<bool> is_local_player_ready_{false};
 
     // Buffers
     std::array<uint8_t, 1472> udp_buffer_{};

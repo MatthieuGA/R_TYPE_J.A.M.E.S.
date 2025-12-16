@@ -213,6 +213,8 @@ void ServerConnection::AsyncReceiveTCP() {
                         HandleConnectAck(data);
                     } else if (opcode == 0x05) {  // kOpGameStart
                         HandleGameStart(data);
+                    } else if (opcode == 0x08) {  // kOpLobbyStatus
+                        HandleLobbyStatus(data);
                     } else {
                         std::cout << "[Network] Unhandled TCP opcode: 0x"
                                   << std::hex << static_cast<int>(opcode)
@@ -313,6 +315,26 @@ void ServerConnection::HandleGameStart(const std::vector<uint8_t> &data) {
     game_started_.store(true);
 }
 
+void ServerConnection::HandleLobbyStatus(const std::vector<uint8_t> &data) {
+    if (data.size() < 4) {  // Payload is 4 bytes: connected, ready, max,
+                            // reserved
+        std::cerr << "[Network] LOBBY_STATUS malformed" << std::endl;
+        return;
+    }
+
+    uint8_t connected = data[0];
+    uint8_t ready = data[1];
+    uint8_t max_players = data[2];
+
+    lobby_connected_count_.store(connected);
+    lobby_ready_count_.store(ready);
+    lobby_max_players_.store(max_players);
+
+    std::cout << "[Network] LOBBY_STATUS: " << static_cast<int>(connected)
+              << "/" << static_cast<int>(max_players) << " players, "
+              << static_cast<int>(ready) << " ready" << std::endl;
+}
+
 void ServerConnection::SendInput(uint8_t input_flags) {
     if (!connected_.load())
         return;
@@ -339,6 +361,9 @@ void ServerConnection::SendReadyStatus(bool is_ready) {
                   << std::endl;
         return;
     }
+
+    // Track local ready state
+    is_local_player_ready_.store(is_ready);
 
     // READY_STATUS (0x07) payload: 4 bytes (IsReady + 3 reserved bytes)
     constexpr uint8_t kOpReadyStatus = 0x07;
