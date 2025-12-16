@@ -26,7 +26,7 @@ void Server::SetupEntityiesGame() {
         registry_.add_component(entity, Component::PlayerTag{400.0f});
         registry_.add_component(entity, Component::Controllable{});
         registry_.add_component(
-            entity, Component::NetworkId{client.player_id_});
+            entity, Component::NetworkId{Server::GetNextNetworkId()});
         std::cout << "Created entity for Player "
                   << static_cast<int>(client.player_id_) << std::endl;
     }

@@ -27,6 +27,7 @@ struct SnapshotPacket {
     uint32_t tick{0};
     std::array<uint8_t, 1460> payload;
     uint16_t payload_size{0};
+    uint8_t entity_type{0xFF};  // 0=Player, 1=Enemy, 2=Projectile, 0xFF=N/A
 };
 
 /**

@@ -222,14 +222,15 @@ void InitGameplaySystems(Rtype::Client::GameWorld &game_world) {
         Eng::sparse_array<Com::AnimatedSprite>>(PlayerSystem);
 
     // Players Shooting systems
-    game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
-        Eng::sparse_array<Com::Inputs>, Eng::sparse_array<Com::PlayerTag>>(
-        [&game_world](Eng::registry &r,
-            Eng::sparse_array<Com::Transform> &transforms,
-            Eng::sparse_array<Com::Inputs> const &inputs,
-            Eng::sparse_array<Com::PlayerTag> &player_tags) {
-            ShootPlayerSystem(r, game_world, transforms, inputs, player_tags);
-        });
+    // game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
+    //     Eng::sparse_array<Com::Inputs>, Eng::sparse_array<Com::PlayerTag>>(
+    //     [&game_world](Eng::registry &r,
+    //         Eng::sparse_array<Com::Transform> &transforms,
+    //         Eng::sparse_array<Com::Inputs> const &inputs,
+    //         Eng::sparse_array<Com::PlayerTag> &player_tags) {
+    //         ShootPlayerSystem(r, game_world, transforms, inputs,
+    //         player_tags);
+    //     });
 
     // Frame base event system
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,

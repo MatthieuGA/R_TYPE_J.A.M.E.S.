@@ -388,14 +388,19 @@ void ServerConnection::AsyncReceiveUDP() {
             if (bytes >= kHeaderSize) {
                 uint8_t opcode = udp_buffer_[0];
                 uint16_t payload_size = ReadLe16(udp_buffer_.data() + 1);
+                uint8_t packet_index = udp_buffer_[3];
                 uint32_t tick_id = ReadLe32(udp_buffer_.data() + 4);
+                uint8_t packet_count = udp_buffer_[8];
+                uint8_t entity_type =
+                    udp_buffer_[9];  // Read entity_type from header
 
                 if (udp_recv_count <= 10) {
                     std::cout << "[Network] UDP packet #" << udp_recv_count
                               << ": " << bytes << " bytes, opcode=0x"
                               << std::hex << static_cast<int>(opcode)
                               << std::dec << ", payload_size=" << payload_size
-                              << ", tick=" << tick_id << std::endl;
+                              << ", tick=" << tick_id << ", entity_type="
+                              << static_cast<int>(entity_type) << std::endl;
                 }
                 // Defensive check: Ensure payload_size doesn't exceed buffer
                 // capacity (should never happen with proper MTU, but good
@@ -416,6 +421,8 @@ void ServerConnection::AsyncReceiveUDP() {
                     client::SnapshotPacket snap;
                     snap.tick = tick_id;
                     snap.payload_size = payload_size;
+                    snap.entity_type =
+                        entity_type;  // Store entity_type in snapshot
                     std::memcpy(snap.payload.data(),
                         udp_buffer_.data() + kHeaderSize, payload_size);
                     if (!snapshot_queue_.push(snap)) {

@@ -22,4 +22,9 @@ void PlayerLimitPlayfield(Engine::registry &reg,
     Engine::sparse_array<Component::Transform> &transforms,
     Engine::sparse_array<Component::PlayerTag> const &player_tags);
 
+void ShootPlayerSystem(Engine::registry &reg,
+    Engine::sparse_array<Component::Transform> &transforms,
+    Engine::sparse_array<Component::Inputs> &inputs,
+    Engine::sparse_array<Component::PlayerTag> &player_tags);
+
 }  // namespace server

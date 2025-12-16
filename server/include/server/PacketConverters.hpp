@@ -31,6 +31,7 @@ struct PlayerShootPacket {
     PlayerId player_id;
     float pos_x, pos_y;
     float angle;
+    int projectile_type;
 };
 }  // namespace network
 

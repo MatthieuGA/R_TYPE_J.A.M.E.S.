@@ -16,8 +16,8 @@ namespace Rtype::Client {
  * @param y The y position of the projectile.
  * @param ownerId The ID of the entity that fired the projectile.
  */
-void createProjectile(Eng::registry &reg, float x, float y, int ownerId) {
-    auto projectile_entity = reg.SpawnEntity();
+void createProjectile(Eng::registry &reg, float x, float y, int ownerId,
+    Engine::registry::entity_t projectile_entity) {
     // Add components to projectile entity
     reg.AddComponent<Component::Transform>(projectile_entity,
         Component::Transform{x, y, 0.0f, 3.0f, Com::Transform::CENTER});
@@ -50,9 +50,8 @@ void createProjectile(Eng::registry &reg, float x, float y, int ownerId) {
  * @param y The y position of the projectile.
  * @param ownerId The ID of the entity that fired the projectile.
  */
-void createChargedProjectile(
-    Eng::registry &reg, float x, float y, int ownerId) {
-    auto projectile_entity = reg.SpawnEntity();
+void createChargedProjectile(Eng::registry &reg, float x, float y, int ownerId,
+    Engine::registry::entity_t projectile_entity) {
     // Add components to projectile entity
     reg.AddComponent<Component::Transform>(projectile_entity,
         Component::Transform{x, y, 0.0f, 3.0f, Com::Transform::CENTER});
@@ -101,7 +100,8 @@ void ShootPlayerSystem(Eng::registry &reg, GameWorld &game_world,
             player_tag.shoot_cooldown <= 0.0f) {
             player_tag.charge_time = 0.0f;
             player_tag.shoot_cooldown = player_tag.shoot_cooldown_max;
-            createProjectile(reg, transform.x, transform.y, i);
+            createProjectile(
+                reg, transform.x, transform.y, i, reg.SpawnEntity());
         }
         // Handle charged shooting
         if (input.shoot && input.last_shoot_state &&
@@ -110,7 +110,8 @@ void ShootPlayerSystem(Eng::registry &reg, GameWorld &game_world,
         if (!input.shoot && input.last_shoot_state &&
             player_tag.charge_time >= player_tag.charge_time_min) {
             player_tag.charge_time = 0.0f;
-            createChargedProjectile(reg, transform.x, transform.y, i);
+            createChargedProjectile(
+                reg, transform.x, transform.y, i, reg.SpawnEntity());
         }
         if (!input.shoot && input.last_shoot_state)
             player_tag.charge_time = 0.0f;

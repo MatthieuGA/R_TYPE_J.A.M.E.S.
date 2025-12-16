@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 #include <vector>
 
 #include <boost/asio.hpp>
@@ -78,6 +79,8 @@ class Server {
      * @return Engine::registry& Reference to the registry
      */
     Engine::registry &GetRegistry();
+
+    static uint8_t GetNextNetworkId();
 
  private:
     /**

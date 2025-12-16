@@ -83,35 +83,65 @@ void PacketSender::SendGameStart() {
               << std::endl;
 }
 
-void PacketSender::SendSnapshot(network::EntityState entity_state) {
-    // Send entity state snapshot to all authenticated players via UDP
-    network::PacketBuffer buffer;
-
+void SendSnapshotPlayerState(
+    network::EntityState entity_state, network::PacketBuffer &buffer) {
+    // Serialize entity state into the payload
     // Write WORLD_SNAPSHOT header (opcode 0x20 with entity data as payload)
     network::CommonHeader header(
         static_cast<uint8_t>(network::PacketType::WorldSnapshot),
         16,  // payload_size = 16 bytes (one EntityState)
         0,   // tick_id = 0 (TODO: use actual tick)
         0,   // packet_index = 0
-        1);  // packet_count = 1
+        1,   // packet_count = 1
+        0);  // entity_type = 0 (Player)
     buffer.WriteHeader(header);
 
     // Serialize entity state into the payload
-    entity_state.Serialize(buffer);
+    entity_state.Serialize(buffer, network::EntityState::EntityType::Player);
+}
 
+void SendSnapshotProjectileState(
+    network::EntityState entity_state, network::PacketBuffer &buffer) {
+    // Serialize entity state into the payload
+    // Write WORLD_SNAPSHOT header (opcode 0x20 with entity data as payload)
+    network::CommonHeader header(
+        static_cast<uint8_t>(network::PacketType::WorldSnapshot),
+        13,  // payload_size = 12 bytes (one EntityState for projectile)
+        0,   // tick_id = 0 (TODO: use actual tick)
+        0,   // packet_index = 0
+        1,   // packet_count = 1
+        2);  // entity_type = 2 (Projectile)
+    buffer.WriteHeader(header);
+
+    // Serialize entity state into the payload
+    entity_state.Serialize(
+        buffer, network::EntityState::EntityType::Projectile);
+}
+
+void PacketSender::SendSnapshot(network::EntityState entity_state) {
+    // Send entity state snapshot to all authenticated players via UDP
+    network::PacketBuffer buffer;
+
+    if (entity_state.entity_type == 0) {  // PLAYER
+        SendSnapshotPlayerState(entity_state, buffer);
+    } else if (entity_state.entity_type == 2) {  // PROJECTILE
+        SendSnapshotProjectileState(entity_state, buffer);
+    } else {
+        std::cerr << "Unknown entity type for snapshot: "
+                  << static_cast<int>(entity_state.entity_type) << std::endl;
+        return;
+    }
+
+    // Send to all authenticated players
     const auto &data = buffer.Data();
     auto &clients = connection_manager_.GetClients();
     for (auto &[client_id, client_ref] : clients) {
-        if (client_ref.player_id_ == 0) {
+        if (client_ref.player_id_ == 0)
             continue;  // Skip unauthenticated clients
-        }
         // Use UDP for snapshots (unreliable but fast gameplay data)
         std::array<uint8_t, Network::MAX_UDP_PACKET_SIZE> udp_buffer{};
         std::copy(data.begin(), data.end(), udp_buffer.begin());
         network_.SendUdp(udp_buffer, data.size(), client_ref.udp_endpoint_);
-
-        // std::cout << "Sent SNAPSHOT to Player "
-        //           << static_cast<int>(client_ref.player_id_) << std::endl;
     }
 }
 

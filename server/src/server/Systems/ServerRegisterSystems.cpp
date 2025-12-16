@@ -20,6 +20,10 @@ void Server::RegisterSystems() {
 
     registry_.AddSystem<Engine::sparse_array<Component::Transform>,
         Engine::sparse_array<Component::PlayerTag>>(PlayerLimitPlayfield);
+
+    registry_.AddSystem<Engine::sparse_array<Component::Transform>,
+        Engine::sparse_array<Component::Inputs>,
+        Engine::sparse_array<Component::PlayerTag>>(ShootPlayerSystem);
 }
 
 }  // namespace server

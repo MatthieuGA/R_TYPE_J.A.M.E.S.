@@ -133,7 +133,9 @@ struct __attribute__((packed)) CommonHeader {
     uint8_t packet_index;   // Fragment index (0 to packet_count-1)
     uint32_t tick_id;       // Frame counter (0 for TCP packets)
     uint8_t packet_count;   // Total fragments for this tick
-    std::array<uint8_t, 3> reserved;  // Padding, must be 0
+    uint8_t entity_type;    // Entity type (0=Player, 1=Enemy, 2=Projectile,
+                            // 0xFF=N/A)
+    std::array<uint8_t, 2> reserved;  // Padding, must be 0
 
     CommonHeader()
         : op_code(0),
@@ -141,16 +143,18 @@ struct __attribute__((packed)) CommonHeader {
           packet_index(0),
           tick_id(0),
           packet_count(1),
-          reserved{0, 0, 0} {}
+          entity_type(0xFF),
+          reserved{0, 0} {}
 
     CommonHeader(uint8_t op, uint16_t size, uint32_t tick = 0, uint8_t idx = 0,
-        uint8_t count = 1)
+        uint8_t count = 1, uint8_t ent_type = 0xFF)
         : op_code(op),
           payload_size(size),
           packet_index(idx),
           tick_id(tick),
           packet_count(count),
-          reserved{0, 0, 0} {}
+          entity_type(ent_type),
+          reserved{0, 0} {}
 };
 #ifdef _MSC_VER
 #pragma pack(pop)
@@ -181,9 +185,9 @@ class PacketBuffer {
         WriteUint8(header.packet_index);
         WriteUint32(header.tick_id);
         WriteUint8(header.packet_count);
+        WriteUint8(header.entity_type);
         WriteUint8(header.reserved[0]);
         WriteUint8(header.reserved[1]);
-        WriteUint8(header.reserved[2]);
     }
 
     CommonHeader ReadHeader() {
@@ -193,9 +197,9 @@ class PacketBuffer {
         header.packet_index = ReadUint8();
         header.tick_id = ReadUint32();
         header.packet_count = ReadUint8();
+        header.entity_type = ReadUint8();
         header.reserved[0] = ReadUint8();
         header.reserved[1] = ReadUint8();
-        header.reserved[2] = ReadUint8();
         return header;
     }
 
