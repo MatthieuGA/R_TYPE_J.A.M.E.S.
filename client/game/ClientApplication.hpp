@@ -26,6 +26,7 @@ class ClientApplication {
         uint16_t angle;
         uint16_t velocity_x;
         uint16_t velocity_y;
+        uint16_t health;
         // Projectiles :
         uint8_t projectile_type;
         // Enemies :

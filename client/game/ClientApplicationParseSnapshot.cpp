@@ -54,7 +54,7 @@ static uint8_t Get1ByteAsUint8(
 void ParseSnapshotPlayer(
     std::vector<ClientApplication::ParsedEntity> &entities,
     const client::SnapshotPacket &snapshot) {
-    const size_t kEntityStateSize = 16;  // 16 bytes per EntityState
+    const size_t kEntityStateSize = 18;  // 16 bytes per EntityState
 
     // Check if payload contains WorldSnapshotPacket format (header + entities)
     // or just a single EntityState (current server implementation)
@@ -78,6 +78,7 @@ void ParseSnapshotPlayer(
             static_cast<uint16_t>(static_cast<int32_t>(decoded_vx) + 32768);
         entity.velocity_y =
             static_cast<uint16_t>(static_cast<int32_t>(decoded_vy) + 32768);
+        entity.health = Get2BytesAsUint16(snapshot.payload, 16);
 
         entities.push_back(entity);
     } else if (snapshot.payload_size >= 4) {
@@ -102,6 +103,7 @@ void ParseSnapshotPlayer(
                 Get2BytesAsUint16(snapshot.payload, offset + 12);
             entity.velocity_y =
                 Get2BytesAsUint16(snapshot.payload, offset + 14);
+            entity.health = Get2BytesAsUint16(snapshot.payload, offset + 16);
 
             entities.push_back(entity);
             offset += kEntityStateSize;
@@ -120,7 +122,7 @@ void ParseSnapshotPlayer(
 // - velocity_y (u16, 2 bytes)
 void ParseSnapshotEnemy(std::vector<ClientApplication::ParsedEntity> &entities,
     const client::SnapshotPacket &snapshot) {
-    const size_t kEntityStateSize = 18;  // 16 bytes per EntityState
+    const size_t kEntityStateSize = 20;  // 20 bytes per EntityState
 
     // Check if payload contains WorldSnapshotPacket format (header + entities)
     // or just a single EntityState (current server implementation)
@@ -146,6 +148,7 @@ void ParseSnapshotEnemy(std::vector<ClientApplication::ParsedEntity> &entities,
             static_cast<uint16_t>(static_cast<int32_t>(decoded_vy) + 32768);
         entity.current_animation = Get1ByteAsUint8(snapshot.payload, 16);
         entity.current_frame = Get1ByteAsUint8(snapshot.payload, 17);
+        entity.health = Get2BytesAsUint16(snapshot.payload, 18);
 
         entities.push_back(entity);
     } else if (snapshot.payload_size >= 4) {
@@ -174,6 +177,7 @@ void ParseSnapshotEnemy(std::vector<ClientApplication::ParsedEntity> &entities,
                 Get1ByteAsUint8(snapshot.payload, offset + 16);
             entity.current_frame =
                 Get1ByteAsUint8(snapshot.payload, offset + 17);
+            entity.health = Get2BytesAsUint16(snapshot.payload, offset + 18);
 
             entities.push_back(entity);
             offset += kEntityStateSize;

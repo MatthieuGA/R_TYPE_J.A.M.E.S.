@@ -40,6 +40,8 @@ void FactoryActors::CreateBasicActor(
         entity, {0.f, 0.f, 0.0f, info.scale, Component::Transform::CENTER});
     reg.AddComponent<Component::Health>(
         entity, Component::Health(info.health));
+    printf(
+        "Creating actor '%s' with %d health\n", info.tag.c_str(), info.health);
     reg.AddComponent<Component::HealthBar>(entity,
         Component::HealthBar{
             sf::Vector2f(info.offset_healthbar.x, info.offset_healthbar.y)});

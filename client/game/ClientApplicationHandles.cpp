@@ -206,6 +206,15 @@ static void UpdatePlayerEntity(GameWorld &game_world, size_t entity_index,
     } catch (const std::exception &e) {
         // Velocity component might not exist; ignore if so
     }
+    try {
+        auto &health = game_world.registry_
+                           .GetComponents<Component::Health>()[entity_index];
+        if (health.has_value()) {
+            health->currentHealth = static_cast<int>(entity_data.health);
+        }
+    } catch (const std::exception &e) {
+        // Health component might not exist; ignore if so
+    }
 }
 
 static void UpdateEnemyEntity(GameWorld &game_world, size_t entity_index,
@@ -236,6 +245,15 @@ static void UpdateEnemyEntity(GameWorld &game_world, size_t entity_index,
         }
     } catch (const std::exception &e) {
         // Velocity component might not exist; ignore if so
+    }
+    try {
+        auto &health = game_world.registry_
+                           .GetComponents<Component::Health>()[entity_index];
+        if (health.has_value()) {
+            health->currentHealth = static_cast<int>(entity_data.health);
+        }
+    } catch (const std::exception &e) {
+        // Health component might not exist; ignore if so
     }
 
     try {
