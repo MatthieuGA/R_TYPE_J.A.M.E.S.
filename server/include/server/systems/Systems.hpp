@@ -27,4 +27,8 @@ void ShootPlayerSystem(Engine::registry &reg,
     Engine::sparse_array<Component::Inputs> &inputs,
     Engine::sparse_array<Component::PlayerTag> &player_tags);
 
+void ProjectileSystem(Engine::registry &reg,
+    Engine::sparse_array<Component::Transform> &transforms,
+    Engine::sparse_array<Component::Projectile> &projectiles);
+
 }  // namespace server

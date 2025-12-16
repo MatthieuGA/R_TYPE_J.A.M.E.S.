@@ -21,7 +21,6 @@ void ProjectileSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> &transforms,
     Eng::sparse_array<Com::Projectile> &projectiles) {
     std::vector<Eng::registry::entity_t> to_kill;
-    to_kill.reserve(16);
 
     for (auto &&[i, transform, projectile] :
         make_indexed_zipper(transforms, projectiles)) {
