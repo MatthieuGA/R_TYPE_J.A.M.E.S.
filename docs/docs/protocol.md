@@ -1,6 +1,6 @@
 # R-Type Network Protocol Specification
 
-> **Version:** 4.1.0
+> **Version:** 4.1.1
 > **Last Updated:** 16th December 2025
 
 ## Table of Contents
@@ -287,7 +287,7 @@ When all the players in the lobby have sent `IsReady = 1`, the server automatica
 | :--- | :--- | :--- | :--- |
 | `CurrentPlayers` | `u8` | 1 | Number of currently connected players. |
 | `MaxPlayers` | `u8` | 1 | Maximum player capacity of the server. |
-| `Status` | `u8` | 1 | `0` = In Lobby, `1` = Full, `2` = In Game. |
+| `Status` | `u8` | 1 | `0` = Lobby Open, `1` = Full, `2` = In Game. |
 | `Reserved` | `u8[1]` | 1 | Padding to align with 4 bytes. |
 | `ServerName` | `char[32]` | 32 | Name of the server (ASCII, null-terminated). |
 | `ServerDescription` | `char[64]` | 64 | Description of the server (ASCII, null-terminated). |
