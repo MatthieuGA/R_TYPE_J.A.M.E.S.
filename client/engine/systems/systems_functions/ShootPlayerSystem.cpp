@@ -16,7 +16,7 @@ namespace Rtype::Client {
  * @param y The y position of the projectile.
  * @param ownerId The ID of the entity that fired the projectile.
  */
-void createProjectile(Eng::registry &reg, float x, float y, int ownerId,
+void CreateProjectile(Eng::registry &reg, float x, float y, int ownerId,
     Engine::registry::entity_t projectile_entity) {
     // Add components to projectile entity
     reg.AddComponent<Component::Transform>(projectile_entity,
@@ -100,7 +100,7 @@ void ShootPlayerSystem(Eng::registry &reg, GameWorld &game_world,
             player_tag.shoot_cooldown <= 0.0f) {
             player_tag.charge_time = 0.0f;
             player_tag.shoot_cooldown = player_tag.shoot_cooldown_max;
-            createProjectile(
+            CreateProjectile(
                 reg, transform.x, transform.y, i, reg.SpawnEntity());
         }
         // Handle charged shooting

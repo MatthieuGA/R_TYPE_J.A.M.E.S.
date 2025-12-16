@@ -14,14 +14,14 @@ cmake --build build --config Release --target r-type_client -j 4
 
 ```powershell
 cd build\server\Release
-.\r-type_server.exe 8080
+.\r-type_server.exe 50000
 ```
 
 ### 3. Lancer le client
 
 ```powershell
 cd build\client\Release
-.\r-type_client.exe 127.0.0.1 8080 Player1
+.\r-type_client.exe 127.0.0.1 50000 Player1
 ```
 
 ## Résultats attendus
@@ -31,7 +31,7 @@ cd build\client\Release
 ```
 [Network] TCP connection established
 [Network] Sending CONNECT_REQ (44 bytes, username: Player1)
-[Network] Connected. PlayerId=1, ServerUdpPort=8080
+[Network] Connected. PlayerId=1, ServerUdpPort=50000
 [Network] Successfully connected to server!
 ```
 

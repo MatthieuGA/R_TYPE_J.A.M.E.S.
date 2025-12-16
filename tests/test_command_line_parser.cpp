@@ -31,14 +31,14 @@ class ArgvHelper {
 };
 
 TEST(CommandLineParser, ParsesMinimalValidArguments) {
-    ArgvHelper args({"r-type_client", "192.168.1.1", "8080", "TestUser"});
+    ArgvHelper args({"r-type_client", "192.168.1.1", "50000", "TestUser"});
 
     RC::ClientConfig config =
         RC::CommandLineParser::Parse(args.Argc(), args.Argv());
 
     EXPECT_EQ(config.server_ip, "192.168.1.1");
-    EXPECT_EQ(config.tcp_port, 8080);
-    EXPECT_EQ(config.udp_port, 8080);  // Defaults to TCP port
+    EXPECT_EQ(config.tcp_port, 50000);
+    EXPECT_EQ(config.udp_port, 50000);  // Defaults to TCP port
     EXPECT_EQ(config.username, "TestUser");
 }
 

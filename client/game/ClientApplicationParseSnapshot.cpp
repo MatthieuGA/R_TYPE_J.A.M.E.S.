@@ -269,13 +269,16 @@ void ParseSnapshotProjectile(
 std::vector<ClientApplication::ParsedEntity>
 ClientApplication::ParseSnapshotData(const client::SnapshotPacket &snapshot) {
     std::vector<ClientApplication::ParsedEntity> entities;
-    if (snapshot.entity_type == 0x00) {
+    if (snapshot.entity_type ==
+        ClientApplication::ParsedEntity::kPlayerEntity) {
         // Parse using the existing function
         ParseSnapshotPlayer(entities, snapshot);
-    } else if (snapshot.entity_type == 0x01) {
+    } else if (snapshot.entity_type ==
+               ClientApplication::ParsedEntity::kEnemyEntity) {
         // Parse using the enemy parsing function
         ParseSnapshotEnemy(entities, snapshot);
-    } else if (snapshot.entity_type == 0x02) {
+    } else if (snapshot.entity_type ==
+               ClientApplication::ParsedEntity::kProjectileEntity) {
         // Similar parsing function can be created for projectiles if needed
         // For now, we can reuse the same parsing logic
         ParseSnapshotProjectile(entities, snapshot);

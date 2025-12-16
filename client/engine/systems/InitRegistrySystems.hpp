@@ -105,7 +105,7 @@ void ShootPlayerSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> &transforms,
     Eng::sparse_array<Com::Inputs> const &inputs,
     Eng::sparse_array<Com::PlayerTag> &player_tags);
-void createProjectile(Eng::registry &reg, float x, float y, int ownerId,
+void CreateProjectile(Eng::registry &reg, float x, float y, int ownerId,
     Eng::registry::entity_t projectile_entity);
 void createChargedProjectile(Eng::registry &reg, float x, float y, int ownerId,
     Eng::registry::entity_t projectile_entity);

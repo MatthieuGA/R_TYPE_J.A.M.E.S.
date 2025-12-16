@@ -93,7 +93,7 @@ class ClientConnectionManager {
      * @param server_udp_port The UDP port used by the server
      */
     explicit ClientConnectionManager(
-        uint8_t max_clients, uint16_t server_udp_port = 8080);
+        uint8_t max_clients, uint16_t server_udp_port = 50000);
 
     /**
      * @brief Add a new unauthenticated client connection
