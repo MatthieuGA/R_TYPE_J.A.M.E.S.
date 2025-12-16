@@ -55,7 +55,7 @@ class FactoryActors {
         Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
 
     // Helper to create a projectile for an enemy
-    void CreateEnemyProjectile(Engine::registry &reg, sf::Vector2f direction,
+    void CreateMermaidProjectile(Engine::registry &reg, sf::Vector2f direction,
         Component::EnemyShootTag &enemy_shoot, int ownerId,
         Component::Transform const &transform);
 

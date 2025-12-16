@@ -330,6 +330,8 @@ struct EntityState {
             buffer.WriteUint16(pos_x);           // 2 bytes
             buffer.WriteUint16(pos_y);           // 2 bytes
             buffer.WriteUint16(angle);           // 2 bytes
+            buffer.WriteUint16(velocity_x);      // 2 bytes
+            buffer.WriteUint16(velocity_y);      // 2 bytes
             buffer.WriteUint8(projectile_type);  // 1 byte
         }
     }
@@ -358,6 +360,8 @@ struct EntityState {
             state.pos_x = buffer.ReadUint16();
             state.pos_y = buffer.ReadUint16();
             state.angle = buffer.ReadUint16();
+            state.velocity_x = buffer.ReadUint16();
+            state.velocity_y = buffer.ReadUint16();
             state.projectile_type = buffer.ReadUint8();
         }
         return state;

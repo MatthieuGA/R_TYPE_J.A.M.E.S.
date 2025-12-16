@@ -13,6 +13,8 @@
 #include "game/SnapshotTracker.hpp"
 #include "game/factory/factory_ennemies/FactoryActors.hpp"
 #include "game/scenes_management/InitScenes.hpp"
+#include "include/ColorsConst.hpp"
+#include "include/EnemiesConst.hpp"
 #include "include/LayersConst.hpp"
 #include "include/components/CoreComponents.hpp"
 #include "include/components/NetworkingComponents.hpp"
@@ -91,6 +93,35 @@ static void CreateEnemyEntity(GameWorld &game_world,
     }
 }
 
+void CreateMermaidProjectile(Engine::registry &reg,
+    const ClientApplication::ParsedEntity &entity_data,
+    Engine::registry::entity_t new_entity) {
+    // Decode velocity from encoded format (encoded = actual + 32768)
+    int16_t decoded_vx = static_cast<int16_t>(entity_data.velocity_x) - 32768;
+    int16_t decoded_vy = static_cast<int16_t>(entity_data.velocity_y) - 32768;
+
+    // Add components to projectile entity
+    reg.AddComponent<Component::Transform>(
+        new_entity, Component::Transform{static_cast<float>(entity_data.pos_x),
+                        static_cast<float>(entity_data.pos_y), 0.0f, 2.f,
+                        Component::Transform::CENTER});
+    reg.AddComponent<Component::Drawable>(new_entity,
+        Component::Drawable("ennemies/4/Projectile.png", LAYER_PROJECTILE));
+    reg.AddComponent<Component::Projectile>(new_entity,
+        Component::Projectile{static_cast<int>(MERMAID_PROJECTILE_DAMAGE),
+            sf::Vector2f(decoded_vx, decoded_vy), MERMAID_PROJECTILE_SPEED, -1,
+            true});
+    reg.AddComponent<Component::HitBox>(
+        new_entity, Component::HitBox{8.0f, 8.0f});
+    reg.AddComponent<Component::Velocity>(
+        new_entity, Component::Velocity{static_cast<float>(decoded_vx),
+                        static_cast<float>(decoded_vy)});
+    reg.AddComponent<Component::ParticleEmitter>(new_entity,
+        Component::ParticleEmitter(50, 50, RED_HIT, RED_HIT,
+            sf::Vector2f(0.f, 0.f), true, 0.3f, 4.f, sf::Vector2f(-1.f, 0.f),
+            45.f, 0, 8, 3.0f, 2.0f, -1.0f, LAYER_PARTICLE));
+}
+
 static void CreateProjectileEntity(GameWorld &game_world,
     Engine::registry::entity_t new_entity,
     const ClientApplication::ParsedEntity &entity_data) {
@@ -105,6 +136,9 @@ static void CreateProjectileEntity(GameWorld &game_world,
         createChargedProjectile(game_world.registry_,
             static_cast<float>(entity_data.pos_x),
             static_cast<float>(entity_data.pos_y), /*ownerId=*/-1, new_entity);
+    } else if (entity_data.projectile_type == 0x02) {
+        // Charged projectile DEEBBBBBUUUGGGG
+        CreateMermaidProjectile(game_world.registry_, entity_data, new_entity);
     } else {
         printf("[Snapshot] Unknown projectile type 0x%02X for entity ID %u\n",
             entity_data.projectile_type, entity_data.entity_id);
@@ -248,6 +282,22 @@ static void UpdateProjectileEntity(GameWorld &game_world, size_t entity_index,
         transform->y = static_cast<float>(entity_data.pos_y);
         transform->rotationDegrees =
             static_cast<float>(entity_data.angle / 10.0f);
+    }
+    // Decode and update velocity
+    try {
+        int16_t decoded_vx =
+            static_cast<int16_t>(entity_data.velocity_x) - 32768;
+        int16_t decoded_vy =
+            static_cast<int16_t>(entity_data.velocity_y) - 32768;
+        auto &velocity =
+            game_world.registry_
+                .GetComponents<Component::Velocity>()[entity_index];
+        if (velocity.has_value()) {
+            velocity->vx = static_cast<float>(decoded_vx);
+            velocity->vy = static_cast<float>(decoded_vy);
+        }
+    } catch (const std::exception &e) {
+        // Velocity component might not exist; ignore if so
     }
 }
 

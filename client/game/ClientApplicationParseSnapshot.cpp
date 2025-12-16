@@ -68,8 +68,16 @@ void ParseSnapshotPlayer(
         entity.pos_x = Get2BytesAsUint16(snapshot.payload, 6);
         entity.pos_y = Get2BytesAsUint16(snapshot.payload, 8);
         entity.angle = Get2BytesAsUint16(snapshot.payload, 10);
-        entity.velocity_x = Get2BytesAsUint16(snapshot.payload, 12);
-        entity.velocity_y = Get2BytesAsUint16(snapshot.payload, 14);
+        // Decode velocity: encoded = (actual + 32768); decode:
+        // (int16_t)encoded - 32768
+        uint16_t encoded_vx = Get2BytesAsUint16(snapshot.payload, 12);
+        uint16_t encoded_vy = Get2BytesAsUint16(snapshot.payload, 14);
+        int16_t decoded_vx = static_cast<int16_t>(encoded_vx) - 32768;
+        int16_t decoded_vy = static_cast<int16_t>(encoded_vy) - 32768;
+        entity.velocity_x =
+            static_cast<uint16_t>(static_cast<int32_t>(decoded_vx) + 32768);
+        entity.velocity_y =
+            static_cast<uint16_t>(static_cast<int32_t>(decoded_vy) + 32768);
 
         entities.push_back(entity);
     } else if (snapshot.payload_size >= 4) {
@@ -126,8 +134,16 @@ void ParseSnapshotEnemy(std::vector<ClientApplication::ParsedEntity> &entities,
         entity.pos_x = Get2BytesAsUint16(snapshot.payload, 6);
         entity.pos_y = Get2BytesAsUint16(snapshot.payload, 8);
         entity.angle = Get2BytesAsUint16(snapshot.payload, 10);
-        entity.velocity_x = Get2BytesAsUint16(snapshot.payload, 12);
-        entity.velocity_y = Get2BytesAsUint16(snapshot.payload, 14);
+        // Decode velocity: encoded = (actual + 32768); decode:
+        // (int16_t)encoded - 32768
+        uint16_t encoded_vx = Get2BytesAsUint16(snapshot.payload, 12);
+        uint16_t encoded_vy = Get2BytesAsUint16(snapshot.payload, 14);
+        int16_t decoded_vx = static_cast<int16_t>(encoded_vx) - 32768;
+        int16_t decoded_vy = static_cast<int16_t>(encoded_vy) - 32768;
+        entity.velocity_x =
+            static_cast<uint16_t>(static_cast<int32_t>(decoded_vx) + 32768);
+        entity.velocity_y =
+            static_cast<uint16_t>(static_cast<int32_t>(decoded_vy) + 32768);
         entity.current_animation = Get1ByteAsUint8(snapshot.payload, 16);
         entity.current_frame = Get1ByteAsUint8(snapshot.payload, 17);
 
@@ -176,7 +192,7 @@ void ParseSnapshotEnemy(std::vector<ClientApplication::ParsedEntity> &entities,
 void ParseSnapshotProjectile(
     std::vector<ClientApplication::ParsedEntity> &entities,
     const client::SnapshotPacket &snapshot) {
-    const size_t kEntityStateSize = 13;  // 13 bytes per EntityState
+    const size_t kEntityStateSize = 17;  // 13 bytes per EntityState
 
     // Check if payload contains WorldSnapshotPacket format (header + entities)
     // or just a single EntityState (current server implementation)
@@ -190,7 +206,17 @@ void ParseSnapshotProjectile(
         entity.pos_x = Get2BytesAsUint16(snapshot.payload, 6);
         entity.pos_y = Get2BytesAsUint16(snapshot.payload, 8);
         entity.angle = Get2BytesAsUint16(snapshot.payload, 10);
-        entity.projectile_type = Get1ByteAsUint8(snapshot.payload, 12);
+        // Decode velocity: encoded = (actual + 32768); decode:
+        // (int16_t)encoded - 32768
+        uint16_t encoded_vx = Get2BytesAsUint16(snapshot.payload, 12);
+        uint16_t encoded_vy = Get2BytesAsUint16(snapshot.payload, 14);
+        int16_t decoded_vx = static_cast<int16_t>(encoded_vx) - 32768;
+        int16_t decoded_vy = static_cast<int16_t>(encoded_vy) - 32768;
+        entity.velocity_x =
+            static_cast<uint16_t>(static_cast<int32_t>(decoded_vx) + 32768);
+        entity.velocity_y =
+            static_cast<uint16_t>(static_cast<int32_t>(decoded_vy) + 32768);
+        entity.projectile_type = Get1ByteAsUint8(snapshot.payload, 16);
 
         entities.push_back(entity);
     } else if (snapshot.payload_size >= 4) {
@@ -211,8 +237,12 @@ void ParseSnapshotProjectile(
             entity.pos_x = Get2BytesAsUint16(snapshot.payload, offset + 6);
             entity.pos_y = Get2BytesAsUint16(snapshot.payload, offset + 8);
             entity.angle = Get2BytesAsUint16(snapshot.payload, offset + 10);
+            entity.velocity_x =
+                Get2BytesAsUint16(snapshot.payload, offset + 12);
+            entity.velocity_y =
+                Get2BytesAsUint16(snapshot.payload, offset + 14);
             entity.projectile_type =
-                Get1ByteAsUint8(snapshot.payload, offset + 12);
+                Get1ByteAsUint8(snapshot.payload, offset + 16);
 
             entities.push_back(entity);
             offset += kEntityStateSize;

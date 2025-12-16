@@ -40,4 +40,12 @@ void PaternMovementSystem(Engine::registry &reg,
 void AnimationSystem(Engine::registry &reg,
     Engine::sparse_array<Component::AnimatedSprite> &anim_sprites);
 
+void TimedEventSystem(Engine::registry &reg,
+    Engine::sparse_array<Component::TimedEvents> &timed_events);
+
+void FrameBaseEventSystem(Engine::registry &reg,
+    Engine::sparse_array<Component::Transform> &transforms,
+    Engine::sparse_array<Component::AnimatedSprite> &animated_sprites,
+    Engine::sparse_array<Component::FrameEvents> &frame_events);
+
 }  // namespace server

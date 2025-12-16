@@ -12,6 +12,14 @@ namespace server {
 void Server::RegisterSystems() {
     registry_.AddSystem<Engine::sparse_array<Component::AnimatedSprite>>(
         AnimationSystem);
+
+    registry_.AddSystem<Engine::sparse_array<Component::Transform>,
+        Engine::sparse_array<Component::AnimatedSprite>,
+        Engine::sparse_array<Component::FrameEvents>>(FrameBaseEventSystem);
+
+    registry_.AddSystem<Engine::sparse_array<Component::TimedEvents>>(
+        TimedEventSystem);
+
     registry_.AddSystem<Engine::sparse_array<Component::PlayerTag>,
         Engine::sparse_array<Component::Transform>,
         Engine::sparse_array<Component::Inputs>,

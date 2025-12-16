@@ -32,8 +32,9 @@ void FactoryActors::CreateMermaidActor(
                     reg.EntityFromIndex(entity_id));
 
                 sf::Vector2f shoot_direction = sf::Vector2f(-1.0f, 0.0f);
-                CreateEnemyProjectile(
-                    reg, shoot_direction, enemy_shoot, entity_id, transform);
+                // CreateMermaidProjectile(
+                //     reg, shoot_direction, enemy_shoot, entity_id,
+                //     transform);
             } catch (const std::exception &e) {
                 return;
             }

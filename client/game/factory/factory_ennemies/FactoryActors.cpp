@@ -70,7 +70,7 @@ void FactoryActors::CreateBasicEnnemy(
         entity, std::move(animated_sprite));
 }
 
-void FactoryActors::CreateEnemyProjectile(Engine::registry &reg,
+void FactoryActors::CreateMermaidProjectile(Engine::registry &reg,
     sf::Vector2f direction, Component::EnemyShootTag &enemy_shoot, int ownerId,
     Component::Transform const &transform) {
     auto projectile_entity = reg.SpawnEntity();
