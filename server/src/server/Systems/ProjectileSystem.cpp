@@ -1,6 +1,6 @@
+#include <cmath>
 #include <iostream>
 #include <vector>
-#include <cmath>
 
 #include "server/CoreComponents.hpp"
 #include "server/GameWorldDatas.hpp"
