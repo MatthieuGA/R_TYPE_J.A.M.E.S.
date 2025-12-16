@@ -105,7 +105,7 @@ void CreateMermaidActor(Engine::entity &entity, Engine::registry &reg) {
         entity, Component::HitBox{8.0f, 32.0f});
 }
 
-void Server::SetupEntityiesGame() {
+void Server::SetupEntitiesGame() {
     // Create one player entity per authenticated client, using the
     // client's assigned player_id as the NetworkId so clients can map
     // controlled entity easily.
