@@ -131,7 +131,7 @@ int main() {
 
 ### Tabs
 
-```markdown
+~~~markdown
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -147,7 +147,7 @@ import TabItem from '@theme/TabItem';
     ```
   </TabItem>
 </Tabs>
-```
+~~~
 
 ### Links
 
