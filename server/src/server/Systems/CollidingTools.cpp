@@ -1,8 +1,8 @@
-#include "server/Systems/CollidingTools.hpp"
+#include "server/systems/CollidingTools.hpp"
 
 #include "server/CoreComponents.hpp"
 #include "server/GameplayComponents.hpp"
-#include "server/Systems/OriginTool.hpp"
+#include "server/systems/OriginTool.hpp"
 #include "server/systems/Systems.hpp"
 
 namespace server {
