@@ -311,6 +311,10 @@ void InitAudioSystem(
         });
 }
 
+void InitKillEntitiesSystem(Rtype::Client::GameWorld &game_world) {
+    game_world.registry_.AddSystem<Com::NetworkId>(KillEntitiesSystem);
+}
+
 /**
  * @brief Initialize all registry systems for the game world.
  *
@@ -324,6 +328,7 @@ void InitRegistrySystems(
     Rtype::Client::GameWorld &game_world, Audio::AudioManager &audio_manager) {
     // Set up systems
     InitSceneManagementSystem(game_world);
+    InitKillEntitiesSystem(game_world);
     InitControlsSystem(game_world);
     InitMovementSystem(game_world);
     InitGameplaySystems(game_world);

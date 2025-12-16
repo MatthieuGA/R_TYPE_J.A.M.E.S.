@@ -7,6 +7,7 @@
 
 namespace server {
 const constexpr float TICK_RATE_MS = 16.0f;
+const constexpr float TICK_RATE_SECONDS = TICK_RATE_MS / 1000.0f;
 
 void MovementSystem(Engine::registry &reg,
     Engine::sparse_array<Component::Transform> &transforms,

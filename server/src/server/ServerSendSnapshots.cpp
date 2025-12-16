@@ -105,6 +105,8 @@ void SendServerSnapshotProjectile(network::EntityState &entity_state,
 }
 
 void Server::SendSnapshotsToAllClients() {
+    uint32_t current_tick =
+        tick_count_;  // Use same tick for all entities in this frame
     for (const auto &[i, entity_network] :
         make_indexed_zipper(registry_.GetComponents<Component::NetworkId>())) {
         network::EntityState entity_state;
@@ -119,7 +121,8 @@ void Server::SendSnapshotsToAllClients() {
             continue;
         }
 
-        packet_sender_.SendSnapshot(entity_state);
+        packet_sender_.SendSnapshot(entity_state, current_tick);
     }
+    tick_count_++;  // Increment tick count once per frame, not per entity
 }
 }  // namespace server

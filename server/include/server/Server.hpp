@@ -80,7 +80,7 @@ class Server {
      */
     Engine::registry &GetRegistry();
 
-    static uint8_t GetNextNetworkId();
+    static uint32_t GetNextNetworkId();
 
  private:
     /**
@@ -137,6 +137,7 @@ class Server {
     PacketHandler packet_handler_;
 
     static constexpr int TICK_RATE_MS = 16;  // ~60 FPS
+    int tick_count_;
 };
 
 }  // namespace server

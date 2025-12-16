@@ -10,6 +10,7 @@
 
 #include "engine/systems/InitRegistrySystems.hpp"
 #include "game/InitRegistry.hpp"
+#include "game/SnapshotTracker.hpp"
 #include "game/factory/factory_ennemies/FactoryActors.hpp"
 #include "game/scenes_management/InitScenes.hpp"
 #include "include/LayersConst.hpp"
@@ -21,398 +22,18 @@
 #include "network/Network.hpp"
 
 namespace Rtype::Client {
-
-/**
- * @brief Represents a parsed entity from a snapshot.
- *
- * Stores entity state information received from server.
- */
-struct ParsedEntity {
-    uint32_t entity_id;
-    uint8_t entity_type;
-    // Players :
-    uint16_t pos_x;
-    uint16_t pos_y;
-    uint16_t angle;
-    uint16_t velocity_x;
-    uint16_t velocity_y;
-    // Projectiles :
-    uint8_t projectile_type;
-};
-
 // Parse Player
 
-void ParseSnapshotPlayer(std::vector<ParsedEntity> &entities,
-    const client::SnapshotPacket &snapshot) {
-    const size_t kEntityStateSize = 16;  // 16 bytes per EntityState
-
-    // Check if payload contains WorldSnapshotPacket format (header + entities)
-    // or just a single EntityState (current server implementation)
-    if (snapshot.payload_size == kEntityStateSize) {
-        // Single EntityState format (12 bytes) - current server implementation
-        ParsedEntity entity;
-
-        // EntityState structure:
-        // - entity_id (u32, 4 bytes)
-        // - entity_type (u8, 1 byte)
-        // - reserved (u8, 1 byte)
-        // - pos_x (u16, 2 bytes)
-        // - pos_y (u16, 2 bytes)
-        // - angle (u16, 2 bytes)
-        // - velocity_x (u16, 2 bytes)
-        // - velocity_y (u16, 2 bytes)
-
-        entity.entity_id = static_cast<uint32_t>(snapshot.payload[0]) |
-                           (static_cast<uint32_t>(snapshot.payload[1]) << 8) |
-                           (static_cast<uint32_t>(snapshot.payload[2]) << 16) |
-                           (static_cast<uint32_t>(snapshot.payload[3]) << 24);
-
-        entity.entity_type = snapshot.payload[4];
-        // snapshot.payload[5] is reserved byte, skip it
-
-        entity.pos_x = static_cast<uint16_t>(snapshot.payload[6]) |
-                       (static_cast<uint16_t>(snapshot.payload[7]) << 8);
-
-        entity.pos_y = static_cast<uint16_t>(snapshot.payload[8]) |
-                       (static_cast<uint16_t>(snapshot.payload[9]) << 8);
-
-        entity.angle = static_cast<uint16_t>(snapshot.payload[10]) |
-                       (static_cast<uint16_t>(snapshot.payload[11]) << 8);
-
-        entity.velocity_x = static_cast<uint16_t>(snapshot.payload[12]) |
-                            (static_cast<uint16_t>(snapshot.payload[13]) << 8);
-
-        entity.velocity_y = static_cast<uint16_t>(snapshot.payload[14]) |
-                            (static_cast<uint16_t>(snapshot.payload[15]) << 8);
-
-        entities.push_back(entity);
-    } else if (snapshot.payload_size >= 4) {
-        // WorldSnapshotPacket format (with header)
-        uint16_t entity_count =
-            static_cast<uint16_t>(snapshot.payload[0]) |
-            (static_cast<uint16_t>(snapshot.payload[1]) << 8);
-
-        size_t offset = 4;  // Skip header (entity_count + 2 reserved)
-
-        // Parse each entity (12 bytes each)
-        for (uint16_t i = 0; i < entity_count && offset + kEntityStateSize <=
-                                                     snapshot.payload_size;
-            ++i) {
-            ParsedEntity entity;
-
-            entity.entity_id =
-                static_cast<uint32_t>(snapshot.payload[offset + 0]) |
-                (static_cast<uint32_t>(snapshot.payload[offset + 1]) << 8) |
-                (static_cast<uint32_t>(snapshot.payload[offset + 2]) << 16) |
-                (static_cast<uint32_t>(snapshot.payload[offset + 3]) << 24);
-
-            entity.entity_type = snapshot.payload[offset + 4];
-            // offset + 5 is reserved byte, skip it
-
-            entity.pos_x =
-                static_cast<uint16_t>(snapshot.payload[offset + 6]) |
-                (static_cast<uint16_t>(snapshot.payload[offset + 7]) << 8);
-
-            entity.pos_y =
-                static_cast<uint16_t>(snapshot.payload[offset + 8]) |
-                (static_cast<uint16_t>(snapshot.payload[offset + 9]) << 8);
-
-            entity.angle =
-                static_cast<uint16_t>(snapshot.payload[offset + 10]) |
-                (static_cast<uint16_t>(snapshot.payload[offset + 11]) << 8);
-
-            entity.velocity_x =
-                static_cast<uint16_t>(snapshot.payload[offset + 12]) |
-                (static_cast<uint16_t>(snapshot.payload[offset + 13]) << 8);
-
-            entity.velocity_y =
-                static_cast<uint16_t>(snapshot.payload[offset + 14]) |
-                (static_cast<uint16_t>(snapshot.payload[offset + 15]) << 8);
-
-            entities.push_back(entity);
-            offset += kEntityStateSize;
-        }
-    }
-}
-
-void ParseSnapshotProjectile(std::vector<ParsedEntity> &entities,
-    const client::SnapshotPacket &snapshot) {
-    const size_t kEntityStateSize = 13;  // 13 bytes per EntityState
-
-    // Check if payload contains WorldSnapshotPacket format (header + entities)
-    // or just a single EntityState (current server implementation)
-    if (snapshot.payload_size == kEntityStateSize) {
-        // Single EntityState format (13 bytes) - current server implementation
-        ParsedEntity entity;
-
-        // EntityState structure:
-        // - entity_id (u32, 4 bytes)
-        // - entity_type (u8, 1 byte)
-        // - reserved (u8, 1 byte)
-        // - pos_x (u16, 2 bytes)
-        // - pos_y (u16, 2 bytes)
-        // - angle (u16, 2 bytes)
-        // - projectile_type (u8, 1 byte)
-
-        entity.entity_id = static_cast<uint32_t>(snapshot.payload[0]) |
-                           (static_cast<uint32_t>(snapshot.payload[1]) << 8) |
-                           (static_cast<uint32_t>(snapshot.payload[2]) << 16) |
-                           (static_cast<uint32_t>(snapshot.payload[3]) << 24);
-
-        entity.entity_type = snapshot.payload[4];
-        // snapshot.payload[5] is reserved byte, skip it
-
-        entity.pos_x = static_cast<uint16_t>(snapshot.payload[6]) |
-                       (static_cast<uint16_t>(snapshot.payload[7]) << 8);
-
-        entity.pos_y = static_cast<uint16_t>(snapshot.payload[8]) |
-                       (static_cast<uint16_t>(snapshot.payload[9]) << 8);
-
-        entity.angle = static_cast<uint16_t>(snapshot.payload[10]) |
-                       (static_cast<uint16_t>(snapshot.payload[11]) << 8);
-
-        entity.projectile_type = snapshot.payload[12];
-
-        entities.push_back(entity);
-    } else if (snapshot.payload_size >= 4) {
-        // WorldSnapshotPacket format (with header)
-        uint16_t entity_count =
-            static_cast<uint16_t>(snapshot.payload[0]) |
-            (static_cast<uint16_t>(snapshot.payload[1]) << 8);
-
-        size_t offset = 4;  // Skip header (entity_count + 2 reserved)
-
-        // Parse each entity (12 bytes each)
-        for (uint16_t i = 0; i < entity_count && offset + kEntityStateSize <=
-                                                     snapshot.payload_size;
-            ++i) {
-            ParsedEntity entity;
-
-            entity.entity_id =
-                static_cast<uint32_t>(snapshot.payload[offset + 0]) |
-                (static_cast<uint32_t>(snapshot.payload[offset + 1]) << 8) |
-                (static_cast<uint32_t>(snapshot.payload[offset + 2]) << 16) |
-                (static_cast<uint32_t>(snapshot.payload[offset + 3]) << 24);
-
-            entity.entity_type = snapshot.payload[offset + 4];
-            // offset + 5 is reserved byte, skip it
-
-            entity.pos_x =
-                static_cast<uint16_t>(snapshot.payload[offset + 6]) |
-                (static_cast<uint16_t>(snapshot.payload[offset + 7]) << 8);
-
-            entity.pos_y =
-                static_cast<uint16_t>(snapshot.payload[offset + 8]) |
-                (static_cast<uint16_t>(snapshot.payload[offset + 9]) << 8);
-
-            entity.angle =
-                static_cast<uint16_t>(snapshot.payload[offset + 10]) |
-                (static_cast<uint16_t>(snapshot.payload[offset + 11]) << 8);
-
-            entity.projectile_type = snapshot.payload[offset + 12];
-
-            entities.push_back(entity);
-            offset += kEntityStateSize;
-        }
-    }
-}
-
-/**
- * @brief Parse snapshot data from UDP packet.
- *
- * Deserializes EntityState structures from the snapshot payload.
- * Current implementation: Server sends a single EntityState directly (12
- * bytes) without WorldSnapshotPacket header.
- *
- * @param snapshot The snapshot packet received from server
- * @return Vector of parsed entities
- */
-static std::vector<ParsedEntity> ParseSnapshotData(
-    const client::SnapshotPacket &snapshot) {
-    std::vector<ParsedEntity> entities;
-    if (snapshot.entity_type == 0x00) {
-        // Parse using the existing function
-        ParseSnapshotPlayer(entities, snapshot);
-    } else if (snapshot.entity_type == 0x02) {
-        // Similar parsing function can be created for projectiles if needed
-        // For now, we can reuse the same parsing logic
-        ParseSnapshotProjectile(entities, snapshot);
-    } else {
-        // Handle other entity types as needed
-    }
-    return entities;
-}
-
-/**
- * @brief Display snapshot data (for debugging).
- *
- * @param snapshot The snapshot packet received from server
- */
-static void DisplaySnapshotData(const client::SnapshotPacket &snapshot) {
-    static int last_tick = -1;
-    static int display_count = 0;
-
-    last_tick = snapshot.tick;
-    display_count++;
-
-    std::cout << "\n[UDP Snapshot] Tick=" << snapshot.tick
-              << " PayloadSize=" << snapshot.payload_size << " bytes"
-              << std::endl;
-
-    // Display raw payload bytes (first 12 bytes)
-    if (display_count <= 3 && snapshot.payload_size > 0) {
-        std::cout << "  Raw payload (hex): ";
-        for (size_t i = 0; i < std::min<size_t>(snapshot.payload_size, 12);
-            ++i) {
-            std::cout << std::hex << std::setfill('0') << std::setw(2)
-                      << static_cast<int>(snapshot.payload[i]) << " ";
-        }
-        std::cout << std::dec << std::endl;
-    }
-
-    // Parse entities using the new function
-    auto entities = ParseSnapshotData(snapshot);
-
-    std::cout << "  Entities: " << entities.size() << std::endl;
-
-    for (size_t i = 0; i < entities.size(); ++i) {
-        const auto &entity = entities[i];
-        std::cout << "    [" << i << "] ID=" << entity.entity_id << " Type=0x"
-                  << std::hex << static_cast<int>(entity.entity_type)
-                  << std::dec << " Pos=(" << entity.pos_x << ","
-                  << entity.pos_y << ") Angle=" << entity.angle << " Vel=("
-                  << entity.velocity_x << "," << entity.velocity_y << ")"
-                  << std::endl;
-    }
-    std::cout << std::flush;
-}
-
-static void CreatePlayerEntity(GameWorld &game_world,
-    Engine::registry::entity_t new_entity, const ParsedEntity &entity_data) {
-    // Player entity
-    bool is_local = false;
-    if (game_world.server_connection_ &&
-        game_world.server_connection_->is_connected()) {
-        uint32_t controlled =
-            game_world.server_connection_->controlled_entity_id();
-        if (controlled != 0 && controlled == entity_data.entity_id)
-            is_local = true;
-    }
-
-    FactoryActors::GetInstance().CreateActor(
-        new_entity, game_world.registry_, "player", is_local);
-}
-
-static void CreateProjectileEntity(GameWorld &game_world,
-    Engine::registry::entity_t new_entity, const ParsedEntity &entity_data) {
-    // Projectile entity
-    if (entity_data.projectile_type == 0x00) {
-        // Basic projectile
-        createProjectile(game_world.registry_,
-            static_cast<float>(entity_data.pos_x),
-            static_cast<float>(entity_data.pos_y), /*ownerId=*/-1, new_entity);
-    } else if (entity_data.projectile_type == 0x01) {
-        // Charged projectile
-        createChargedProjectile(game_world.registry_,
-            static_cast<float>(entity_data.pos_x),
-            static_cast<float>(entity_data.pos_y), /*ownerId=*/-1, new_entity);
-    } else {
-        printf("[Snapshot] Unknown projectile type 0x%02X for entity ID %u\n",
-            entity_data.projectile_type, entity_data.entity_id);
-    }
-}
-
-static void CreateNewEntity(GameWorld &game_world,
-    const ParsedEntity &entity_data, std::optional<size_t> &entity_index) {
-    auto new_entity = game_world.registry_.SpawnEntity();
-    if (entity_data.entity_type == 0x00) {
-        // Player entity
-        CreatePlayerEntity(game_world, new_entity, entity_data);
-    } else if (entity_data.entity_type == 0x01) {
-        // Enemy entity
-        // For simplicity, create a basic enemy (e.g., "mermaid")
-        // FactoryActors::GetInstance().CreateActor(
-        //     new_entity, game_world.registry_, "mermaid", false);
-    } else if (entity_data.entity_type == 0x02) {
-        // Projectile entity
-        CreateProjectileEntity(game_world, new_entity, entity_data);
-    } else {
-        printf("[Snapshot] Unknown entity type 0x%02X for entity ID %u\n",
-            entity_data.entity_type, entity_data.entity_id);
-    }
-
-    game_world.registry_.AddComponent<Component::NetworkId>(new_entity,
-        Component::NetworkId{static_cast<int>(entity_data.entity_id)});
-    size_t entity_id = new_entity.GetId();
-    entity_index = entity_id;
-
-    std::cout << "[Snapshot] Created entity #" << entity_id
-              << " for NetworkId=" << entity_data.entity_id << std::endl;
-}
-
-static void UpdatePlayerEntity(GameWorld &game_world, size_t entity_index,
-    const ParsedEntity &entity_data) {
-    // Update existing entity's transform
-    if (!game_world.registry_.GetComponents<Component::Transform>().has(
-            entity_index))
-        return;
-    auto &transform = game_world.registry_
-                          .GetComponents<Component::Transform>()[entity_index];
-    if (transform.has_value()) {
-        transform->x = static_cast<float>(entity_data.pos_x);
-        transform->y = static_cast<float>(entity_data.pos_y);
-        transform->rotationDegrees =
-            static_cast<float>(entity_data.angle / 10.0f);
-    }
-    try {
-        auto &velocity =
-            game_world.registry_
-                .GetComponents<Component::Velocity>()[entity_index];
-        if (velocity.has_value()) {
-            // Decode velocity from bias encoding: [0, 65535] -> [-32768,
-            // 32767]
-            velocity->vx = static_cast<float>(
-                static_cast<int32_t>(entity_data.velocity_x) - 32768);
-            velocity->vy = static_cast<float>(
-                static_cast<int32_t>(entity_data.velocity_y) - 32768);
-        }
-    } catch (const std::exception &e) {
-        // Velocity component might not exist; ignore if so
-    }
-}
-
-static void UpdateProjectileEntity(GameWorld &game_world, size_t entity_index,
-    const ParsedEntity &entity_data) {
-    // Update existing entity's transform
-    if (!game_world.registry_.GetComponents<Component::Transform>().has(
+void UpdateNetworkIdTick(GameWorld &game_world, size_t entity_index,
+    const ClientApplication::ParsedEntity &entity_data, uint32_t tick) {
+    if (game_world.registry_.GetComponents<Component::NetworkId>().has(
             entity_index)) {
-        return;
-    }
-    auto &transform = game_world.registry_
-                          .GetComponents<Component::Transform>()[entity_index];
-    if (transform.has_value()) {
-        transform->x = static_cast<float>(entity_data.pos_x);
-        transform->y = static_cast<float>(entity_data.pos_y);
-        transform->rotationDegrees =
-            static_cast<float>(entity_data.angle / 10.0f);
-    }
-}
-
-static void UpdateExistingEntityTransform(GameWorld &game_world,
-    size_t entity_index, const ParsedEntity &entity_data) {
-    if (entity_data.entity_type == 0x00) {
-        // Player entity
-        UpdatePlayerEntity(game_world, entity_index, entity_data);
-    } else if (entity_data.entity_type == 0x01) {
-        // Enemy entity
-        // Update logic can be added here if needed
-    } else if (entity_data.entity_type == 0x02) {
-        // Projectile entity
-        // Projectiles are usually short-lived; may not need updates
-        UpdateProjectileEntity(game_world, entity_index, entity_data);
-    } else {
-        printf("[Snapshot] Unknown entity type 0x%02X for entity ID %u\n",
-            entity_data.entity_type, entity_data.entity_id);
+        auto &net_id =
+            game_world.registry_
+                .GetComponents<Component::NetworkId>()[entity_index];
+        if (net_id.has_value()) {
+            net_id->last_processed_tick = tick;
+        }
     }
 }
 
@@ -425,11 +46,13 @@ static void UpdateExistingEntityTransform(GameWorld &game_world,
  * @param game_world The game world containing the registry
  * @param snapshot The snapshot packet received from server
  */
-static void ApplySnapshotToRegistry(
+void ClientApplication::ApplySnapshotToRegistry(
     GameWorld &game_world, const client::SnapshotPacket &snapshot) {
     auto entities = ParseSnapshotData(snapshot);
 
     auto &net_ids = game_world.registry_.GetComponents<Component::NetworkId>();
+
+    SnapshotTracker::GetInstance().UpdateLastProcessedTick(snapshot.tick);
 
     for (const auto &entity_data : entities) {
         // Find entity with matching NetworkId
@@ -445,10 +68,13 @@ static void ApplySnapshotToRegistry(
 
         // If entity doesn't exist, create it
         if (!entity_index.has_value()) {
-            CreateNewEntity(game_world, entity_data, entity_index);
+            CreateNewEntity(
+                game_world, snapshot.tick, entity_data, entity_index);
         } else {
-            UpdateExistingEntityTransform(
+            UpdateExistingEntity(
                 game_world, entity_index.value(), entity_data);
+            UpdateNetworkIdTick(
+                game_world, entity_index.value(), entity_data, snapshot.tick);
         }
     }
 }
@@ -563,19 +189,7 @@ void ClientApplication::RunGameLoop(GameWorld &game_world) {
                 if (!snapshot.has_value())
                     break;
 
-                // packet_count++;
-                //  if (packet_count <= 5 || packet_count % 60 == 0) {
-                //      std::cout << "[Client] Received UDP snapshot #"
-                //                << packet_count << " (tick=" <<
-                //                snapshot->tick
-                //                << ")\n";
-                //  }
-
-                // Apply snapshot data to registry entities
                 ApplySnapshotToRegistry(game_world, *snapshot);
-
-                // Display snapshot data for debugging (optional)
-                // DisplaySnapshotData(*snapshot);
             }
         }
 

@@ -163,4 +163,7 @@ uint8_t InputToBitfield(const Com::Inputs &input);
 void AudioSystem(Eng::registry &reg, Audio::AudioManager &audio_manager,
     Eng::sparse_array<Com::SoundRequest> &sound_requests);
 
+void KillEntitiesSystem(
+    Eng::registry &reg, Eng::sparse_array<Com::NetworkId> &network_ids);
+
 }  // namespace Rtype::Client

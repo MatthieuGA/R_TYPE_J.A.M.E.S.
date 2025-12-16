@@ -54,7 +54,7 @@ class PacketSender {
      */
     void SendGameStart();
 
-    void SendSnapshot(network::EntityState entity_state);
+    void SendSnapshot(network::EntityState entity_state, int tick);
 
  private:
     // Reference to connection manager (not owned)

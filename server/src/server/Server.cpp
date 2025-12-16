@@ -122,9 +122,10 @@ Engine::registry &Server::GetRegistry() {
     return registry_;
 }
 
-uint8_t Server::GetNextNetworkId() {
-    static int next_id = 1;
-    return next_id++;
+uint32_t Server::GetNextNetworkId() {
+    static uint32_t next_id = 1;
+    uint32_t id = next_id++;
+    return id;
 }
 
 void Server::HandleTcpAccept(boost::asio::ip::tcp::socket socket) {
