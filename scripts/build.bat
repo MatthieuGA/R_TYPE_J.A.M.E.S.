@@ -43,34 +43,60 @@ REM Create build directory
 if not exist "build" mkdir build
 cd build
 
-REM Configure with CMake
-echo ==========================================
-echo Configuring with CMake...
-echo ==========================================
-echo.
+REM Check if CMake configuration exists and is up to date
+if not exist "CMakeCache.txt" (
+    echo ==========================================
+    echo Configuring with CMake...
+    echo ==========================================
+    echo.
+    cmake .. ^
+        -DCMAKE_TOOLCHAIN_FILE="%VCPKG_ROOT%\scripts\buildsystems\vcpkg.cmake" ^
+        -DCMAKE_BUILD_TYPE=Release ^
+        -G "Visual Studio 17 2022"
 
-cmake .. ^
-    -DCMAKE_TOOLCHAIN_FILE="%VCPKG_ROOT%\scripts\buildsystems\vcpkg.cmake" ^
-    -DCMAKE_BUILD_TYPE=Release
-
-if %ERRORLEVEL% NEQ 0 (
-    echo ERROR: CMake configuration failed
-    cd ..
-    exit /b 1
+    if %ERRORLEVEL% NEQ 0 (
+        echo ERROR: CMake configuration failed
+        cd .. 
+        exit /b 1
+    )
+    echo.
+) else (
+    echo ✓ CMake already configured (delete build/CMakeCache.txt to reconfigure)
+    echo.
 )
 
-echo.
 echo ==========================================
-echo Building...
+echo Building (incremental)...
 echo ==========================================
 echo.
 
-REM Build
-cmake --build . --config Release
+REM Try to find MSBuild
+set "MSBUILD_PATH="
+if exist "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe" (
+    set "MSBUILD_PATH=C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe"
+) else if exist "C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe" (
+    set "MSBUILD_PATH=C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe"
+) else if exist "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe" (
+    set "MSBUILD_PATH=C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe"
+)
+
+REM Build with MSBuild if found, otherwise use cmake
+if defined MSBUILD_PATH (
+    if exist "RTypeProject.sln" (
+        echo Using MSBuild for faster incremental builds...
+        "%MSBUILD_PATH%" RTypeProject.sln /p:Configuration=Release /m /nologo /verbosity:minimal
+    ) else (
+        echo ERROR: Solution file RTypeProject.sln not found.
+        exit /b 1
+    )
+) else (
+    echo Using cmake to build the project...
+    cmake --build . --config Release -j
+)
 
 if %ERRORLEVEL% NEQ 0 (
     echo ERROR: Build failed
-    cd ..
+    cd .. 
     exit /b 1
 )
 

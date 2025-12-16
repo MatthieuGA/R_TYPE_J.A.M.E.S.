@@ -59,7 +59,8 @@ void GameScene::InitBackgrounds(Engine::registry &reg) {
 
 void GameScene::InitPlayerLevel(Engine::registry &reg) {
     auto player_entity = CreateEntityInScene(reg);
-    FactoryActors::GetInstance().CreateActor(player_entity, reg, "player");
+    FactoryActors::GetInstance().CreateActor(
+        player_entity, reg, "player", true);
 
     try {
         Component::Transform &transform =
@@ -100,14 +101,6 @@ void GameScene::InitScene(Engine::registry &reg, GameWorld &gameWorld) {
     }
 
     InitBackgrounds(reg);
-    InitPlayerLevel(reg);
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    for (int i = 0; i < 4; i++) {
-        std::vector<sf::Vector2f> enemy_positions = {{1400.f, 700.f},
-            {1100.f, 700.f}, {1100.f, 400.f}, {1400.f, 400.f}};
-        AddEnemyLevel(reg, enemy_positions[i], i);
-    }
 }
 
 void GameScene::AddEnemyLevel(

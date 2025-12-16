@@ -1,4 +1,6 @@
 #pragma once
+#include <cstdint>
+#include <vector>
 
 #include <boost/asio.hpp>
 
@@ -78,6 +80,8 @@ class Server {
      */
     Engine::registry &GetRegistry();
 
+    static uint32_t GetNextNetworkId();
+
  private:
     /**
      * @brief Register all ECS components
@@ -94,6 +98,10 @@ class Server {
      */
     void SetupGameTick();
 
+    void SendSnapshotsToAllClients();
+
+    void SetupEntitiesGame();
+
     /**
      * @brief Handle new TCP connection from acceptor
      *
@@ -102,6 +110,15 @@ class Server {
      * @param socket Newly accepted TCP socket (ownership transferred)
      */
     void HandleTcpAccept(boost::asio::ip::tcp::socket socket);
+    /**
+     * @brief Handle UDP PLAYER_INPUT packets (discovery or input bitfield)
+     *
+     * @param endpoint UDP endpoint the packet came from
+     * @param data Raw packet bytes
+     * @return true if the packet was handled (discovery or input applied)
+     */
+    bool HandleUdpPlayerInput(const boost::asio::ip::udp::endpoint &endpoint,
+        const std::vector<uint8_t> &data);
 
     // ========================================================================
     // Member Variables
@@ -120,6 +137,7 @@ class Server {
     PacketHandler packet_handler_;
 
     static constexpr int TICK_RATE_MS = 16;  // ~60 FPS
+    int tick_count_;
 };
 
 }  // namespace server

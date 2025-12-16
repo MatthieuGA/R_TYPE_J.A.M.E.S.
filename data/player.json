@@ -1,7 +1,7 @@
 {
     "tag": "player",
     "health": 100,
-    "speed": 400.0,
+    "speed": 800.0,
     "spritePath": "original_rtype/players.png",
     "hitbox": {
         "x": 30.0,

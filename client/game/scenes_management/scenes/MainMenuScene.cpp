@@ -1,5 +1,6 @@
 #include "game/scenes_management/scenes/MainMenuScene.hpp"
 
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -69,19 +70,21 @@ void MainMenuScene::InitUI(Engine::registry &reg, GameWorld &gameWorld) {
         play_button_entity, Component::HitBox{128.f, 32.f});
     reg.AddComponent<Component::Clickable>(play_button_entity,
         Component::Clickable{
-            [&reg, &gameWorld]() {
-                // OnClick: Transition to GameLevel scene
-                if (gameWorld.audio_manager_) {
-                    gameWorld.audio_manager_->StopMusic();
-                }
-                for (auto &&[i, gs] : make_indexed_zipper(
-                         reg.GetComponents<Component::SceneManagement>())) {
-                    gs.next = "GameLevel";
+            [&gameWorld]() {
+                // OnClick: Send READY_STATUS to server
+                if (gameWorld.server_connection_ &&
+                    gameWorld.server_connection_->is_connected()) {
+                    std::cout << "[Client] Sending ready status to server..."
+                              << std::endl;
+                    gameWorld.server_connection_->SendReadyStatus(true);
+                } else {
+                    std::cerr << "[Client] Cannot send ready status: "
+                              << "not connected to server" << std::endl;
                 }
             },
         });
     reg.AddComponent<Component::Text>(play_button_entity,
-        Component::Text("dogica.ttf", "Play", 13, LAYER_UI + 1, WHITE_BLUE,
+        Component::Text("dogica.ttf", "Ready", 13, LAYER_UI + 1, WHITE_BLUE,
             sf::Vector2f(0.0f, -5.0f)));
 
     auto quit_button_entity = CreateEntityInScene(reg);

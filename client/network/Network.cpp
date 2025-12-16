@@ -13,6 +13,7 @@ namespace {
 // Protocol constants
 constexpr uint8_t kOpConnectReq = 0x01;
 constexpr uint8_t kOpConnectAck = 0x02;
+constexpr uint8_t kOpGameStart = 0x05;
 constexpr uint8_t kOpDisconnectReq = 0x03;
 constexpr uint8_t kOpPlayerInput = 0x10;
 constexpr uint8_t kOpWorldSnapshot = 0x20;
@@ -64,14 +65,22 @@ ServerConnection::ServerConnection(boost::asio::io_context &io,
       tcp_socket_(io),
       connected_(false),
       player_id_(0),
+      game_started_(false),
       current_tick_(0),
       server_ip_(server_ip),
       tcp_port_(tcp_port),
       udp_port_(udp_port) {
     try {
+        // Bind to an auto-assigned port (0 = let OS choose)
+        // The server will discover the actual port from the first UDP packet
         boost::asio::ip::udp::endpoint local_ep(boost::asio::ip::udp::v4(), 0);
         udp_socket_.open(boost::asio::ip::udp::v4());
         udp_socket_.bind(local_ep);
+
+        // Display the auto-assigned port
+        uint16_t bound_port = udp_socket_.local_endpoint().port();
+        std::cout << "[Network] UDP socket bound to auto-assigned port "
+                  << bound_port << std::endl;
 
         server_udp_endpoint_ = boost::asio::ip::udp::endpoint(
             boost::asio::ip::make_address(server_ip_), udp_port_);
@@ -203,6 +212,8 @@ void ServerConnection::AsyncReceiveTCP() {
                         payload_size);
                     if (opcode == kOpConnectAck) {
                         HandleConnectAck(data);
+                    } else if (opcode == kOpGameStart) {  // kOpGameStart
+                        HandleGameStart(data);
                     } else {
                         std::cout << "[Network] Unhandled TCP opcode: 0x"
                                   << std::hex << static_cast<int>(opcode)
@@ -215,23 +226,94 @@ void ServerConnection::AsyncReceiveTCP() {
 }
 
 void ServerConnection::HandleConnectAck(const std::vector<uint8_t> &data) {
+    const int kDebugLogLimit = 4;
+
     if (data.size() <
-        4) {  // Payload is 4 bytes: PlayerId + Status + Reserved[2]
+        kDebugLogLimit) {  // Payload is 4 bytes: PlayerId+Status+UdpPort(u16)
         std::cerr << "[Network] CONNECT_ACK malformed" << std::endl;
         return;
     }
     uint8_t pid = data[0];     // PlayerId is first
     uint8_t status = data[1];  // Status is second
+    uint16_t server_udp_port =
+        ReadLe16(data.data() + 2);  // Server's UDP port (little-endian)
+
     if (status == 0x00) {
         player_id_.store(pid);
         connected_.store(true);
+
+        // Update server UDP endpoint with the port from CONNECT_ACK
+        server_udp_endpoint_ = boost::asio::ip::udp::endpoint(
+            boost::asio::ip::make_address(server_ip_), server_udp_port);
+
         std::cout << "[Network] Connected. PlayerId=" << static_cast<int>(pid)
-                  << std::endl;
+                  << ", ServerUdpPort=" << server_udp_port << std::endl;
+
+        // Get the local UDP port assigned by OS and send discovery packet
+        try {
+            boost::asio::ip::udp::endpoint local_ep =
+                udp_socket_.local_endpoint();
+            uint16_t local_udp_port = local_ep.port();
+            std::cout << "[Network] Local UDP port: " << local_udp_port
+                      << std::endl;
+
+            // Send a discovery packet to inform server of our UDP port
+            // Format: opcode (0x10 = PLAYER_INPUT) + inputs + reserved
+            // This also serves as endpoint discovery
+            auto discovery_pkt =
+                std::make_shared<std::vector<uint8_t>>(kHeaderSize + 4);
+            WriteHeader(discovery_pkt->data(), 0x10, 4,
+                static_cast<uint32_t>(current_tick_));
+            // Include player id in discovery payload so server can map
+            // this UDP endpoint to the correct authenticated client.
+            (*discovery_pkt)[kHeaderSize + 0] = static_cast<uint8_t>(
+                player_id_.load());                 // player id (discovery)
+            (*discovery_pkt)[kHeaderSize + 1] = 0;  // reserved[0]
+            (*discovery_pkt)[kHeaderSize + 2] = 0;  // reserved[1]
+            (*discovery_pkt)[kHeaderSize + 3] = 0;  // reserved[2]
+
+            udp_socket_.async_send_to(boost::asio::buffer(*discovery_pkt),
+                server_udp_endpoint_,
+                [this, discovery_pkt, local_udp_port](
+                    const boost::system::error_code &ec, std::size_t) {
+                    if (!ec) {
+                        std::cout
+                            << "[Network] UDP discovery packet sent from port "
+                            << local_udp_port << std::endl;
+                    } else {
+                        std::cerr << "[Network] Failed to send UDP discovery: "
+                                  << ec.message() << std::endl;
+                    }
+                });
+        } catch (const std::exception &e) {
+            std::cerr << "[Network] Error getting local UDP endpoint: "
+                      << e.what() << std::endl;
+        }
     } else {
         std::cerr << "[Network] CONNECT_ACK failed. Status="
                   << static_cast<int>(status) << std::endl;
         Disconnect();
     }
+}
+
+void ServerConnection::HandleGameStart(const std::vector<uint8_t> &data) {
+    if (data.size() < 4) {  // Payload is 4 bytes: ControlledEntityId (u32)
+        std::cerr << "[Network] GAME_START malformed" << std::endl;
+        return;
+    }
+
+    // Read controlled entity ID (little-endian u32)
+    uint32_t controlled_entity_id = static_cast<uint32_t>(data[0]) |
+                                    (static_cast<uint32_t>(data[1]) << 8) |
+                                    (static_cast<uint32_t>(data[2]) << 16) |
+                                    (static_cast<uint32_t>(data[3]) << 24);
+
+    std::cout << "[Network] GAME_START received! Controlled EntityId="
+              << controlled_entity_id << std::endl;
+
+    // Store controlled entity id for local input mapping
+    controlled_entity_id_ = controlled_entity_id;
+    game_started_.store(true);
 }
 
 void ServerConnection::SendInput(uint8_t input_flags) {
@@ -254,6 +336,38 @@ void ServerConnection::SendInput(uint8_t input_flags) {
         });
 }
 
+void ServerConnection::SendReadyStatus(bool is_ready) {
+    if (!connected_.load()) {
+        std::cerr << "[Network] Cannot send READY_STATUS: not connected"
+                  << std::endl;
+        return;
+    }
+
+    // READY_STATUS (0x07) payload: 4 bytes (IsReady + 3 reserved bytes)
+    constexpr uint8_t kOpReadyStatus = 0x07;
+    auto pkt = std::make_shared<std::vector<uint8_t>>(kHeaderSize + 4);
+    WriteHeader(pkt->data(), kOpReadyStatus, 4, 0);  // TickId = 0 for TCP
+    (*pkt)[kHeaderSize + 0] = is_ready ? 0x01 : 0x00;
+    (*pkt)[kHeaderSize + 1] = 0;  // reserved[0]
+    (*pkt)[kHeaderSize + 2] = 0;  // reserved[1]
+    (*pkt)[kHeaderSize + 3] = 0;  // reserved[2]
+
+    std::cout << "[Network] Sending READY_STATUS ("
+              << (is_ready ? "Ready" : "Not Ready") << ")" << std::endl;
+
+    boost::asio::async_write(tcp_socket_, boost::asio::buffer(*pkt),
+        [pkt, is_ready](
+            const boost::system::error_code &ec, std::size_t bytes_sent) {
+            if (ec) {
+                std::cerr << "[Network] Failed to send READY_STATUS: "
+                          << ec.message() << std::endl;
+            } else {
+                std::cout << "[Network] READY_STATUS sent successfully ("
+                          << bytes_sent << " bytes)" << std::endl;
+            }
+        });
+}
+
 void ServerConnection::AsyncReceiveUDP() {
     // Only schedule a new async receive if the socket is open.
     if (!udp_socket_.is_open())
@@ -270,10 +384,27 @@ void ServerConnection::AsyncReceiveUDP() {
                 return;
             }
 
+            // Debug: log first 10 received packets with opcode
+            static int udp_recv_count = 0;
+            udp_recv_count++;
+
             if (bytes >= kHeaderSize) {
                 uint8_t opcode = udp_buffer_[0];
                 uint16_t payload_size = ReadLe16(udp_buffer_.data() + 1);
+                uint8_t packet_index = udp_buffer_[3];
                 uint32_t tick_id = ReadLe32(udp_buffer_.data() + 4);
+                uint8_t packet_count = udp_buffer_[8];
+                uint8_t entity_type =
+                    udp_buffer_[9];  // Read entity_type from header
+
+                if (udp_recv_count <= 10) {
+                    std::cout << "[Network] UDP packet #" << udp_recv_count
+                              << ": " << bytes << " bytes, opcode=0x"
+                              << std::hex << static_cast<int>(opcode)
+                              << std::dec << ", payload_size=" << payload_size
+                              << ", tick=" << tick_id << ", entity_type="
+                              << static_cast<int>(entity_type) << std::endl;
+                }
                 // Defensive check: Ensure payload_size doesn't exceed buffer
                 // capacity (should never happen with proper MTU, but good
                 // practice)
@@ -293,12 +424,23 @@ void ServerConnection::AsyncReceiveUDP() {
                     client::SnapshotPacket snap;
                     snap.tick = tick_id;
                     snap.payload_size = payload_size;
+                    snap.entity_type =
+                        entity_type;  // Store entity_type in snapshot
                     std::memcpy(snap.payload.data(),
                         udp_buffer_.data() + kHeaderSize, payload_size);
                     if (!snapshot_queue_.push(snap)) {
                         std::cerr << "[Network] Snapshot queue full, "
                                   << "dropping packet" << std::endl;
+                    } else if (udp_recv_count <= 10) {
+                        std::cout << "[Network] Snapshot added to queue (tick="
+                                  << tick_id << ")" << std::endl;
                     }
+                } else if (udp_recv_count <= 10) {
+                    std::cout << "[Network] Packet ignored: opcode=0x"
+                              << std::hex << static_cast<int>(opcode)
+                              << std::dec << ", expected=0x" << std::hex
+                              << static_cast<int>(kOpWorldSnapshot) << std::dec
+                              << std::endl;
                 }
             }
 
