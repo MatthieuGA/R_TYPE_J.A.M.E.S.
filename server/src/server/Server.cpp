@@ -77,7 +77,7 @@ void Server::Start() {
     std::cout << "Starting game..." << std::endl;
     running_ = true;
 
-    SetupEntityiesGame();
+    SetupEntitiesGame();
     SetupGameTick();
 }
 

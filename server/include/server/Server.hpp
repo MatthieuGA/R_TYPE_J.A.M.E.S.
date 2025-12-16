@@ -100,7 +100,7 @@ class Server {
 
     void SendSnapshotsToAllClients();
 
-    void SetupEntityiesGame();
+    void SetupEntitiesGame();
 
     /**
      * @brief Handle new TCP connection from acceptor
