@@ -1,8 +1,8 @@
 Network Working Group                                           J.A.M.E.S
 Request for Comments: 1                                    Epitech Nantes
 Category: Standards Track                                   December 2025
-Version: 4.0.0
-Based on: docs/PROTOCOL.md (v4.0.0)
+Version: 4.1.0
+Based on: docs/PROTOCOL.md (v4.1.0)
 
                      R-Type Game Protocol Specification
 
@@ -57,24 +57,27 @@ Table of Contents
 
    All multi-byte fields MUST be transmitted in Little Endian format.
 
-   | Field Name  | Type | Size   | Range         | Description                     |
-   |-------------|------|--------|---------------|---------------------------------|
-   | OpCode      | u8   | 1      | 0..255        | Command ID                      |
-   | PayloadSize | u16  | 2      | 0..65535      | Size of following data          |
-   | TickId      | u32  | 4      | 0..4294967295 | Frame counter                   |
-   | PacketIndex | u8   | 1      | 0..255        | Fragment index                  |
-   | PacketCount | u8   | 1      | 0..255        | Total fragments for Tick        |
-   | Reserved    | -    | Varies | -             | Padding bytes, MUST be set to 0 |
-   | PlayerId    | u16  | 1      | 0..65535      | Session ID                      |
-   | EntityId    | u32  | 4      | 0..4294967295 | Unique Object ID (ECS)          |
-   | Status      | u8   | 1      | 0..255        | Error/Success Codes (0=OK)      |
-   | Inputs      | u8   | 1      | 0..255        | Bitmask (Keys held down)        |
-   | Score       | u32  | 4      | 0..4294967295 | Game Score                      |
-   | Lives       | u8   | 1      | 0..255        | Player Life Count               |
-   | Angle       | u16  | 2      | 0..360        | Degrees                         |
-   | Position    | u16  | 2      | 0..65535      | Normalized Coordinate           |
-   | Type        | u8   | 1      | 0..255        | Sprite/Prefab ID                |
-   | Username    | char | 32     | 0..255        | Fixed-size String (Null-term)   |
+   | Field Name        | Type | Size   | Range         | Description                     |
+   |-------------------|------|--------|---------------|---------------------------------|
+   | OpCode            | u8   | 1      | 0..255        | Command ID                      |
+   | PayloadSize       | u16  | 2      | 0..65535      | Size of following data          |
+   | TickId            | u32  | 4      | 0..4294967295 | Frame counter                   |
+   | PacketIndex       | u8   | 1      | 0..255        | Fragment index                  |
+   | PacketCount       | u8   | 1      | 0..255        | Total fragments for Tick        |
+   | Reserved          | -    | Varies | -             | Padding bytes, MUST be set to 0 |
+   | PlayerId          | u16  | 1      | 0..65535      | Session ID                      |
+   | EntityId          | u32  | 4      | 0..4294967295 | Unique Object ID (ECS)          |
+   | Status            | u8   | 1      | 0..255        | Error/Success Codes (0=OK)      |
+   | Inputs            | u8   | 1      | 0..255        | Bitmask (Keys held down)        |
+   | Score             | u32  | 4      | 0..4294967295 | Game Score                      |
+   | Lives             | u8   | 1      | 0..255        | Player Life Count               |
+   | Angle             | u16  | 2      | 0..360        | Degrees                         |
+   | Position          | u16  | 2      | 0..65535      | Normalized Coordinate           |
+   | Type              | u8   | 1      | 0..255        | Sprite/Prefab ID                |
+   | Username          | char | 32     | 0..255        | Fixed-size String (Null-term)   |
+   | ServerName        | char | 32     | 0..255        | Fixed-size String (Null-term)   |
+   | ServerDescription | char | 64     | 0..255        | Fixed-size String (Null-term)   |
+   | PlayerCount       | u8   | 1      | 0..255        | Number of connected players     |
 
    3.2.  OpCode Categorization
 
@@ -254,6 +257,47 @@ Table of Contents
    Broadcasted to all clients when a player changes their ready status
    in the lobby. Clients MUST update the displayed ready status for the
    specified player upon receiving this message.
+
+   5.10. SERVER_INFO_REQ (0x0A)
+
+   Direction: Client -> Server
+   Description: Request for server information.
+   Payload Size: 0 bytes (Header only).
+
+   Sent by the client to request details about the server, such as
+   server name, description, and current player count.
+
+   5.11. SERVER_INFO_RES (0x0B)
+
+   Direction: Server -> Client
+   Description: Response with server information.
+   Payload Size: 100 bytes
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |CurrentPlayers |  MaxPlayers   |     Status    |   Reserved    |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                          ServerName                           |
+   |                       (Fixed 32 bytes)                        |
+   |                    (Null-Terminated String)                   |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                      ServerDescription                        |
+   |                       (Fixed 64 bytes)                        |
+   |                    (Null-Terminated String)                   |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   CurrentPlayers: Number of players currently connected.
+   MaxPlayers: Maximum number of players allowed.
+   Status:
+      0: Lobby Open
+      1: In Game
+      2: Full
+   ServerName: The name of the server.
+   ServerDescription: A brief description of the server.
+
+   Sent in response to SERVER_INFO_REQ, providing the client with
+   relevant server details.
 
 6.  UDP Protocol (Real-time Gameplay)
 
