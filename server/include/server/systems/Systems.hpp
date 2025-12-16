@@ -37,4 +37,7 @@ void PaternMovementSystem(Engine::registry &reg,
     Engine::sparse_array<Component::Velocity> &velocities,
     Engine::sparse_array<Component::PatternMovement> &patern_movements);
 
+void AnimationSystem(Engine::registry &reg,
+    Engine::sparse_array<Component::AnimatedSprite> &anim_sprites);
+
 }  // namespace server

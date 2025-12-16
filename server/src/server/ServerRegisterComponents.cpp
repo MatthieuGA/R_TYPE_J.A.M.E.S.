@@ -28,6 +28,7 @@ void Server::RegisterComponents() {
     registry_.RegisterComponent<Component::AnimationDeath>();
     registry_.RegisterComponent<Component::NetworkId>();
     registry_.RegisterComponent<Component::PatternMovement>();
+    registry_.RegisterComponent<Component::AnimatedSprite>();
 
     std::cout << "Registered all components" << std::endl;
 }

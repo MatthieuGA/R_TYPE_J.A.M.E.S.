@@ -28,6 +28,9 @@ class ClientApplication {
         uint16_t velocity_y;
         // Projectiles :
         uint8_t projectile_type;
+        // Enemies :
+        uint8_t current_animation;
+        uint8_t current_frame;
     };
 
     /**

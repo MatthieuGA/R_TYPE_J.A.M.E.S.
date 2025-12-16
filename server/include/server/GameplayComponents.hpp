@@ -1,5 +1,6 @@
 #pragma once
 #include <functional>
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -271,6 +272,84 @@ struct PatternMovement {
 
     // Follow player / target
     size_t targetEntityId = 0;  // Entity ID of the target to follow
+};
+
+struct AnimatedSprite {
+    struct Animation {
+        int totalFrames;
+        int current_frame;
+        float frameDuration;
+        bool loop;
+
+        Animation()
+            : totalFrames(0),
+              current_frame(0),
+              frameDuration(0.0f),
+              loop(false) {}
+
+        Animation(int totalFrames, float frameDuration, bool loop)
+            : totalFrames(totalFrames),
+              current_frame(0),
+              frameDuration(frameDuration),
+              loop(loop) {}
+    };
+
+    std::map<std::string, Animation> animations;
+    std::string currentAnimation;
+    std::vector<std::pair<std::string, int>> animationQueue;
+
+    bool animated = true;
+    float elapsedTime = 0.0f;
+
+    AnimatedSprite(
+        bool loop = true, int totalFrames = 0, float frameDuration = 0.1f);
+    explicit AnimatedSprite(int current_frame);
+
+    /**
+     * @brief Add a new animation to the animation map.
+     *
+     * @param name The name/key for this animation
+     * @param path The path to the texture file (relative to assets/images/)
+     * @param frameWidth Width of a single frame
+     * @param frameHeight Height of a single frame
+     * @param totalFrames Total number of frames in the animation
+     * @param frameDuration Duration of each frame in seconds
+     * @param loop Whether the animation should loop
+     * @param first_frame_position Position of the first frame in the
+     * spritesheet
+     * @param offset Offset to apply to the sprite position when rendering
+     */
+    void AddAnimation(const std::string &name, int totalFrames,
+        float frameDuration, bool loop = true);
+
+    /**
+     * @brief Change the current playing animation.
+     *
+     * @param name The name of the animation to play
+     * @param reset If true, reset the animation to frame 0 and elapsed time to
+     * 0
+     * @param push_to_queue If true, store the currently playing animation to
+     * resume later when interrupted
+     * @return true if the animation exists and was changed, false otherwise
+     */
+    bool SetCurrentAnimation(
+        const std::string &name, bool reset = true, bool push_to_queue = true);
+
+    /**
+     * @brief Get the current animation object.
+     *
+     * @return Pointer to the current Animation, or nullptr if not found
+     */
+    Animation *GetCurrentAnimation();
+
+    /**
+     * @brief Get the current animation object (const version).
+     *
+     * @return Const pointer to the current Animation, or nullptr if not found
+     */
+    const Animation *GetCurrentAnimation() const;
+
+    std::vector<std::string> GetAnimationNames() const;
 };
 
 }  // namespace server::Component

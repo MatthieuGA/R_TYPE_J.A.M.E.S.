@@ -124,7 +124,7 @@ void SendSnapshotEnemyState(int tick, network::EntityState entity_state,
     // Write WORLD_SNAPSHOT header (opcode 0x20 with entity data as payload)
     network::CommonHeader header(
         static_cast<uint8_t>(network::PacketType::WorldSnapshot),
-        16,    // payload_size = 16 bytes (one EntityState)
+        18,    // payload_size = 18 bytes (one EntityState)
         tick,  // tick_id = 0
         0,     // packet_index = 0
         1,     // packet_count = 1
@@ -132,7 +132,7 @@ void SendSnapshotEnemyState(int tick, network::EntityState entity_state,
     buffer.WriteHeader(header);
 
     // Serialize entity state into the payload
-    entity_state.Serialize(buffer, network::EntityState::EntityType::Player);
+    entity_state.Serialize(buffer, network::EntityState::EntityType::Enemy);
 }
 
 void PacketSender::SendSnapshot(network::EntityState entity_state, int tick) {

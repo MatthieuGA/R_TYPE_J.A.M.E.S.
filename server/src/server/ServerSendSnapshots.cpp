@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 #include <utility>
 
@@ -110,6 +111,42 @@ void SendServerSnapshotEnemy(network::EntityState &entity_state,
     while (normalized_angle >= 360.0f)
         normalized_angle -= 360.0f;
     entity_state.angle = static_cast<uint16_t>(normalized_angle * 10.0f);
+    // Set animation state if applicable
+    try {
+        auto &animated_sprite =
+            registry_.GetComponent<Component::AnimatedSprite>(
+                registry_.EntityFromIndex(i));
+        // Default values
+        entity_state.current_animation = 0;
+        entity_state.current_frame = 0;
+        // Resolve current animation index consistently with std::map order
+        const auto names = animated_sprite.GetAnimationNames();
+        for (size_t idx = 0; idx < names.size(); ++idx) {
+            if (names[idx] == animated_sprite.currentAnimation) {
+                entity_state.current_animation = static_cast<uint8_t>(idx);
+                break;
+            }
+        }
+        // Clamp frame to valid range for the active animation
+        auto it =
+            animated_sprite.animations.find(animated_sprite.currentAnimation);
+        if (it != animated_sprite.animations.end()) {
+            const int total = std::max(0, it->second.totalFrames);
+            int frame = it->second.current_frame;
+            if (total > 0) {
+                if (frame < 0)
+                    frame = 0;
+                if (frame >= total)
+                    frame = total - 1;
+            } else {
+                frame = 0;
+            }
+            entity_state.current_frame = static_cast<uint8_t>(frame);
+        }
+    } catch (const std::exception &e) {
+        entity_state.current_animation = 0;  // Default animation frame
+        entity_state.current_frame = 0;
+    }
 }
 
 void SendServerSnapshotProjectile(network::EntityState &entity_state,

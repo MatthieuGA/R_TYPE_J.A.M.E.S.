@@ -24,6 +24,15 @@ void CreateMermaidActor(Engine::entity &entity, Engine::registry &reg) {
         entity, Component::PatternMovement(
                     MERMAID_SPEED, 100.f, vector2f{600.f, 300.f}));
 
+    // loop, totalFrames, frameDuration
+    Component::AnimatedSprite animated_sprite(true, 4, 0.2f);
+    animated_sprite.AddAnimation("Hit", 2, 0.1f, false);
+    animated_sprite.AddAnimation("Death", 6, 0.1f, false);
+    animated_sprite.AddAnimation("Attack", 6, 0.15f, false);
+    animated_sprite.currentAnimation = "Default";
+    reg.AddComponent<Component::AnimatedSprite>(
+        entity, std::move(animated_sprite));
+
     // Add enemy shooting component
     // Component::EnemyShootTag enemy_shoot_tag(MERMAID_PROJECTILE_SPEED,
     //     MERMAID_PROJECTILE_DAMAGE, {-3.0f, -15.0f});

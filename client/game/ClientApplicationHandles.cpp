@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <iomanip>
 #include <iostream>
+#include <string>
 #include <vector>
 
 #include <SFML/Graphics.hpp>
@@ -45,8 +46,49 @@ static void CreateEnemyEntity(GameWorld &game_world,
     const ClientApplication::ParsedEntity &entity_data) {
     // Player entity
 
+    printf("[Snapshot] Creating enemy entity ID %u at position (%u, %u)\n",
+        entity_data.entity_id, entity_data.pos_x, entity_data.pos_y);
     FactoryActors::GetInstance().CreateActor(
         new_entity, game_world.registry_, "mermaid", false);
+    try {
+        printf(
+            "[Snapshot] Setting enemy animation %u frame %u for entity ID "
+            "%u\n",
+            entity_data.current_animation, entity_data.current_frame,
+            entity_data.entity_id);
+        auto &animated_sprite = game_world.registry_.GetComponents<
+            Component::AnimatedSprite>()[new_entity.GetId()];
+        if (animated_sprite.has_value()) {
+            printf(
+                "[Snapshot] Found AnimatedSprite component for entity ID %u\n",
+                entity_data.entity_id);
+            const auto names = animated_sprite->GetAnimationNames();
+            std::string chosen = "Default";
+            if (entity_data.current_animation < names.size())
+                chosen = names[entity_data.current_animation];
+            animated_sprite->SetCurrentAnimation(chosen);
+            auto it = animated_sprite->animations.find(chosen);
+            if (it != animated_sprite->animations.end()) {
+                int total = std::max(0, it->second.totalFrames);
+                int frame = static_cast<int>(entity_data.current_frame);
+                if (total > 0) {
+                    if (frame < 0)
+                        frame = 0;
+                    if (frame >= total)
+                        frame = total - 1;
+                } else {
+                    frame = 0;
+                }
+                it->second.current_frame = frame;
+            }
+            printf(
+                "[Snapshot] Set animation '%s' and frame for entity ID %u\n",
+                chosen.c_str(), entity_data.entity_id);
+        }
+    } catch (const std::exception &e) {
+        printf("[Snapshot] ERROR setting animation for entity ID %u: %s\n",
+            entity_data.entity_id, e.what());
+    }
 }
 
 static void CreateProjectileEntity(GameWorld &game_world,
@@ -73,6 +115,8 @@ void ClientApplication::CreateNewEntity(GameWorld &game_world, int tick,
     const ClientApplication::ParsedEntity &entity_data,
     std::optional<size_t> &entity_index) {
     auto new_entity = game_world.registry_.SpawnEntity();
+    printf("[Snapshot] Creating new entity of type 0x%02X ...\n",
+        entity_data.entity_type);
     if (entity_data.entity_type == 0x00) {
         // Player entity
         CreatePlayerEntity(game_world, new_entity, entity_data);
@@ -158,6 +202,35 @@ static void UpdateEnemyEntity(GameWorld &game_world, size_t entity_index,
         }
     } catch (const std::exception &e) {
         // Velocity component might not exist; ignore if so
+    }
+
+    try {
+        auto &animated_sprite =
+            game_world.registry_
+                .GetComponents<Component::AnimatedSprite>()[entity_index];
+        if (animated_sprite.has_value()) {
+            const auto names = animated_sprite->GetAnimationNames();
+            std::string chosen = "Default";
+            if (entity_data.current_animation < names.size())
+                chosen = names[entity_data.current_animation];
+            animated_sprite->SetCurrentAnimation(chosen);
+            auto it = animated_sprite->animations.find(chosen);
+            if (it != animated_sprite->animations.end()) {
+                int total = std::max(0, it->second.totalFrames);
+                int frame = static_cast<int>(entity_data.current_frame);
+                if (total > 0) {
+                    if (frame < 0)
+                        frame = 0;
+                    if (frame >= total)
+                        frame = total - 1;
+                } else {
+                    frame = 0;
+                }
+                it->second.current_frame = frame;
+            }
+        }
+    } catch (const std::exception &e) {
+        // AnimatedSprite component might not exist; ignore if so
     }
 }
 

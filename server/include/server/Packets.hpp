@@ -296,15 +296,17 @@ struct EntityState {
         Enemy = 0x01,
         Projectile = 0x02
     };
-    EntityId entity_id;       // 4 bytes
-    uint8_t entity_type;      // 1 byte (sprite/prefab ID)
-    uint8_t reserved;         // 1 byte padding
-    uint16_t pos_x;           // 2 bytes (normalized 0..65535)
-    uint16_t pos_y;           // 2 bytes (normalized 0..38864)
-    uint16_t angle;           // 2 bytes (degrees 0..360)
-    uint16_t velocity_x;      // 2 bytes (normalized -32768..32767)
-    uint16_t velocity_y;      // 2 bytes (normalized -32768..32767)
-    uint8_t projectile_type;  // 1 byte (for projectiles)
+    EntityId entity_id;         // 4 bytes
+    uint8_t entity_type;        // 1 byte (sprite/prefab ID)
+    uint8_t reserved;           // 1 byte padding
+    uint16_t pos_x;             // 2 bytes (normalized 0..65535)
+    uint16_t pos_y;             // 2 bytes (normalized 0..38864)
+    uint16_t angle;             // 2 bytes (degrees 0..360)
+    uint16_t velocity_x;        // 2 bytes (normalized -32768..32767)
+    uint16_t velocity_y;        // 2 bytes (normalized -32768..32767)
+    uint8_t projectile_type;    // 1 byte (for projectiles)
+    uint8_t current_animation;  // 1 byte (for animated entities)
+    uint8_t current_frame;      // 1 byte (for animated entities)
 
     void Serialize(PacketBuffer &buffer, EntityType type) const {
         buffer.WriteUint32(entity_id.value);  // 4 bytes
@@ -317,11 +319,13 @@ struct EntityState {
             buffer.WriteUint16(velocity_x);  // 2 bytes
             buffer.WriteUint16(velocity_y);  // 2 bytes
         } else if (type == EntityType::Enemy) {
-            buffer.WriteUint16(pos_x);       // 2 bytes
-            buffer.WriteUint16(pos_y);       // 2 bytes
-            buffer.WriteUint16(angle);       // 2 bytes
-            buffer.WriteUint16(velocity_x);  // 2 bytes
-            buffer.WriteUint16(velocity_y);  // 2 bytes
+            buffer.WriteUint16(pos_x);             // 2 bytes
+            buffer.WriteUint16(pos_y);             // 2 bytes
+            buffer.WriteUint16(angle);             // 2 bytes
+            buffer.WriteUint16(velocity_x);        // 2 bytes
+            buffer.WriteUint16(velocity_y);        // 2 bytes
+            buffer.WriteUint8(current_animation);  // 1 byte
+            buffer.WriteUint8(current_frame);      // 1 byte
         } else if (type == EntityType::Projectile) {
             buffer.WriteUint16(pos_x);           // 2 bytes
             buffer.WriteUint16(pos_y);           // 2 bytes
@@ -348,6 +352,8 @@ struct EntityState {
             state.angle = buffer.ReadUint16();
             state.velocity_x = buffer.ReadUint16();
             state.velocity_y = buffer.ReadUint16();
+            state.current_animation = buffer.ReadUint8();
+            state.current_frame = buffer.ReadUint8();
         } else if (type == EntityType::Projectile) {
             state.pos_x = buffer.ReadUint16();
             state.pos_y = buffer.ReadUint16();
