@@ -1,7 +1,7 @@
 Network Working Group                                           J.A.M.E.S
 Request for Comments: 1                                    Epitech Nantes
 Category: Standards Track                                   December 2025
-Version: 4.1.0
+Version: 4.1.1
 Based on: docs/PROTOCOL.md (v4.1.1)
 
                      R-Type Game Protocol Specification
@@ -65,7 +65,7 @@ Table of Contents
    | PacketIndex       | u8   | 1      | 0..255        | Fragment index                  |
    | PacketCount       | u8   | 1      | 0..255        | Total fragments for Tick        |
    | Reserved          | -    | Varies | -             | Padding bytes, MUST be set to 0 |
-   | PlayerId          | u16  | 1      | 0..65535      | Session ID                      |
+   | PlayerId          | u8   | 1      | 0..255        | Session ID                      |
    | EntityId          | u32  | 4      | 0..4294967295 | Unique Object ID (ECS)          |
    | Status            | u8   | 1      | 0..255        | Error/Success Codes (0=OK)      |
    | Inputs            | u8   | 1      | 0..255        | Bitmask (Keys held down)        |
