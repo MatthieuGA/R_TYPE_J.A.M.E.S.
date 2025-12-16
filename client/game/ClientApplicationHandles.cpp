@@ -80,8 +80,6 @@ void ClientApplication::CreateNewEntity(GameWorld &game_world, int tick,
         // Enemy entity
         // For simplicity, create a basic enemy (e.g., "mermaid")
         CreateEnemyEntity(game_world, new_entity, entity_data);
-        printf("[Snapshot] Created enemy entity ID %u at index %zu\n",
-            entity_data.entity_id, new_entity.GetId());
     } else if (entity_data.entity_type == 0x02) {
         // Projectile entity
         CreateProjectileEntity(game_world, new_entity, entity_data);
@@ -189,8 +187,6 @@ void ClientApplication::UpdateExistingEntity(GameWorld &game_world,
         // Enemy entity
         // Update logic can be added here if needed
         UpdateEnemyEntity(game_world, entity_index, entity_data);
-        printf("[Snapshot] Updated enemy entity ID %u at index %zu\n",
-            entity_data.entity_id, entity_index);
     } else if (entity_data.entity_type == 0x02) {
         // Projectile entity
         // Projectiles are usually short-lived; may not need updates
