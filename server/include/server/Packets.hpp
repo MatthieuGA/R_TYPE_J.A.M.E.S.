@@ -316,6 +316,12 @@ struct EntityState {
             buffer.WriteUint16(angle);       // 2 bytes
             buffer.WriteUint16(velocity_x);  // 2 bytes
             buffer.WriteUint16(velocity_y);  // 2 bytes
+        } else if (type == EntityType::Enemy) {
+            buffer.WriteUint16(pos_x);       // 2 bytes
+            buffer.WriteUint16(pos_y);       // 2 bytes
+            buffer.WriteUint16(angle);       // 2 bytes
+            buffer.WriteUint16(velocity_x);  // 2 bytes
+            buffer.WriteUint16(velocity_y);  // 2 bytes
         } else if (type == EntityType::Projectile) {
             buffer.WriteUint16(pos_x);           // 2 bytes
             buffer.WriteUint16(pos_y);           // 2 bytes
@@ -331,6 +337,12 @@ struct EntityState {
         state.entity_type = buffer.ReadUint8();
         state.reserved = buffer.ReadUint8();
         if (type == EntityType::Player) {
+            state.pos_x = buffer.ReadUint16();
+            state.pos_y = buffer.ReadUint16();
+            state.angle = buffer.ReadUint16();
+            state.velocity_x = buffer.ReadUint16();
+            state.velocity_y = buffer.ReadUint16();
+        } else if (type == EntityType::Enemy) {
             state.pos_x = buffer.ReadUint16();
             state.pos_y = buffer.ReadUint16();
             state.angle = buffer.ReadUint16();

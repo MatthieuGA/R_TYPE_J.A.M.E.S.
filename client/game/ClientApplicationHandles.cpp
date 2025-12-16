@@ -40,6 +40,15 @@ static void CreatePlayerEntity(GameWorld &game_world,
         new_entity, game_world.registry_, "player", is_local);
 }
 
+static void CreateEnemyEntity(GameWorld &game_world,
+    Engine::registry::entity_t new_entity,
+    const ClientApplication::ParsedEntity &entity_data) {
+    // Player entity
+
+    FactoryActors::GetInstance().CreateActor(
+        new_entity, game_world.registry_, "mermaid", false);
+}
+
 static void CreateProjectileEntity(GameWorld &game_world,
     Engine::registry::entity_t new_entity,
     const ClientApplication::ParsedEntity &entity_data) {
@@ -70,8 +79,9 @@ void ClientApplication::CreateNewEntity(GameWorld &game_world, int tick,
     } else if (entity_data.entity_type == 0x01) {
         // Enemy entity
         // For simplicity, create a basic enemy (e.g., "mermaid")
-        // FactoryActors::GetInstance().CreateActor(
-        //     new_entity, game_world.registry_, "mermaid", false);
+        CreateEnemyEntity(game_world, new_entity, entity_data);
+        printf("[Snapshot] Created enemy entity ID %u at index %zu\n",
+            entity_data.entity_id, new_entity.GetId());
     } else if (entity_data.entity_type == 0x02) {
         // Projectile entity
         CreateProjectileEntity(game_world, new_entity, entity_data);
@@ -92,6 +102,37 @@ void ClientApplication::CreateNewEntity(GameWorld &game_world, int tick,
 }
 
 static void UpdatePlayerEntity(GameWorld &game_world, size_t entity_index,
+    const ClientApplication::ParsedEntity &entity_data) {
+    // Update existing entity's transform
+    if (!game_world.registry_.GetComponents<Component::Transform>().has(
+            entity_index))
+        return;
+    auto &transform = game_world.registry_
+                          .GetComponents<Component::Transform>()[entity_index];
+    if (transform.has_value()) {
+        transform->x = static_cast<float>(entity_data.pos_x);
+        transform->y = static_cast<float>(entity_data.pos_y);
+        transform->rotationDegrees =
+            static_cast<float>(entity_data.angle / 10.0f);
+    }
+    try {
+        auto &velocity =
+            game_world.registry_
+                .GetComponents<Component::Velocity>()[entity_index];
+        if (velocity.has_value()) {
+            // Decode velocity from bias encoding: [0, 65535] -> [-32768,
+            // 32767]
+            velocity->vx = static_cast<float>(
+                static_cast<int32_t>(entity_data.velocity_x) - 32768);
+            velocity->vy = static_cast<float>(
+                static_cast<int32_t>(entity_data.velocity_y) - 32768);
+        }
+    } catch (const std::exception &e) {
+        // Velocity component might not exist; ignore if so
+    }
+}
+
+static void UpdateEnemyEntity(GameWorld &game_world, size_t entity_index,
     const ClientApplication::ParsedEntity &entity_data) {
     // Update existing entity's transform
     if (!game_world.registry_.GetComponents<Component::Transform>().has(
@@ -147,6 +188,9 @@ void ClientApplication::UpdateExistingEntity(GameWorld &game_world,
     } else if (entity_data.entity_type == 0x01) {
         // Enemy entity
         // Update logic can be added here if needed
+        UpdateEnemyEntity(game_world, entity_index, entity_data);
+        printf("[Snapshot] Updated enemy entity ID %u at index %zu\n",
+            entity_data.entity_id, entity_index);
     } else if (entity_data.entity_type == 0x02) {
         // Projectile entity
         // Projectiles are usually short-lived; may not need updates

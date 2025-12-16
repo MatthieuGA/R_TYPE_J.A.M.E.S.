@@ -118,12 +118,31 @@ void SendSnapshotProjectileState(int tick, network::EntityState entity_state,
         buffer, network::EntityState::EntityType::Projectile);
 }
 
+void SendSnapshotEnemyState(int tick, network::EntityState entity_state,
+    network::PacketBuffer &buffer) {
+    // Serialize entity state into the payload
+    // Write WORLD_SNAPSHOT header (opcode 0x20 with entity data as payload)
+    network::CommonHeader header(
+        static_cast<uint8_t>(network::PacketType::WorldSnapshot),
+        16,    // payload_size = 16 bytes (one EntityState)
+        tick,  // tick_id = 0
+        0,     // packet_index = 0
+        1,     // packet_count = 1
+        1);    // entity_type = 1 (Enemy)
+    buffer.WriteHeader(header);
+
+    // Serialize entity state into the payload
+    entity_state.Serialize(buffer, network::EntityState::EntityType::Player);
+}
+
 void PacketSender::SendSnapshot(network::EntityState entity_state, int tick) {
     // Send entity state snapshot to all authenticated players via UDP
     network::PacketBuffer buffer;
 
     if (entity_state.entity_type == 0) {  // PLAYER
         SendSnapshotPlayerState(tick, entity_state, buffer);
+    } else if (entity_state.entity_type == 1) {  // ENEMY
+        SendSnapshotEnemyState(tick, entity_state, buffer);
     } else if (entity_state.entity_type == 2) {  // PROJECTILE
         SendSnapshotProjectileState(tick, entity_state, buffer);
     } else {

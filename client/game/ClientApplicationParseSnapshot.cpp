@@ -23,6 +23,34 @@
 namespace Rtype::Client {
 // Parse Player
 
+static uint32_t Get4BytesAsUint32(
+    const std::array<uint8_t, 1460> &payload, size_t offset) {
+    return static_cast<uint16_t>(payload[offset]) |
+           (static_cast<uint16_t>(payload[offset + 1]) << 8) |
+           (static_cast<uint16_t>(payload[offset + 2]) << 16) |
+           (static_cast<uint16_t>(payload[offset + 3]) << 24);
+}
+
+static uint16_t Get2BytesAsUint16(
+    const std::array<uint8_t, 1460> &payload, size_t offset) {
+    return static_cast<uint16_t>(payload[offset]) |
+           (static_cast<uint16_t>(payload[offset + 1]) << 8);
+}
+
+static uint8_t Get1ByteAsUint8(
+    const std::array<uint8_t, 1460> &payload, size_t offset) {
+    return static_cast<uint8_t>(payload[offset]);
+}
+
+// EntityState structure:
+// - entity_id (u32, 4 bytes)
+// - entity_type (u8, 1 byte)
+// - reserved (u8, 1 byte)
+// - pos_x (u16, 2 bytes)
+// - pos_y (u16, 2 bytes)
+// - angle (u16, 2 bytes)
+// - velocity_x (u16, 2 bytes)
+// - velocity_y (u16, 2 bytes)
 void ParseSnapshotPlayer(
     std::vector<ClientApplication::ParsedEntity> &entities,
     const client::SnapshotPacket &snapshot) {
@@ -34,45 +62,19 @@ void ParseSnapshotPlayer(
         // Single EntityState format (12 bytes) - current server implementation
         ClientApplication::ParsedEntity entity;
 
-        // EntityState structure:
-        // - entity_id (u32, 4 bytes)
-        // - entity_type (u8, 1 byte)
-        // - reserved (u8, 1 byte)
-        // - pos_x (u16, 2 bytes)
-        // - pos_y (u16, 2 bytes)
-        // - angle (u16, 2 bytes)
-        // - velocity_x (u16, 2 bytes)
-        // - velocity_y (u16, 2 bytes)
-
-        entity.entity_id = static_cast<uint32_t>(snapshot.payload[0]) |
-                           (static_cast<uint32_t>(snapshot.payload[1]) << 8) |
-                           (static_cast<uint32_t>(snapshot.payload[2]) << 16) |
-                           (static_cast<uint32_t>(snapshot.payload[3]) << 24);
-
-        entity.entity_type = snapshot.payload[4];
+        entity.entity_id = Get4BytesAsUint32(snapshot.payload, 0);
+        entity.entity_type = Get1ByteAsUint8(snapshot.payload, 4);
         // snapshot.payload[5] is reserved byte, skip it
-
-        entity.pos_x = static_cast<uint16_t>(snapshot.payload[6]) |
-                       (static_cast<uint16_t>(snapshot.payload[7]) << 8);
-
-        entity.pos_y = static_cast<uint16_t>(snapshot.payload[8]) |
-                       (static_cast<uint16_t>(snapshot.payload[9]) << 8);
-
-        entity.angle = static_cast<uint16_t>(snapshot.payload[10]) |
-                       (static_cast<uint16_t>(snapshot.payload[11]) << 8);
-
-        entity.velocity_x = static_cast<uint16_t>(snapshot.payload[12]) |
-                            (static_cast<uint16_t>(snapshot.payload[13]) << 8);
-
-        entity.velocity_y = static_cast<uint16_t>(snapshot.payload[14]) |
-                            (static_cast<uint16_t>(snapshot.payload[15]) << 8);
+        entity.pos_x = Get2BytesAsUint16(snapshot.payload, 6);
+        entity.pos_y = Get2BytesAsUint16(snapshot.payload, 8);
+        entity.angle = Get2BytesAsUint16(snapshot.payload, 10);
+        entity.velocity_x = Get2BytesAsUint16(snapshot.payload, 12);
+        entity.velocity_y = Get2BytesAsUint16(snapshot.payload, 14);
 
         entities.push_back(entity);
     } else if (snapshot.payload_size >= 4) {
         // WorldSnapshotPacket format (with header)
-        uint16_t entity_count =
-            static_cast<uint16_t>(snapshot.payload[0]) |
-            (static_cast<uint16_t>(snapshot.payload[1]) << 8);
+        uint16_t entity_count = Get2BytesAsUint16(snapshot.payload, 0);
 
         size_t offset = 4;  // Skip header (entity_count + 2 reserved)
 
@@ -82,34 +84,16 @@ void ParseSnapshotPlayer(
             ++i) {
             ClientApplication::ParsedEntity entity;
 
-            entity.entity_id =
-                static_cast<uint32_t>(snapshot.payload[offset + 0]) |
-                (static_cast<uint32_t>(snapshot.payload[offset + 1]) << 8) |
-                (static_cast<uint32_t>(snapshot.payload[offset + 2]) << 16) |
-                (static_cast<uint32_t>(snapshot.payload[offset + 3]) << 24);
-
-            entity.entity_type = snapshot.payload[offset + 4];
+            entity.entity_id = Get4BytesAsUint32(snapshot.payload, offset + 0);
+            entity.entity_type = Get1ByteAsUint8(snapshot.payload, offset + 4);
             // offset + 5 is reserved byte, skip it
-
-            entity.pos_x =
-                static_cast<uint16_t>(snapshot.payload[offset + 6]) |
-                (static_cast<uint16_t>(snapshot.payload[offset + 7]) << 8);
-
-            entity.pos_y =
-                static_cast<uint16_t>(snapshot.payload[offset + 8]) |
-                (static_cast<uint16_t>(snapshot.payload[offset + 9]) << 8);
-
-            entity.angle =
-                static_cast<uint16_t>(snapshot.payload[offset + 10]) |
-                (static_cast<uint16_t>(snapshot.payload[offset + 11]) << 8);
-
+            entity.pos_x = Get2BytesAsUint16(snapshot.payload, offset + 6);
+            entity.pos_y = Get2BytesAsUint16(snapshot.payload, offset + 8);
+            entity.angle = Get2BytesAsUint16(snapshot.payload, offset + 10);
             entity.velocity_x =
-                static_cast<uint16_t>(snapshot.payload[offset + 12]) |
-                (static_cast<uint16_t>(snapshot.payload[offset + 13]) << 8);
-
+                Get2BytesAsUint16(snapshot.payload, offset + 12);
             entity.velocity_y =
-                static_cast<uint16_t>(snapshot.payload[offset + 14]) |
-                (static_cast<uint16_t>(snapshot.payload[offset + 15]) << 8);
+                Get2BytesAsUint16(snapshot.payload, offset + 14);
 
             entities.push_back(entity);
             offset += kEntityStateSize;
@@ -117,6 +101,72 @@ void ParseSnapshotPlayer(
     }
 }
 
+// EntityState structure:
+// - entity_id (u32, 4 bytes)
+// - entity_type (u8, 1 byte)
+// - reserved (u8, 1 byte)
+// - pos_x (u16, 2 bytes)
+// - pos_y (u16, 2 bytes)
+// - angle (u16, 2 bytes)
+// - velocity_x (u16, 2 bytes)
+// - velocity_y (u16, 2 bytes)
+void ParseSnapshotEnemy(std::vector<ClientApplication::ParsedEntity> &entities,
+    const client::SnapshotPacket &snapshot) {
+    const size_t kEntityStateSize = 16;  // 16 bytes per EntityState
+
+    // Check if payload contains WorldSnapshotPacket format (header + entities)
+    // or just a single EntityState (current server implementation)
+    if (snapshot.payload_size == kEntityStateSize) {
+        // Single EntityState format (12 bytes) - current server implementation
+        ClientApplication::ParsedEntity entity;
+
+        entity.entity_id = Get4BytesAsUint32(snapshot.payload, 0);
+        entity.entity_type = Get1ByteAsUint8(snapshot.payload, 4);
+        // snapshot.payload[5] is reserved byte, skip it
+        entity.pos_x = Get2BytesAsUint16(snapshot.payload, 6);
+        entity.pos_y = Get2BytesAsUint16(snapshot.payload, 8);
+        entity.angle = Get2BytesAsUint16(snapshot.payload, 10);
+        entity.velocity_x = Get2BytesAsUint16(snapshot.payload, 12);
+        entity.velocity_y = Get2BytesAsUint16(snapshot.payload, 14);
+
+        entities.push_back(entity);
+    } else if (snapshot.payload_size >= 4) {
+        // WorldSnapshotPacket format (with header)
+        uint16_t entity_count = Get2BytesAsUint16(snapshot.payload, 0);
+
+        size_t offset = 4;  // Skip header (entity_count + 2 reserved)
+
+        // Parse each entity (12 bytes each)
+        for (uint16_t i = 0; i < entity_count && offset + kEntityStateSize <=
+                                                     snapshot.payload_size;
+            ++i) {
+            ClientApplication::ParsedEntity entity;
+
+            entity.entity_id = Get4BytesAsUint32(snapshot.payload, offset + 0);
+            entity.entity_type = Get1ByteAsUint8(snapshot.payload, offset + 4);
+            // offset + 5 is reserved byte, skip it
+            entity.pos_x = Get2BytesAsUint16(snapshot.payload, offset + 6);
+            entity.pos_y = Get2BytesAsUint16(snapshot.payload, offset + 8);
+            entity.angle = Get2BytesAsUint16(snapshot.payload, offset + 10);
+            entity.velocity_x =
+                Get2BytesAsUint16(snapshot.payload, offset + 12);
+            entity.velocity_y =
+                Get2BytesAsUint16(snapshot.payload, offset + 14);
+
+            entities.push_back(entity);
+            offset += kEntityStateSize;
+        }
+    }
+}
+
+// EntityState structure:
+// - entity_id (u32, 4 bytes)
+// - entity_type (u8, 1 byte)
+// - reserved (u8, 1 byte)
+// - pos_x (u16, 2 bytes)
+// - pos_y (u16, 2 bytes)
+// - angle (u16, 2 bytes)
+// - projectile_type (u8, 1 byte)
 void ParseSnapshotProjectile(
     std::vector<ClientApplication::ParsedEntity> &entities,
     const client::SnapshotPacket &snapshot) {
@@ -128,40 +178,18 @@ void ParseSnapshotProjectile(
         // Single EntityState format (13 bytes) - current server implementation
         ClientApplication::ParsedEntity entity;
 
-        // EntityState structure:
-        // - entity_id (u32, 4 bytes)
-        // - entity_type (u8, 1 byte)
-        // - reserved (u8, 1 byte)
-        // - pos_x (u16, 2 bytes)
-        // - pos_y (u16, 2 bytes)
-        // - angle (u16, 2 bytes)
-        // - projectile_type (u8, 1 byte)
-
-        entity.entity_id = static_cast<uint32_t>(snapshot.payload[0]) |
-                           (static_cast<uint32_t>(snapshot.payload[1]) << 8) |
-                           (static_cast<uint32_t>(snapshot.payload[2]) << 16) |
-                           (static_cast<uint32_t>(snapshot.payload[3]) << 24);
-
-        entity.entity_type = snapshot.payload[4];
+        entity.entity_id = Get4BytesAsUint32(snapshot.payload, 0);
+        entity.entity_type = Get1ByteAsUint8(snapshot.payload, 4);
         // snapshot.payload[5] is reserved byte, skip it
-
-        entity.pos_x = static_cast<uint16_t>(snapshot.payload[6]) |
-                       (static_cast<uint16_t>(snapshot.payload[7]) << 8);
-
-        entity.pos_y = static_cast<uint16_t>(snapshot.payload[8]) |
-                       (static_cast<uint16_t>(snapshot.payload[9]) << 8);
-
-        entity.angle = static_cast<uint16_t>(snapshot.payload[10]) |
-                       (static_cast<uint16_t>(snapshot.payload[11]) << 8);
-
-        entity.projectile_type = snapshot.payload[12];
+        entity.pos_x = Get2BytesAsUint16(snapshot.payload, 6);
+        entity.pos_y = Get2BytesAsUint16(snapshot.payload, 8);
+        entity.angle = Get2BytesAsUint16(snapshot.payload, 10);
+        entity.projectile_type = Get1ByteAsUint8(snapshot.payload, 12);
 
         entities.push_back(entity);
     } else if (snapshot.payload_size >= 4) {
         // WorldSnapshotPacket format (with header)
-        uint16_t entity_count =
-            static_cast<uint16_t>(snapshot.payload[0]) |
-            (static_cast<uint16_t>(snapshot.payload[1]) << 8);
+        uint16_t entity_count = Get2BytesAsUint16(snapshot.payload, 0);
 
         size_t offset = 4;  // Skip header (entity_count + 2 reserved)
 
@@ -171,28 +199,14 @@ void ParseSnapshotProjectile(
             ++i) {
             ClientApplication::ParsedEntity entity;
 
-            entity.entity_id =
-                static_cast<uint32_t>(snapshot.payload[offset + 0]) |
-                (static_cast<uint32_t>(snapshot.payload[offset + 1]) << 8) |
-                (static_cast<uint32_t>(snapshot.payload[offset + 2]) << 16) |
-                (static_cast<uint32_t>(snapshot.payload[offset + 3]) << 24);
-
-            entity.entity_type = snapshot.payload[offset + 4];
+            entity.entity_id = Get4BytesAsUint32(snapshot.payload, offset + 0);
+            entity.entity_type = Get1ByteAsUint8(snapshot.payload, offset + 4);
             // offset + 5 is reserved byte, skip it
-
-            entity.pos_x =
-                static_cast<uint16_t>(snapshot.payload[offset + 6]) |
-                (static_cast<uint16_t>(snapshot.payload[offset + 7]) << 8);
-
-            entity.pos_y =
-                static_cast<uint16_t>(snapshot.payload[offset + 8]) |
-                (static_cast<uint16_t>(snapshot.payload[offset + 9]) << 8);
-
-            entity.angle =
-                static_cast<uint16_t>(snapshot.payload[offset + 10]) |
-                (static_cast<uint16_t>(snapshot.payload[offset + 11]) << 8);
-
-            entity.projectile_type = snapshot.payload[offset + 12];
+            entity.pos_x = Get2BytesAsUint16(snapshot.payload, offset + 6);
+            entity.pos_y = Get2BytesAsUint16(snapshot.payload, offset + 8);
+            entity.angle = Get2BytesAsUint16(snapshot.payload, offset + 10);
+            entity.projectile_type =
+                Get1ByteAsUint8(snapshot.payload, offset + 12);
 
             entities.push_back(entity);
             offset += kEntityStateSize;
@@ -216,12 +230,15 @@ ClientApplication::ParseSnapshotData(const client::SnapshotPacket &snapshot) {
     if (snapshot.entity_type == 0x00) {
         // Parse using the existing function
         ParseSnapshotPlayer(entities, snapshot);
+    } else if (snapshot.entity_type == 0x01) {
+        // Parse using the enemy parsing function
+        ParseSnapshotEnemy(entities, snapshot);
     } else if (snapshot.entity_type == 0x02) {
         // Similar parsing function can be created for projectiles if needed
         // For now, we can reuse the same parsing logic
         ParseSnapshotProjectile(entities, snapshot);
     } else {
-        // Handle other entity types as needed
+        // Unknown entity type, fallback to player parsing
     }
     return entities;
 }

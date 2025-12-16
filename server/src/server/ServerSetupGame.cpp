@@ -30,5 +30,15 @@ void Server::SetupEntityiesGame() {
         std::cout << "Created entity for Player "
                   << static_cast<int>(client.player_id_) << std::endl;
     }
+
+    // Spawns of enemies/projectiles
+    auto enemy = registry_.spawn_entity();
+    registry_.add_component(
+        enemy, Component::Transform{600.0f, 300.0f, 0.0f, {1.0f, 1.0f}});
+    registry_.add_component(enemy, Component::EnemyTag{});
+    registry_.add_component(enemy, Component::Velocity{});
+    registry_.add_component(
+        enemy, Component::NetworkId{Server::GetNextNetworkId()});
+    std::cout << "Created enemy entity" << std::endl;
 }
 }  // namespace server
