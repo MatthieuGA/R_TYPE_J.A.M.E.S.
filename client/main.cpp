@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
         Audio::AudioManager audio_manager(std::move(audio_backend));
         game_world.audio_manager_ = &audio_manager;
 
-        RC::FactoryActors::GetInstance().InitializeEnemyInfoMap("assets/data");
+        RC::FactoryActors::GetInstance().InitializeEnemyInfoMap("data/");
         // Initialize application (registry and scenes)
         RC::ClientApplication::InitializeApplication(game_world);
 
