@@ -1,7 +1,7 @@
 {
     "tag": "mermaid",
     "health": 30,
-    "speed": 150.0,
+    "speed": 100.0,
     "spritePath": "ennemies/4/Idle.png",
     "hitbox": {
         "x": 8.0,

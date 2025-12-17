@@ -21,23 +21,6 @@ void FactoryActors::CreateMermaidActor(
         Rtype::Client::MERMAID_PROJECTILE_SPEED,
         Rtype::Client::MERMAID_PROJECTILE_DAMAGE, sf::Vector2f(-3.0f, -15.0f));
 
-    // Add frame event with custom action
-    reg.AddComponent<Component::FrameEvents>(entity,
-        Component::FrameEvents("Attack", 5, [this, &reg](int entity_id) {
-            // Custom action executed at frame 5 of Attack animation
-            try {
-                auto &transform = reg.GetComponent<Component::Transform>(
-                    reg.EntityFromIndex(entity_id));
-                auto &enemy_shoot = reg.GetComponent<Component::EnemyShootTag>(
-                    reg.EntityFromIndex(entity_id));
-
-                sf::Vector2f shoot_direction = sf::Vector2f(-1.0f, 0.0f);
-                CreateEnemyProjectile(
-                    reg, shoot_direction, enemy_shoot, entity_id, transform);
-            } catch (const std::exception &e) {
-                return;
-            }
-        }));
     reg.AddComponent<Component::TimedEvents>(
         entity, Component::TimedEvents(
                     [this, &reg](int entity_id) {

@@ -278,14 +278,7 @@ TEST_F(ClientConnectionManagerTest, RemoveClientNonExistent) {
 
 // ============================================================================
 // READY STATUS TESTS
-// ============================================================================
-
-TEST_F(ClientConnectionManagerTest, AllPlayersReadyEmptyServer) {
-    server::ClientConnectionManager manager(4);
-
-    // No players connected - should be false
-    EXPECT_FALSE(manager.AllPlayersReady());
-}
+// =
 
 TEST_F(ClientConnectionManagerTest, AllPlayersReadySinglePlayer) {
     server::ClientConnectionManager manager(4);

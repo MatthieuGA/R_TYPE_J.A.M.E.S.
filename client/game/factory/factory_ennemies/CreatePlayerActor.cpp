@@ -8,23 +8,26 @@
 
 namespace Rtype::Client {
 
-void FactoryActors::CreatePlayerActor(
-    Engine::entity &entity, Engine::registry &reg, EnnemyInfo info) {
+void FactoryActors::CreatePlayerActor(Engine::entity &entity,
+    Engine::registry &reg, EnnemyInfo info, bool is_local) {
     // Add basic enemy components
     Component::AnimatedSprite animated_sprite(34, 18, 2);
-    animated_sprite.AddAnimation(
-        "Hit", "original_rtype/players_hit.png", 34, 18, 2, 0.25f, false);
+    animated_sprite.AddAnimation("Hit", "original_rtype/players_hit.png", 34,
+        18, 2, 0.25f, false, sf::Vector2f(0.0f, id_player_ * 18.0f));
     animated_sprite.AddAnimation("Death", "original_rtype/players_death.png",
-        36, 35, 6, 0.05f, false, sf::Vector2f(0.0f, 0.0f),
+        36, 35, 6, 0.05f, false, sf::Vector2f(0.0f, id_player_ * 18.0f),
         sf::Vector2f(0.0f, -10.0f));
     reg.AddComponent<Component::AnimatedSprite>(
         entity, std::move(animated_sprite));
-    reg.AddComponent<Component::Inputs>(entity, Component::Inputs{});
+    // Add Inputs component only for the local player entity
+    if (is_local) {
+        reg.AddComponent<Component::Inputs>(entity, Component::Inputs{});
+    }
     reg.AddComponent<Component::PlayerTag>(entity,
         Component::PlayerTag{info.speed, Rtype::Client::PLAYER_SHOOT_COOLDOWN,
-            Rtype::Client::PLAYER_CHARGE_TIME, false});
-    reg.AddComponent<Component::AnimationEnterPlayer>(
-        entity, Component::AnimationEnterPlayer{true});
+            Rtype::Client::PLAYER_CHARGE_TIME, false, id_player_});
+    // reg.AddComponent<Component::AnimationEnterPlayer>(
+    //     entity, Component::AnimationEnterPlayer{true});
     // Reactor particle emitter
     Component::ParticleEmitter emit_reactor(100, 200, sf::Color::Yellow,
         RED_HIT, sf::Vector2f(-15.f, 3.f), true, 0.25f, 40.f,
@@ -32,5 +35,7 @@ void FactoryActors::CreatePlayerActor(
         LAYER_ACTORS - 2);
     reg.AddComponent<Component::ParticleEmitter>(
         entity, std::move(emit_reactor));
+
+    id_player_ += 1;
 }
 }  // namespace Rtype::Client

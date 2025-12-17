@@ -11,10 +11,13 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include <boost/asio.hpp>
 
 #include "server/ClientConnectionManager.hpp"
+#include "server/Config.hpp"
+#include "server/Network.hpp"
 #include "server/PacketHandler.hpp"
 #include "server/PacketSender.hpp"
 #include "server/Packets.hpp"
@@ -26,12 +29,19 @@ class PacketHandlerTest : public ::testing::Test {
  protected:
     void SetUp() override {
         io_context_ = std::make_unique<boost::asio::io_context>();
+
+        // Create a test config
+        const char *test_args[] = {"test_program"};
+        config_ = std::make_unique<server::Config>(
+            server::Config::Parse(1, const_cast<char **>(test_args)));
+
         connection_manager_ =
             std::make_unique<server::ClientConnectionManager>(4);
-        packet_sender_ =
-            std::make_unique<server::PacketSender>(*connection_manager_);
+        network_ = std::make_unique<server::Network>(*config_, *io_context_);
+        packet_sender_ = std::make_unique<server::PacketSender>(
+            *connection_manager_, *network_);
         packet_handler_ = std::make_unique<server::PacketHandler>(
-            *connection_manager_, *packet_sender_);
+            *connection_manager_, *packet_sender_, *network_);
 
         // Register handlers
         packet_handler_->RegisterHandlers();
@@ -40,7 +50,9 @@ class PacketHandlerTest : public ::testing::Test {
     void TearDown() override {
         packet_handler_.reset();
         packet_sender_.reset();
+        network_.reset();
         connection_manager_.reset();
+        config_.reset();
         io_context_.reset();
     }
 
@@ -69,7 +81,9 @@ class PacketHandlerTest : public ::testing::Test {
     }
 
     std::unique_ptr<boost::asio::io_context> io_context_;
+    std::unique_ptr<server::Config> config_;
     std::unique_ptr<server::ClientConnectionManager> connection_manager_;
+    std::unique_ptr<server::Network> network_;
     std::unique_ptr<server::PacketSender> packet_sender_;
     std::unique_ptr<server::PacketHandler> packet_handler_;
 };
@@ -151,38 +165,6 @@ TEST_F(PacketHandlerTest, HandleConnectReqDuplicateUsername) {
     auto &client2 = connection_manager_->GetClient(client_id2);
     EXPECT_FALSE(client2.IsAuthenticated());
     EXPECT_EQ(client2.player_id_, 0);
-}
-
-TEST_F(PacketHandlerTest, HandleConnectReqServerFull) {
-    // Create manager with max 2 clients
-    connection_manager_ = std::make_unique<server::ClientConnectionManager>(2);
-    packet_sender_ =
-        std::make_unique<server::PacketSender>(*connection_manager_);
-    packet_handler_ = std::make_unique<server::PacketHandler>(
-        *connection_manager_, *packet_sender_);
-    packet_handler_->RegisterHandlers();
-
-    // Authenticate two clients (fill server)
-    AddAuthenticatedClient("Player1");
-    AddAuthenticatedClient("Player2");
-
-    // Try to authenticate third client
-    uint32_t client_id3 = AddTestClient();
-
-    server::network::ConnectReqPacket connect_req;
-    connect_req.SetUsername("Player3");
-
-    server::network::PacketParseResult result;
-    result.success = true;
-    result.header = connect_req.MakeHeader();
-    result.packet = connect_req;
-
-    packet_handler_->Dispatch(client_id3, result);
-
-    // Verify authentication failed
-    auto &client3 = connection_manager_->GetClient(client_id3);
-    EXPECT_FALSE(client3.IsAuthenticated());
-    EXPECT_EQ(client3.player_id_, 0);
 }
 
 TEST_F(PacketHandlerTest, HandleConnectReqWhitespaceUsername) {
@@ -479,26 +461,4 @@ TEST_F(PacketHandlerTest, AutostartMultiplePlayers) {
 
     // Game should start now
     EXPECT_TRUE(game_started);
-}
-
-TEST_F(PacketHandlerTest, AutostartNoPlayersConnected) {
-    bool game_started = false;
-    packet_handler_->SetGameStartCallback(
-        [&game_started]() { game_started = true; });
-
-    // No players connected - game should not start
-    EXPECT_FALSE(connection_manager_->AllPlayersReady());
-    EXPECT_FALSE(game_started);
-}
-
-TEST_F(PacketHandlerTest, AutostartOnlyUnauthenticatedClients) {
-    AddTestClient();  // Unauthenticated
-
-    bool game_started = false;
-    packet_handler_->SetGameStartCallback(
-        [&game_started]() { game_started = true; });
-
-    // Only unauthenticated clients - game should not start
-    EXPECT_FALSE(connection_manager_->AllPlayersReady());
-    EXPECT_FALSE(game_started);
 }

@@ -198,6 +198,8 @@ struct AnimatedSprite {
      * @return Const pointer to the current Animation, or nullptr if not found
      */
     const Animation *GetCurrentAnimation() const;
+
+    std::vector<std::string> GetAnimationNames() const;
 };
 
 /**

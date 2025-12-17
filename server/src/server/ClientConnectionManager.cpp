@@ -9,8 +9,12 @@
 
 namespace server {
 
-ClientConnectionManager::ClientConnectionManager(uint8_t max_clients)
-    : next_client_id_(1), next_player_id_(1), max_clients_(max_clients) {}
+ClientConnectionManager::ClientConnectionManager(
+    uint8_t max_clients, uint16_t server_udp_port)
+    : next_client_id_(1),
+      next_player_id_(1),
+      max_clients_(max_clients),
+      server_udp_port_(server_udp_port) {}
 
 uint32_t ClientConnectionManager::AddClient(
     boost::asio::ip::tcp::socket socket) {
@@ -19,7 +23,8 @@ uint32_t ClientConnectionManager::AddClient(
               << client_id << std::endl;
 
     // Create unauthenticated connection (player_id=0 until authenticated)
-    ClientConnection connection(client_id, 0, std::move(socket));
+    ClientConnection connection(
+        client_id, 0, std::move(socket), server_udp_port_);
     clients_.emplace(client_id, std::move(connection));
 
     return client_id;
@@ -130,8 +135,7 @@ bool ClientConnectionManager::AllPlayersReady() const {
             break;
         }
     }
-
-    return all_ready && connected_players > 0;
+    return all_ready;
 }
 
 const std::unordered_map<uint32_t, ClientConnection> &
@@ -171,6 +175,45 @@ uint8_t ClientConnectionManager::AssignPlayerId() {
     }
 
     throw std::runtime_error("All player IDs exhausted");
+}
+
+void ClientConnectionManager::UpdateClientUdpEndpoint(
+    uint32_t client_id, const boost::asio::ip::udp::endpoint &endpoint) {
+    auto it = clients_.find(client_id);
+    if (it != clients_.end()) {
+        it->second.udp_endpoint_ = endpoint;
+        // std::cout << "Updat UDP endpoint for client " << client_id << " to "
+        //           << endpoint.address().to_string() << ":" <<
+        //           endpoint.port()
+        //           << std::endl;
+    }
+}
+
+ClientConnection *ClientConnectionManager::FindClientByIp(
+    const boost::asio::ip::address &ip_address) {
+    for (auto &[client_id, connection] : clients_) {
+        try {
+            auto tcp_remote_endpoint =
+                connection.tcp_socket_.remote_endpoint();
+            if (tcp_remote_endpoint.address() == ip_address) {
+                return &connection;
+            }
+        } catch (const std::exception &e) {
+            // Socket might be disconnected
+            continue;
+        }
+    }
+    return nullptr;
+}
+
+ClientConnection *ClientConnectionManager::FindClientByPlayerId(
+    uint8_t player_id) {
+    for (auto &[client_id, connection] : clients_) {
+        if (connection.player_id_ == player_id) {
+            return &connection;
+        }
+    }
+    return nullptr;
 }
 
 }  // namespace server

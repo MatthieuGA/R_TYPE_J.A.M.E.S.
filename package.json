@@ -6,7 +6,7 @@
   "lint-staged": {
     "*.{cpp,hpp,c,h,cc}": [
       "clang-format -i",
-      "py -3 -m cpplint --repository=. --quiet --output=vs7 --filter=-legal/copyright,-build/c++17,+build/c++23,-whitespace/indent_namespace,-runtime/references"
+      "py -3 -m cpplint --repository=. --quiet --output=vs7 --filter=-legal/copyright,-build/c++17,+build/c++20,-whitespace/indent_namespace,-runtime/references"
     ]
   },
   "devDependencies": {

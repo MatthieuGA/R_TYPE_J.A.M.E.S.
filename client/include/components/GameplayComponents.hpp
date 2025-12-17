@@ -13,9 +13,9 @@ struct PlayerTag {
     float shoot_cooldown_max = 0.3f;
     float charge_time_min = 0.5f;
     bool isInPlay = true;
+    int id_player = 0;
     float shoot_cooldown = 0.0f;
     float charge_time = 0.0f;
-    int playerNumber = 0;
 };
 
 struct AnimationEnterPlayer {

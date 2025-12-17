@@ -4,6 +4,7 @@
 namespace Rtype::Client::Component {
 struct NetworkId {
     int id;
+    int last_processed_tick;
 };
 
 struct InterpolatedPosition {

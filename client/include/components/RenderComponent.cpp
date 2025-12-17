@@ -2,6 +2,7 @@
 
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace Rtype::Client::Component {
 
@@ -73,6 +74,14 @@ const AnimatedSprite::Animation *AnimatedSprite::GetCurrentAnimation() const {
             return nullptr;
     }
     return &(it->second);
+}
+
+std::vector<std::string> AnimatedSprite::GetAnimationNames() const {
+    std::vector<std::string> names;
+    for (const auto &[name, animation] : animations) {
+        names.push_back(name);
+    }
+    return names;
 }
 
 // Text move constructor

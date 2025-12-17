@@ -10,12 +10,11 @@ target_sources(r-type_server PRIVATE
     src/server/worldgen/WorldGenConfigLoader.cpp
 )
 
-# Find nlohmann_json package
-find_package(nlohmann_json CONFIG REQUIRED)
-
 # Include directories
 target_include_directories(r-type_server PRIVATE 
     ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/external
+    ${CMAKE_SOURCE_DIR}/engine/include
     ${Boost_INCLUDE_DIRS}
 )
 
@@ -36,7 +35,14 @@ endif()
 # Copy worldgen assets to build directory
 add_custom_command(TARGET r-type_server POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_CURRENT_SOURCE_DIR}/assets/worldgen
-        $<TARGET_FILE_DIR:r-type_server>/assets/worldgen
+    ${CMAKE_CURRENT_SOURCE_DIR}/assets/worldgen
+    $<TARGET_FILE_DIR:r-type_server>/assets/worldgen
     COMMENT "Copying worldgen assets to build directory"
+)
+
+# Post build copy data folder
+add_custom_command(TARGET r-type_server POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    "${CMAKE_SOURCE_DIR}/data"
+    $<TARGET_FILE_DIR:r-type_server>/data
 )

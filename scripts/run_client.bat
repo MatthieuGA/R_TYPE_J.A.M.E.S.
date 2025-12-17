@@ -11,7 +11,7 @@ echo ==========================================
 echo Running R-TYPE Client...
 echo ==========================================
 cd /d build\client\Release
-r-type_client.exe
+r-type_client.exe 127.0.0.1 50000 Player
 if %ERRORLEVEL% NEQ 0 (
     echo ERROR: R-TYPE Client exited with an error
     cd /d "%~dp0"
