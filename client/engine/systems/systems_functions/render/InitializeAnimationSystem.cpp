@@ -13,6 +13,14 @@ inline Engine::Graphics::Vector2f ToEngine(const sf::Vector2f &v) {
     return Engine::Graphics::Vector2f(v.x, v.y);
 }
 
+inline sf::IntRect ToSFML(const Engine::Graphics::IntRect &r) {
+    return sf::IntRect(r.left, r.top, r.width, r.height);
+}
+
+inline Engine::Graphics::IntRect ToEngine(const sf::IntRect &r) {
+    return Engine::Graphics::IntRect(r.left, r.top, r.width, r.height);
+}
+
 /**
  * @brief Compute and apply the origin for an animated drawable.
  *
@@ -61,9 +69,10 @@ void InitializeDrawableAnimated(Com::Drawable &drawable,
         drawable.sprite.setTexture(drawable.texture, true);
     }
     SetDrawableAnimationOrigin(drawable, animatedSprite, transform);
-    drawable.sprite.setTextureRect(
-        sf::IntRect(animation.current_frame * animation.frameWidth, 0,
-            animation.frameWidth, animation.frameHeight));
+    Engine::Graphics::IntRect rect(
+        animation.current_frame * animation.frameWidth, 0,
+        animation.frameWidth, animation.frameHeight);
+    drawable.sprite.setTextureRect(ToSFML(rect));
     drawable.isLoaded = true;
 }
 

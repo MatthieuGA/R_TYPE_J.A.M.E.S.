@@ -126,9 +126,11 @@ struct Inputs {
 struct Clickable {
     std::function<void()> onClick;
 
-    sf::Color idleColor = sf::Color::White;
-    sf::Color hoverColor = sf::Color(200, 200, 200);
-    sf::Color clickColor = sf::Color(150, 150, 150);
+    Engine::Graphics::Color idleColor = Engine::Graphics::Color::White;
+    Engine::Graphics::Color hoverColor =
+        Engine::Graphics::Color(200, 200, 200);
+    Engine::Graphics::Color clickColor =
+        Engine::Graphics::Color(150, 150, 150);
     bool isHovered = false;
     bool isClicked = false;
 };

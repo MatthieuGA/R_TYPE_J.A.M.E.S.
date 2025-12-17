@@ -18,6 +18,22 @@ inline Engine::Graphics::Vector2f ToEngine(const sf::Vector2f &v) {
     return Engine::Graphics::Vector2f(v.x, v.y);
 }
 
+inline sf::Color ToSFML(const Engine::Graphics::Color &c) {
+    return sf::Color(c.r, c.g, c.b, c.a);
+}
+
+inline Engine::Graphics::Color ToEngine(const sf::Color &c) {
+    return Engine::Graphics::Color(c.r, c.g, c.b, c.a);
+}
+
+inline sf::IntRect ToSFML(const Engine::Graphics::IntRect &r) {
+    return sf::IntRect(r.left, r.top, r.width, r.height);
+}
+
+inline Engine::Graphics::IntRect ToEngine(const sf::IntRect &r) {
+    return Engine::Graphics::IntRect(r.left, r.top, r.width, r.height);
+}
+
 /**
  * @brief Updates the particle emitter, emitting new particles and updating
  * existing ones.
@@ -111,19 +127,20 @@ void drawEmitter(Com::ParticleEmitter &emitter, GameWorld &game_world) {
 
     for (const auto &particle : emitter.particles) {
         float lifeRatio = particle.lifetime / particle.maxLifetime;
-        sf::Color color = sf::Color(
-            static_cast<sf::Uint8>(
+        Engine::Graphics::Color engine_color = Engine::Graphics::Color(
+            static_cast<uint8_t>(
                 emitter.endColor.r +
                 (emitter.startColor.r - emitter.endColor.r) * lifeRatio),
-            static_cast<sf::Uint8>(
+            static_cast<uint8_t>(
                 emitter.endColor.g +
                 (emitter.startColor.g - emitter.endColor.g) * lifeRatio),
-            static_cast<sf::Uint8>(
+            static_cast<uint8_t>(
                 emitter.endColor.b +
                 (emitter.startColor.b - emitter.endColor.b) * lifeRatio),
-            static_cast<sf::Uint8>(
+            static_cast<uint8_t>(
                 emitter.endColor.a +
                 (emitter.startColor.a - emitter.endColor.a) * lifeRatio));
+        sf::Color color = ToSFML(engine_color);
 
         // Lerp size from start to end
         float size = emitter.end_size +
@@ -265,8 +282,9 @@ void RenderOneEntity(Eng::sparse_array<Com::Transform> const &transforms,
     drawable->sprite.setScale(world_scale);
     drawable->sprite.setRotation(transform->rotationDegrees);
     // Child rotation only: apply the entity's own rotation
-    sf::Color color = drawable->color;
-    color.a = static_cast<sf::Uint8>(drawable->opacity * 255);
+    Engine::Graphics::Color engine_color = drawable->color;
+    engine_color.a = static_cast<uint8_t>(drawable->opacity * 255);
+    sf::Color color = ToSFML(engine_color);
     drawable->sprite.setColor(color);
     DrawSprite(game_world, drawable->sprite, &drawable.value(), shaderCompOpt);
 }
