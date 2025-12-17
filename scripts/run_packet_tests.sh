@@ -7,7 +7,7 @@ set -e
 cd "$(dirname "$0")/.."
 
 echo "Building packet tests..."
-g++ -std=c++23 -Wall -Wextra \
+g++ -std=c++20 -Wall -Wextra \
     -I./server/include \
     -I./engine/include \
     tests/test_packets.cpp \

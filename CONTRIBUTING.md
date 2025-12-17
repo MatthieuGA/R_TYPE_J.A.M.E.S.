@@ -241,7 +241,7 @@ Tasks must be **small**:
 
 ## 9. Code Style
 
-* C++23 required
+* C++20 required
 * Follow **Google Style (clang-format)**
 * No unused includes
 * No raw pointers unless strictly required
