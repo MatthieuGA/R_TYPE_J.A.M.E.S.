@@ -13,6 +13,7 @@ namespace {
 // Protocol constants
 constexpr uint8_t kOpConnectReq = 0x01;
 constexpr uint8_t kOpConnectAck = 0x02;
+constexpr uint8_t kOpGameStart = 0x05;
 constexpr uint8_t kOpDisconnectReq = 0x03;
 constexpr uint8_t kOpPlayerInput = 0x10;
 constexpr uint8_t kOpWorldSnapshot = 0x20;
@@ -229,8 +230,10 @@ void ServerConnection::AsyncReceiveTCP() {
 }
 
 void ServerConnection::HandleConnectAck(const std::vector<uint8_t> &data) {
+    const int kDebugLogLimit = 4;
+
     if (data.size() <
-        4) {  // Payload is 4 bytes: PlayerId + Status + UdpPort(u16)
+        kDebugLogLimit) {  // Payload is 4 bytes: PlayerId+Status+UdpPort(u16)
         std::cerr << "[Network] CONNECT_ACK malformed" << std::endl;
         return;
     }

@@ -19,10 +19,9 @@ void FactoryActors::CreatePlayerActor(Engine::entity &entity,
         sf::Vector2f(0.0f, -10.0f));
     reg.AddComponent<Component::AnimatedSprite>(
         entity, std::move(animated_sprite));
-    // Add Inputs and Controllable components only for the local player entity
+    // Add Inputs component only for the local player entity
     if (is_local) {
         reg.AddComponent<Component::Inputs>(entity, Component::Inputs{});
-        reg.AddComponent<Component::Controllable>(entity, Component::Controllable{});
     }
     reg.AddComponent<Component::PlayerTag>(entity,
         Component::PlayerTag{info.speed, Rtype::Client::PLAYER_SHOOT_COOLDOWN,

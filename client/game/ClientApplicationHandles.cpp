@@ -126,18 +126,21 @@ static void CreateProjectileEntity(GameWorld &game_world,
     Engine::registry::entity_t new_entity,
     const ClientApplication::ParsedEntity &entity_data) {
     // Projectile entity
-    if (entity_data.projectile_type == 0x00) {
+    if (entity_data.projectile_type ==
+        ClientApplication::ParsedEntity::kPlayerProjectile) {
         // Basic projectile
-        createProjectile(game_world.registry_,
+        CreateProjectile(game_world.registry_,
             static_cast<float>(entity_data.pos_x),
             static_cast<float>(entity_data.pos_y), /*ownerId=*/-1, new_entity);
-    } else if (entity_data.projectile_type == 0x01) {
+    } else if (entity_data.projectile_type ==
+               ClientApplication::ParsedEntity::kPlayerChargedProjectile) {
         // Charged projectile
         createChargedProjectile(game_world.registry_,
             static_cast<float>(entity_data.pos_x),
             static_cast<float>(entity_data.pos_y), /*ownerId=*/-1, new_entity);
-    } else if (entity_data.projectile_type == 0x02) {
-        // Charged projectile DEEBBBBBUUUGGGG
+    } else if (entity_data.projectile_type ==
+               ClientApplication::ParsedEntity::kMermaidProjectile) {
+        // Mermaid projectile
         CreateMermaidProjectile(game_world.registry_, entity_data, new_entity);
     } else {
         printf("[Snapshot] Unknown projectile type 0x%02X for entity ID %u\n",
@@ -151,14 +154,17 @@ void ClientApplication::CreateNewEntity(GameWorld &game_world, int tick,
     auto new_entity = game_world.registry_.SpawnEntity();
     printf("[Snapshot] Creating new entity of type 0x%02X ...\n",
         entity_data.entity_type);
-    if (entity_data.entity_type == 0x00) {
+    if (entity_data.entity_type ==
+        ClientApplication::ParsedEntity::kPlayerEntity) {
         // Player entity
         CreatePlayerEntity(game_world, new_entity, entity_data);
-    } else if (entity_data.entity_type == 0x01) {
+    } else if (entity_data.entity_type ==
+               ClientApplication::ParsedEntity::kEnemyEntity) {
         // Enemy entity
         // For simplicity, create a basic enemy (e.g., "mermaid")
         CreateEnemyEntity(game_world, new_entity, entity_data);
-    } else if (entity_data.entity_type == 0x02) {
+    } else if (entity_data.entity_type ==
+               ClientApplication::ParsedEntity::kProjectileEntity) {
         // Projectile entity
         CreateProjectileEntity(game_world, new_entity, entity_data);
     } else {

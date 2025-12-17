@@ -109,7 +109,7 @@ void FactoryActors::CreateMermaidActor(
                     vector2f(-1.0f, 0.0f), info.speed));
 
     // Add enemy shooting component
-    Component::EnemyShootTag enemy_shoot_tag(300.0f, 10.0f, {-3.0f, -15.0f});
+    Component::EnemyShootTag enemy_shoot_tag(200.0f, 10.0f, {-3.0f, -15.0f});
 
     // Add frame event for shooting
     reg.AddComponent<Component::FrameEvents>(
@@ -150,5 +150,4 @@ void FactoryActors::CreateMermaidActor(
     reg.AddComponent<Component::EnemyShootTag>(
         entity, std::move(enemy_shoot_tag));
 }
-
 }  // namespace server

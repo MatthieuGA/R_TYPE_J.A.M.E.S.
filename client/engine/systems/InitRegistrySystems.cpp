@@ -339,7 +339,8 @@ void InitAudioSystem(
 }
 
 void InitKillEntitiesSystem(Rtype::Client::GameWorld &game_world) {
-    game_world.registry_.AddSystem<Com::NetworkId>(KillEntitiesSystem);
+    game_world.registry_.AddSystem<Com::NetworkId, Com::AnimationDeath>(
+        KillEntitiesSystem);
 }
 
 /**

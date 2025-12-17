@@ -18,6 +18,18 @@ class ClientApplication {
      * Stores entity state information received from server.
      */
     struct ParsedEntity {
+        enum ProjectileType : uint8_t {
+            kPlayerProjectile = 0x00,
+            kPlayerChargedProjectile = 0x01,
+            kMermaidProjectile = 0x02
+        };
+
+        enum EntityType : uint8_t {
+            kPlayerEntity = 0x00,
+            kEnemyEntity = 0x01,
+            kProjectileEntity = 0x02
+        };
+
         uint32_t entity_id;
         uint8_t entity_type;
         // Players :

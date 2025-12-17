@@ -190,9 +190,6 @@ void PacketHandler::HandleConnectReq(
     // Send success response with assigned player_id and server's UDP port
     packet_sender_.SendConnectAck(client, network::ConnectAckPacket::OK,
         player_id, network_.GetUdpPort());
-
-    // Broadcast updated lobby status to all players
-    packet_sender_.SendLobbyStatus();
 }
 
 void PacketHandler::HandleReadyStatus(
@@ -225,9 +222,6 @@ void PacketHandler::HandleReadyStatus(
     }
     std::cout << "Players ready: " << ready_count << "/" << total_authenticated
               << std::endl;
-
-    // Broadcast updated lobby status to all players
-    packet_sender_.SendLobbyStatus();
 
     // Check if all authenticated players are ready
     if (connection_manager_.AllPlayersReady()) {
