@@ -46,19 +46,21 @@ void ComputeCollision(Eng::sparse_array<Com::Solid> const &solids, int i,
         hb_b.height * (hb_b.scaleWithTransform ? trans_b.scale.y : 1.0f);
 
     // Compute offsets and scaled hitboxes (same as is_colliding)
-    sf::Vector2f off_a =
+    Engine::Graphics::Vector2f off_a =
         GetOffsetFromTransform(trans_a, {width_computed_a, height_computed_a});
-    sf::Vector2f off_b =
+    Engine::Graphics::Vector2f off_b =
         GetOffsetFromTransform(trans_b, {width_computed_b, height_computed_b});
 
-    sf::Vector2f scal_off_a =
-        sf::Vector2f(off_a.x * trans_a.scale.x, off_a.y * trans_a.scale.y);
-    sf::Vector2f scal_off_b =
-        sf::Vector2f(off_b.x * trans_b.scale.x, off_b.y * trans_b.scale.y);
-    sf::Vector2f scaledA = sf::Vector2f(width_computed_a * trans_a.scale.x,
-        height_computed_a * trans_a.scale.y);
-    sf::Vector2f scaledB = sf::Vector2f(width_computed_b * trans_b.scale.x,
-        height_computed_b * trans_b.scale.y);
+    Engine::Graphics::Vector2f scal_off_a = Engine::Graphics::Vector2f(
+        off_a.x * trans_a.scale.x, off_a.y * trans_a.scale.y);
+    Engine::Graphics::Vector2f scal_off_b = Engine::Graphics::Vector2f(
+        off_b.x * trans_b.scale.x, off_b.y * trans_b.scale.y);
+    Engine::Graphics::Vector2f scaledA =
+        Engine::Graphics::Vector2f(width_computed_a * trans_a.scale.x,
+            height_computed_a * trans_a.scale.y);
+    Engine::Graphics::Vector2f scaledB =
+        Engine::Graphics::Vector2f(width_computed_b * trans_b.scale.x,
+            height_computed_b * trans_b.scale.y);
 
     float a_min_x = trans_a.x + scal_off_a.x;
     float a_max_x = a_min_x + scaledA.x;

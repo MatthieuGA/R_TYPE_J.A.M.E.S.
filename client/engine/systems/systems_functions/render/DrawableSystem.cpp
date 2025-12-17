@@ -10,6 +10,14 @@
 
 namespace Rtype::Client {
 
+inline sf::Vector2f ToSFML(const Engine::Graphics::Vector2f &v) {
+    return sf::Vector2f(v.x, v.y);
+}
+
+inline Engine::Graphics::Vector2f ToEngine(const sf::Vector2f &v) {
+    return Engine::Graphics::Vector2f(v.x, v.y);
+}
+
 /**
  * @brief Updates the particle emitter, emitting new particles and updating
  * existing ones.
@@ -162,9 +170,10 @@ void drawEmitter(Com::ParticleEmitter &emitter, GameWorld &game_world) {
  */
 void SetDrawableOrigin(
     Com::Drawable &drawable, const Com::Transform &transform) {
-    sf::Vector2f origin = GetOffsetFromTransform(transform,
-        sf::Vector2f(static_cast<float>(drawable.texture.getSize().x),
-            static_cast<float>(drawable.texture.getSize().y)));
+    sf::Vector2f size_vec(static_cast<float>(drawable.texture.getSize().x),
+        static_cast<float>(drawable.texture.getSize().y));
+    sf::Vector2f origin =
+        ToSFML(GetOffsetFromTransform(transform, ToEngine(size_vec)));
     drawable.sprite.setOrigin(-origin);
 }
 
@@ -204,7 +213,7 @@ void DrawSprite(GameWorld &game_world, sf::Sprite &sprite,
     if (shaderCompOpt.has_value() && (*shaderCompOpt)->isLoaded) {
         ((*shaderCompOpt)->shader)
             ->setUniform("time",
-                game_world.total_time_clock_.getElapsedTime().asSeconds());
+                game_world.total_time_clock_.GetElapsedTime().AsSeconds());
         game_world.window_.draw(
             sprite, sf::RenderStates((*shaderCompOpt)->shader.get()));
     } else {
@@ -238,8 +247,8 @@ void RenderOneEntity(Eng::sparse_array<Com::Transform> const &transforms,
         shaderCompOpt = &shaders[i].value();
 
     // Calculate world position with hierarchical rotation
-    sf::Vector2f world_position =
-        CalculateWorldPositionWithHierarchy(transform.value(), transforms);
+    sf::Vector2f world_position = ToSFML(
+        CalculateWorldPositionWithHierarchy(transform.value(), transforms));
 
     // Apply animation offset if this entity has an AnimatedSprite component
     if (animated_sprites.has(i)) {
@@ -252,7 +261,7 @@ void RenderOneEntity(Eng::sparse_array<Com::Transform> const &transforms,
 
     drawable->sprite.setPosition(world_position);
     sf::Vector2f world_scale =
-        CalculateCumulativeScale(transform.value(), transforms);
+        ToSFML(CalculateCumulativeScale(transform.value(), transforms));
     drawable->sprite.setScale(world_scale);
     drawable->sprite.setRotation(transform->rotationDegrees);
     // Child rotation only: apply the entity's own rotation

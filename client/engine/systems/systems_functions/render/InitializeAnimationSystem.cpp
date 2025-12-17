@@ -4,6 +4,15 @@
 #include "engine/systems/InitRegistrySystems.hpp"
 
 namespace Rtype::Client {
+
+inline sf::Vector2f ToSFML(const Engine::Graphics::Vector2f &v) {
+    return sf::Vector2f(v.x, v.y);
+}
+
+inline Engine::Graphics::Vector2f ToEngine(const sf::Vector2f &v) {
+    return Engine::Graphics::Vector2f(v.x, v.y);
+}
+
 /**
  * @brief Compute and apply the origin for an animated drawable.
  *
@@ -22,7 +31,7 @@ void SetDrawableAnimationOrigin(Com::Drawable &drawable,
         return;
 
     sf::Vector2f origin =
-        GetOffsetFromAnimatedTransform(transform, animatedSprite);
+        ToSFML(GetOffsetFromAnimatedTransform(transform, animatedSprite));
     drawable.sprite.setOrigin(-origin);
 }
 

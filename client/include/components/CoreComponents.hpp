@@ -9,6 +9,7 @@
 #include <vector>
 
 #include <SFML/Graphics.hpp>
+#include <graphics/Types.hpp>
 
 namespace Rtype::Client::Component {
 /**
@@ -21,7 +22,7 @@ struct Transform {
     float x;
     float y;
     float rotationDegrees;
-    sf::Vector2f scale;
+    Engine::Graphics::Vector2f scale;
 
     enum OriginPoint {
         TOP_LEFT,
@@ -35,7 +36,7 @@ struct Transform {
         BOTTOM_RIGHT
     } origin = CENTER;
 
-    sf::Vector2f customOrigin = sf::Vector2f(0.0f, 0.0f);
+    Engine::Graphics::Vector2f customOrigin{0.0f, 0.0f};
 
     // Parent entity ID (std::nullopt if no parent)
     std::optional<std::size_t> parent_entity = std::nullopt;
@@ -45,9 +46,10 @@ struct Transform {
 
     Transform() = default;
 
-    Transform(float x, float y, float rotationDegrees, sf::Vector2f scale,
-        OriginPoint origin = CENTER,
-        sf::Vector2f customOrigin = sf::Vector2f(0.0f, 0.0f),
+    Transform(float x, float y, float rotationDegrees,
+        Engine::Graphics::Vector2f scale, OriginPoint origin = CENTER,
+        Engine::Graphics::Vector2f customOrigin = Engine::Graphics::Vector2f(
+            0.0f, 0.0f),
         std::optional<std::size_t> parent_entity = std::nullopt)
         : x(x),
           y(y),
@@ -60,7 +62,8 @@ struct Transform {
 
     Transform(float x, float y, float rotationDegrees, float scale,
         OriginPoint origin = CENTER,
-        sf::Vector2f customOrigin = sf::Vector2f(0.0f, 0.0f),
+        Engine::Graphics::Vector2f customOrigin = Engine::Graphics::Vector2f(
+            0.0f, 0.0f),
         std::optional<std::size_t> parent_entity = std::nullopt)
         : x(x),
           y(y),
