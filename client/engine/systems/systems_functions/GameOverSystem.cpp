@@ -74,7 +74,7 @@ void GameOverSystem(Engine::registry &reg, GameWorld &game_world,
 
                 if (text_comps.has(j)) {
                     auto &txt = text_comps[j].value();
-                    txt.opacity = 1.0f;  // Fully visible
+                    txt.opacity = 1.0f;                     // Fully visible
                     txt.color = sf::Color(255, 0, 0, 255);  // Full red
                 }
             }
@@ -86,12 +86,13 @@ void GameOverSystem(Engine::registry &reg, GameWorld &game_world,
         // Use actual delta time from game world
         float delta_time = game_world.last_delta_;
 
-        // Text-only phase: show GAME OVER for configured duration then immediately
-        // transition to the lobby (no fade)
+        // Text-only phase: show GAME OVER for configured duration then
+        // immediately transition to the lobby (no fade)
         if (state.text_phase) {
             state.display_timer += delta_time;
 
-            if (state.display_timer >= Component::GameOverState::kTextDuration) {
+            if (state.display_timer >=
+                Component::GameOverState::kTextDuration) {
                 std::cout << "[GameOverSystem] GAME OVER display complete. "
                              "Transitioning to lobby."
                           << std::endl;
@@ -124,28 +125,26 @@ void GameOverSystem(Engine::registry &reg, GameWorld &game_world,
                               << std::endl;
                     break;
                 }
-
             }
         }
 
-            float fade_progress = std::min(
-                state.fade_timer / Component::GameOverState::kFadeDuration,
-                1.0f);
+        float fade_progress = std::min(
+            state.fade_timer / Component::GameOverState::kFadeDuration, 1.0f);
 
-            // Update fade overlay opacity (fade to black)
-            for (std::size_t j = 0; j < overlays.size(); ++j) {
-                if (!overlays.has(j))
-                    continue;
-                auto &overlay = overlays[j].value();
-                overlay.alpha = fade_progress * 255.0f;
+        // Update fade overlay opacity (fade to black)
+        for (std::size_t j = 0; j < overlays.size(); ++j) {
+            if (!overlays.has(j))
+                continue;
+            auto &overlay = overlays[j].value();
+            overlay.alpha = fade_progress * 255.0f;
 
-                // Update drawable opacity and color (black tint)
-                if (drawables.has(j)) {
-                    auto &drawable = drawables[j].value();
-                    drawable.opacity = fade_progress;
-                    drawable.color = sf::Color(0, 0, 0, 255);  // Black tint
-                }
+            // Update drawable opacity and color (black tint)
+            if (drawables.has(j)) {
+                auto &drawable = drawables[j].value();
+                drawable.opacity = fade_progress;
+                drawable.color = sf::Color(0, 0, 0, 255);  // Black tint
             }
+        }
 
         // When fade is complete, transition to lobby
         if (state.fade_timer >= Component::GameOverState::kFadeDuration) {

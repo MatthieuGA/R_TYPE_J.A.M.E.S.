@@ -63,26 +63,26 @@ void MainMenuScene::InitUI(Engine::registry &reg, GameWorld &gameWorld) {
     // --- Lobby Status Display ---
     // Player count text (e.g., "Players: 1/4")
     auto player_count_entity = CreateEntityInScene(reg);
-    reg.AddComponent<Component::Transform>(player_count_entity,
-        Component::Transform{960.0f, 200.0f, 0.0f, 2.f,
-            Component::Transform::CENTER});
+    reg.AddComponent<Component::Transform>(
+        player_count_entity, Component::Transform{960.0f, 200.0f, 0.0f, 2.f,
+                                 Component::Transform::CENTER});
     reg.AddComponent<Component::Text>(player_count_entity,
         Component::Text("dogica.ttf", "Players: 0/4", 16, LAYER_UI + 2,
             WHITE_BLUE, sf::Vector2f(0.0f, 0.0f)));
-    reg.AddComponent<Component::LobbyUI>(
-        player_count_entity, Component::LobbyUI{Component::LobbyUI::Type::PlayerCount});
+    reg.AddComponent<Component::LobbyUI>(player_count_entity,
+        Component::LobbyUI{Component::LobbyUI::Type::PlayerCount});
     player_count_entity_ = player_count_entity;
 
     // Ready count text (e.g., "Ready: 0/1")
     auto ready_count_entity = CreateEntityInScene(reg);
-    reg.AddComponent<Component::Transform>(ready_count_entity,
-        Component::Transform{960.0f, 260.0f, 0.0f, 2.f,
-            Component::Transform::CENTER});
+    reg.AddComponent<Component::Transform>(
+        ready_count_entity, Component::Transform{960.0f, 260.0f, 0.0f, 2.f,
+                                Component::Transform::CENTER});
     reg.AddComponent<Component::Text>(ready_count_entity,
         Component::Text("dogica.ttf", "Ready: 0/0", 16, LAYER_UI + 2,
             WHITE_BLUE, sf::Vector2f(0.0f, 0.0f)));
-    reg.AddComponent<Component::LobbyUI>(
-        ready_count_entity, Component::LobbyUI{Component::LobbyUI::Type::ReadyCount});
+    reg.AddComponent<Component::LobbyUI>(ready_count_entity,
+        Component::LobbyUI{Component::LobbyUI::Type::ReadyCount});
     ready_count_entity_ = ready_count_entity;
 
     // --- Ready Button ---
@@ -117,8 +117,8 @@ void MainMenuScene::InitUI(Engine::registry &reg, GameWorld &gameWorld) {
     reg.AddComponent<Component::Text>(play_button_entity,
         Component::Text("dogica.ttf", "Ready", 13, LAYER_UI + 1, WHITE_BLUE,
             sf::Vector2f(0.0f, -5.0f)));
-    reg.AddComponent<Component::LobbyUI>(
-        play_button_entity, Component::LobbyUI{Component::LobbyUI::Type::ReadyButton});
+    reg.AddComponent<Component::LobbyUI>(play_button_entity,
+        Component::LobbyUI{Component::LobbyUI::Type::ReadyButton});
     ready_button_entity_ = play_button_entity;
 
     // --- Quit Button ---
