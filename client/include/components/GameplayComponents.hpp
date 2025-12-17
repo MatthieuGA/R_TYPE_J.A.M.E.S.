@@ -115,6 +115,7 @@ struct Health {
     bool invincible;
     float invincibilityDuration = 1.0f;
     float invincibilityTimer = 0.0f;
+    int previousHealth = 0;
 
     explicit Health(int maxHealth = 100)
         : currentHealth(maxHealth),

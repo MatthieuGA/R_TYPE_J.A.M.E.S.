@@ -5,42 +5,6 @@
 #include "engine/systems/InitRegistrySystems.hpp"
 
 namespace Rtype::Client {
-/**
- * @brief Handle the death of an entity.
- *
- * Marks the entity for death animation and removes relevant components.
- *
- * @param reg The registry.
- * @param animated_sprites Sparse array of AnimatedSprite components.
- * @param entity The entity to handle death for.
- * @param i The index of the entity in the registry.
- */
-void DeathHandling(Eng::registry &reg,
-    Eng::sparse_array<Component::AnimatedSprite> &animated_sprites,
-    Engine::entity entity, std::size_t i) {
-    // Mark entity with AnimationDeath component to trigger death anim
-    reg.AddComponent<Component::AnimationDeath>(
-        entity, Component::AnimationDeath{true});
-    reg.RemoveComponent<Component::Health>(entity);
-    reg.RemoveComponent<Component::HitBox>(entity);
-    if (reg.GetComponents<Component::PlayerTag>().has(i))
-        reg.RemoveComponent<Component::PlayerTag>(entity);
-    if (reg.GetComponents<Component::EnemyTag>().has(i))
-        reg.RemoveComponent<Component::EnemyTag>(entity);
-    reg.RemoveComponent<Component::TimedEvents>(entity);
-    reg.RemoveComponent<Component::FrameEvents>(entity);
-    reg.RemoveComponent<Component::PatternMovement>(entity);
-
-    // Play death animation
-    if (animated_sprites.has(i)) {
-        auto &animSprite = animated_sprites[i];
-        animSprite->SetCurrentAnimation("Death", true);
-        animSprite->animated = true;
-    } else {
-        // No animated sprite, remove entity immediately
-        reg.KillEntity(entity);
-    }
-}
 
 /**
  * @brief Handle collision between an entity and a projectile.
@@ -62,7 +26,6 @@ void HandleCollision(Eng::registry &reg, Component::Health &health,
     Eng::sparse_array<Component::AnimatedSprite> &animated_sprites,
     std::size_t i, Engine::entity projEntity, std::size_t j,
     const Component::Projectile &projectile) {
-    health.currentHealth -= projectile.damage;
     if (health_bars.has(i)) {
         auto &bar = health_bars[i];
         bar->timer_damage = 0.0f;
@@ -133,9 +96,6 @@ void HealthDeductionSystem(Eng::registry &reg,
                     projEntity, j, projectile);
             }
         }
-
-        if (health.currentHealth <= 0)
-            DeathHandling(reg, animated_sprites, entity, i);
     }
 }
 
