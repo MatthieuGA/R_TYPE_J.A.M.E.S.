@@ -174,7 +174,9 @@ class ServerConnection {
     void HandleConnectAck(const std::vector<uint8_t> &data);
     void HandleGameStart(const std::vector<uint8_t> &data);
     void HandleGameEnd(const std::vector<uint8_t> &data);
-    void HandleLobbyStatus(const std::vector<uint8_t> &data);
+    void HandleNotifyDisconnect(const std::vector<uint8_t> &data);
+    void HandleNotifyConnect(const std::vector<uint8_t> &data);
+    void HandleNotifyReady(const std::vector<uint8_t> &data);
 
     // ASIO components
     boost::asio::io_context &io_context_;

@@ -13,8 +13,13 @@ namespace {
 // Protocol constants
 constexpr uint8_t kOpConnectReq = 0x01;
 constexpr uint8_t kOpConnectAck = 0x02;
-constexpr uint8_t kOpGameStart = 0x05;
 constexpr uint8_t kOpDisconnectReq = 0x03;
+constexpr uint8_t kOpNotifyDisconnect = 0x04;
+constexpr uint8_t kOpGameStart = 0x05;
+constexpr uint8_t kOpGameEnd = 0x06;
+constexpr uint8_t kOpReadyStatus = 0x07;
+constexpr uint8_t kOpNotifyConnect = 0x08;
+constexpr uint8_t kOpNotifyReady = 0x09;
 constexpr uint8_t kOpPlayerInput = 0x10;
 constexpr uint8_t kOpWorldSnapshot = 0x20;
 
@@ -212,12 +217,18 @@ void ServerConnection::AsyncReceiveTCP() {
                         payload_size);
                     if (opcode == kOpConnectAck) {
                         HandleConnectAck(data);
-                    } else if (opcode == 0x05) {  // kOpGameStart
+                    } else if (opcode == kOpGameStart) {
                         HandleGameStart(data);
-                    } else if (opcode == 0x06) {  // kOpGameEnd
+                    } else if (opcode == kOpGameEnd) {
                         HandleGameEnd(data);
-                    } else if (opcode == 0x08) {  // kOpLobbyStatus
-                        HandleLobbyStatus(data);
+                    } else if (opcode == kOpNotifyDisconnect) {
+                        HandleNotifyDisconnect(data);
+                    } else if (opcode == kOpNotifyDisconnect) {
+                        HandleNotifyDisconnect(data);
+                    } else if (opcode == kOpNotifyConnect) {
+                        HandleNotifyConnect(data);
+                    } else if (opcode == kOpNotifyReady) {
+                        HandleNotifyReady(data);
                     } else {
                         std::cout << "[Network] Unhandled TCP opcode: 0x"
                                   << std::hex << static_cast<int>(opcode)
@@ -232,26 +243,36 @@ void ServerConnection::AsyncReceiveTCP() {
 void ServerConnection::HandleConnectAck(const std::vector<uint8_t> &data) {
     const int kDebugLogLimit = 4;
 
-    if (data.size() <
-        kDebugLogLimit) {  // Payload is 4 bytes: PlayerId+Status+UdpPort(u16)
-        std::cerr << "[Network] CONNECT_ACK malformed" << std::endl;
+    if (data.size() < kDebugLogLimit) {  // Payload is 8 bytes: PlayerId +
+                                         // Status + ConnectedPlayers +
+        // ReadyPlayers + MaxPlayers + MinPlayers + Reserved(u16)
+        std::cerr << "[Network] CONNECT_ACK malformed (expected 8 bytes, got "
+                  << data.size() << ")" << std::endl;
         return;
     }
-    uint8_t pid = data[0];     // PlayerId is first
-    uint8_t status = data[1];  // Status is second
-    uint16_t server_udp_port =
-        ReadLe16(data.data() + 2);  // Server's UDP port (little-endian)
+    uint8_t pid = data[0];                          // PlayerId
+    uint8_t status = data[1];                       // Status
+    uint8_t connected = data[2];                    // ConnectedPlayers
+    uint8_t ready = data[3];                        // ReadyPlayers
+    uint8_t max_players = data[4];                  // MaxPlayers
+    uint8_t min_players = data[5];                  // MinPlayers
+    uint16_t reserved = ReadLe16(data.data() + 6);  // Reserved
+    (void)min_players;                              // Unused for now
+    (void)reserved;                                 // Unused
 
     if (status == 0x00) {
         player_id_.store(pid);
         connected_.store(true);
 
-        // Update server UDP endpoint with the port from CONNECT_ACK
-        server_udp_endpoint_ = boost::asio::ip::udp::endpoint(
-            boost::asio::ip::make_address(server_ip_), server_udp_port);
+        // Initialize lobby counters from CONNECT_ACK
+        lobby_connected_count_.store(connected);
+        lobby_ready_count_.store(ready);
+        lobby_max_players_.store(max_players);
 
         std::cout << "[Network] Connected. PlayerId=" << static_cast<int>(pid)
-                  << ", ServerUdpPort=" << server_udp_port << std::endl;
+                  << ", Server reports: " << static_cast<int>(connected) << "/"
+                  << static_cast<int>(max_players) << " players, "
+                  << static_cast<int>(ready) << " ready" << std::endl;
 
         // Get the local UDP port assigned by OS and send discovery packet
         try {
@@ -322,26 +343,6 @@ void ServerConnection::HandleGameStart(const std::vector<uint8_t> &data) {
     game_ended_.store(false);
 }
 
-void ServerConnection::HandleLobbyStatus(const std::vector<uint8_t> &data) {
-    if (data.size() < 4) {  // Payload is 4 bytes: connected, ready, max,
-                            // reserved
-        std::cerr << "[Network] LOBBY_STATUS malformed" << std::endl;
-        return;
-    }
-
-    uint8_t connected = data[0];
-    uint8_t ready = data[1];
-    uint8_t max_players = data[2];
-
-    lobby_connected_count_.store(connected);
-    lobby_ready_count_.store(ready);
-    lobby_max_players_.store(max_players);
-
-    std::cout << "[Network] LOBBY_STATUS: " << static_cast<int>(connected)
-              << "/" << static_cast<int>(max_players) << " players, "
-              << static_cast<int>(ready) << " ready" << std::endl;
-}
-
 void ServerConnection::HandleGameEnd(const std::vector<uint8_t> &data) {
     if (data.size() < 4) {  // Payload is 4 bytes: winning_player_id + reserved
         std::cerr << "[Network] GAME_END malformed" << std::endl;
@@ -355,6 +356,89 @@ void ServerConnection::HandleGameEnd(const std::vector<uint8_t> &data) {
 
     game_ended_.store(true);
     game_started_.store(false);
+}
+
+void ServerConnection::HandleNotifyDisconnect(
+    const std::vector<uint8_t> &data) {
+    // Payload: 4 bytes (PlayerId u8 + Reserved u8[3])
+    if (data.size() < 4) {
+        std::cerr << "[Network] NOTIFY_DISCONNECT malformed (size="
+                  << data.size() << ", expected 4)" << std::endl;
+        return;
+    }
+
+    uint8_t disconnected_player_id = data[0];
+
+    // Don't update counter if this notification is about ourselves
+    if (disconnected_player_id == player_id_.load()) {
+        std::cout << "[Network] Ignoring NOTIFY_DISCONNECT about self"
+                  << std::endl;
+        return;
+    }
+
+    std::cout << "[Network] NOTIFY_DISCONNECT: Player "
+              << static_cast<int>(disconnected_player_id) << " left the lobby"
+              << std::endl;
+
+    // Decrement connected player count
+    lobby_connected_count_.fetch_sub(1, std::memory_order_relaxed);
+}
+
+void ServerConnection::HandleNotifyConnect(const std::vector<uint8_t> &data) {
+    // Payload: 36 bytes (PlayerId u8 + Reserved u8[3] + Username char[32])
+    if (data.size() < 36) {
+        std::cerr << "[Network] NOTIFY_CONNECT malformed (size=" << data.size()
+                  << ", expected 36)" << std::endl;
+        return;
+    }
+
+    uint8_t new_player_id = data[0];
+    // Reserved bytes at data[1], data[2], data[3]
+
+    // Don't increment counter if this notification is about ourselves
+    if (new_player_id == player_id_.load()) {
+        std::cout << "[Network] Ignoring NOTIFY_CONNECT about self"
+                  << std::endl;
+        return;
+    }
+
+    // Extract username (null-terminated, max 32 bytes)
+    std::string username;
+    username.reserve(32);
+    for (size_t i = 4; i < 36 && data[i] != '\0'; ++i) {
+        username.push_back(static_cast<char>(data[i]));
+    }
+
+    std::cout << "[Network] NOTIFY_CONNECT: Player "
+              << static_cast<int>(new_player_id) << " ('" << username
+              << "') joined the lobby" << std::endl;
+
+    // Increment connected player count
+    lobby_connected_count_.fetch_add(1, std::memory_order_relaxed);
+}
+
+void ServerConnection::HandleNotifyReady(const std::vector<uint8_t> &data) {
+    // Payload: 4 bytes (PlayerId u8 + IsReady u8 + Reserved u8[2])
+    if (data.size() < 4) {
+        std::cerr << "[Network] NOTIFY_READY malformed (size=" << data.size()
+                  << ", expected 4)" << std::endl;
+        return;
+    }
+
+    uint8_t ready_player_id = data[0];
+    uint8_t is_ready = data[1];
+    // Reserved bytes at data[2], data[3]
+
+    std::cout << "[Network] NOTIFY_READY: Player "
+              << static_cast<int>(ready_player_id) << " is now "
+              << (is_ready ? "READY" : "NOT READY") << std::endl;
+
+    // Update ready count based on status change
+    if (is_ready) {
+        lobby_ready_count_.fetch_add(1, std::memory_order_relaxed);
+    } else {
+        lobby_ready_count_.fetch_sub(1, std::memory_order_relaxed);
+    }
 }
 
 void ServerConnection::SendInput(uint8_t input_flags) {

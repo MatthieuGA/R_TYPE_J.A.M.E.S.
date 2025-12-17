@@ -11,7 +11,7 @@
 namespace server {
 
 // Static instance pointer for system callbacks
-Server* Server::instance_ = nullptr;
+Server *Server::instance_ = nullptr;
 
 Server::Server(Config &config, boost::asio::io_context &io_context)
     : config_(config),
@@ -83,7 +83,8 @@ void Server::Start() {
     std::cout << "Starting game..." << std::endl;
     running_ = true;
 
-    // Clear any leftover entities from previous games before setting up new one
+    // Clear any leftover entities from previous games before setting up new
+    // one
     registry_.ClearAllEntities();
 
     SetupEntitiesGame();
@@ -125,9 +126,6 @@ void Server::ResetToLobby() {
 
     // Reset all client ready states
     connection_manager_.ResetAllReadyStates();
-
-    // Broadcast lobby status to inform clients of the reset
-    packet_sender_.SendLobbyStatus();
 
     std::cout << "Server reset to lobby. Waiting for players to ready up..."
               << std::endl;
