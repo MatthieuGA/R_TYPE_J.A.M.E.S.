@@ -21,6 +21,8 @@ void DeathHandling(Engine::registry &reg,
         reg.RemoveComponent<Component::PlayerTag>(entity);
     if (reg.GetComponents<Component::EnemyTag>().has(i))
         reg.RemoveComponent<Component::EnemyTag>(entity);
+    if (reg.GetComponents<Component::Projectile>().has(i))
+        reg.RemoveComponent<Component::Projectile>(entity);
     reg.RemoveComponent<Component::TimedEvents>(entity);
     reg.RemoveComponent<Component::FrameEvents>(entity);
     reg.RemoveComponent<Component::PatternMovement>(entity);
@@ -39,7 +41,7 @@ void DeathHandling(Engine::registry &reg,
 void KillEntitiesSystem(Eng::registry &reg,
     Eng::sparse_array<Com::NetworkId> &network_ids,
     Eng::sparse_array<Com::AnimationDeath> &animation_deaths) {
-    const int kMaxTickDifference = 3;
+    const int kMaxTickDifference = 2;
 
     for (auto &&[i, net_id] : make_indexed_zipper(network_ids)) {
         if (animation_deaths.has(i)) {
@@ -48,15 +50,8 @@ void KillEntitiesSystem(Eng::registry &reg,
         if (SnapshotTracker::GetInstance().GetLastProcessedTick() -
                 static_cast<uint32_t>(net_id.last_processed_tick) >
             kMaxTickDifference) {
-            if (reg.GetComponents<Com::PlayerTag>().has(i)) {
-                DeathHandling(reg, reg.GetComponents<Com::AnimatedSprite>(),
-                    reg.EntityFromIndex(i), i);
-            } else if (reg.GetComponents<Com::EnemyTag>().has(i)) {
-                DeathHandling(reg, reg.GetComponents<Com::AnimatedSprite>(),
-                    reg.EntityFromIndex(i), i);
-            } else {
-                reg.KillEntity(reg.EntityFromIndex(i));
-            }
+            DeathHandling(reg, reg.GetComponents<Com::AnimatedSprite>(),
+                reg.EntityFromIndex(i), i);
         }
     }
 }
