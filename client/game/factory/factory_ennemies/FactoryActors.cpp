@@ -28,11 +28,16 @@ void FactoryActors::CreateActor(Engine::entity &entity, Engine::registry &reg,
         return;
     }
 
-    CreateBasicEnnemy(entity, reg, info);
-    if (info.tag == "mermaid")
+    std::string tag_path = "";
+    if (info.tag == "mermaid") {
         CreateMermaidActor(entity, reg, info);
-    if (info.tag == "kamifish")
+        tag_path = "ennemies/4";
+    }
+    if (info.tag == "kamifish") {
         CreateKamiFishActor(entity, reg, info);
+        tag_path = "ennemies/6";
+    }
+    CreateBasicEnnemy(tag_path, entity, reg, info);
 }
 
 void FactoryActors::CreateBasicActor(
@@ -54,7 +59,7 @@ void FactoryActors::CreateBasicActor(
         entity, Component::Drawable{info.spritePath, LAYER_ACTORS});
 }
 
-void FactoryActors::CreateBasicEnnemy(
+void FactoryActors::CreateBasicEnnemy(std::string const &tag_path,
     Engine::entity &entity, Engine::registry &reg, EnnemyInfo info) {
     // Add basic enemy components
     reg.AddComponent<Component::EnemyTag>(
@@ -64,11 +69,11 @@ void FactoryActors::CreateBasicEnnemy(
     Component::AnimatedSprite animated_sprite(
         48, 48, 0.2f, true, sf::Vector2f(0.0f, 0.0f), 4);
     animated_sprite.AddAnimation(
-        "Hit", "ennemies/4/Hurt.png", 48, 48, 2, 0.1f, false);
+        "Hit", tag_path + "/Hurt.png", 48, 48, 2, 0.1f, false);
     animated_sprite.AddAnimation(
-        "Death", "ennemies/4/Death.png", 48, 48, 6, 0.1f, false);
+        "Death", tag_path + "/Death.png", 48, 48, 6, 0.1f, false);
     animated_sprite.AddAnimation(
-        "Attack", "ennemies/4/Attack.png", 48, 48, 6, 0.15f, false);
+        "Attack", tag_path + "/Attack.png", 48, 48, 6, 0.15f, false);
     animated_sprite.currentAnimation = "Default";
     reg.AddComponent<Component::AnimatedSprite>(
         entity, std::move(animated_sprite));
