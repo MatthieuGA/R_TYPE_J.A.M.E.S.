@@ -55,45 +55,6 @@ void FactoryActors::CreateKamiFishActor(
     animated_sprite.currentAnimation = "Default";
     reg.AddComponent<Component::AnimatedSprite>(
         entity, std::move(animated_sprite));
-
-    // Add frame event for shooting
-    reg.AddComponent<Component::FrameEvents>(
-        entity, Component::FrameEvents("Attack", 5, [&reg](int entity_id) {
-            try {
-                auto &transform = reg.GetComponent<Component::Transform>(
-                    reg.EntityFromIndex(entity_id));
-                auto &enemy_shoot = reg.GetComponent<Component::EnemyShootTag>(
-                    reg.EntityFromIndex(entity_id));
-
-                vector2f shoot_direction = vector2f(-1.0f, 0.0f);
-                CreateKamiFishProjectile(
-                    reg, shoot_direction, enemy_shoot, entity_id, transform);
-            } catch (const std::exception &e) {
-                return;
-            }
-        }));
-
-    // Add timed events for periodic attacks
-    reg.AddComponent<Component::TimedEvents>(
-        entity, Component::TimedEvents(
-                    [&reg](int entity_id) {
-                        try {
-                            auto &animSprite =
-                                reg.GetComponent<Component::AnimatedSprite>(
-                                    reg.EntityFromIndex(entity_id));
-                            auto &health = reg.GetComponent<Component::Health>(
-                                reg.EntityFromIndex(entity_id));
-                            if (health.currentHealth <= 0)
-                                return;
-                            animSprite.SetCurrentAnimation("Attack");
-                        } catch (const std::exception &e) {
-                            return;
-                        }
-                    },
-                    2.0f));
-
-    reg.AddComponent<Component::EnemyShootTag>(
-        entity, std::move(enemy_shoot_tag));
 }
 
 }  // namespace server

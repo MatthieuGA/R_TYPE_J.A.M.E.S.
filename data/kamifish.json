@@ -1,14 +1,14 @@
 {
     "tag": "kamifish",
-    "health": 30,
-    "speed": 100.0,
+    "health": 10,
+    "speed": 200.0,
     "spritePath": "ennemies/6/Idle.png",
     "hitbox": {
         "x": 15.0,
         "y": 15.0
     },
     "offset_healthbar": {
-        "x": 7.0,
+        "x": 0.0,
         "y": 7.0
     },
     "transform" : {
