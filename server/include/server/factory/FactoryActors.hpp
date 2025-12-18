@@ -16,7 +16,8 @@ namespace server {
 class FactoryActors {
  public:
     enum class EnnemyType {
-        MERMAID
+        MERMAID,
+        KAMI_FISH
     };
 
     struct EnnemyInfo {
@@ -49,11 +50,8 @@ class FactoryActors {
         Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
     void CreateMermaidActor(
         Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
-
-    // Helper to create a projectile for an enemy
-    void CreateMermaidProjectile(Engine::registry &reg, vector2f direction,
-        Component::EnemyShootTag &enemy_shoot, int ownerId,
-        Component::Transform const &transform);
+    void CreateKamiFishActor(
+        Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
 
     std::map<std::string, EnnemyInfo> enemy_info_map_ = {};
     int id_player_ = 0;

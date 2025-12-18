@@ -28,6 +28,16 @@ struct EnemyTag {
     float speed = 100.0f;
 };
 
+/**
+ * @brief Component storing the enemy subtype used for network serialization.
+ *
+ * Value matches `server::network::EntityState::EnemyType` enum (0=Mermaid,
+ * 1=KamiFish).
+ */
+struct EnemyType {
+    uint8_t type = 0;
+};
+
 struct TimedEvents {
     struct CooldownAction {
         std::function<void(int entity_id)> action;

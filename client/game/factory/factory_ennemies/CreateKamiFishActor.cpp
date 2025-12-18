@@ -7,17 +7,15 @@
 
 namespace Rtype::Client {
 
-void FactoryActors::CreateMermaidActor(
+void FactoryActors::CreateKamiFishActor(
     Engine::entity &entity, Engine::registry &reg, EnnemyInfo info) {
     // Add basic enemy components
     reg.AddComponent<Component::PatternMovement>(
-        entity, Component::PatternMovement(
-                    Component::PatternMovement::PatternType::SineHorizontal,
-                    sf::Vector2f(0.f, 50.f), sf::Vector2f(0.f, 1.f),
-                    sf::Vector2f(0.f, 0.f), info.speed));
+        entity, Component::PatternMovement(info.speed));
 
     // Add enemy shooting component
-    Component::EnemyShootTag enemy_shoot_tag(info.speed,
+    Component::EnemyShootTag enemy_shoot_tag(
+        Rtype::Client::MERMAID_PROJECTILE_SPEED,
         Rtype::Client::MERMAID_PROJECTILE_DAMAGE, sf::Vector2f(-3.0f, -15.0f));
 
     reg.AddComponent<Component::TimedEvents>(

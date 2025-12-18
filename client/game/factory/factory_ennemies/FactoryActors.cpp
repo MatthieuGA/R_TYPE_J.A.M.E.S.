@@ -31,6 +31,8 @@ void FactoryActors::CreateActor(Engine::entity &entity, Engine::registry &reg,
     CreateBasicEnnemy(entity, reg, info);
     if (info.tag == "mermaid")
         CreateMermaidActor(entity, reg, info);
+    if (info.tag == "kamifish")
+        CreateKamiFishActor(entity, reg, info);
 }
 
 void FactoryActors::CreateBasicActor(
@@ -70,32 +72,5 @@ void FactoryActors::CreateBasicEnnemy(
     animated_sprite.currentAnimation = "Default";
     reg.AddComponent<Component::AnimatedSprite>(
         entity, std::move(animated_sprite));
-}
-
-void FactoryActors::CreateMermaidProjectile(Engine::registry &reg,
-    sf::Vector2f direction, Component::EnemyShootTag &enemy_shoot, int ownerId,
-    Component::Transform const &transform) {
-    auto projectile_entity = reg.SpawnEntity();
-    // Add components to projectile entity
-    reg.AddComponent<Component::Transform>(projectile_entity,
-        Component::Transform{
-            transform.x + (enemy_shoot.offset_shoot_position.x *
-                              std::abs(transform.scale.x)),
-            transform.y + (enemy_shoot.offset_shoot_position.y *
-                              std::abs(transform.scale.y)),
-            0.0f, 2.f, Component::Transform::CENTER});
-    reg.AddComponent<Component::Drawable>(projectile_entity,
-        Component::Drawable("ennemies/4/Projectile.png", LAYER_PROJECTILE));
-    reg.AddComponent<Component::Projectile>(projectile_entity,
-        Component::Projectile{enemy_shoot.damage_projectile, direction,
-            enemy_shoot.speed_projectile, ownerId, true});
-    reg.AddComponent<Component::HitBox>(
-        projectile_entity, Component::HitBox{8.0f, 8.0f});
-    reg.AddComponent<Component::Velocity>(
-        projectile_entity, Component::Velocity{direction.x, direction.y});
-    reg.AddComponent<Component::ParticleEmitter>(projectile_entity,
-        Component::ParticleEmitter(50, 50, RED_HIT, RED_HIT,
-            sf::Vector2f(0.f, 0.f), true, 0.3f, 4.f, sf::Vector2f(-1.f, 0.f),
-            45.f, 0, 8, 3.0f, 2.0f, -1.0f, LAYER_PARTICLE));
 }
 }  // namespace Rtype::Client

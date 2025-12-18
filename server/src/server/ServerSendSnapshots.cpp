@@ -167,6 +167,15 @@ void SendServerSnapshotEnemy(network::EntityState &entity_state,
     } catch (const std::exception &e) {
         entity_state.health = 0;
     }
+
+    // Set enemy subtype for client to instantiate correct prefab
+    try {
+        auto &etype = registry_.GetComponent<Component::EnemyType>(
+            registry_.EntityFromIndex(i));
+        entity_state.enemy_type = etype.type;
+    } catch (const std::exception &e) {
+        entity_state.enemy_type = 0;  // default to Mermaid
+    }
 }
 
 void SendServerSnapshotProjectile(network::EntityState &entity_state,

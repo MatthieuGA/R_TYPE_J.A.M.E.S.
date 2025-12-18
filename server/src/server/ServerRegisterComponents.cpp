@@ -18,6 +18,7 @@ void Server::RegisterComponents() {
     registry_.RegisterComponent<Component::PlayerTag>();
     registry_.RegisterComponent<Component::AnimationEnterPlayer>();
     registry_.RegisterComponent<Component::EnemyTag>();
+    registry_.RegisterComponent<Component::EnemyType>();
     registry_.RegisterComponent<Component::TimedEvents>();
     registry_.RegisterComponent<Component::FrameEvents>();
     registry_.RegisterComponent<Component::EnemyShootTag>();
