@@ -48,6 +48,13 @@ void Server::RegisterSystems() {
         Engine::sparse_array<Component::HitBox>,
         Engine::sparse_array<Component::Transform>,
         Engine::sparse_array<Component::Projectile>>(HealthDeductionSystem);
+
+    // Explode-on-death system must run after health deduction to catch deaths
+    registry_.AddSystem<Engine::sparse_array<Component::Transform>,
+        Engine::sparse_array<Component::Health>,
+        Engine::sparse_array<Component::AnimatedSprite>,
+        Engine::sparse_array<Component::ExplodeOnDeath>,
+        Engine::sparse_array<Component::AnimationDeath>>(ExplodeOnDeathSystem);
 }
 
 }  // namespace server

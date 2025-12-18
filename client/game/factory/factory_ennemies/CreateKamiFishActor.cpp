@@ -15,9 +15,9 @@ void FactoryActors::CreateKamiFishActor(
     animated_sprite.AddAnimation(
         "Hit", "ennemies/6/Hurt.png", 48, 48, 2, 0.1f, false);
     animated_sprite.AddAnimation(
-        "Death", "ennemies/6/Death.png", 48, 48, 6, 0.1f, false);
+        "Death", "ennemies/6/Attack.png", 48, 48, 6, 0.1f, false);
     animated_sprite.AddAnimation(
-        "Attack", "ennemies/6/Attack.png", 48, 48, 6, 0.05f, false);
+        "Attack", "ennemies/6/Attack.png", 48, 48, 6, 0.1f, false);
     animated_sprite.currentAnimation = "Default";
     reg.AddComponent<Component::AnimatedSprite>(
         entity, std::move(animated_sprite));

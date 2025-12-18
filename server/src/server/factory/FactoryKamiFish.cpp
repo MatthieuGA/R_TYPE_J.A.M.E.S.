@@ -51,10 +51,13 @@ void FactoryActors::CreateKamiFishActor(
     Component::AnimatedSprite animated_sprite(true, 4, 0.2f);
     animated_sprite.AddAnimation("Hit", 2, 0.1f, false);
     animated_sprite.AddAnimation("Death", 6, 0.1f, false);
-    animated_sprite.AddAnimation("Attack", 6, 0.05f, false);
+    animated_sprite.AddAnimation("Attack", 6, 0.1f, false);
     animated_sprite.currentAnimation = "Default";
     reg.AddComponent<Component::AnimatedSprite>(
         entity, std::move(animated_sprite));
+
+    reg.AddComponent<Component::ExplodeOnDeath>(
+        entity, Component::ExplodeOnDeath{200.0f, 20});
 }
 
 }  // namespace server
