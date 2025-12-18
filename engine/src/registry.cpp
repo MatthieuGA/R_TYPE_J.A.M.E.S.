@@ -29,4 +29,18 @@ void registry::RunSystems() {
             s(*this);
     }
 }
+
+void registry::ClearAllEntities() {
+    // Kill all entities by calling erase functions for all component arrays
+    for (std::size_t id = 0; id < next_entity_; ++id) {
+        entity e(id);
+        for (auto &fn : erase_fns_) {
+            if (fn)
+                fn(*this, e);
+        }
+    }
+    // Reset entity tracking
+    dead_entities_.clear();
+    next_entity_ = 0;
+}
 }  // namespace Engine

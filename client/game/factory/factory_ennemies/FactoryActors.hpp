@@ -40,6 +40,12 @@ class FactoryActors {
         std::string const &tag, bool is_local = false);
     void InitializeEnemyInfoMap(const std::string &jsonFolder);
 
+    /**
+     * @brief Reset internal counters for a new game.
+     * Should be called when transitioning to lobby or starting a new game.
+     */
+    void ResetForNewGame() { id_player_ = 0; }
+
  private:
     void loadConfigEnemy(
         const std::string &jsonFilePath, const std::string &name);

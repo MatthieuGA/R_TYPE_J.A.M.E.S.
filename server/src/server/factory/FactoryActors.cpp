@@ -68,8 +68,6 @@ void FactoryActors::CreateMermaidProjectile(Engine::registry &reg,
     vector2f direction, Component::EnemyShootTag &enemy_shoot, int ownerId,
     Component::Transform const &transform) {
     auto projectile_entity = reg.SpawnEntity();
-    reg.AddComponent<Component::NetworkId>(
-        projectile_entity, Component::NetworkId{Server::GetNextNetworkId()});
     // Add components to projectile entity
     reg.AddComponent<Component::Transform>(projectile_entity,
         Component::Transform{
@@ -87,6 +85,9 @@ void FactoryActors::CreateMermaidProjectile(Engine::registry &reg,
         projectile_entity, Component::HitBox{8.0f, 8.0f});
     reg.AddComponent<Component::Velocity>(
         projectile_entity, Component::Velocity{direction.x, direction.y});
+    // Add NetworkId so the projectile is synced to clients
+    reg.AddComponent<Component::NetworkId>(
+        projectile_entity, Component::NetworkId{Server::GetNextNetworkId()});
 }
 
 void FactoryActors::CreatePlayerActor(Engine::entity &entity,
@@ -149,5 +150,4 @@ void FactoryActors::CreateMermaidActor(
     reg.AddComponent<Component::EnemyShootTag>(
         entity, std::move(enemy_shoot_tag));
 }
-
 }  // namespace server

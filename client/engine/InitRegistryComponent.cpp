@@ -36,5 +36,9 @@ void InitRegistryComponents(Engine::registry &reg) {
     reg.RegisterComponent<Rtype::Client::Component::InterpolatedPosition>();
     // Register scenes components
     reg.RegisterComponent<Rtype::Client::Component::SceneManagement>();
+    reg.RegisterComponent<Rtype::Client::Component::LobbyUI>();
+    reg.RegisterComponent<Rtype::Client::Component::GameOverState>();
+    reg.RegisterComponent<Rtype::Client::Component::FadeOverlay>();
+    reg.RegisterComponent<Rtype::Client::Component::GameOverText>();
 }
 }  // namespace Rtype::Client

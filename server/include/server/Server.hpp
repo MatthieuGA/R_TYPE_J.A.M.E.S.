@@ -36,6 +36,11 @@ namespace server {
 class Server {
  public:
     /**
+     * @brief Get the singleton instance (for systems to notify player death)
+     */
+    static Server* GetInstance() { return instance_; }
+
+    /**
      * @brief Construct a new Server object
      *
      * @param config Server configuration
@@ -62,6 +67,28 @@ class Server {
      * @brief Stop the game loop and reset game state and tick
      */
     void Stop();
+
+    /**
+     * @brief Reset the server to lobby state after game over
+     *
+     * Clears all game entities, resets player ready states, and prepares
+     * for a new game. Called when all players die (game over).
+     */
+    void ResetToLobby();
+
+    /**
+     * @brief Check if all player entities are dead (health <= 0)
+     *
+     * @return true if all players are dead or no players exist
+     */
+    bool AreAllPlayersDead();
+
+    /**
+     * @brief Notify the server that a player has died
+     *
+     * Called by HealthDeductionSystem when a player's health reaches 0.
+     */
+    void NotifyPlayerDeath();
 
     /**
      * @brief Stop the game loop and close all client connections
@@ -138,6 +165,13 @@ class Server {
 
     static constexpr int TICK_RATE_MS = 16;  // ~60 FPS
     int tick_count_;
+
+    // Player tracking for game over detection
+    int total_players_{0};
+    int alive_players_{0};
+
+    // Singleton instance for system callbacks
+    static Server* instance_;
 };
 
 }  // namespace server

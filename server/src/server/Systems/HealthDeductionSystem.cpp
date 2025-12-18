@@ -2,6 +2,7 @@
 
 #include "server/CoreComponents.hpp"
 #include "server/GameplayComponents.hpp"
+#include "server/Server.hpp"
 #include "server/systems/CollidingTools.hpp"
 #include "server/systems/OriginTool.hpp"
 #include "server/systems/Systems.hpp"
@@ -22,11 +23,21 @@ namespace server {
 void DeathHandling(Engine::registry &reg,
     Engine::sparse_array<Component::AnimatedSprite> &animated_sprites,
     Engine::entity entity, std::size_t i) {
+    // Check if this is a player dying - notify server before removing tag
+    if (reg.GetComponents<Component::PlayerTag>().has(i)) {
+        std::cout << "[DeathHandling] Player at index " << i << " died!"
+                  << std::endl;
+        if (Server::GetInstance()) {
+            Server::GetInstance()->NotifyPlayerDeath();
+        }
+    }
+
     // Mark entity with AnimationDeath component to trigger death anim
     reg.AddComponent<Component::AnimationDeath>(
         entity, Component::AnimationDeath{true});
     reg.RemoveComponent<Component::Health>(entity);
     reg.RemoveComponent<Component::HitBox>(entity);
+    // Remove PlayerTag since we've already notified the server
     if (reg.GetComponents<Component::PlayerTag>().has(i))
         reg.RemoveComponent<Component::PlayerTag>(entity);
     if (reg.GetComponents<Component::EnemyTag>().has(i))

@@ -216,4 +216,10 @@ ClientConnection *ClientConnectionManager::FindClientByPlayerId(
     return nullptr;
 }
 
+void ClientConnectionManager::ResetAllReadyStates() {
+    for (auto &[client_id, connection] : clients_) {
+        connection.ready_ = false;
+    }
+}
+
 }  // namespace server

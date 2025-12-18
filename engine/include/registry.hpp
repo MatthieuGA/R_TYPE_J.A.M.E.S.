@@ -41,6 +41,14 @@ class registry {
     entity_t EntityFromIndex(std::size_t idx);
     void KillEntity(entity_t const &e);
 
+    /**
+     * @brief Clear all entities and reset the registry
+     *
+     * Kills all existing entities and resets the entity counter.
+     * Used when resetting game state (e.g., returning to lobby).
+     */
+    void ClearAllEntities();
+
     // Backwards-compatible entity management
     entity_t spawn_entity() {
         return SpawnEntity();
