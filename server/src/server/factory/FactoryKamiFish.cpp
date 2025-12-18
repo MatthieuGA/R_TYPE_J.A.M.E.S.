@@ -46,6 +46,16 @@ void FactoryActors::CreateKamiFishActor(
     // Add enemy shooting component
     Component::EnemyShootTag enemy_shoot_tag(200.0f, 10.0f, {-3.0f, -15.0f});
 
+    // Add drawable and animated sprite components
+    // AnimatedSprite(bool loop, int totalFrames, float frameDuration)
+    Component::AnimatedSprite animated_sprite(true, 4, 0.2f);
+    animated_sprite.AddAnimation("Hit", 2, 0.1f, false);
+    animated_sprite.AddAnimation("Death", 6, 0.1f, false);
+    animated_sprite.AddAnimation("Attack", 6, 0.05f, false);
+    animated_sprite.currentAnimation = "Default";
+    reg.AddComponent<Component::AnimatedSprite>(
+        entity, std::move(animated_sprite));
+
     // Add frame event for shooting
     reg.AddComponent<Component::FrameEvents>(
         entity, Component::FrameEvents("Attack", 5, [&reg](int entity_id) {

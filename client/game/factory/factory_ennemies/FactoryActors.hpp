@@ -49,8 +49,8 @@ class FactoryActors {
     void CreatePlayerActor(Engine::entity &entity, Engine::registry &reg,
         EnnemyInfo info, bool is_local);
 
-    void CreateBasicEnnemy(std::string const &tag_path, Engine::entity &entity,
-        Engine::registry &reg, EnnemyInfo info);
+    void CreateBasicEnnemy(
+        Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
     void CreateMermaidActor(
         Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
     void CreateKamiFishActor(

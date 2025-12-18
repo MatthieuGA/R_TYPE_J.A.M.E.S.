@@ -26,16 +26,9 @@ struct AnimationEnterPlayer {
 
 struct EnemyTag {
     float speed = 100.0f;
-};
-
-/**
- * @brief Component storing the enemy subtype used for network serialization.
- *
- * Value matches `server::network::EntityState::EnemyType` enum (0=Mermaid,
- * 1=KamiFish).
- */
-struct EnemyType {
-    uint8_t type = 0;
+    // Subtype used for network serialization: matches
+    // server::network::EntityState::EnemyType (0=Mermaid,1=KamiFish)
+    uint8_t subtype = 0;
 };
 
 struct TimedEvents {

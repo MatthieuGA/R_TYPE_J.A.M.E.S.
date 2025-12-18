@@ -61,18 +61,14 @@ void FactoryActors::CreateBasicEnnemy(
         enemy_type_val = 1;
     else if (info.tag == "mermaid")
         enemy_type_val = 0;
-    reg.AddComponent<Component::EnemyType>(
-        entity, Component::EnemyType{enemy_type_val});
-
-    // Add drawable and animated sprite components
-    // AnimatedSprite(bool loop, int totalFrames, float frameDuration)
-    Component::AnimatedSprite animated_sprite(true, 4, 0.2f);
-    animated_sprite.AddAnimation("Hit", 2, 0.1f, false);
-    animated_sprite.AddAnimation("Death", 6, 0.1f, false);
-    animated_sprite.AddAnimation("Attack", 6, 0.15f, false);
-    animated_sprite.currentAnimation = "Default";
-    reg.AddComponent<Component::AnimatedSprite>(
-        entity, std::move(animated_sprite));
+    // Add EnemyTag with speed and subtype (0=mermaid,1=kamifish)
+    uint8_t subtype = 0;
+    if (info.tag == "kamifish")
+        subtype = 1;
+    else if (info.tag == "mermaid")
+        subtype = 0;
+    reg.AddComponent<Component::EnemyTag>(
+        entity, Component::EnemyTag{info.speed, subtype});
 }
 
 void FactoryActors::CreatePlayerActor(Engine::entity &entity,
