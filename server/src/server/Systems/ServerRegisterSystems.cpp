@@ -54,7 +54,9 @@ void Server::RegisterSystems() {
         Engine::sparse_array<Component::Health>,
         Engine::sparse_array<Component::AnimatedSprite>,
         Engine::sparse_array<Component::ExplodeOnDeath>,
-        Engine::sparse_array<Component::AnimationDeath>>(ExplodeOnDeathSystem);
+        Engine::sparse_array<Component::AnimationDeath>,
+        Engine::sparse_array<Component::HitBox>,
+        Engine::sparse_array<Component::PlayerTag>>(ExplodeOnDeathSystem);
 }
 
 }  // namespace server
