@@ -12,10 +12,10 @@ void MovementSystem(Engine::registry &reg,
     Engine::sparse_array<Component::Transform> &transforms,
     Engine::sparse_array<Component::Velocity> &velocities) {
     for (auto &&[i, pos, vel] : make_indexed_zipper(transforms, velocities)) {
-        pos.x += vel.vx * TICK_RATE_MS / 1000.0f;
-        pos.y += vel.vy * TICK_RATE_MS / 1000.0f;
-        vel.vx += vel.accelerationX * TICK_RATE_MS / 1000.0f;
-        vel.vy += vel.accelerationY * TICK_RATE_MS / 1000.0f;
+        pos.x += vel.vx * g_frame_delta_seconds;
+        pos.y += vel.vy * g_frame_delta_seconds;
+        vel.vx += vel.accelerationX * g_frame_delta_seconds;
+        vel.vy += vel.accelerationY * g_frame_delta_seconds;
     }
 }
 

@@ -6,6 +6,7 @@
 
 #include "server/CoreComponents.hpp"
 #include "server/NetworkComponents.hpp"
+#include "server/systems/Systems.hpp"
 
 namespace server {
 
@@ -21,6 +22,7 @@ Server::Server(Config &config, boost::asio::io_context &io_context)
       packet_handler_(connection_manager_, packet_sender_, network_) {
     // Set game start callback
     packet_handler_.SetGameStartCallback([this]() { Start(); });
+    last_tick_time_ = std::chrono::steady_clock::now();
 }
 
 Server::~Server() {
@@ -101,9 +103,16 @@ void Server::SetupGameTick() {
         return;
     }
 
-    tick_timer_.expires_after(std::chrono::milliseconds(TICK_RATE_MS));
+    tick_timer_.expires_after(std::chrono::milliseconds(kTickTimerMs));
     tick_timer_.async_wait([this](const boost::system::error_code &ec) {
         if (!ec && running_) {
+            // Calculate real elapsed time since last tick and update global
+            // frame delta
+            auto now = std::chrono::steady_clock::now();
+            std::chrono::duration<float> elapsed = now - last_tick_time_;
+            UpdateFrameDeltaFromSeconds(elapsed.count());
+            last_tick_time_ = now;
+
             Update();
             SetupGameTick();
         }

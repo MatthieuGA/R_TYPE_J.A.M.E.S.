@@ -29,12 +29,11 @@ void ProjectileSystem(Engine::registry &reg,
             projectile.direction.y /= length;
         }
 
-        // Convert TICK_RATE_MS from milliseconds to seconds for proper
-        // velocity calculation
+        // Use frame delta (seconds) for proper velocity calculation
         transform.x +=
-            projectile.speed * TICK_RATE_SECONDS * projectile.direction.x;
+            projectile.speed * g_frame_delta_seconds * projectile.direction.x;
         transform.y +=
-            projectile.speed * TICK_RATE_SECONDS * projectile.direction.y;
+            projectile.speed * g_frame_delta_seconds * projectile.direction.y;
 
         if (transform.x > WINDOW_WIDTH + 100.f || transform.x < -100.f ||
             transform.y > WINDOW_HEIGHT + 100.f || transform.y < -100.f) {

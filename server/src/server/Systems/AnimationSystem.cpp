@@ -49,7 +49,7 @@ void AnimationSystem(Engine::registry &reg,
         if (!anim_sprite.animated)
             continue;
 
-        anim_sprite.elapsedTime += TICK_RATE_SECONDS;
+        anim_sprite.elapsedTime += g_frame_delta_seconds;
         if (animation->frameDuration > 0.0f) {
             while (anim_sprite.elapsedTime >= animation->frameDuration) {
                 anim_sprite.elapsedTime -= animation->frameDuration;

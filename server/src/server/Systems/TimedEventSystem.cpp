@@ -38,7 +38,7 @@ void TimedEventSystem(Engine::registry &reg,
     Engine::sparse_array<Component::TimedEvents> &timed_events) {
     for (auto &&[i, timed_event] : make_indexed_zipper(timed_events)) {
         for (auto &cd_action : timed_event.cooldown_actions)
-            HandleCooldownBasedShooting(i, TICK_RATE_SECONDS, cd_action);
+            HandleCooldownBasedShooting(i, g_frame_delta_seconds, cd_action);
     }
 }
 }  // namespace server
