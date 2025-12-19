@@ -6,9 +6,9 @@ namespace Com = Rtype::Client::Component;
 
 TEST(ClickableComponent, Defaults) {
     Com::Clickable c;
-    EXPECT_EQ(c.idleColor, sf::Color::White);
-    EXPECT_EQ(c.hoverColor, sf::Color(200, 200, 200));
-    EXPECT_EQ(c.clickColor, sf::Color(150, 150, 150));
+    EXPECT_EQ(c.idleColor, Engine::Graphics::Color::White);
+    EXPECT_EQ(c.hoverColor, Engine::Graphics::Color(200, 200, 200));
+    EXPECT_EQ(c.clickColor, Engine::Graphics::Color(150, 150, 150));
     EXPECT_FALSE(c.isHovered);
     EXPECT_FALSE(c.isClicked);
 }

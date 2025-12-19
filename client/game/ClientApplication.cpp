@@ -195,7 +195,7 @@ void ClientApplication::RunGameLoop(GameWorld &game_world) {
 
         // Calculate delta time at the beginning of the frame
         game_world.last_delta_ =
-            game_world.delta_time_clock_.restart().asSeconds();
+            game_world.delta_time_clock_.Restart().AsSeconds();
 
         // Clear, update, and render
         game_world.window_.clear(sf::Color::Black);

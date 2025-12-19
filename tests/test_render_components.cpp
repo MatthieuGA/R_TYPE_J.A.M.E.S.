@@ -36,7 +36,7 @@ TEST(RenderComponents, TextDefaults) {
     EXPECT_EQ(text.fontPath, std::string("assets/fonts/dogica.ttf"));
     EXPECT_EQ(text.content, std::string(""));
     EXPECT_EQ(text.characterSize, 30u);
-    EXPECT_EQ(text.color, sf::Color::White);
+    EXPECT_EQ(text.color, Engine::Graphics::Color::White);
     EXPECT_FLOAT_EQ(text.opacity, 1.0f);
     EXPECT_EQ(text.z_index, 0);
     EXPECT_FALSE(text.is_loaded);
@@ -45,15 +45,15 @@ TEST(RenderComponents, TextDefaults) {
 }
 
 TEST(RenderComponents, TextMoveSemantics) {
-    Com::Text src{"dogica.ttf", "Hello", 42, 2, sf::Color::Yellow,
-        sf::Vector2f(3.0f, -1.0f)};
+    Com::Text src{"dogica.ttf", "Hello", 42, 2,
+        Engine::Graphics::Color::Yellow, sf::Vector2f(3.0f, -1.0f)};
     src.opacity = 0.25f;
 
     Com::Text moved{std::move(src)};
     EXPECT_EQ(moved.fontPath, std::string("assets/fonts/dogica.ttf"));
     EXPECT_EQ(moved.content, std::string("Hello"));
     EXPECT_EQ(moved.characterSize, 42u);
-    EXPECT_EQ(moved.color, sf::Color::Yellow);
+    EXPECT_EQ(moved.color, Engine::Graphics::Color::Yellow);
     EXPECT_FLOAT_EQ(moved.opacity, 0.25f);
     EXPECT_EQ(moved.z_index, 2);
     EXPECT_FLOAT_EQ(moved.offset.x, 3.0f);

@@ -1,9 +1,10 @@
 #pragma once
-#include <SFML/Graphics.hpp>
+#include "graphics/Types.hpp"
 
 namespace Rtype::Client {
 
-const sf::Color WHITE_BLUE = sf::Color(237, 240, 245);
-const sf::Color RED_HIT = sf::Color(208, 25, 70);
+const Engine::Graphics::Color WHITE_BLUE =
+    Engine::Graphics::Color(237, 240, 245);
+const Engine::Graphics::Color RED_HIT = Engine::Graphics::Color(208, 25, 70);
 
 }  // namespace Rtype::Client

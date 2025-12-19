@@ -39,8 +39,9 @@ void ButtonClickSystem(Eng::registry &reg, GameWorld &game_world,
             hit_box.height *
             (hit_box.scaleWithTransform ? transform.scale.y : 1.0f);
 
-        const sf::Vector2f offsetOrigin = GetOffsetFromTransform(
-            transform, sf::Vector2f(width_computed, height_computed));
+        const Engine::Graphics::Vector2f offsetOrigin =
+            GetOffsetFromTransform(transform,
+                Engine::Graphics::Vector2f(width_computed, height_computed));
 
         const float left = transform.x + offsetOrigin.x;
         const float top = transform.y + offsetOrigin.y;

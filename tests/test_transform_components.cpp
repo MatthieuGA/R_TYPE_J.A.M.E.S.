@@ -16,7 +16,7 @@ TEST(TransformComponent, DefaultsAreCenterAndNoParent) {
 
 TEST(TransformComponent, CustomCtorSetsValues) {
     Com::Transform t{10.0f, -5.0f, 30.0f, 2.5f, Com::Transform::TOP_LEFT,
-        sf::Vector2f(1.0f, 2.0f), 7};
+        Engine::Graphics::Vector2f(1.0f, 2.0f), 7};
     EXPECT_FLOAT_EQ(t.x, 10.0f);
     EXPECT_FLOAT_EQ(t.y, -5.0f);
     EXPECT_FLOAT_EQ(t.rotationDegrees, 30.0f);

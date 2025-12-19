@@ -7,13 +7,15 @@
 
 #include <SFML/Graphics.hpp>
 
+#include "graphics/Types.hpp"
+
 namespace Rtype::Client::Component {
 struct Drawable {
     std::string spritePath;
     int z_index = 0;
     float opacity = 1.0f;
     float rotation = 0.0f;
-    sf::Color color = sf::Color::White;
+    Engine::Graphics::Color color = Engine::Graphics::Color::White;
     sf::Sprite sprite;
     sf::Texture texture;
     bool isLoaded = false;
@@ -26,7 +28,7 @@ struct Drawable {
           opacity(opacity),
           sprite(texture),
           isLoaded(false),
-          color(sf::Color::White) {}
+          color(Engine::Graphics::Color::White) {}
 
     // Non-copyable to avoid accidental sprite/texture pointer mismatches
     Drawable(Drawable const &) = delete;
@@ -213,7 +215,7 @@ struct Text {
     std::string content;
     std::string fontPath;
     unsigned int characterSize = 30;
-    sf::Color color = sf::Color::White;
+    Engine::Graphics::Color color = Engine::Graphics::Color::White;
     float opacity = 1.0f;
     int z_index = 0;
     sf::Vector2f offset = sf::Vector2f(0.0f, 0.0f);
@@ -224,7 +226,7 @@ struct Text {
 
     explicit Text(const std::string &fontPath, const std::string &content = "",
         unsigned int characterSize = 30, int z_index = 0,
-        sf::Color color = sf::Color::White,
+        Engine::Graphics::Color color = Engine::Graphics::Color::White,
         sf::Vector2f offset = sf::Vector2f(0.0f, 0.0f))
         : content(content),
           fontPath("assets/fonts/" + fontPath),
@@ -264,8 +266,10 @@ struct ParticleEmitter {
     float emissionRate = 200.f;  // particules / seconde
     float emissionAccumulator = 0.f;
 
-    sf::Color startColor = sf::Color(80, 80, 255, 255);  // bleu
-    sf::Color endColor = sf::Color(80, 80, 255, 0);      // bleu transparent
+    Engine::Graphics::Color startColor =
+        Engine::Graphics::Color(80, 80, 255, 255);  // bleu
+    Engine::Graphics::Color endColor =
+        Engine::Graphics::Color(80, 80, 255, 0);  // bleu transparent
 
     sf::Vector2f offset = {0.f, 0.f};  // offset local par rapport au Transform
 
@@ -285,8 +289,10 @@ struct ParticleEmitter {
     sf::VertexArray vertices = sf::VertexArray(sf::Points);
 
     ParticleEmitter(float emissionRate = 200.f, std::size_t maxParticles = 300,
-        sf::Color startColor = sf::Color(80, 80, 255, 255),
-        sf::Color endColor = sf::Color(80, 80, 255, 0),
+        Engine::Graphics::Color startColor = Engine::Graphics::Color(
+            80, 80, 255, 255),
+        Engine::Graphics::Color endColor = Engine::Graphics::Color(
+            80, 80, 255, 0),
         sf::Vector2f offset = {0.f, 0.f}, bool active = true,
         float particleLifetime = 1.0f, float particleSpeed = 50.f,
         sf::Vector2f direction = {0.f, -1.f}, float spreadAngle = 30.f,

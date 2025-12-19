@@ -37,7 +37,9 @@ void FactoryActors::CreateBasicActor(
     Engine::entity &entity, Engine::registry &reg, EnnemyInfo info) {
     // Add basic enemy components
     reg.AddComponent<Component::Transform>(
-        entity, {0.f, 0.f, 0.0f, info.scale, Component::Transform::CENTER});
+        entity, Component::Transform(0.f, 0.f, 0.0f,
+                    Engine::Graphics::Vector2f(info.scale.x, info.scale.y),
+                    Component::Transform::CENTER));
     reg.AddComponent<Component::Health>(
         entity, Component::Health(info.health));
     printf(

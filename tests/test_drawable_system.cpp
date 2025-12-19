@@ -20,7 +20,7 @@ TEST(DrawableSystem, LoadsAndAppliesTransform) {
 
     Com::Transform transform{15.0f, -4.0f, 22.0f, 1.5f};
     Com::Drawable drawable{"Logo.png", 4, 0.6f};
-    drawable.color = sf::Color::Green;
+    drawable.color = Engine::Graphics::Color::Green;
 
     transforms.insert_at(0, transform);
     drawables.insert_at(0, std::move(drawable));
