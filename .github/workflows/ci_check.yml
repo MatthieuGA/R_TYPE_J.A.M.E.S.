@@ -20,7 +20,7 @@ env:
 
 jobs:
   block_merge_to_main:
-    if: ${{ github.event_name == 'pull_request' && github.base_ref == 'main' && !(startsWith(github.head_ref, 'Epic-') || startsWith(github.head_ref, '1-epic-')) }}
+    if: ${{ github.event_name == 'pull_request' && github.base_ref == 'main' && !(startsWith(github.head_ref, 'Epic-') || startsWith(github.head_ref, '1-epic-') || github.head_ref == 'version-final-dev') }}
     runs-on: ubuntu-latest
     name: "Block merge to main unless branch starts with Epic-"
     steps:

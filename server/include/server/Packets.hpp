@@ -296,6 +296,12 @@ struct EntityState {
         Enemy = 0x01,
         Projectile = 0x02
     };
+
+    enum class EnemyType : uint8_t {
+        Mermaid = 0x00,
+        KamiFish = 0x01
+    };
+
     EntityId entity_id;         // 4 bytes
     uint8_t entity_type;        // 1 byte (sprite/prefab ID)
     uint8_t reserved;           // 1 byte padding
@@ -305,6 +311,7 @@ struct EntityState {
     uint16_t velocity_x;        // 2 bytes (normalized -32768..32767)
     uint16_t velocity_y;        // 2 bytes (normalized -32768..32767)
     uint8_t projectile_type;    // 1 byte (for projectiles)
+    uint8_t enemy_type;         // 1 byte (for enemies)
     uint8_t current_animation;  // 1 byte (for animated entities)
     uint8_t current_frame;      // 1 byte (for animated entities)
     uint16_t health;            // 2 bytes (health or hit points)
@@ -326,6 +333,7 @@ struct EntityState {
             buffer.WriteUint16(angle);             // 2 bytes
             buffer.WriteUint16(velocity_x);        // 2 bytes
             buffer.WriteUint16(velocity_y);        // 2 bytes
+            buffer.WriteUint8(enemy_type);         // 1 byte
             buffer.WriteUint8(current_animation);  // 1 byte
             buffer.WriteUint8(current_frame);      // 1 byte
             buffer.WriteUint16(health);            // 2 byte
@@ -358,6 +366,7 @@ struct EntityState {
             state.angle = buffer.ReadUint16();
             state.velocity_x = buffer.ReadUint16();
             state.velocity_y = buffer.ReadUint16();
+            state.enemy_type = buffer.ReadUint8();
             state.current_animation = buffer.ReadUint8();
             state.current_frame = buffer.ReadUint8();
             state.health = buffer.ReadUint16();
