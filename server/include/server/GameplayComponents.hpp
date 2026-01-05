@@ -26,6 +26,9 @@ struct AnimationEnterPlayer {
 
 struct EnemyTag {
     float speed = 100.0f;
+    // Subtype used for network serialization: matches
+    // server::network::EntityState::EnemyType (0=Mermaid,1=KamiFish)
+    uint8_t subtype = 0;
 };
 
 struct TimedEvents {
@@ -272,6 +275,19 @@ struct PatternMovement {
 
     // Follow player / target
     size_t targetEntityId = 0;  // Entity ID of the target to follow
+};
+
+/**
+ * @brief Component that makes an entity explode when it dies.
+ *
+ * When the entity's Health reaches zero, the system will deal `damage`
+ * to all entities with a `Health` component within `radius` units and
+ * trigger the entity's `AnimatedSprite` to play the "Attack" animation.
+ */
+struct ExplodeOnDeath {
+    float radius = 64.0f;  /**< Explosion radius in world units */
+    int damage = 20;       /**< Damage dealt to nearby entities */
+    bool exploded = false; /**< Internal flag to avoid re-triggering */
 };
 
 struct AnimatedSprite {
