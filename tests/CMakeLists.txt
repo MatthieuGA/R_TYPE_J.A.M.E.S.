@@ -38,6 +38,7 @@ target_include_directories(engine_tests PRIVATE
     ${CMAKE_SOURCE_DIR}/client/Engine
     ${CMAKE_SOURCE_DIR}/client/network
     ${CMAKE_SOURCE_DIR}/external
+    ${CMAKE_SOURCE_DIR}/engine/include
 )
 
 # Compile client engine sources into the test executable so systems are available
