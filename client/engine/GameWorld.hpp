@@ -1,14 +1,17 @@
 #pragma once
 #include <memory>
 #include <string>
+#include <utility>
 
 #include <SFML/Graphics.hpp>
 #include <boost/asio.hpp>
 #include <graphics/Types.hpp>
+#include <input/InputManager.hpp>
 #include <time/Clock.hpp>
 
 #include "include/WindowConst.hpp"
 #include "include/registry.hpp"
+#include "input/SFMLInputBackend.hpp"
 #include "network/Network.hpp"
 
 #include "engine/events/Event.h"
@@ -28,6 +31,9 @@ struct GameWorld {
     EventBus event_bus_;
     Audio::AudioManager *audio_manager_ = nullptr;
 
+    // Input abstraction layer
+    std::unique_ptr<Engine::Input::InputManager> input_manager_;
+
     // Network components
     boost::asio::io_context io_context_;
     std::unique_ptr<client::ServerConnection> server_connection_;
@@ -41,6 +47,12 @@ struct GameWorld {
         window_size_ =
             Engine::Graphics::Vector2f(static_cast<float>(WINDOW_WIDTH),
                 static_cast<float>(WINDOW_HEIGHT));
+
+        // Initialize input manager with SFML backend
+        auto sfml_backend = std::make_unique<Input::SFMLInputBackend>(window_);
+        input_manager_ = std::make_unique<Engine::Input::InputManager>(
+            std::move(sfml_backend));
+        input_manager_->SetupDefaultBindings();
 
         // Initialize network connection with provided parameters
         server_connection_ = std::make_unique<client::ServerConnection>(

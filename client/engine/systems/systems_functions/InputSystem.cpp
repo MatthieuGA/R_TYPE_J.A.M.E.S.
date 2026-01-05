@@ -1,6 +1,6 @@
-#include "adapters/SFMLInputAdapters.hpp"
+#include "engine/GameWorld.hpp"
 #include "engine/systems/InitRegistrySystems.hpp"
-#include "input/Key.hpp"
+#include "input/Action.hpp"
 
 namespace Rtype::Client {
 
@@ -35,35 +35,30 @@ uint8_t InputToBitfield(const Com::Inputs &input) {
 }
 
 /**
- * @brief Poll keyboard state and populate the Inputs components.
+ * @brief Poll input state and populate the Inputs components.
  *
- * This system resets each `Inputs` entry and then maps a fixed set of keys
- * to the input axes and shoot flag.
+ * This system uses the InputManager to query logical actions
+ * rather than physical keys, enabling backend-agnostic input handling.
  *
  * @param reg Engine registry (unused)
+ * @param input_manager Reference to the input manager for action queries
  * @param inputs Sparse array of Inputs components to update
  */
-void InputSystem(Eng::registry &reg, bool has_focus,
+void InputSystem(Eng::registry &reg,
+    Engine::Input::InputManager &input_manager,
     Eng::sparse_array<Com::Inputs> &inputs) {
-    if (!has_focus)
+    if (!input_manager.HasFocus())
         return;
     for (auto &&[i, input] : make_indexed_zipper(inputs)) {
         input.last_shoot_state = input.shoot;
 
-        input.horizontal = 0.0f;
-        input.vertical = 0.0f;
-        input.shoot = false;
-
-        if (Adapters::IsKeyPressed(Engine::Input::Key::Q))
-            input.horizontal -= 1.0f;
-        if (Adapters::IsKeyPressed(Engine::Input::Key::D))
-            input.horizontal += 1.0f;
-        if (Adapters::IsKeyPressed(Engine::Input::Key::Z))
-            input.vertical -= 1.0f;
-        if (Adapters::IsKeyPressed(Engine::Input::Key::S))
-            input.vertical += 1.0f;
-        if (Adapters::IsKeyPressed(Engine::Input::Key::Space))
-            input.shoot = true;
+        // Use logical actions via GetAxis helper
+        input.horizontal = input_manager.GetAxis(
+            Engine::Input::Action::MoveLeft, Engine::Input::Action::MoveRight);
+        input.vertical = input_manager.GetAxis(
+            Engine::Input::Action::MoveUp, Engine::Input::Action::MoveDown);
+        input.shoot =
+            input_manager.IsActionActive(Engine::Input::Action::Shoot);
     }
 }
 }  // namespace Rtype::Client

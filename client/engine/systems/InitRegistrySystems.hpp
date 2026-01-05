@@ -6,6 +6,7 @@
 #include "engine/audio/AudioManager.hpp"
 #include "include/indexed_zipper.hpp"
 #include "include/registry.hpp"
+#include "input/InputManager.hpp"
 
 namespace Eng = Engine;
 
@@ -52,7 +53,8 @@ void InitializeDrawableAnimatedSystem(Eng::registry &reg,
 
 // MOVEMENT SYSTEMS
 
-void InputSystem(Eng::registry &reg, bool has_focus,
+void InputSystem(Eng::registry &reg,
+    Engine::Input::InputManager &input_manager,
     Eng::sparse_array<Com::Inputs> &inputs);
 
 void MovementSystem(Eng::registry &reg, const float dt,
