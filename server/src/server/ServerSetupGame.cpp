@@ -67,7 +67,7 @@ void Server::SetupEntitiesGame() {
     for (int i = 0; i < 3; ++i) {
         SpawnEnemyFromRight(registry_);
     }
-    
+
     // Spawn some kamifish enemies
     for (int i = 0; i < 2; ++i) {
         auto enemy_entity = registry_.spawn_entity();

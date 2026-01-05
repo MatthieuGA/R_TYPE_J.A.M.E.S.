@@ -57,7 +57,7 @@ void FactoryActors::CreateBasicEnnemy(
         subtype = 1;
     else if (info.tag == "mermaid")
         subtype = 0;
-    
+
     // Add basic enemy components with subtype
     reg.AddComponent<Component::EnemyTag>(
         entity, Component::EnemyTag{info.speed, subtype});
