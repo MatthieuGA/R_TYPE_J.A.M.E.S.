@@ -1,25 +1,24 @@
 /**
- * @file Action.hpp
- * @brief Logical game actions for the Engine input abstraction layer.
+ * @file GameAction.hpp
+ * @brief Game-specific logical actions for R-Type.
  *
- * This file defines backend-agnostic logical actions that game code
- * should use instead of physical input checks. The mapping from
- * physical inputs (keys, buttons) to these actions is handled by
- * the InputManager.
+ * This file defines the game-specific actions that map to physical inputs.
+ * The action definitions live in the GAME layer, not the engine, because
+ * different games will have different actions.
  *
- * Game code must NEVER check physical keys directly - only logical actions.
+ * The engine provides a generic templated InputManager that works with
+ * any action enum type.
  */
 
-#ifndef ENGINE_INCLUDE_INPUT_ACTION_HPP_
-#define ENGINE_INCLUDE_INPUT_ACTION_HPP_
+#ifndef CLIENT_INCLUDE_GAME_GAMEACTION_HPP_
+#define CLIENT_INCLUDE_GAME_GAMEACTION_HPP_
 
 #include <cstdint>
 
-namespace Engine {
-namespace Input {
+namespace Game {
 
 /**
- * @brief Logical game actions.
+ * @brief R-Type game-specific logical actions.
  *
  * These represent abstract game intentions, not physical inputs.
  * Multiple physical inputs can map to the same action.
@@ -89,7 +88,6 @@ inline const char *GetActionName(Action action) {
     }
 }
 
-}  // namespace Input
-}  // namespace Engine
+}  // namespace Game
 
-#endif  // ENGINE_INCLUDE_INPUT_ACTION_HPP_
+#endif  // CLIENT_INCLUDE_GAME_GAMEACTION_HPP_

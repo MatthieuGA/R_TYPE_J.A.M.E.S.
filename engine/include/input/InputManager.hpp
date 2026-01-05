@@ -1,11 +1,15 @@
 /**
  * @file InputManager.hpp
- * @brief Manages input mappings and provides logical action queries.
+ * @brief Generic input manager template for mapping physical inputs to
+ * actions.
  *
- * The InputManager is the central point for input handling. It:
+ * The InputManager is a game-agnostic component that:
  * - Holds an IInputBackend for raw input state
- * - Maps physical inputs (keys, buttons) to logical actions
- * - Provides action queries that game code should use
+ * - Maps physical inputs (keys, buttons) to action identifiers
+ * - Provides action queries that game code uses
+ *
+ * The action type is templated, allowing each game to define its own
+ * action enum without modifying engine code.
  *
  * Game code must use IsActionActive() instead of checking physical keys.
  */
@@ -14,10 +18,13 @@
 #define ENGINE_INCLUDE_INPUT_INPUTMANAGER_HPP_
 
 #include <array>
+#include <cstddef>
+#include <cstdint>
 #include <memory>
+#include <type_traits>
+#include <utility>
 #include <vector>
 
-#include "input/Action.hpp"
 #include "input/IInputBackend.hpp"
 #include "input/Key.hpp"
 #include "input/MouseButton.hpp"
@@ -62,14 +69,23 @@ struct InputBinding {
 };
 
 /**
- * @brief Manages input backend and action mappings.
+ * @brief Generic input manager template.
  *
  * This class bridges the gap between physical inputs and logical actions.
  * Game systems query actions through this class, never physical inputs.
+ *
+ * @tparam ActionT An enum class representing game-specific actions.
+ *                 Must have a 'Count' member indicating the total count.
+ *                 Must be convertible to size_t via static_cast.
  */
+template <typename ActionT>
 class InputManager {
+    static_assert(std::is_enum_v<ActionT>, "ActionT must be an enum type");
+
  public:
+    using ActionType = ActionT;
     static constexpr size_t kMaxBindingsPerAction = 4;
+    static constexpr size_t kActionCount = static_cast<size_t>(ActionT::Count);
 
     /**
      * @brief Construct with an input backend.
@@ -77,7 +93,12 @@ class InputManager {
      * @param backend The input backend to use for raw input state.
      *                Ownership is transferred to the InputManager.
      */
-    explicit InputManager(std::unique_ptr<IInputBackend> backend);
+    explicit InputManager(std::unique_ptr<IInputBackend> backend)
+        : backend_(std::move(backend)) {
+        for (auto &binding_list : bindings_) {
+            binding_list.reserve(kMaxBindingsPerAction);
+        }
+    }
 
     /**
      * @brief Default destructor.
@@ -105,7 +126,36 @@ class InputManager {
      * @param action The action to check
      * @return true if the action is currently active
      */
-    bool IsActionActive(Action action) const;
+    bool IsActionActive(ActionT action) const {
+        if (!backend_ || !backend_->HasWindowFocus()) {
+            return false;
+        }
+
+        const auto action_index = static_cast<size_t>(action);
+        if (action_index >= bindings_.size()) {
+            return false;
+        }
+
+        const auto &action_bindings = bindings_[action_index];
+        for (const auto &binding : action_bindings) {
+            switch (binding.type) {
+                case InputBinding::Type::Key:
+                    if (backend_->IsKeyPressed(binding.key)) {
+                        return true;
+                    }
+                    break;
+                case InputBinding::Type::MouseButton:
+                    if (backend_->IsMouseButtonPressed(binding.mouse_button)) {
+                        return true;
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return false;
+    }
 
     /**
      * @brief Get the axis value for a pair of opposing actions.
@@ -116,9 +166,20 @@ class InputManager {
      * @param negative The action representing the negative direction
      * @param positive The action representing the positive direction
      * @return float The axis value: -1 (negative), 0 (neither/both), +1
-     * (positive)
+     *         (positive)
      */
-    float GetAxis(Action negative, Action positive) const;
+    float GetAxis(ActionT negative, ActionT positive) const {
+        float result = 0.0f;
+
+        if (IsActionActive(negative)) {
+            result -= 1.0f;
+        }
+        if (IsActionActive(positive)) {
+            result += 1.0f;
+        }
+
+        return result;
+    }
 
     // =========================================================================
     // Focus State
@@ -129,7 +190,9 @@ class InputManager {
      *
      * @return true if the window has keyboard focus
      */
-    bool HasFocus() const;
+    bool HasFocus() const {
+        return backend_ && backend_->HasWindowFocus();
+    }
 
     // =========================================================================
     // Mouse Queries (for UI systems)
@@ -143,14 +206,21 @@ class InputManager {
      * @param button The mouse button to check
      * @return true if pressed
      */
-    bool IsMouseButtonPressed(MouseButton button) const;
+    bool IsMouseButtonPressed(MouseButton button) const {
+        return backend_ && backend_->IsMouseButtonPressed(button);
+    }
 
     /**
      * @brief Get the mouse position relative to the window.
      *
      * @return MousePosition The current mouse position
      */
-    MousePosition GetMousePosition() const;
+    MousePosition GetMousePosition() const {
+        if (backend_) {
+            return backend_->GetMousePositionInWindow();
+        }
+        return {0, 0};
+    }
 
     // =========================================================================
     // Binding Management
@@ -162,7 +232,17 @@ class InputManager {
      * @param action The action to bind to
      * @param key The key to bind
      */
-    void BindKey(Action action, Key key);
+    void BindKey(ActionT action, Key key) {
+        const auto action_index = static_cast<size_t>(action);
+        if (action_index >= bindings_.size()) {
+            return;
+        }
+
+        auto &action_bindings = bindings_[action_index];
+        if (action_bindings.size() < kMaxBindingsPerAction) {
+            action_bindings.emplace_back(key);
+        }
+    }
 
     /**
      * @brief Bind a mouse button to an action.
@@ -170,21 +250,38 @@ class InputManager {
      * @param action The action to bind to
      * @param button The mouse button to bind
      */
-    void BindMouseButton(Action action, MouseButton button);
+    void BindMouseButton(ActionT action, MouseButton button) {
+        const auto action_index = static_cast<size_t>(action);
+        if (action_index >= bindings_.size()) {
+            return;
+        }
+
+        auto &action_bindings = bindings_[action_index];
+        if (action_bindings.size() < kMaxBindingsPerAction) {
+            action_bindings.emplace_back(button);
+        }
+    }
 
     /**
-     * @brief Clear all bindings for an action.
+     * @brief Clear all bindings for a specific action.
      *
      * @param action The action to clear bindings for
      */
-    void ClearBindings(Action action);
+    void ClearBindings(ActionT action) {
+        const auto action_index = static_cast<size_t>(action);
+        if (action_index < bindings_.size()) {
+            bindings_[action_index].clear();
+        }
+    }
 
     /**
-     * @brief Set up default key bindings for the game.
-     *
-     * This configures the standard QZSD + Space layout.
+     * @brief Clear all bindings for all actions.
      */
-    void SetupDefaultBindings();
+    void ClearAllBindings() {
+        for (auto &binding_list : bindings_) {
+            binding_list.clear();
+        }
+    }
 
     // =========================================================================
     // Backend Access
@@ -203,8 +300,7 @@ class InputManager {
     std::unique_ptr<IInputBackend> backend_;
 
     // Bindings: action index → list of input bindings
-    std::array<std::vector<InputBinding>, static_cast<size_t>(Action::Count)>
-        bindings_;
+    std::array<std::vector<InputBinding>, kActionCount> bindings_;
 };
 
 }  // namespace Input

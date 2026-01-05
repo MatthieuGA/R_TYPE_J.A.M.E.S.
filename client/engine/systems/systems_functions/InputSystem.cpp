@@ -1,6 +1,6 @@
 #include "engine/GameWorld.hpp"
 #include "engine/systems/InitRegistrySystems.hpp"
-#include "input/Action.hpp"
+#include "game/GameAction.hpp"
 
 namespace Rtype::Client {
 
@@ -44,21 +44,19 @@ uint8_t InputToBitfield(const Com::Inputs &input) {
  * @param input_manager Reference to the input manager for action queries
  * @param inputs Sparse array of Inputs components to update
  */
-void InputSystem(Eng::registry &reg,
-    Engine::Input::InputManager &input_manager,
+void InputSystem(Eng::registry &reg, GameInputManager &input_manager,
     Eng::sparse_array<Com::Inputs> &inputs) {
     if (!input_manager.HasFocus())
         return;
     for (auto &&[i, input] : make_indexed_zipper(inputs)) {
         input.last_shoot_state = input.shoot;
 
-        // Use logical actions via GetAxis helper
+        // Use logical actions via GetAxis helper (Game::Action)
         input.horizontal = input_manager.GetAxis(
-            Engine::Input::Action::MoveLeft, Engine::Input::Action::MoveRight);
+            Game::Action::MoveLeft, Game::Action::MoveRight);
         input.vertical = input_manager.GetAxis(
-            Engine::Input::Action::MoveUp, Engine::Input::Action::MoveDown);
-        input.shoot =
-            input_manager.IsActionActive(Engine::Input::Action::Shoot);
+            Game::Action::MoveUp, Game::Action::MoveDown);
+        input.shoot = input_manager.IsActionActive(Game::Action::Shoot);
     }
 }
 }  // namespace Rtype::Client

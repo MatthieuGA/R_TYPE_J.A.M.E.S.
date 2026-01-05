@@ -8,10 +8,11 @@
 #include "engine/GameWorld.hpp"
 #include "engine/events/EngineEvent.hpp"
 #include "engine/systems/InitRegistrySystems.hpp"
+#include "game/GameAction.hpp"
+#include "game/GameInputBindings.hpp"
 #include "include/components/CoreComponents.hpp"
 #include "include/components/GameplayComponents.hpp"
 #include "include/components/RenderComponent.hpp"
-#include "input/Action.hpp"
 #include "input/IInputBackend.hpp"
 #include "input/InputManager.hpp"
 
@@ -258,8 +259,9 @@ TEST(Systems, InputSystemResetsInputsWhenNoKeys) {
     auto mock_backend = std::make_unique<MockInputBackend>();
     mock_backend->SetFocus(true);
 
-    Engine::Input::InputManager input_manager(std::move(mock_backend));
-    input_manager.SetupDefaultBindings();
+    // Use game-specific InputManager with Game::Action
+    Rtype::Client::GameInputManager input_manager(std::move(mock_backend));
+    Game::SetupDefaultBindings(input_manager);
 
     Eng::registry reg;
 

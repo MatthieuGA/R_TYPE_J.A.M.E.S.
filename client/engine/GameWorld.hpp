@@ -9,6 +9,8 @@
 #include <input/InputManager.hpp>
 #include <time/Clock.hpp>
 
+#include "game/GameAction.hpp"
+#include "game/GameInputBindings.hpp"
 #include "include/WindowConst.hpp"
 #include "include/registry.hpp"
 #include "input/SFMLInputBackend.hpp"
@@ -21,6 +23,10 @@ class AudioManager;
 }
 
 namespace Rtype::Client {
+
+/// Type alias for the game-specific InputManager
+using GameInputManager = Engine::Input::InputManager<Game::Action>;
+
 struct GameWorld {
     Engine::registry registry_;
     sf::RenderWindow window_;
@@ -31,8 +37,8 @@ struct GameWorld {
     EventBus event_bus_;
     Audio::AudioManager *audio_manager_ = nullptr;
 
-    // Input abstraction layer
-    std::unique_ptr<Engine::Input::InputManager> input_manager_;
+    // Input abstraction layer (templated on Game::Action)
+    std::unique_ptr<GameInputManager> input_manager_;
 
     // Network components
     boost::asio::io_context io_context_;
@@ -50,9 +56,9 @@ struct GameWorld {
 
         // Initialize input manager with SFML backend
         auto sfml_backend = std::make_unique<Input::SFMLInputBackend>(window_);
-        input_manager_ = std::make_unique<Engine::Input::InputManager>(
-            std::move(sfml_backend));
-        input_manager_->SetupDefaultBindings();
+        input_manager_ =
+            std::make_unique<GameInputManager>(std::move(sfml_backend));
+        Game::SetupDefaultBindings(*input_manager_);
 
         // Initialize network connection with provided parameters
         server_connection_ = std::make_unique<client::ServerConnection>(
