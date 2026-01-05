@@ -1,7 +1,7 @@
 # R-Type Network Protocol Specification
 
-> **Version:** 4.1.1
-> **Last Updated:** 16th December 2025
+> **Version:** 5.0.0
+> **Last Updated:** 17th December 2025
 
 ## Table of Contents
 
@@ -166,12 +166,16 @@ If the Client and Server disagree on a position (e.g., due to lag or cheating), 
 **Direction:** Server -> Client
 **Description:** Response to the connection request.
 
-**Payload:** _4 bytes_
+**Payload:** _8 bytes_
 
 | Field | Type | Size | Description |
 | :--- | :--- | :--- | :--- |
 | `PlayerId` | `u8` | 1 | The unique ID assigned to this client (e.g., 1, 2, 3, 4). |
 | `Status` | `u8` | 1 | **Status Codes:**<br />`0` = OK (Success)<br />`1` = Server Full<br />`2` = Bad Username<br />`3` = Game in Progress |
+| `ConnectedPlayers` | `u8` | 1 | Number of currently connected players in the lobby. |
+| `ReadyPlayers` | `u8` | 1 | Number of players marked as "Ready" in the lobby. |
+| `MaxPlayers` | `u8` | 1 | Maximum players allowed on the server. |
+| `MinPlayers` | `u8` | 1 | Minimum players required to start the game. |
 | `Reserved` | `u8[2]` | 2 | Padding to align with 4 bytes. |
 
 - **Client Behavior:** If Status is `0`, proceed to Lobby. Otherwise, show error message.

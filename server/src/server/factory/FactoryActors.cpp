@@ -51,24 +51,26 @@ void FactoryActors::CreateBasicActor(vector2f pos, Engine::entity &entity,
 
 void FactoryActors::CreateBasicEnnemy(
     Engine::entity &entity, Engine::registry &reg, EnnemyInfo info) {
-    // Add basic enemy components
-    reg.AddComponent<Component::EnemyTag>(
-        entity, Component::EnemyTag{info.speed});
-
     // Set enemy subtype for network serialization
-    uint8_t enemy_type_val = 0;
-    if (info.tag == "kamifish")
-        enemy_type_val = 1;
-    else if (info.tag == "mermaid")
-        enemy_type_val = 0;
-    // Add EnemyTag with speed and subtype (0=mermaid,1=kamifish)
     uint8_t subtype = 0;
     if (info.tag == "kamifish")
         subtype = 1;
     else if (info.tag == "mermaid")
         subtype = 0;
+
+    // Add basic enemy components with subtype
     reg.AddComponent<Component::EnemyTag>(
         entity, Component::EnemyTag{info.speed, subtype});
+
+    // Add drawable and animated sprite components
+    // AnimatedSprite(bool loop, int totalFrames, float frameDuration)
+    Component::AnimatedSprite animated_sprite(true, 4, 0.2f);
+    animated_sprite.AddAnimation("Hit", 2, 0.1f, false);
+    animated_sprite.AddAnimation("Death", 6, 0.1f, false);
+    animated_sprite.AddAnimation("Attack", 6, 0.15f, false);
+    animated_sprite.currentAnimation = "Default";
+    reg.AddComponent<Component::AnimatedSprite>(
+        entity, std::move(animated_sprite));
 }
 
 void FactoryActors::CreatePlayerActor(Engine::entity &entity,

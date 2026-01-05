@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <iostream>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "server/Network.hpp"
@@ -15,12 +16,29 @@ PacketSender::PacketSender(
     : connection_manager_(connection_manager), network_(network) {}
 
 void PacketSender::SendConnectAck(ClientConnection &client,
-    network::ConnectAckPacket::Status status, uint8_t assigned_player_id,
-    uint16_t udp_port) {
+    network::ConnectAckPacket::Status status, uint8_t assigned_player_id) {
+    // Count authenticated players and ready players
+    uint8_t connected_count = 0;
+    uint8_t ready_count = 0;
+
+    auto &clients = connection_manager_.GetClients();
+    for (const auto &[client_id, client_ref] : clients) {
+        if (client_ref.player_id_ != 0) {
+            connected_count++;
+            if (client_ref.ready_) {
+                ready_count++;
+            }
+        }
+    }
+
     network::ConnectAckPacket ack;
     ack.player_id = network::PlayerId{assigned_player_id};
     ack.status = status;
-    ack.udp_port = udp_port;
+    ack.connected_players = connected_count;
+    ack.ready_players = ready_count;
+    ack.max_players = connection_manager_.GetMaxClients();
+    ack.min_players = 1;  // Minimum 1 player to start
+    ack.reserved = 0;
 
     network::PacketBuffer buffer;
     ack.Serialize(buffer);
@@ -28,7 +46,7 @@ void PacketSender::SendConnectAck(ClientConnection &client,
     auto data_copy = std::make_shared<std::vector<uint8_t>>(data);
 
     client.tcp_socket_.async_send(boost::asio::buffer(*data_copy),
-        [data_copy, assigned_player_id, status, udp_port](
+        [data_copy, assigned_player_id, status](
             boost::system::error_code ec, std::size_t) {
             if (ec) {
                 std::cerr << "Error sending CONNECT_ACK: " << ec.message()
@@ -37,7 +55,7 @@ void PacketSender::SendConnectAck(ClientConnection &client,
                 std::cout << "Sent CONNECT_ACK: PlayerId="
                           << static_cast<int>(assigned_player_id)
                           << ", Status=" << static_cast<int>(status)
-                          << ", UdpPort=" << udp_port << std::endl;
+                          << std::endl;
             }
         });
 }
@@ -80,6 +98,147 @@ void PacketSender::SendGameStart() {
     }
 
     std::cout << "GAME_START packet sent to all authenticated players"
+              << std::endl;
+}
+
+void PacketSender::SendGameEnd(uint8_t winning_player_id) {
+    // Build GAME_END packet
+    network::GameEndPacket game_end;
+    game_end.winning_player_id = network::PlayerId{winning_player_id};
+    game_end.reserved = {0, 0, 0};
+
+    network::PacketBuffer buffer;
+    game_end.Serialize(buffer);
+    const auto &data = buffer.Data();
+
+    // Send to all authenticated players via TCP
+    auto &clients = connection_manager_.GetClients();
+    for (auto &[client_id, client_ref] : clients) {
+        if (client_ref.player_id_ == 0) {
+            continue;  // Skip unauthenticated clients
+        }
+
+        auto data_copy = std::make_shared<std::vector<uint8_t>>(data);
+        client_ref.tcp_socket_.async_send(boost::asio::buffer(*data_copy),
+            [data_copy, player_id = client_ref.player_id_](
+                boost::system::error_code ec, std::size_t) {
+                if (ec) {
+                    std::cerr << "Error sending GAME_END: " << ec.message()
+                              << std::endl;
+                } else {
+                    std::cout << "Sent GAME_END to Player "
+                              << static_cast<int>(player_id) << std::endl;
+                }
+            });
+    }
+
+    std::cout << "GAME_END packet sent to all authenticated players "
+              << "(winning_player_id=" << static_cast<int>(winning_player_id)
+              << ")" << std::endl;
+}
+
+void PacketSender::SendNotifyConnect(
+    uint8_t player_id, const std::string &username) {
+    // Build NOTIFY_CONNECT packet
+    network::NotifyConnectPacket notify_connect(
+        network::PlayerId{player_id}, username);
+
+    network::PacketBuffer buffer;
+    notify_connect.Serialize(buffer);
+    const auto &data = buffer.Data();
+
+    // Send to all authenticated players via TCP (except the new player)
+    auto &clients = connection_manager_.GetClients();
+    for (auto &[client_id, client_ref] : clients) {
+        if (client_ref.player_id_ == 0)
+            continue;  // Skip unauthenticated clients
+
+        if (client_ref.player_id_ == player_id)
+            continue;  // Don't notify the new player about themselves
+
+        auto data_copy = std::make_shared<std::vector<uint8_t>>(data);
+        client_ref.tcp_socket_.async_send(boost::asio::buffer(*data_copy),
+            [data_copy, player_id, username](
+                boost::system::error_code ec, std::size_t) {
+                if (ec) {
+                    std::cerr << "Failed to send NOTIFY_CONNECT for player "
+                              << static_cast<int>(player_id) << " ('"
+                              << username << "'): " << ec.message()
+                              << std::endl;
+                }
+            });
+    }
+
+    std::cout << "NOTIFY_CONNECT packet sent to all authenticated players "
+              << "(player_id=" << static_cast<int>(player_id) << ", username='"
+              << username << "')" << std::endl;
+}
+
+void PacketSender::SendNotifyReady(uint8_t player_id, bool is_ready) {
+    // Build NOTIFY_READY packet
+    network::NotifyReadyPacket notify_ready(
+        network::PlayerId{player_id}, is_ready);
+
+    network::PacketBuffer buffer;
+    notify_ready.Serialize(buffer);
+    const auto &data = buffer.Data();
+
+    // Send to all authenticated players via TCP
+    auto &clients = connection_manager_.GetClients();
+    for (auto &[client_id, client_ref] : clients) {
+        if (client_ref.player_id_ == 0)
+            continue;  // Skip unauthenticated clients
+
+        auto data_copy = std::make_shared<std::vector<uint8_t>>(data);
+        client_ref.tcp_socket_.async_send(boost::asio::buffer(*data_copy),
+            [data_copy, player_id, is_ready](
+                boost::system::error_code ec, std::size_t) {
+                if (ec) {
+                    std::cerr << "Failed to send NOTIFY_READY for player "
+                              << static_cast<int>(player_id)
+                              << " (ready=" << is_ready
+                              << "): " << ec.message() << std::endl;
+                }
+            });
+    }
+
+    std::cout << "NOTIFY_READY packet sent to all authenticated players "
+              << "(player_id=" << static_cast<int>(player_id)
+              << ", is_ready=" << is_ready << ")" << std::endl;
+}
+
+void PacketSender::SendNotifyDisconnect(uint8_t player_id) {
+    // Build NOTIFY_DISCONNECT packet
+    network::NotifyDisconnectPacket notify_disconnect;
+    notify_disconnect.player_id = network::PlayerId{player_id};
+    notify_disconnect.reserved = {0, 0, 0};
+
+    network::PacketBuffer buffer;
+    notify_disconnect.Serialize(buffer);
+    const auto &data = buffer.Data();
+
+    // Send to all authenticated players via TCP (except the disconnected one)
+    auto &clients = connection_manager_.GetClients();
+    for (auto &[client_id, client_ref] : clients) {
+        if (client_ref.player_id_ == 0)
+            continue;  // Skip unauthenticated clients
+
+        if (client_ref.player_id_ == player_id)
+            continue;  // Don't notify the disconnected player themselves
+
+        auto data_copy = std::make_shared<std::vector<uint8_t>>(data);
+        client_ref.tcp_socket_.async_send(boost::asio::buffer(*data_copy),
+            [data_copy, player_id](boost::system::error_code ec, std::size_t) {
+                if (ec) {
+                    std::cerr << "Failed to send NOTIFY_DISCONNECT for player "
+                              << static_cast<int>(player_id) << ": "
+                              << ec.message() << std::endl;
+                }
+            });
+    }
+
+    std::cout << "NOTIFY_DISCONNECT packet sent to all authenticated players "
+              << "(player_id=" << static_cast<int>(player_id) << ")"
               << std::endl;
 }
 

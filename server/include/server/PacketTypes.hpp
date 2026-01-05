@@ -13,7 +13,7 @@ namespace server::network {
  *   0x80-0xBF: UDP (Server Snapshots)
  */
 enum class PacketType : uint8_t {
-    // TCP Session Management (0x01-0x07)
+    // TCP Session Management (0x01-0x0B)
     ConnectReq = 0x01,        // Client -> Server: Login request
     ConnectAck = 0x02,        // Server -> Client: Login response
     DisconnectReq = 0x03,     // Client -> Server: Leave request
@@ -21,6 +21,8 @@ enum class PacketType : uint8_t {
     GameStart = 0x05,         // Server -> Client: Match begins
     GameEnd = 0x06,           // Server -> Client: Match ends
     ReadyStatus = 0x07,       // Client -> Server: Ready state
+    NotifyConnect = 0x08,     // Server -> Client: New player joined
+    NotifyReady = 0x09,       // Server -> Client: Player ready status changed
 
     // UDP Client Inputs (0x10+)
     PlayerInput = 0x10,  // Client -> Server: Input bitmask

@@ -58,15 +58,21 @@ struct ConnectReqPacket {
 /**
  * @brief TCP 0x02: CONNECT_ACK - Server responds to login
  * RFC Section 5.2
- * Payload: 4 bytes (PlayerId u8 + Status u8 + UdpPort u16)
+ * Payload: 8 bytes (PlayerId u8 + Status u8 + ConnectedPlayers u8 +
+ *                   ReadyPlayers u8 + MaxPlayers u8 + MinPlayers u8 + Reserved
+ * u16)
  */
 struct ConnectAckPacket {
     static constexpr PacketType type = PacketType::ConnectAck;
-    static constexpr size_t PAYLOAD_SIZE = 4;
+    static constexpr size_t PAYLOAD_SIZE = 8;
 
     PlayerId player_id;
-    uint8_t status;     // 0=OK, 1=ServerFull, 2=BadUsername, 3=InGame
-    uint16_t udp_port;  // Server's UDP port (for client to send to)
+    uint8_t status;             // 0=OK, 1=ServerFull, 2=BadUsername, 3=InGame
+    uint8_t connected_players;  // Number of currently connected players
+    uint8_t ready_players;      // Number of ready players
+    uint8_t max_players;        // Maximum players allowed
+    uint8_t min_players;        // Minimum players to start
+    uint16_t reserved;          // Reserved for alignment
 
     enum Status : uint8_t {
         OK = 0,
@@ -83,14 +89,22 @@ struct ConnectAckPacket {
         buffer.WriteHeader(MakeHeader());
         buffer.WriteUint8(player_id.value);
         buffer.WriteUint8(status);
-        buffer.WriteUint16(udp_port);
+        buffer.WriteUint8(connected_players);
+        buffer.WriteUint8(ready_players);
+        buffer.WriteUint8(max_players);
+        buffer.WriteUint8(min_players);
+        buffer.WriteUint16(reserved);
     }
 
     static ConnectAckPacket Deserialize(PacketBuffer &buffer) {
         ConnectAckPacket packet;
         packet.player_id = PlayerId{buffer.ReadUint8()};
         packet.status = buffer.ReadUint8();
-        packet.udp_port = buffer.ReadUint16();
+        packet.connected_players = buffer.ReadUint8();
+        packet.ready_players = buffer.ReadUint8();
+        packet.max_players = buffer.ReadUint8();
+        packet.min_players = buffer.ReadUint8();
+        packet.reserved = buffer.ReadUint16();
         return packet;
     }
 };
@@ -244,6 +258,96 @@ struct ReadyStatusPacket {
         packet.reserved[1] = buffer.ReadUint8();
         packet.reserved[2] = buffer.ReadUint8();
         return packet;
+    }
+};
+
+/**
+ * @brief TCP 0x08: NOTIFY_CONNECT - Server broadcasts new player connection
+ * RFC Section 5.8
+ * Payload: 36 bytes (PlayerId u8 + Reserved u8[3] + Username char[32])
+ */
+struct NotifyConnectPacket {
+    static constexpr PacketType type = PacketType::NotifyConnect;
+    static constexpr size_t PAYLOAD_SIZE = 36;
+
+    PlayerId player_id;
+    std::array<uint8_t, 3> reserved;
+    std::array<char, 32> username;
+
+    NotifyConnectPacket() : player_id(0), reserved{0, 0, 0}, username{} {}
+
+    NotifyConnectPacket(PlayerId pid, const std::string &uname)
+        : player_id(pid), reserved{0, 0, 0}, username{} {
+        size_t len = std::min(uname.size(), username.size() - 1);
+        std::copy(uname.begin(), uname.begin() + len, username.begin());
+        username[len] = '\0';
+    }
+
+    CommonHeader MakeHeader() const {
+        return CommonHeader(static_cast<uint8_t>(type), PAYLOAD_SIZE);
+    }
+
+    void Serialize(PacketBuffer &buffer) const {
+        buffer.WriteHeader(MakeHeader());
+        buffer.WriteUint8(player_id.value);
+        buffer.WriteUint8(reserved[0]);
+        buffer.WriteUint8(reserved[1]);
+        buffer.WriteUint8(reserved[2]);
+        for (size_t i = 0; i < username.size(); ++i) {
+            buffer.WriteUint8(static_cast<uint8_t>(username[i]));
+        }
+    }
+
+    static NotifyConnectPacket Deserialize(PacketBuffer &buffer) {
+        NotifyConnectPacket pkt;
+        pkt.player_id = PlayerId{buffer.ReadUint8()};
+        pkt.reserved[0] = buffer.ReadUint8();
+        pkt.reserved[1] = buffer.ReadUint8();
+        pkt.reserved[2] = buffer.ReadUint8();
+        for (size_t i = 0; i < pkt.username.size(); ++i) {
+            pkt.username[i] = static_cast<char>(buffer.ReadUint8());
+        }
+        return pkt;
+    }
+};
+
+/**
+ * @brief TCP 0x09: NOTIFY_READY - Server broadcasts player ready status change
+ * RFC Section 5.9
+ * Payload: 4 bytes (PlayerId u8 + IsReady u8 + Reserved u8[2])
+ */
+struct NotifyReadyPacket {
+    static constexpr PacketType type = PacketType::NotifyReady;
+    static constexpr size_t PAYLOAD_SIZE = 4;
+
+    PlayerId player_id;
+    uint8_t is_ready;
+    std::array<uint8_t, 2> reserved;
+
+    NotifyReadyPacket() : player_id(0), is_ready(0), reserved{0, 0} {}
+
+    NotifyReadyPacket(PlayerId pid, bool ready)
+        : player_id(pid), is_ready(ready ? 1 : 0), reserved{0, 0} {}
+
+    CommonHeader MakeHeader() const {
+        return CommonHeader(static_cast<uint8_t>(type), PAYLOAD_SIZE);
+    }
+
+    void Serialize(PacketBuffer &buffer) const {
+        buffer.WriteHeader(MakeHeader());
+        buffer.WriteUint8(player_id.value);
+        buffer.WriteUint8(is_ready);
+        buffer.WriteUint8(reserved[0]);
+        buffer.WriteUint8(reserved[1]);
+    }
+
+    static NotifyReadyPacket Deserialize(PacketBuffer &buffer) {
+        NotifyReadyPacket pkt;
+        pkt.player_id = PlayerId{buffer.ReadUint8()};
+        pkt.is_ready = buffer.ReadUint8();
+        pkt.reserved[0] = buffer.ReadUint8();
+        pkt.reserved[1] = buffer.ReadUint8();
+        return pkt;
     }
 };
 
