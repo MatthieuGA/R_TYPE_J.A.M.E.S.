@@ -29,11 +29,13 @@ using Rtype::Client::ProjectileSystem;
 using Rtype::Client::ShootPlayerSystem;
 
 /**
- * @brief Mock input backend for testing purposes.
+ * @brief Mock input backend for system tests.
  *
  * Allows tests to control exactly which keys are "pressed".
+ * Named differently from test_input_manager.cpp's mock to avoid ODR
+ * violations.
  */
-class MockInputBackend : public Engine::Input::IInputBackend {
+class SystemTestMockInputBackend : public Engine::Input::IInputBackend {
  public:
     bool IsKeyPressed(Engine::Input::Key key) const override {
         return pressed_keys_.count(key) > 0;
@@ -254,12 +256,10 @@ TEST(Systems, PlayerSystemSetsFrameBasedOnVelocity) {
     EXPECT_EQ(animated_sprites[0]->GetCurrentAnimation()->current_frame, 1);
 }
 
-// TODO(Input Abstraction): This test needs to be updated or removed
-// The mock setup might be incompatible with the new InputManager template
-// structure
-TEST(Systems, DISABLED_InputSystemResetsInputsWhenNoKeys) {
+// Test that InputSystem resets input values when no keys are pressed
+TEST(Systems, InputSystemResetsInputsWhenNoKeys) {
     // Create mock backend with no keys pressed
-    auto *mock_backend_ptr = new MockInputBackend();
+    auto *mock_backend_ptr = new SystemTestMockInputBackend();
     auto mock_backend =
         std::unique_ptr<Engine::Input::IInputBackend>(mock_backend_ptr);
 
