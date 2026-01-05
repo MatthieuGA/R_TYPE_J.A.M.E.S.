@@ -348,14 +348,19 @@ TEST(ServerTcpTest, ConnectAckPacketSerializeOK) {
     server::network::ConnectAckPacket ack;
     ack.player_id = server::network::PlayerId{42};
     ack.status = server::network::ConnectAckPacket::OK;
+    ack.connected_players = 0;
+    ack.ready_players = 0;
+    ack.max_players = 0;
+    ack.min_players = 0;
+    ack.reserved = 0;
 
     server::network::PacketBuffer buffer;
     ack.Serialize(buffer);
 
     const auto &data = buffer.Data();
 
-    // Header: 12 bytes, Payload: 4 bytes
-    EXPECT_EQ(data.size(), 16);
+    // Header: 12 bytes, Payload: 8 bytes
+    EXPECT_EQ(data.size(), 20);
 
     // Verify opcode (byte 0)
     EXPECT_EQ(data[0],
@@ -372,13 +377,18 @@ TEST(ServerTcpTest, ConnectAckPacketSerializeServerFull) {
     server::network::ConnectAckPacket ack;
     ack.player_id = server::network::PlayerId{0};  // No ID assigned
     ack.status = server::network::ConnectAckPacket::ServerFull;
+    ack.connected_players = 0;
+    ack.ready_players = 0;
+    ack.max_players = 0;
+    ack.min_players = 0;
+    ack.reserved = 0;
 
     server::network::PacketBuffer buffer;
     ack.Serialize(buffer);
 
     const auto &data = buffer.Data();
 
-    EXPECT_EQ(data.size(), 16);
+    EXPECT_EQ(data.size(), 20);
     EXPECT_EQ(data[12], 0);  // Player ID = 0
     EXPECT_EQ(data[13], server::network::ConnectAckPacket::ServerFull);
 }
@@ -387,13 +397,18 @@ TEST(ServerTcpTest, ConnectAckPacketSerializeBadUsername) {
     server::network::ConnectAckPacket ack;
     ack.player_id = server::network::PlayerId{0};
     ack.status = server::network::ConnectAckPacket::BadUsername;
+    ack.connected_players = 0;
+    ack.ready_players = 0;
+    ack.max_players = 0;
+    ack.min_players = 0;
+    ack.reserved = 0;
 
     server::network::PacketBuffer buffer;
     ack.Serialize(buffer);
 
     const auto &data = buffer.Data();
 
-    EXPECT_EQ(data.size(), 16);
+    EXPECT_EQ(data.size(), 20);
     EXPECT_EQ(data[12], 0);
     EXPECT_EQ(data[13], server::network::ConnectAckPacket::BadUsername);
 }
@@ -402,13 +417,18 @@ TEST(ServerTcpTest, ConnectAckPacketSerializeInGame) {
     server::network::ConnectAckPacket ack;
     ack.player_id = server::network::PlayerId{0};
     ack.status = server::network::ConnectAckPacket::InGame;
+    ack.connected_players = 0;
+    ack.ready_players = 0;
+    ack.max_players = 0;
+    ack.min_players = 0;
+    ack.reserved = 0;
 
     server::network::PacketBuffer buffer;
     ack.Serialize(buffer);
 
     const auto &data = buffer.Data();
 
-    EXPECT_EQ(data.size(), 16);
+    EXPECT_EQ(data.size(), 20);
     EXPECT_EQ(data[12], 0);
     EXPECT_EQ(data[13], server::network::ConnectAckPacket::InGame);
 }
@@ -472,7 +492,7 @@ TEST(ServerTcpTest, ConnectAckPacketHeader) {
 
     EXPECT_EQ(header.op_code,
         static_cast<uint8_t>(server::network::PacketType::ConnectAck));
-    EXPECT_EQ(header.payload_size, 4);
+    EXPECT_EQ(header.payload_size, 8);
 }
 
 // ============================================================================
@@ -532,12 +552,17 @@ TEST(ServerTcpTest, MultipleConnectAckStatuses) {
         server::network::ConnectAckPacket ack;
         ack.player_id = server::network::PlayerId{1};
         ack.status = status;
+        ack.connected_players = 0;
+        ack.ready_players = 0;
+        ack.max_players = 0;
+        ack.min_players = 0;
+        ack.reserved = 0;
 
         server::network::PacketBuffer buffer;
         EXPECT_NO_THROW(ack.Serialize(buffer));
 
         const auto &data = buffer.Data();
-        EXPECT_EQ(data.size(), 16);
+        EXPECT_EQ(data.size(), 20);
         EXPECT_EQ(data[13], status);
     }
 }
@@ -716,12 +741,17 @@ TEST(ServerTcpEdgeCaseTest, ConnectAckExactSize) {
     server::network::ConnectAckPacket ack;
     ack.player_id = server::network::PlayerId{1};
     ack.status = server::network::ConnectAckPacket::OK;
+    ack.connected_players = 0;
+    ack.ready_players = 0;
+    ack.max_players = 0;
+    ack.min_players = 0;
+    ack.reserved = 0;
 
     server::network::PacketBuffer buffer;
     ack.Serialize(buffer);
 
-    // CONNECT_ACK must be exactly 16 bytes
-    EXPECT_EQ(buffer.Data().size(), 16);
+    // CONNECT_ACK must be exactly 20 bytes
+    EXPECT_EQ(buffer.Data().size(), 20);
 }
 
 // ----------------------------------------------------------------------------
@@ -736,12 +766,17 @@ TEST(ServerTcpEdgeCaseTest, SerializeMultiplePacketsSequentially) {
         server::network::ConnectAckPacket ack;
         ack.player_id = server::network::PlayerId{i};
         ack.status = server::network::ConnectAckPacket::OK;
+        ack.connected_players = 0;
+        ack.ready_players = 0;
+        ack.max_players = 0;
+        ack.min_players = 0;
+        ack.reserved = 0;
 
         server::network::PacketBuffer temp;
         ack.Serialize(temp);
 
-        // Each packet should be 16 bytes
-        EXPECT_EQ(temp.Data().size(), 16);
+        // Each packet should be 20 bytes
+        EXPECT_EQ(temp.Data().size(), 20);
     }
 }
 
