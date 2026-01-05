@@ -18,6 +18,9 @@ target_sources(r-type_engine
       include/indexed_zipper.hpp
       include/indexed_zipper.tpp
       include/registry.tpp
+      include/input/Key.hpp
+      include/input/MouseButton.hpp
+      include/input/Event.hpp
 )
 
 # Make sure the include directory is accessible
