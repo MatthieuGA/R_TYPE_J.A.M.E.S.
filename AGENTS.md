@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-**R-Type J.A.M.E.S.** is a modern C++23 recreation of the classic R-Type arcade game. It features a custom Entity-Component-System (ECS) engine, a single-threaded ASIO-based authoritative server, and an SFML-based client.
+**R-Type J.A.M.E.S.** is a modern C++20 recreation of the classic R-Type arcade game. It features a custom Entity-Component-System (ECS) engine, a single-threaded ASIO-based authoritative server, and an SFML-based client.
 
 **Project Phases:**
 
@@ -11,7 +11,7 @@
 
 **Key Technologies:**
 
-- **Language:** C++23
+- **Language:** C++20
 - **Build System:** CMake (3.23+)
 - **Dependency Manager:** vcpkg
 - **Graphics:** SFML (2.6.1+)
@@ -118,7 +118,7 @@ cmake --build build -j
 
 ## Code Style
 
-- **Standard:** C++23
+- **Standard:** C++20
 - **Formatter:** `clang-format` (Google Style)
 - **Linting:** `clang-tidy`, `cpplint`
 - **Commit Messages:** Gitmoji + English (e.g., `✨ [Engine] Add component`). Enforced by `commitlint`.

@@ -121,10 +121,13 @@ void ParseSnapshotPlayer(
 // - angle (u16, 2 bytes)
 // - velocity_x (u16, 2 bytes)
 // - velocity_y (u16, 2 bytes)
+// - enemy_type (u8, 1 byte)
+// - current_animation (u8, 1 byte)
+// - current_frame (u8, 1 byte)
 void ParseSnapshotEnemy(std::vector<ClientApplication::ParsedEntity> &entities,
     const client::SnapshotPacket &snapshot) {
     const size_t kEntityStateSize =
-        20;  // 20 bytes per EntityState (with animation + health)
+        21;  // 20 bytes per EntityState (with animation + health)
 
     // Check if payload contains WorldSnapshotPacket format (header + entities)
     // or just a single EntityState (current server implementation)
@@ -148,9 +151,10 @@ void ParseSnapshotEnemy(std::vector<ClientApplication::ParsedEntity> &entities,
             static_cast<uint16_t>(static_cast<int32_t>(decoded_vx) + 32768);
         entity.velocity_y =
             static_cast<uint16_t>(static_cast<int32_t>(decoded_vy) + 32768);
-        entity.current_animation = Get1ByteAsUint8(snapshot.payload, 16);
-        entity.current_frame = Get1ByteAsUint8(snapshot.payload, 17);
-        entity.health = Get2BytesAsUint16(snapshot.payload, 18);
+        entity.enemy_type = Get1ByteAsUint8(snapshot.payload, 16);
+        entity.current_animation = Get1ByteAsUint8(snapshot.payload, 17);
+        entity.current_frame = Get1ByteAsUint8(snapshot.payload, 18);
+        entity.health = Get2BytesAsUint16(snapshot.payload, 19);
 
         entities.push_back(entity);
     } else if (snapshot.payload_size >= 4) {
@@ -175,11 +179,12 @@ void ParseSnapshotEnemy(std::vector<ClientApplication::ParsedEntity> &entities,
                 Get2BytesAsUint16(snapshot.payload, offset + 12);
             entity.velocity_y =
                 Get2BytesAsUint16(snapshot.payload, offset + 14);
+            entity.enemy_type = Get1ByteAsUint8(snapshot.payload, offset + 16);
             entity.current_animation =
-                Get1ByteAsUint8(snapshot.payload, offset + 16);
-            entity.current_frame =
                 Get1ByteAsUint8(snapshot.payload, offset + 17);
-            entity.health = Get2BytesAsUint16(snapshot.payload, offset + 18);
+            entity.current_frame =
+                Get1ByteAsUint8(snapshot.payload, offset + 18);
+            entity.health = Get2BytesAsUint16(snapshot.payload, offset + 19);
 
             entities.push_back(entity);
             offset += kEntityStateSize;

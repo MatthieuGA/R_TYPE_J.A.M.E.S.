@@ -63,9 +63,16 @@ void Server::SetupEntitiesGame() {
     spawner_events.AddCooldownAction(
         [this](int /*entity_id*/) { SpawnEnemyFromRight(registry_); }, 2.0f);
 
-    // Spawn initial wave of enemies
+    // Spawn initial wave of enemies (mix of mermaid and kamifish)
     for (int i = 0; i < 3; ++i) {
         SpawnEnemyFromRight(registry_);
+    }
+    
+    // Spawn some kamifish enemies
+    for (int i = 0; i < 2; ++i) {
+        auto enemy_entity = registry_.spawn_entity();
+        FactoryActors::GetInstance().CreateActor(enemy_entity, registry_,
+            "kamifish", vector2f{1400.f + i * 150.f, 200.f * (i + 1)}, false);
     }
 }
 }  // namespace server

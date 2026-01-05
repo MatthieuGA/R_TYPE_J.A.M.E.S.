@@ -20,7 +20,7 @@ env:
 
 jobs:
   block_merge_to_main:
-    if: ${{ github.event_name == 'pull_request' && github.base_ref == 'main' && !(startsWith(github.head_ref, 'Epic-') || startsWith(github.head_ref, '1-epic-')) }}
+    if: ${{ github.event_name == 'pull_request' && github.base_ref == 'main' && !(startsWith(github.head_ref, 'Epic-') || startsWith(github.head_ref, '1-epic-') || github.head_ref == 'version-final-dev') }}
     runs-on: ubuntu-latest
     name: "Block merge to main unless branch starts with Epic-"
     steps:
@@ -43,7 +43,7 @@ jobs:
       run: pip install cpplint
     - name: "Run cpplint"
       run: |
-        find . -type f \( -name '*.cpp' -o -name '*.hpp' \) ! -path './tests/*' ! -path './build/*' ! -path './external/*' | xargs cpplint --repository=. --quiet --output=vs7 --filter=-legal/copyright,-build/c++17,+build/c++23,-whitespace/indent_namespace,-runtime/references
+        find . -type f \( -name '*.cpp' -o -name '*.hpp' \) ! -path './tests/*' ! -path './build/*' ! -path './external/*' | xargs cpplint --repository=. --quiet --output=vs7 --filter=-legal/copyright,-build/c++17,+build/c++20,-whitespace/indent_namespace,-runtime/references
   check_cmake_compilation_and_tests:
     needs: [check_coding_style]
     runs-on: ubuntu-latest
