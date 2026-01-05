@@ -1,7 +1,9 @@
 #include <SFML/Graphics.hpp>
 
+#include "adapters/SFMLInputAdapters.hpp"
 #include "engine/OriginTool.hpp"
 #include "engine/systems/InitRegistrySystems.hpp"
+#include "input/MouseButton.hpp"
 
 namespace Rtype::Client {
 /**
@@ -51,9 +53,11 @@ void ButtonClickSystem(Eng::registry &reg, GameWorld &game_world,
                                 mousePos.y >= top && mousePos.y <= bottom);
 
         clickable.isHovered = isHovered;
-        if (isHovered && sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+        if (isHovered &&
+            Adapters::IsMouseButtonPressed(Engine::Input::MouseButton::Left)) {
             clickable.isClicked = true;
-        } else if (!sf::Mouse::isButtonPressed(sf::Mouse::Left) &&
+        } else if (!Adapters::IsMouseButtonPressed(
+                       Engine::Input::MouseButton::Left) &&
                    clickable.isClicked) {
             // Mouse button released after being clicked
             clickable.isClicked = false;
