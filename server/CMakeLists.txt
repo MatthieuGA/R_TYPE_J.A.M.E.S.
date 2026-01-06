@@ -3,12 +3,36 @@ target_sources(r-type_server PRIVATE
     main.cpp
     src/server/ClientConnectionManager.cpp
     src/server/Config.cpp
+    src/server/CoreComponents.cpp
+    src/server/GameplayComponents.cpp
     src/server/Network.cpp
     src/server/PacketHandler.cpp
     src/server/PacketSender.cpp
     src/server/Server.cpp
+    src/server/ServerInputHandler.cpp
+    src/server/ServerRegisterComponents.cpp
+    src/server/ServerSendSnapshots.cpp
+    src/server/ServerSetupGame.cpp
+    src/server/Systems/AnimationSystem.cpp
+    src/server/Systems/CollidingTools.cpp
+    src/server/Systems/FrameBaseEventSystem.cpp
+    src/server/Systems/HealthDeductionSystem.cpp
+    src/server/Systems/MovementSystem.cpp
+    src/server/Systems/OriginTool.cpp
+    src/server/Systems/PaternMovementSystem.cpp
+    src/server/Systems/PlayerLimitPlayfield.cpp
+    src/server/Systems/PlayerMovementSystem.cpp
+    src/server/Systems/PlayerShootSystem.cpp
+    src/server/Systems/ProjectileSystem.cpp
+    src/server/Systems/ServerRegisterSystems.cpp
+    src/server/Systems/TimedEventSystem.cpp
+    src/server/factory/FactoryActors.cpp
+    src/server/factory/FactoryActorsInit.cpp
     src/server/worldgen/WorldGenConfigLoader.cpp
 )
+
+# Find nlohmann_json package
+find_package(nlohmann_json CONFIG REQUIRED)
 
 # Include directories
 target_include_directories(r-type_server PRIVATE 
