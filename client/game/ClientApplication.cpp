@@ -8,6 +8,7 @@
 
 #include <SFML/Graphics.hpp>
 
+#include "adapters/SFMLInputAdapters.hpp"
 #include "engine/systems/InitRegistrySystems.hpp"
 #include "game/InitRegistry.hpp"
 #include "game/SnapshotTracker.hpp"
@@ -19,6 +20,7 @@
 #include "include/components/RenderComponent.hpp"
 #include "include/components/ScenesComponents.hpp"
 #include "include/indexed_zipper.hpp"
+#include "input/Event.hpp"
 #include "network/Network.hpp"
 
 namespace Rtype::Client {
@@ -129,10 +131,13 @@ bool ClientApplication::ConnectToServerWithRetry(
 void ClientApplication::RunGameLoop(GameWorld &game_world) {
     while (game_world.window_.isOpen()) {
         // Handle window events
-        sf::Event event;
-        while (game_world.window_.pollEvent(event)) {
-            if (event.type == sf::Event::Closed) {
-                game_world.window_.close();
+        sf::Event sfml_event;
+        while (game_world.window_.pollEvent(sfml_event)) {
+            Engine::Input::Event event;
+            if (Adapters::FromSFMLEvent(sfml_event, event)) {
+                if (event.type == Engine::Input::EventType::Closed) {
+                    game_world.window_.close();
+                }
             }
         }
 
@@ -195,7 +200,7 @@ void ClientApplication::RunGameLoop(GameWorld &game_world) {
 
         // Calculate delta time at the beginning of the frame
         game_world.last_delta_ =
-            game_world.delta_time_clock_.restart().asSeconds();
+            game_world.delta_time_clock_.Restart().AsSeconds();
 
         // Clear, update, and render
         game_world.window_.clear(sf::Color::Black);

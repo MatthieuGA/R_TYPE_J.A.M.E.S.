@@ -1,6 +1,6 @@
-#include <SFML/Graphics.hpp>
-
+#include "adapters/SFMLInputAdapters.hpp"
 #include "engine/systems/InitRegistrySystems.hpp"
+#include "input/Key.hpp"
 
 namespace Rtype::Client {
 
@@ -54,15 +54,15 @@ void InputSystem(Eng::registry &reg, bool has_focus,
         input.vertical = 0.0f;
         input.shoot = false;
 
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
+        if (Adapters::IsKeyPressed(Engine::Input::Key::Q))
             input.horizontal -= 1.0f;
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+        if (Adapters::IsKeyPressed(Engine::Input::Key::D))
             input.horizontal += 1.0f;
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z))
+        if (Adapters::IsKeyPressed(Engine::Input::Key::Z))
             input.vertical -= 1.0f;
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+        if (Adapters::IsKeyPressed(Engine::Input::Key::S))
             input.vertical += 1.0f;
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
+        if (Adapters::IsKeyPressed(Engine::Input::Key::Space))
             input.shoot = true;
     }
 }

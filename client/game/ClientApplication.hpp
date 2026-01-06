@@ -30,6 +30,11 @@ class ClientApplication {
             kProjectileEntity = 0x02
         };
 
+        enum EnemyType : uint8_t {
+            kMermaidEnemy = 0x00,
+            kKamiFishEnemy = 0x01
+        };
+
         uint32_t entity_id;
         uint8_t entity_type;
         // Players :
@@ -42,6 +47,7 @@ class ClientApplication {
         // Projectiles :
         uint8_t projectile_type;
         // Enemies :
+        uint8_t enemy_type;
         uint8_t current_animation;
         uint8_t current_frame;
     };

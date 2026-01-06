@@ -4,6 +4,8 @@
 
 #include <SFML/Graphics.hpp>
 #include <boost/asio.hpp>
+#include <graphics/Types.hpp>
+#include <time/Clock.hpp>
 
 #include "include/WindowConst.hpp"
 #include "include/registry.hpp"
@@ -19,9 +21,9 @@ namespace Rtype::Client {
 struct GameWorld {
     Engine::registry registry_;
     sf::RenderWindow window_;
-    sf::Vector2f window_size_;
-    sf::Clock delta_time_clock_;
-    sf::Clock total_time_clock_;
+    Engine::Graphics::Vector2f window_size_;
+    Engine::Time::Clock delta_time_clock_;
+    Engine::Time::Clock total_time_clock_;
     float last_delta_ = 0.0f;
     EventBus event_bus_;
     Audio::AudioManager *audio_manager_ = nullptr;
@@ -34,9 +36,11 @@ struct GameWorld {
         const std::string &server_ip, uint16_t tcp_port, uint16_t udp_port)
         : window_(sf::VideoMode({WINDOW_WIDTH, WINDOW_HEIGHT}), WINDOW_TITLE) {
         registry_ = Engine::registry();
-        delta_time_clock_ = sf::Clock();
+        delta_time_clock_ = Engine::Time::Clock();
         event_bus_ = EventBus();
-        window_size_ = sf::Vector2f({WINDOW_WIDTH, WINDOW_HEIGHT});
+        window_size_ =
+            Engine::Graphics::Vector2f(static_cast<float>(WINDOW_WIDTH),
+                static_cast<float>(WINDOW_HEIGHT));
 
         // Initialize network connection with provided parameters
         server_connection_ = std::make_unique<client::ServerConnection>(

@@ -4,6 +4,7 @@ target_sources(r-type_engine
   PRIVATE
     src/entity.cpp
     src/registry.cpp
+    src/graphics/Types.cpp
 
   PUBLIC
     FILE_SET myHeaders
@@ -18,6 +19,11 @@ target_sources(r-type_engine
       include/indexed_zipper.hpp
       include/indexed_zipper.tpp
       include/registry.tpp
+      include/input/Key.hpp
+      include/input/MouseButton.hpp
+      include/input/Event.hpp
+      include/graphics/Types.hpp
+      include/time/Clock.hpp
 )
 
 # Make sure the include directory is accessible
