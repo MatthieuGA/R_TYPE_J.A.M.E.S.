@@ -52,7 +52,7 @@ void InitializeDrawableAnimatedSystem(Eng::registry &reg,
 
 // MOVEMENT SYSTEMS
 
-void InputSystem(Eng::registry &reg, bool has_focus,
+void InputSystem(Eng::registry &reg, GameInputManager &input_manager,
     Eng::sparse_array<Com::Inputs> &inputs);
 
 void MovementSystem(Eng::registry &reg, const float dt,
