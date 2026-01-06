@@ -1,5 +1,6 @@
 #include <string>
 
+#include "adapters/SFMLInputAdapters.hpp"
 #include "engine/systems/InitRegistrySystems.hpp"
 #include "include/ColorsConst.hpp"
 
@@ -81,19 +82,19 @@ void LobbyUISystem(Eng::registry &reg, GameWorld &game_world,
                                        : WHITE_BLUE;
                     if (texts[i]->color != new_color) {
                         texts[i]->color = new_color;
-                        texts[i]->text.setFillColor(sf::Color(new_color.r,
-                            new_color.g, new_color.b, new_color.a));
+                        texts[i]->text.setFillColor(
+                            Adapters::ToSFMLColor(new_color));
                     }
                 }
                 // Optionally tint the button sprite
                 if (drawables[i].has_value()) {
-                    sf::Color tint =
+                    Engine::Graphics::Color tint =
                         is_local_ready
-                            ? sf::Color(
-                                  100, 200, 100)  // Green tint when ready
-                            : sf::Color::White;   // Normal when not ready
-                    if (drawables[i]->sprite.getColor() != tint) {
-                        drawables[i]->sprite.setColor(tint);
+                            ? Engine::Graphics::Color(100, 200, 100)
+                            : Engine::Graphics::Color(255, 255, 255);
+                    sf::Color sfml_tint = Adapters::ToSFMLColor(tint);
+                    if (drawables[i]->sprite.getColor() != sfml_tint) {
+                        drawables[i]->sprite.setColor(sfml_tint);
                     }
                 }
                 break;

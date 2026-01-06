@@ -15,6 +15,7 @@
 #include "include/registry.hpp"
 #include "input/SFMLInputBackend.hpp"
 #include "network/Network.hpp"
+#include "platform/IPlatformEventSource.hpp"
 
 #include "engine/events/Event.h"
 
@@ -39,6 +40,9 @@ struct GameWorld {
 
     // Input abstraction layer (templated on Game::Action)
     std::unique_ptr<GameInputManager> input_manager_;
+
+    // Platform event source (backend-agnostic OS event polling)
+    std::unique_ptr<Engine::Platform::IPlatformEventSource> event_source_;
 
     // Network components
     boost::asio::io_context io_context_;

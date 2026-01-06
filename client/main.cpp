@@ -13,6 +13,7 @@
 #include "game/factory/factory_ennemies/FactoryActors.hpp"
 #include "game/scenes_management/InitScenes.hpp"
 #include "include/registry.hpp"
+#include "platform/SFMLEventSource.hpp"
 
 namespace RC = Rtype::Client;
 namespace Audio = Rtype::Client::Audio;
@@ -32,6 +33,11 @@ int main(int argc, char *argv[]) {
         // Initialize game world with network parameters
         RC::GameWorld game_world(
             config.server_ip, config.tcp_port, config.udp_port);
+
+        // Initialize platform event source (SFML backend)
+        game_world.event_source_ =
+            std::make_unique<RC::Platform::SFMLEventSource>(
+                game_world.window_);
 
         // Initialize audio subsystem with proper lifetime
         // AudioManager must outlive the game loop to prevent dangling pointer

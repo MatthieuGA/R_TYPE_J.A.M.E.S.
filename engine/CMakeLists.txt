@@ -19,14 +19,14 @@ target_sources(r-type_engine
       include/indexed_zipper.hpp
       include/indexed_zipper.tpp
       include/registry.tpp
-      include/input/Key.hpp
-      include/input/MouseButton.hpp
-      include/input/Event.hpp
       include/graphics/Types.hpp
       include/time/Clock.hpp
       include/input/Key.hpp
       include/input/MouseButton.hpp
-      include/input/Event.hpp
+      include/platform/OSEvent.hpp
+      include/platform/IPlatformEventSource.hpp
+      include/input/Key.hpp
+      include/input/MouseButton.hpp
       include/input/IInputBackend.hpp
       include/input/InputManager.hpp
 )
