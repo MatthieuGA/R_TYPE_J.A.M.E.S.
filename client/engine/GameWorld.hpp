@@ -10,6 +10,7 @@
 #include "include/WindowConst.hpp"
 #include "include/registry.hpp"
 #include "network/Network.hpp"
+#include "platform/IPlatformEventSource.hpp"
 
 #include "engine/events/Event.h"
 
@@ -27,6 +28,9 @@ struct GameWorld {
     float last_delta_ = 0.0f;
     EventBus event_bus_;
     Audio::AudioManager *audio_manager_ = nullptr;
+
+    // Platform event source (backend-agnostic OS event polling)
+    std::unique_ptr<Engine::Platform::IPlatformEventSource> event_source_;
 
     // Network components
     boost::asio::io_context io_context_;

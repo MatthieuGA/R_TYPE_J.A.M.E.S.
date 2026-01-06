@@ -1,5 +1,6 @@
 #include <string>
 
+#include "adapters/SFMLInputAdapters.hpp"
 #include "engine/systems/InitRegistrySystems.hpp"
 #include "include/ColorsConst.hpp"
 
@@ -76,21 +77,24 @@ void LobbyUISystem(Eng::registry &reg, GameWorld &game_world,
                         texts[i]->text.setString(new_text);
                     }
                     // Change text color based on ready state
-                    sf::Color new_color =
-                        is_local_ready ? sf::Color(100, 255, 100) : WHITE_BLUE;
+                    Engine::Graphics::Color new_color =
+                        is_local_ready ? Engine::Graphics::Color(100, 255, 100)
+                                       : WHITE_BLUE;
                     if (texts[i]->color != new_color) {
                         texts[i]->color = new_color;
-                        texts[i]->text.setFillColor(new_color);
+                        texts[i]->text.setFillColor(
+                            Adapters::ToSFMLColor(new_color));
                     }
                 }
                 // Optionally tint the button sprite
                 if (drawables[i].has_value()) {
-                    sf::Color tint =
+                    Engine::Graphics::Color tint =
                         is_local_ready
-                            ? sf::Color(100, 200, 100)  // Green tint when ready
-                            : sf::Color::White;        // Normal when not ready
-                    if (drawables[i]->sprite.getColor() != tint) {
-                        drawables[i]->sprite.setColor(tint);
+                            ? Engine::Graphics::Color(100, 200, 100)
+                            : Engine::Graphics::Color(255, 255, 255);
+                    sf::Color sfml_tint = Adapters::ToSFMLColor(tint);
+                    if (drawables[i]->sprite.getColor() != sfml_tint) {
+                        drawables[i]->sprite.setColor(sfml_tint);
                     }
                 }
                 break;

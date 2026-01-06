@@ -8,6 +8,7 @@
 #include <iostream>
 #include <string>
 
+#include "adapters/SFMLInputAdapters.hpp"
 #include "engine/GameWorld.hpp"
 #include "engine/systems/InitRegistrySystems.hpp"
 #include "include/components/CoreComponents.hpp"
@@ -74,8 +75,9 @@ void GameOverSystem(Engine::registry &reg, GameWorld &game_world,
 
                 if (text_comps.has(j)) {
                     auto &txt = text_comps[j].value();
-                    txt.opacity = 1.0f;                     // Fully visible
-                    txt.color = sf::Color(255, 0, 0, 255);  // Full red
+                    txt.opacity = 1.0f;  // Fully visible
+                    txt.color =
+                        Engine::Graphics::Color(255, 0, 0, 255);  // Full red
                 }
             }
         }
@@ -142,7 +144,8 @@ void GameOverSystem(Engine::registry &reg, GameWorld &game_world,
             if (drawables.has(j)) {
                 auto &drawable = drawables[j].value();
                 drawable.opacity = fade_progress;
-                drawable.color = sf::Color(0, 0, 0, 255);  // Black tint
+                drawable.color =
+                    Engine::Graphics::Color(0, 0, 0, 255);  // Black tint
             }
         }
 

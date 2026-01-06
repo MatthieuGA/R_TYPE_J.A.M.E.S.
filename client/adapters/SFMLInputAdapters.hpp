@@ -1,10 +1,9 @@
 /**
  * @file SFMLInputAdapters.hpp
- * @brief Adapters to convert between SFML and Engine::Input types.
+ * @brief Adapters to convert between SFML and Engine types.
  *
- * Provides conversion functions between SFML input types (sf::Keyboard::Key,
- * sf::Mouse::Button, sf::Event) and Engine input types (Engine::Input::Key,
- * Engine::Input::MouseButton, Engine::Input::Event).
+ * Provides conversion functions between SFML types (sf::Keyboard::Key,
+ * sf::Mouse::Button, sf::Event, sf::Color) and Engine types.
  *
  * These adapters exist ONLY at the SFML boundary to convert external library
  * types to our engine-agnostic abstractions.
@@ -13,8 +12,10 @@
 #ifndef CLIENT_ADAPTERS_SFMLINPUTADAPTERS_HPP_
 #define CLIENT_ADAPTERS_SFMLINPUTADAPTERS_HPP_
 
+#include <SFML/Graphics/Color.hpp>
 #include <SFML/Window.hpp>
 
+#include "graphics/Types.hpp"
 #include "input/Event.hpp"
 #include "input/Key.hpp"
 #include "input/MouseButton.hpp"
@@ -463,6 +464,28 @@ inline bool FromSFMLEvent(
             // Unsupported event type (joystick, touch, etc.)
             return false;
     }
+}
+
+/**
+ * @brief Convert Engine color to SFML color.
+ *
+ * @param engine_color The engine color
+ * @return sf::Color The corresponding SFML color
+ */
+inline sf::Color ToSFMLColor(const Engine::Graphics::Color &engine_color) {
+    return sf::Color(
+        engine_color.r, engine_color.g, engine_color.b, engine_color.a);
+}
+
+/**
+ * @brief Convert SFML color to Engine color.
+ *
+ * @param sfml_color The SFML color
+ * @return Engine::Graphics::Color The corresponding engine color
+ */
+inline Engine::Graphics::Color FromSFMLColor(const sf::Color &sfml_color) {
+    return Engine::Graphics::Color(
+        sfml_color.r, sfml_color.g, sfml_color.b, sfml_color.a);
 }
 
 }  // namespace Rtype::Client::Adapters
