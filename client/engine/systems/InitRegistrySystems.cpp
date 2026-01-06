@@ -180,7 +180,7 @@ void InitControlsSystem(Rtype::Client::GameWorld &game_world) {
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Inputs>>(
         [&game_world](
             Eng::registry &r, Eng::sparse_array<Com::Inputs> &inputs) {
-            InputSystem(r, game_world.window_.hasFocus(), inputs);
+            InputSystem(r, *game_world.input_manager_, inputs);
         });
 
     // Timed events system

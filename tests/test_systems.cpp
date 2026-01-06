@@ -1,14 +1,20 @@
 #include <gtest/gtest.h>
 
 #include <cstdlib>
+#include <memory>
+#include <set>
 #include <utility>
 
 #include "engine/GameWorld.hpp"
 #include "engine/events/EngineEvent.hpp"
 #include "engine/systems/InitRegistrySystems.hpp"
+#include "game/GameAction.hpp"
+#include "game/GameInputBindings.hpp"
 #include "include/components/CoreComponents.hpp"
 #include "include/components/GameplayComponents.hpp"
 #include "include/components/RenderComponent.hpp"
+#include "input/IInputBackend.hpp"
+#include "input/InputManager.hpp"
 
 namespace Com = Rtype::Client::Component;
 namespace Eng = Engine;
@@ -21,6 +27,64 @@ using Rtype::Client::PlayerSystem;
 using Rtype::Client::PlayfieldLimitSystem;
 using Rtype::Client::ProjectileSystem;
 using Rtype::Client::ShootPlayerSystem;
+
+/**
+ * @brief Mock input backend for system tests.
+ *
+ * Allows tests to control exactly which keys are "pressed".
+ * Named differently from test_input_manager.cpp's mock to avoid ODR
+ * violations.
+ */
+class SystemTestMockInputBackend : public Engine::Input::IInputBackend {
+ public:
+    bool IsKeyPressed(Engine::Input::Key key) const override {
+        return pressed_keys_.count(key) > 0;
+    }
+
+    bool IsMouseButtonPressed(
+        Engine::Input::MouseButton button) const override {
+        return pressed_mouse_buttons_.count(button) > 0;
+    }
+
+    Engine::Input::MousePosition GetMousePosition() const override {
+        return {0, 0};
+    }
+
+    Engine::Input::MousePosition GetMousePositionInWindow() const override {
+        return {0, 0};
+    }
+
+    bool HasWindowFocus() const override {
+        return has_focus_;
+    }
+
+    // Test helpers
+    void SetKeyPressed(Engine::Input::Key key, bool pressed) {
+        if (pressed) {
+            pressed_keys_.insert(key);
+        } else {
+            pressed_keys_.erase(key);
+        }
+    }
+
+    void SetMouseButtonPressed(
+        Engine::Input::MouseButton button, bool pressed) {
+        if (pressed) {
+            pressed_mouse_buttons_.insert(button);
+        } else {
+            pressed_mouse_buttons_.erase(button);
+        }
+    }
+
+    void SetFocus(bool focus) {
+        has_focus_ = focus;
+    }
+
+ private:
+    std::set<Engine::Input::Key> pressed_keys_;
+    std::set<Engine::Input::MouseButton> pressed_mouse_buttons_;
+    bool has_focus_ = true;
+};
 
 TEST(Systems, MovementSystemUpdatesPosition) {
     Eng::registry reg;
@@ -192,19 +256,23 @@ TEST(Systems, PlayerSystemSetsFrameBasedOnVelocity) {
     EXPECT_EQ(animated_sprites[0]->GetCurrentAnimation()->current_frame, 1);
 }
 
+// Test that InputSystem resets input values when no keys are pressed
 TEST(Systems, InputSystemResetsInputsWhenNoKeys) {
-    // Skip test if running in a headless environment (e.g., CI with xvfb)
-    // SFML keyboard polling requires a proper display context
-    if (std::getenv("CI") != nullptr || std::getenv("DISPLAY") == nullptr) {
-        GTEST_SKIP() << "Skipping InputSystem test in headless environment";
-    }
+    // Create mock backend with no keys pressed
+    auto *mock_backend_ptr = new SystemTestMockInputBackend();
+    auto mock_backend =
+        std::unique_ptr<Engine::Input::IInputBackend>(mock_backend_ptr);
+
+    // Use game-specific InputManager with Game::Action
+    Rtype::Client::GameInputManager input_manager(std::move(mock_backend));
+    Game::SetupDefaultBindings(input_manager);
 
     Eng::registry reg;
 
     Eng::sparse_array<Com::Inputs> inputs;
     inputs.insert_at(0, Com::Inputs{1.0f, -1.0f, true});
 
-    InputSystem(reg, true, inputs);
+    InputSystem(reg, input_manager, inputs);
 
     ASSERT_TRUE(inputs[0].has_value());
     EXPECT_FLOAT_EQ(inputs[0]->horizontal, 0.0f);
