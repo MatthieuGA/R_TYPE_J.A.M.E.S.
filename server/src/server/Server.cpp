@@ -126,8 +126,8 @@ void Server::DestroyPlayerEntity(uint8_t player_id) {
 
         if (player_tags[i].value().playerNumber ==
             static_cast<int>(player_id)) {
-            auto entity = registry_.entity_from_index(i);
-            registry_.kill_entity(entity);
+            auto entity = registry_.EntityFromIndex(i);
+            registry_.KillEntity(entity);
             std::cout << "[Server::DestroyPlayerEntity] Destroyed entity for "
                       << "player_id=" << static_cast<int>(player_id)
                       << std::endl;
