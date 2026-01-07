@@ -7,6 +7,7 @@
 
 #include "server/Network.hpp"
 #include "server/PacketSender.hpp"
+#include "server/Server.hpp"
 
 namespace server {
 
@@ -91,6 +92,11 @@ void PacketHandler::HandleClientMessages(uint32_t client_id) {
                         connection_manager_.GetClient(client_id);
                     if (client.player_id_ != 0) {
                         packet_sender_.SendNotifyDisconnect(client.player_id_);
+                        // Handle player entity cleanup during active game
+                        if (is_game_running_ && is_game_running_()) {
+                            Server::GetInstance()->HandlePlayerDisconnect(
+                                client.player_id_);
+                        }
                     }
                 }
 
@@ -127,6 +133,11 @@ void PacketHandler::HandleClientMessages(uint32_t client_id) {
                         connection_manager_.GetClient(client_id);
                     if (client.player_id_ != 0) {
                         packet_sender_.SendNotifyDisconnect(client.player_id_);
+                        // Handle player entity cleanup during active game
+                        if (is_game_running_ && is_game_running_()) {
+                            Server::GetInstance()->HandlePlayerDisconnect(
+                                client.player_id_);
+                        }
                     }
                 }
 
@@ -290,6 +301,12 @@ void PacketHandler::HandleDisconnectReq(
 
         // Broadcast disconnect notification to all other players
         packet_sender_.SendNotifyDisconnect(disconnecting_player_id);
+
+        // Handle player entity cleanup during active game
+        if (is_game_running_ && is_game_running_()) {
+            Server::GetInstance()->HandlePlayerDisconnect(
+                disconnecting_player_id);
+        }
     } else {
         std::cout << "Client " << client.client_id_
                   << " (unauthenticated) requested disconnect" << std::endl;
