@@ -101,6 +101,7 @@ void PacketHandler::HandleClientMessages(uint32_t client_id) {
                 }
 
                 connection_manager_.RemoveClient(client_id);
+                TryStartGameAfterDisconnect();
             } else if (bytes_read > 0) {
                 // Update last activity timestamp
                 if (!connection_manager_.HasClient(client_id)) {
@@ -142,6 +143,7 @@ void PacketHandler::HandleClientMessages(uint32_t client_id) {
                 }
 
                 connection_manager_.RemoveClient(client_id);
+                TryStartGameAfterDisconnect();
             }
         });
 }
@@ -314,6 +316,7 @@ void PacketHandler::HandleDisconnectReq(
 
     // Remove client (graceful shutdown)
     connection_manager_.RemoveClient(client.client_id_);
+    TryStartGameAfterDisconnect();
 
     // Note: Client disconnect notifications are handled by
     // ClientConnectionManager
@@ -327,6 +330,24 @@ std::string PacketHandler::Trim(
     const auto str_end = str.find_last_not_of(whitespace);
     const auto str_range = str_end - str_begin + 1;
     return str.substr(str_begin, str_range);
+}
+
+void PacketHandler::TryStartGameAfterDisconnect() {
+    // Only check in lobby (game not running)
+    if (is_game_running_ && is_game_running_()) {
+        return;
+    }
+
+    // Start game if remaining players are all ready
+    if (connection_manager_.GetAuthenticatedCount() > 0 &&
+        connection_manager_.AllPlayersReady()) {
+        std::cout << "All remaining players ready after disconnect! "
+                  << "Starting game..." << std::endl;
+        if (on_game_start_) {
+            on_game_start_();
+        }
+        packet_sender_.SendGameStart();
+    }
 }
 
 }  // namespace server
