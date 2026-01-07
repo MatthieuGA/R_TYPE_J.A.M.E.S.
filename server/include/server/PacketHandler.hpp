@@ -157,6 +157,14 @@ class PacketHandler {
         ClientConnection &client, const network::DisconnectReqPacket &packet);
 
     /**
+     * @brief Check if game should start after a player disconnect
+     *
+     * Called after removing a client to check if remaining players
+     * in lobby are all ready. If so, starts the game.
+     */
+    void TryStartGameAfterDisconnect();
+
+    /**
      * @brief Trim whitespace from string
      *
      * Helper function for username validation.
