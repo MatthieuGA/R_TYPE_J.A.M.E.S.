@@ -172,7 +172,7 @@ class ServerConnection {
      * Status 3 (Game in Progress) should not be retried.
      * @return true if connection was rejected and should not retry.
      */
-    bool was_rejected_permanently() const {
+    bool WasRejectedPermanently() const {
         uint8_t status = last_rejection_status_.load();
         // Status 3 = Game in Progress (should not retry)
         return status == 3;
@@ -182,7 +182,7 @@ class ServerConnection {
      * @brief Get the last rejection status code.
      * @return 0 if no rejection, otherwise the status code from CONNECT_ACK.
      */
-    uint8_t last_rejection_status() const {
+    uint8_t LastRejectionStatus() const {
         return last_rejection_status_.load();
     }
 

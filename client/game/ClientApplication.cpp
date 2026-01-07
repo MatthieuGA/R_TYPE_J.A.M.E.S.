@@ -108,7 +108,7 @@ bool ClientApplication::ConnectToServerWithRetry(
             sf::sleep(sf::milliseconds(kPollDelayMs));
 
             // Check if we got a permanent rejection (e.g., game in progress)
-            if (game_world.server_connection_->was_rejected_permanently()) {
+            if (game_world.server_connection_->WasRejectedPermanently()) {
                 std::cerr << "[Network] Connection rejected: Game in progress."
                           << std::endl;
                 std::cerr << "[Network] Cannot join - please wait for the "
@@ -121,7 +121,7 @@ bool ClientApplication::ConnectToServerWithRetry(
 
         if (!connected && retry < kMaxRetries - 1) {
             // Check again for permanent rejection before retrying
-            if (game_world.server_connection_->was_rejected_permanently()) {
+            if (game_world.server_connection_->WasRejectedPermanently()) {
                 std::cerr << "[Network] Connection rejected: Game in progress."
                           << std::endl;
                 return false;  // Don't retry
