@@ -5,6 +5,7 @@ target_sources(r-type_engine
     src/entity.cpp
     src/registry.cpp
     src/graphics/Types.cpp
+    src/graphics/GraphicsManager.cpp
 
   PUBLIC
     FILE_SET myHeaders
@@ -20,6 +21,9 @@ target_sources(r-type_engine
       include/indexed_zipper.tpp
       include/registry.tpp
       include/graphics/Types.hpp
+      include/graphics/IWindow.hpp
+      include/graphics/IGraphicsBackend.hpp
+      include/graphics/GraphicsManager.hpp
       include/time/Clock.hpp
       include/input/Key.hpp
       include/input/MouseButton.hpp

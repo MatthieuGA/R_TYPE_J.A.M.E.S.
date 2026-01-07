@@ -37,8 +37,8 @@ void ButtonClickSystem(Eng::registry &reg, GameWorld &game_world,
 
     for (auto &&[i, hit_box, clickable, drawable, transform] :
         make_indexed_zipper(hit_boxes, clickables, drawables, transforms)) {
-        sf::Vector2f mousePos = game_world.window_.mapPixelToCoords(
-            sf::Mouse::getPosition(game_world.window_));
+        sf::Vector2f mousePos = game_world.GetNativeWindow().mapPixelToCoords(
+            sf::Mouse::getPosition(game_world.GetNativeWindow()));
 
         const float width_computed =
             hit_box.width *

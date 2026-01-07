@@ -94,7 +94,7 @@ void RenderOneTextEntity(Eng::sparse_array<Com::Transform> const &transforms,
     text->text.setFillColor(color);
 
     // Draw text
-    game_world.window_.draw(text->text);
+    game_world.GetNativeWindow().draw(text->text);
 }
 
 /**

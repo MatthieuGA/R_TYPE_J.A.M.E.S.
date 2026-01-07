@@ -132,7 +132,7 @@ void MainMenuScene::InitUI(Engine::registry &reg, GameWorld &gameWorld) {
         quit_button_entity, Component::HitBox{128.f, 32.f});
     reg.AddComponent<Component::Clickable>(
         quit_button_entity, Component::Clickable{
-                                [&gameWorld]() { gameWorld.window_.close(); },
+                                [&gameWorld]() { gameWorld.window_->Close(); },
                             });
     reg.AddComponent<Component::Text>(quit_button_entity,
         Component::Text("dogica.ttf", "Quit", 13, LAYER_UI + 1, WHITE_BLUE,

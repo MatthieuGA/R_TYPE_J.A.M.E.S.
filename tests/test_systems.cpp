@@ -15,6 +15,7 @@
 #include "include/components/RenderComponent.hpp"
 #include "input/IInputBackend.hpp"
 #include "input/InputManager.hpp"
+#include "platform/SFMLWindow.hpp"
 
 namespace Com = Rtype::Client::Component;
 namespace Eng = Engine;
@@ -118,18 +119,19 @@ TEST(Systems, PlayfieldLimitClampsPosition) {
     player_tags.insert_at(0, Com::PlayerTag{1});
 
     // Create a small window (headless CI may still support creation)
-    Rtype::Client::GameWorld game_world("127.0.0.1", 50000, 50000);
-    sf::RenderWindow window(sf::VideoMode(200, 150), "test", sf::Style::None);
-    game_world.window_size_ =
-        Engine::Graphics::Vector2f(static_cast<float>(window.getSize().x),
-            static_cast<float>(window.getSize().y));
+    auto window = std::make_unique<Rtype::Client::Platform::SFMLWindow>(
+        200, 150, "test");
+    auto window_size = window->GetSize();
+
+    Rtype::Client::GameWorld game_world(
+        std::move(window), "127.0.0.1", 50000, 50000);
+    game_world.window_size_ = Engine::Graphics::Vector2f(
+        static_cast<float>(window_size.x), static_cast<float>(window_size.y));
 
     PlayfieldLimitSystem(reg, game_world, transforms, player_tags);
 
-    EXPECT_LE(transforms[0]->x, static_cast<float>(window.getSize().x));
-    EXPECT_LE(transforms[0]->y, static_cast<float>(window.getSize().y));
-
-    window.close();
+    EXPECT_LE(transforms[0]->x, static_cast<float>(window_size.x));
+    EXPECT_LE(transforms[0]->y, static_cast<float>(window_size.y));
 }
 
 TEST(Systems, AnimationSystemAdvancesFrame) {
@@ -177,7 +179,9 @@ TEST(Systems, AnimationSystemAdvancesFrame) {
 
 TEST(Systems, CollisionDetectionPublishesAndResolves) {
     Eng::registry reg;
-    Rtype::Client::GameWorld gw("127.0.0.1", 50000, 50000);
+    auto window = std::make_unique<Rtype::Client::Platform::SFMLWindow>(
+        800, 600, "test");
+    Rtype::Client::GameWorld gw(std::move(window), "127.0.0.1", 50000, 50000);
 
     Eng::sparse_array<Com::Transform> transforms;
     Eng::sparse_array<Com::HitBox> hitboxes;
@@ -215,7 +219,9 @@ TEST(Systems, CollisionDetectionPublishesAndResolves) {
 
 TEST(Systems, ProjectileSystemMovesTransform) {
     Eng::registry reg;
-    Rtype::Client::GameWorld gw("127.0.0.1", 50000, 50000);
+    auto window = std::make_unique<Rtype::Client::Platform::SFMLWindow>(
+        800, 600, "test");
+    Rtype::Client::GameWorld gw(std::move(window), "127.0.0.1", 50000, 50000);
 
     Eng::sparse_array<Com::Transform> transforms;
     Eng::sparse_array<Com::Projectile> projectiles;

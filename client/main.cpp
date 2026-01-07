@@ -12,8 +12,11 @@
 #include "game/InitRegistry.hpp"
 #include "game/factory/factory_ennemies/FactoryActors.hpp"
 #include "game/scenes_management/InitScenes.hpp"
+#include "include/WindowConst.hpp"
 #include "include/registry.hpp"
+#include "input/SFMLInputBackend.hpp"
 #include "platform/SFMLEventSource.hpp"
+#include "platform/SFMLWindow.hpp"
 
 namespace RC = Rtype::Client;
 namespace Audio = Rtype::Client::Audio;
@@ -30,14 +33,29 @@ int main(int argc, char *argv[]) {
                   << "[Client] UDP Port: " << config.udp_port << "\n"
                   << "[Client] Username: " << config.username << std::endl;
 
-        // Initialize game world with network parameters
-        RC::GameWorld game_world(
-            config.server_ip, config.tcp_port, config.udp_port);
+        // Initialize game world with window and network parameters
+        auto window = std::make_unique<RC::Platform::SFMLWindow>(
+            RC::WINDOW_WIDTH, RC::WINDOW_HEIGHT, RC::WINDOW_TITLE);
 
         // Initialize platform event source (SFML backend)
-        game_world.event_source_ =
-            std::make_unique<RC::Platform::SFMLEventSource>(
-                game_world.window_);
+        auto event_source = std::make_unique<RC::Platform::SFMLEventSource>(
+            static_cast<RC::Platform::SFMLWindow *>(window.get())
+                ->GetNativeWindow());
+
+        // Create input backend
+        auto sfml_input_backend =
+            std::make_unique<RC::Input::SFMLInputBackend>(
+                static_cast<RC::Platform::SFMLWindow *>(window.get())
+                    ->GetNativeWindow());
+
+        RC::GameWorld game_world(std::move(window), config.server_ip,
+            config.tcp_port, config.udp_port);
+
+        // Inject dependencies
+        game_world.event_source_ = std::move(event_source);
+        game_world.input_manager_ = std::make_unique<RC::GameInputManager>(
+            std::move(sfml_input_backend));
+        Game::SetupDefaultBindings(*game_world.input_manager_);
 
         // Initialize audio subsystem with proper lifetime
         // AudioManager must outlive the game loop to prevent dangling pointer
