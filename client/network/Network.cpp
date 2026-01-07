@@ -317,6 +317,7 @@ void ServerConnection::HandleConnectAck(const std::vector<uint8_t> &data) {
     } else {
         std::cerr << "[Network] CONNECT_ACK failed. Status="
                   << static_cast<int>(status) << std::endl;
+        last_rejection_status_.store(status);
         Disconnect();
     }
 }

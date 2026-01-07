@@ -50,6 +50,11 @@ class PacketHandler {
     using GameStartCallback = std::function<void()>;
 
     /**
+     * @brief Type alias for checking if game is running
+     */
+    using IsGameRunningCallback = std::function<bool()>;
+
+    /**
      * @brief Construct a new PacketHandler
      *
      * @param connection_manager Reference to the connection manager
@@ -72,6 +77,13 @@ class PacketHandler {
      * @param callback Function to call when game should start
      */
     void SetGameStartCallback(GameStartCallback callback);
+
+    /**
+     * @brief Set callback to check if game is running
+     *
+     * @param callback Function that returns true if game is in progress
+     */
+    void SetIsGameRunningCallback(IsGameRunningCallback callback);
 
     /**
      * @brief Start receiving messages from a client
@@ -166,6 +178,9 @@ class PacketHandler {
 
     // Callback for game start
     GameStartCallback on_game_start_;
+
+    // Callback to check if game is running
+    IsGameRunningCallback is_game_running_;
 };
 
 }  // namespace server
