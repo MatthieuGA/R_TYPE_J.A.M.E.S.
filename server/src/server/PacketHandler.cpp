@@ -15,7 +15,8 @@ PacketHandler::PacketHandler(ClientConnectionManager &connection_manager,
     : connection_manager_(connection_manager),
       packet_sender_(packet_sender),
       network_(network),
-      on_game_start_(nullptr) {}
+      on_game_start_(nullptr),
+      is_game_running_(nullptr) {}
 
 void PacketHandler::RegisterHandlers() {
     // Register CONNECT_REQ handler (0x01)
@@ -54,6 +55,10 @@ void PacketHandler::RegisterHandlers() {
 
 void PacketHandler::SetGameStartCallback(GameStartCallback callback) {
     on_game_start_ = callback;
+}
+
+void PacketHandler::SetIsGameRunningCallback(IsGameRunningCallback callback) {
+    is_game_running_ = callback;
 }
 
 void PacketHandler::StartReceiving(uint32_t client_id) {
@@ -165,6 +170,14 @@ void PacketHandler::HandleConnectReq(
     std::string username = Trim(packet.GetUsername());
     std::cout << "CONNECT_REQ from client " << client.client_id_
               << " with username: '" << username << "'" << std::endl;
+
+    // Validation: Game in progress
+    if (is_game_running_ && is_game_running_()) {
+        std::cerr << "Rejected: Game in progress" << std::endl;
+        packet_sender_.SendConnectAck(
+            client, network::ConnectAckPacket::InGame, 0);
+        return;  // Keep connection alive for retry
+    }
 
     // Validation: Empty username
     if (username.empty() ||

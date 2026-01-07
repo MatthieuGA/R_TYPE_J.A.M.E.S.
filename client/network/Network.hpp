@@ -167,6 +167,32 @@ class ServerConnection {
         is_local_player_ready_.store(false);
     }
 
+    /**
+     * @brief Check if connection was rejected with a non-retryable status.
+     * Status 3 (Game in Progress) should not be retried.
+     * @return true if connection was rejected and should not retry.
+     */
+    bool was_rejected_permanently() const {
+        uint8_t status = last_rejection_status_.load();
+        // Status 3 = Game in Progress (should not retry)
+        return status == 3;
+    }
+
+    /**
+     * @brief Get the last rejection status code.
+     * @return 0 if no rejection, otherwise the status code from CONNECT_ACK.
+     */
+    uint8_t last_rejection_status() const {
+        return last_rejection_status_.load();
+    }
+
+    /**
+     * @brief Reset rejection status for a new connection attempt.
+     */
+    void ResetRejectionStatus() {
+        last_rejection_status_.store(0);
+    }
+
  private:
     // Async handlers
     void AsyncReceiveUDP();
@@ -198,6 +224,9 @@ class ServerConnection {
     std::atomic<uint8_t> lobby_ready_count_{0};
     std::atomic<uint8_t> lobby_max_players_{4};  // Default to 4
     std::atomic<bool> is_local_player_ready_{false};
+
+    // Connection rejection status (0 = no rejection, >0 = status code)
+    std::atomic<uint8_t> last_rejection_status_{0};
 
     // Buffers
     std::array<uint8_t, 1472> udp_buffer_{};

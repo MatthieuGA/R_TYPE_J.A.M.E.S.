@@ -27,6 +27,8 @@ Server::Server(Config &config, boost::asio::io_context &io_context)
     instance_ = this;
     // Set game start callback
     packet_handler_.SetGameStartCallback([this]() { Start(); });
+    // Set callback to check if game is running
+    packet_handler_.SetIsGameRunningCallback([this]() { return running_; });
 }
 
 Server::~Server() {
