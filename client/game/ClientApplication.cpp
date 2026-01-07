@@ -81,6 +81,20 @@ void ClientApplication::ApplySnapshotToRegistry(
     }
 }
 
+namespace {
+/**
+ * @brief Log game-in-progress rejection message.
+ *
+ * Helper function to avoid duplicating the rejection error message.
+ */
+void LogGameInProgressRejection() {
+    std::cerr << "[Network] Connection rejected: Game in progress."
+              << std::endl;
+    std::cerr << "[Network] Cannot join - please wait for the "
+              << "current game to finish." << std::endl;
+}
+}  // namespace
+
 bool ClientApplication::ConnectToServerWithRetry(
     GameWorld &game_world, const ClientConfig &config) {
     bool connected = false;
@@ -109,10 +123,7 @@ bool ClientApplication::ConnectToServerWithRetry(
 
             // Check if we got a permanent rejection (e.g., game in progress)
             if (game_world.server_connection_->WasRejectedPermanently()) {
-                std::cerr << "[Network] Connection rejected: Game in progress."
-                          << std::endl;
-                std::cerr << "[Network] Cannot join - please wait for the "
-                          << "current game to finish." << std::endl;
+                LogGameInProgressRejection();
                 return false;  // Don't retry
             }
         }
@@ -122,8 +133,7 @@ bool ClientApplication::ConnectToServerWithRetry(
         if (!connected && retry < kMaxRetries - 1) {
             // Check again for permanent rejection before retrying
             if (game_world.server_connection_->WasRejectedPermanently()) {
-                std::cerr << "[Network] Connection rejected: Game in progress."
-                          << std::endl;
+                LogGameInProgressRejection();
                 return false;  // Don't retry
             }
 
