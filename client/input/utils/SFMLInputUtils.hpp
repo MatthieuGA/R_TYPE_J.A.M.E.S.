@@ -1,30 +1,20 @@
 /**
- * @file SFMLInputAdapters.hpp
- * @brief Utility adapters for SFML-Engine type conversions.
+ * @file SFMLInputUtils.hpp
+ * @brief SFML-specific input utility functions.
  *
- * Provides color conversion functions and input state query helpers.
- * These adapters exist ONLY at the SFML boundary to convert external library
- * types to our engine-agnostic abstractions.
- *
- * Note: Event translation is handled by SFMLEventSource.
- * Key/MouseButton conversions are internal to platform implementations.
+ * Provides convenience functions for querying input state using SFML.
+ * These utilities convert Engine::Input types to SFML types for state queries.
  */
 
-#ifndef CLIENT_ADAPTERS_SFMLINPUTADAPTERS_HPP_
-#define CLIENT_ADAPTERS_SFMLINPUTADAPTERS_HPP_
+#ifndef CLIENT_INPUT_UTILS_SFMLINPUTUTILS_HPP_
+#define CLIENT_INPUT_UTILS_SFMLINPUTUTILS_HPP_
 
-#include <SFML/Graphics/Color.hpp>
 #include <SFML/Window.hpp>
 
-#include "graphics/Types.hpp"
 #include "input/Key.hpp"
 #include "input/MouseButton.hpp"
 
-namespace Rtype::Client::Adapters {
-
-// ============================================================================
-// Input State Queries
-// ============================================================================
+namespace Rtype::Client::Input {
 
 /**
  * @brief Check if an engine key is pressed using SFML.
@@ -270,32 +260,6 @@ inline bool IsMouseButtonPressed(Engine::Input::MouseButton button) {
     return sf::Mouse::isButtonPressed(sfml_button);
 }
 
-// ============================================================================
-// Color Conversions
-// ============================================================================
+}  // namespace Rtype::Client::Input
 
-/**
- * @brief Convert Engine color to SFML color.
- *
- * @param engine_color The engine color
- * @return sf::Color The corresponding SFML color
- */
-inline sf::Color ToSFMLColor(const Engine::Graphics::Color &engine_color) {
-    return sf::Color(
-        engine_color.r, engine_color.g, engine_color.b, engine_color.a);
-}
-
-/**
- * @brief Convert SFML color to Engine color.
- *
- * @param sfml_color The SFML color
- * @return Engine::Graphics::Color The corresponding engine color
- */
-inline Engine::Graphics::Color FromSFMLColor(const sf::Color &sfml_color) {
-    return Engine::Graphics::Color(
-        sfml_color.r, sfml_color.g, sfml_color.b, sfml_color.a);
-}
-
-}  // namespace Rtype::Client::Adapters
-
-#endif  // CLIENT_ADAPTERS_SFMLINPUTADAPTERS_HPP_
+#endif  // CLIENT_INPUT_UTILS_SFMLINPUTUTILS_HPP_

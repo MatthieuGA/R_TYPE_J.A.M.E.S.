@@ -8,7 +8,6 @@
 
 #include <SFML/Graphics.hpp>
 
-#include "adapters/SFMLInputAdapters.hpp"
 #include "engine/systems/InitRegistrySystems.hpp"
 #include "game/InitRegistry.hpp"
 #include "game/SnapshotTracker.hpp"

@@ -8,7 +8,6 @@
 #include <iostream>
 #include <string>
 
-#include "adapters/SFMLInputAdapters.hpp"
 #include "engine/GameWorld.hpp"
 #include "engine/systems/InitRegistrySystems.hpp"
 #include "include/components/CoreComponents.hpp"

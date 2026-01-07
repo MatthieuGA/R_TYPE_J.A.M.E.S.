@@ -1,6 +1,5 @@
 #include <SFML/Graphics.hpp>
 
-#include "adapters/SFMLInputAdapters.hpp"
 #include "engine/OriginTool.hpp"
 #include "engine/systems/InitRegistrySystems.hpp"
 #include "input/MouseButton.hpp"

@@ -1,7 +1,7 @@
 #include <string>
 
-#include "adapters/SFMLInputAdapters.hpp"
 #include "engine/systems/InitRegistrySystems.hpp"
+#include "graphics/utils/SFMLGraphicsUtils.hpp"
 #include "include/ColorsConst.hpp"
 
 namespace Rtype::Client {
@@ -83,7 +83,7 @@ void LobbyUISystem(Eng::registry &reg, GameWorld &game_world,
                     if (texts[i]->color != new_color) {
                         texts[i]->color = new_color;
                         texts[i]->text.setFillColor(
-                            Adapters::ToSFMLColor(new_color));
+                            Graphics::ToSFMLColor(new_color));
                     }
                 }
                 // Optionally tint the button sprite
@@ -92,7 +92,7 @@ void LobbyUISystem(Eng::registry &reg, GameWorld &game_world,
                         is_local_ready
                             ? Engine::Graphics::Color(100, 200, 100)
                             : Engine::Graphics::Color(255, 255, 255);
-                    sf::Color sfml_tint = Adapters::ToSFMLColor(tint);
+                    sf::Color sfml_tint = Graphics::ToSFMLColor(tint);
                     if (drawables[i]->sprite.getColor() != sfml_tint) {
                         drawables[i]->sprite.setColor(sfml_tint);
                     }
