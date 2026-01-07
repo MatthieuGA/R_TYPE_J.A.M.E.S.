@@ -15,6 +15,7 @@ target_sources(r-type_server PRIVATE
     src/server/ServerSetupGame.cpp
     src/server/Systems/AnimationSystem.cpp
     src/server/Systems/CollidingTools.cpp
+    src/server/Systems/ExplodeOnDeathSystem.cpp
     src/server/Systems/FrameBaseEventSystem.cpp
     src/server/Systems/HealthDeductionSystem.cpp
     src/server/Systems/MovementSystem.cpp
@@ -28,6 +29,8 @@ target_sources(r-type_server PRIVATE
     src/server/Systems/TimedEventSystem.cpp
     src/server/factory/FactoryActors.cpp
     src/server/factory/FactoryActorsInit.cpp
+    src/server/factory/FactoryKamiFish.cpp
+    src/server/factory/FactoryMermaid.cpp
     src/server/worldgen/WorldGenConfigLoader.cpp
 )
 
