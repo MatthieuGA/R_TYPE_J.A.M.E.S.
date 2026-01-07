@@ -117,7 +117,7 @@ void Server::NotifyPlayerDeath() {
               << alive_players_ << "/" << total_players_ << std::endl;
 }
 
-void Server::DestroyPlayerEntity(uint8_t player_id) {
+bool Server::DestroyPlayerEntity(uint8_t player_id) {
     auto &player_tags = registry_.GetComponents<Component::PlayerTag>();
 
     for (std::size_t i = 0; i < player_tags.size(); ++i) {
@@ -131,11 +131,12 @@ void Server::DestroyPlayerEntity(uint8_t player_id) {
             std::cout << "[Server::DestroyPlayerEntity] Destroyed entity for "
                       << "player_id=" << static_cast<int>(player_id)
                       << std::endl;
-            return;
+            return true;
         }
     }
     std::cout << "[Server::DestroyPlayerEntity] No entity found for player_id="
               << static_cast<int>(player_id) << std::endl;
+    return false;
 }
 
 void Server::HandlePlayerDisconnect(uint8_t player_id) {
@@ -143,11 +144,8 @@ void Server::HandlePlayerDisconnect(uint8_t player_id) {
         return;  // Not in game, nothing to do
     }
 
-    // Destroy the player's entity
-    DestroyPlayerEntity(player_id);
-
-    // Update tracking
-    if (alive_players_ > 0) {
+    // Destroy the player's entity and update tracking only if entity was found
+    if (DestroyPlayerEntity(player_id) && alive_players_ > 0) {
         alive_players_--;
     }
 

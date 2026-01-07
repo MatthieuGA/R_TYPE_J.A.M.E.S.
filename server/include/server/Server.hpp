@@ -99,8 +99,9 @@ class Server {
      * Called when a client disconnects during an active game.
      *
      * @param player_id The player ID to find and destroy
+     * @return true if the entity was found and destroyed, false otherwise
      */
-    void DestroyPlayerEntity(uint8_t player_id);
+    bool DestroyPlayerEntity(uint8_t player_id);
 
     /**
      * @brief Handle player disconnect during active game
