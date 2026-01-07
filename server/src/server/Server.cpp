@@ -117,6 +117,54 @@ void Server::NotifyPlayerDeath() {
               << alive_players_ << "/" << total_players_ << std::endl;
 }
 
+void Server::DestroyPlayerEntity(uint8_t player_id) {
+    auto &player_tags = registry_.GetComponents<Component::PlayerTag>();
+
+    for (std::size_t i = 0; i < player_tags.size(); ++i) {
+        if (!player_tags.has(i))
+            continue;
+
+        if (player_tags[i].value().playerNumber ==
+            static_cast<int>(player_id)) {
+            auto entity = registry_.entity_from_index(i);
+            registry_.kill_entity(entity);
+            std::cout << "[Server::DestroyPlayerEntity] Destroyed entity for "
+                      << "player_id=" << static_cast<int>(player_id)
+                      << std::endl;
+            return;
+        }
+    }
+    std::cout << "[Server::DestroyPlayerEntity] No entity found for player_id="
+              << static_cast<int>(player_id) << std::endl;
+}
+
+void Server::HandlePlayerDisconnect(uint8_t player_id) {
+    if (!running_) {
+        return;  // Not in game, nothing to do
+    }
+
+    // Destroy the player's entity
+    DestroyPlayerEntity(player_id);
+
+    // Update tracking
+    if (alive_players_ > 0) {
+        alive_players_--;
+    }
+
+    std::cout << "[Server::HandlePlayerDisconnect] Player "
+              << static_cast<int>(player_id)
+              << " left. Alive: " << alive_players_ << "/" << total_players_
+              << std::endl;
+
+    // Check if all players have left/died
+    if (connection_manager_.GetAuthenticatedCount() == 0 ||
+        alive_players_ <= 0) {
+        std::cout << "[Server] All players gone! Game Over." << std::endl;
+        packet_sender_.SendGameEnd(0);
+        ResetToLobby();
+    }
+}
+
 void Server::ResetToLobby() {
     std::cout << "Resetting server to lobby state..." << std::endl;
 
