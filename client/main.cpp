@@ -38,15 +38,18 @@ int main(int argc, char *argv[]) {
             RC::WINDOW_WIDTH, RC::WINDOW_HEIGHT, RC::WINDOW_TITLE);
 
         // Initialize platform event source (SFML backend)
+        auto *sfml_window =
+            dynamic_cast<RC::Platform::SFMLWindow *>(window.get());
+        if (!sfml_window) {
+            throw std::runtime_error("SFMLWindow implementation required");
+        }
         auto event_source = std::make_unique<RC::Platform::SFMLEventSource>(
-            static_cast<RC::Platform::SFMLWindow *>(window.get())
-                ->GetNativeWindow());
+            sfml_window->GetNativeWindow());
 
-        // Create input backend
+        // Create input backend (reuse sfml_window pointer)
         auto sfml_input_backend =
             std::make_unique<RC::Input::SFMLInputBackend>(
-                static_cast<RC::Platform::SFMLWindow *>(window.get())
-                    ->GetNativeWindow());
+                sfml_window->GetNativeWindow());
 
         RC::GameWorld game_world(std::move(window), config.server_ip,
             config.tcp_port, config.udp_port);

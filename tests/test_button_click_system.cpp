@@ -15,11 +15,10 @@ namespace Eng = Engine;
 class ButtonClickSystemTest : public ::testing::Test {
  protected:
     ButtonClickSystemTest()
-        : window(std::make_unique<Rtype::Client::Platform::SFMLWindow>(
-              800, 600, "test")),
-          game_world(std::move(window), "127.0.0.1", 50000, 50000) {}
+        : game_world(std::make_unique<Rtype::Client::Platform::SFMLWindow>(
+                         800, 600, "test"),
+              "127.0.0.1", 50000, 50000) {}
 
-    std::unique_ptr<Rtype::Client::Platform::SFMLWindow> window;
     Rtype::Client::GameWorld game_world;
     Eng::registry reg;
     Eng::sparse_array<Com::HitBox> hit_boxes;

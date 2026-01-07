@@ -21,8 +21,10 @@ GameWorld::GameWorld(std::unique_ptr<Engine::Graphics::IWindow> window,
     registry_ = Engine::registry();
     delta_time_clock_ = Engine::Time::Clock();
     event_bus_ = EventBus();
+
+    auto size = window_->GetSize();
     window_size_ = Engine::Graphics::Vector2f(
-        static_cast<float>(WINDOW_WIDTH), static_cast<float>(WINDOW_HEIGHT));
+        static_cast<float>(size.x), static_cast<float>(size.y));
 
     // Note: input_manager_ and event_source_ will be injected from main.cpp
     // to keep SFML dependencies out of this header
@@ -33,10 +35,14 @@ GameWorld::GameWorld(std::unique_ptr<Engine::Graphics::IWindow> window,
 }
 
 sf::RenderWindow &GameWorld::GetNativeWindow() {
-    // TEMPORARY (PR 1.7 SCOPE): Direct cast to SFML window
+    // TEMPORARY (PR 1.7 SCOPE): Safe downcast to SFML window
     // This allows rendering systems to keep working during transition
     // TODO(PR 1.8/1.9): Remove once systems use GraphicsBackend
-    auto *sfml_window = static_cast<Platform::SFMLWindow *>(window_.get());
+    auto *sfml_window = dynamic_cast<Platform::SFMLWindow *>(window_.get());
+    if (!sfml_window) {
+        throw std::runtime_error(
+            "GameWorld::GetNativeWindow() requires SFMLWindow implementation");
+    }
     return sfml_window->GetNativeWindow();
 }
 
