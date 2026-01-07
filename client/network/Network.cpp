@@ -357,6 +357,8 @@ void ServerConnection::HandleGameEnd(const std::vector<uint8_t> &data) {
 
     game_ended_.store(true);
     game_started_.store(false);
+    lobby_ready_count_.store(0);  // Reset ready count for lobby display
+    is_local_player_ready_.store(false);  // Reset local player's ready state
 }
 
 void ServerConnection::HandleNotifyDisconnect(
