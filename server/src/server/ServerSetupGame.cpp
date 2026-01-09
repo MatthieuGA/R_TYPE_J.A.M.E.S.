@@ -23,9 +23,6 @@ void SpawnEnemyFromRight(Engine::registry &reg) {
 
     int r = std::rand() % 100;
 
-    FactoryActors::GetInstance().CreateActor(
-        enemy_entity, reg, "daemon", vector2f{2000.f, random_y}, false);
-    return;
     if (r < 47)
         FactoryActors::GetInstance().CreateActor(
             enemy_entity, reg, "kamifish", vector2f{2000.f, random_y}, false);
