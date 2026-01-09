@@ -55,6 +55,9 @@ static void CreateEnemyEntity(GameWorld &game_world,
     } else if (entity_data.enemy_type ==
                ClientApplication::ParsedEntity::kMermaidEnemy) {
         enemy_type_str = "mermaid";
+    } else if (entity_data.enemy_type ==
+               ClientApplication::ParsedEntity::kDaemonEnemy) {
+        enemy_type_str = "daemon";
     }
     FactoryActors::GetInstance().CreateActor(
         new_entity, game_world.registry_, enemy_type_str, false);
