@@ -57,7 +57,7 @@ void updateEmitter(
                 emitter.offset.y * transform.scale.y);
 
         Component::Particle newParticle;
-        newParticle.position = sf::Vector2f(
+        newParticle.position = Engine::Graphics::Vector2f(
             transform.x + offset_computed.x, transform.y + offset_computed.y);
 
         // Calculate particle velocity with spread angle
@@ -89,8 +89,9 @@ void updateEmitter(
         // Calculate velocity based on final angle and speed
         float cos_angle = std::cos(final_angle);
         float sin_angle = std::sin(final_angle);
-        newParticle.velocity = sf::Vector2f(cos_angle * emitter.particleSpeed,
-            sin_angle * emitter.particleSpeed);
+        newParticle.velocity =
+            Engine::Graphics::Vector2f(cos_angle * emitter.particleSpeed,
+                sin_angle * emitter.particleSpeed);
 
         newParticle.maxLifetime = emitter.particleLifetime;
         newParticle.lifetime = emitter.particleLifetime;
@@ -146,7 +147,7 @@ void drawEmitter(Com::ParticleEmitter &emitter, GameWorld &game_world) {
         float size = emitter.end_size +
                      (emitter.start_size - emitter.end_size) * lifeRatio;
         float half_size = size * 0.5f;
-        sf::Vector2f pos = particle.position;
+        sf::Vector2f pos = ToSFML(particle.position);
 
         // Top-left
         sf::Vertex v1;
