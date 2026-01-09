@@ -47,6 +47,6 @@ FrameEvents::FrameEvents(std::vector<FrameEvent> events)
 EnemyShootTag::EnemyShootTag(float speed, int damage, sf::Vector2f offset)
     : speed_projectile(speed),
       damage_projectile(damage),
-      offset_shoot_position(offset) {}
+      offset_shoot_position(offset.x, offset.y) {}
 
 }  // namespace Rtype::Client::Component

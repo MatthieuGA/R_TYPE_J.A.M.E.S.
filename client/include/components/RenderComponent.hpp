@@ -68,6 +68,7 @@ struct RectangleDrawable {
 
 struct Drawable {
     std::string spritePath;
+    std::string texture_path;
     int z_index = 0;
     float opacity = 1.0f;
     float rotation = 0.0f;
@@ -76,9 +77,10 @@ struct Drawable {
     sf::Texture texture;
     bool isLoaded = false;
 
-    explicit Drawable(
-        const std::string &spritePath, int z_index = 0, float opacity = 1.0f)
-        : spritePath("assets/images/" + spritePath),
+    explicit Drawable(const std::string &spritePath_input, int z_index = 0,
+        float opacity = 1.0f)
+        : spritePath("assets/images/" + spritePath_input),
+          texture_path("assets/images/" + spritePath_input),
           z_index(z_index),
           texture(),
           opacity(opacity),
@@ -94,6 +96,7 @@ struct Drawable {
     // visual properties are preserved.
     Drawable(Drawable &&other) noexcept
         : spritePath(std::move(other.spritePath)),
+          texture_path(std::move(other.texture_path)),
           z_index(other.z_index),
           opacity(other.opacity),
           texture(std::move(other.texture)),
@@ -114,6 +117,7 @@ struct Drawable {
         if (this == &other)
             return *this;
         spritePath = std::move(other.spritePath);
+        texture_path = std::move(other.texture_path);
         z_index = other.z_index;
         opacity = other.opacity;
         texture = std::move(other.texture);
@@ -134,6 +138,7 @@ struct Drawable {
 
 struct Shader {
     std::string shaderPath;
+    std::string shader_path;
     std::shared_ptr<sf::Shader> shader;
     bool isLoaded = false;
     std::map<std::string, float> uniforms_float = {};
@@ -141,6 +146,7 @@ struct Shader {
     explicit Shader(const std::string &path,
         std::vector<std::pair<std::string, float>> uf = {})
         : shaderPath("assets/shaders/" + path),
+          shader_path(path),
           shader(nullptr),
           isLoaded(false) {
         for (const auto &[name, value] : uf)
@@ -151,14 +157,17 @@ struct Shader {
 struct AnimatedSprite {
     struct Animation {
         std::string path;
+        std::string texture_path;
         int frameWidth;
         int frameHeight;
         int totalFrames;
         int current_frame;
         float frameDuration;
         bool loop;
-        sf::Vector2f first_frame_position = sf::Vector2f(0.0f, 0.0f);
-        sf::Vector2f offset = sf::Vector2f(0.0f, 0.0f);
+        Engine::Graphics::Vector2f first_frame_position =
+            Engine::Graphics::Vector2f(0.0f, 0.0f);
+        Engine::Graphics::Vector2f offset =
+            Engine::Graphics::Vector2f(0.0f, 0.0f);
         sf::Texture texture;
         sf::Sprite sprite;
 
@@ -166,6 +175,7 @@ struct AnimatedSprite {
 
         Animation()
             : path(""),
+              texture_path(""),
               frameWidth(0),
               frameHeight(0),
               totalFrames(0),
@@ -180,9 +190,12 @@ struct AnimatedSprite {
 
         Animation(const std::string &path, int frameWidth, int frameHeight,
             int totalFrames, float frameDuration, bool loop,
-            sf::Vector2f first_frame_position = sf::Vector2f(0.0f, 0.0f),
-            sf::Vector2f offset = sf::Vector2f(0.0f, 0.0f))
+            Engine::Graphics::Vector2f first_frame_position =
+                Engine::Graphics::Vector2f(0.0f, 0.0f),
+            Engine::Graphics::Vector2f offset = Engine::Graphics::Vector2f(
+                0.0f, 0.0f))
             : path(path.empty() ? "" : "assets/images/" + path),
+              texture_path(path),
               frameWidth(frameWidth),
               frameHeight(frameHeight),
               totalFrames(totalFrames),
@@ -205,8 +218,13 @@ struct AnimatedSprite {
 
     AnimatedSprite(int frameWidth, int frameHeight, float frameDuration,
         bool loop = true,
-        sf::Vector2f first_frame_position = sf::Vector2f(0.0f, 0.0f),
+        Engine::Graphics::Vector2f first_frame_position =
+            Engine::Graphics::Vector2f(0.0f, 0.0f),
         int totalFrames = 0);
+
+    // Compatibility overload: accept SFML first_frame_position
+    AnimatedSprite(int frameWidth, int frameHeight, float frameDuration,
+        bool loop, sf::Vector2f first_frame_position, int totalFrames);
 
     AnimatedSprite(int frameWidth, int frameHeight, int current_frame);
 
@@ -227,7 +245,20 @@ struct AnimatedSprite {
     void AddAnimation(const std::string &name, const std::string &path,
         int frameWidth, int frameHeight, int totalFrames, float frameDuration,
         bool loop = true,
-        sf::Vector2f first_frame_position = sf::Vector2f(0.0f, 0.0f),
+        Engine::Graphics::Vector2f first_frame_position =
+            Engine::Graphics::Vector2f(0.0f, 0.0f),
+        Engine::Graphics::Vector2f offset = Engine::Graphics::Vector2f(
+            0.0f, 0.0f));
+
+    /**
+     * @brief Compatibility overload: Add animation using SFML vectors.
+     *
+     * For existing systems that still pass `sf::Vector2f`, this overload
+     * forwards to the engine-typed version without changing behavior.
+     */
+    void AddAnimation(const std::string &name, const std::string &path,
+        int frameWidth, int frameHeight, int totalFrames, float frameDuration,
+        bool loop, sf::Vector2f first_frame_position,
         sf::Vector2f offset = sf::Vector2f(0.0f, 0.0f));
 
     /**
@@ -270,11 +301,13 @@ struct AnimatedSprite {
 struct Text {
     std::string content;
     std::string fontPath;
+    std::string font_path;
     unsigned int characterSize = 30;
     Engine::Graphics::Color color = Engine::Graphics::Color::White;
     float opacity = 1.0f;
     int z_index = 0;
-    sf::Vector2f offset = sf::Vector2f(0.0f, 0.0f);
+    float rotation_degrees = 0.0f;
+    Engine::Graphics::Vector2f offset = Engine::Graphics::Vector2f(0.0f, 0.0f);
 
     sf::Text text;
     sf::Font font;
@@ -283,15 +316,31 @@ struct Text {
     explicit Text(const std::string &fontPath, const std::string &content = "",
         unsigned int characterSize = 30, int z_index = 0,
         Engine::Graphics::Color color = Engine::Graphics::Color::White,
-        sf::Vector2f offset = sf::Vector2f(0.0f, 0.0f))
+        Engine::Graphics::Vector2f offset = Engine::Graphics::Vector2f(
+            0.0f, 0.0f))
         : content(content),
           fontPath("assets/fonts/" + fontPath),
+          font_path(fontPath),
           characterSize(characterSize),
           color(color),
           opacity(1.0f),
           z_index(z_index),
           is_loaded(false),
           offset(offset) {}
+
+    // Compatibility overload: accept SFML offset
+    explicit Text(const std::string &fontPath, const std::string &content,
+        unsigned int characterSize, int z_index, Engine::Graphics::Color color,
+        sf::Vector2f offset)
+        : content(content),
+          fontPath("assets/fonts/" + fontPath),
+          font_path(fontPath),
+          characterSize(characterSize),
+          color(color),
+          opacity(1.0f),
+          z_index(z_index),
+          is_loaded(false),
+          offset(offset.x, offset.y) {}
 
     // Non-copyable to avoid accidental font pointer mismatches
     Text(Text const &) = delete;
@@ -305,8 +354,8 @@ struct Text {
 };
 
 struct Particle {
-    sf::Vector2f position;
-    sf::Vector2f velocity;
+    Engine::Graphics::Vector2f position;
+    Engine::Graphics::Vector2f velocity;
     float lifetime;     // restant
     float maxLifetime;  // durée de vie initiale
 };
@@ -327,17 +376,19 @@ struct ParticleEmitter {
     Engine::Graphics::Color endColor =
         Engine::Graphics::Color(80, 80, 255, 0);  // bleu transparent
 
-    sf::Vector2f offset = {0.f, 0.f};  // offset local par rapport au Transform
+    Engine::Graphics::Vector2f offset = {
+        0.f, 0.f};  // offset local par rapport au Transform
 
     float particleLifetime = 1.0f;  // durée de vie des particules en secondes
     float particleSpeed = 50.f;     // vitesse initiale des particules
-    sf::Vector2f direction = {0.f, -1.f};  // direction initiale des particules
-    float spreadAngle = 30.f;              // angle de dispersion en degrés
-    float gravity = 0.f;                   // accélération verticale
-    float emissionRadius = 0.f;            // rayon d'apparition des particules
-    float start_size = 1.0f;               // taille de début des particules
-    float end_size = 1.0f;                 // taille de fin des particules
-    int z_index = 0;                       // layer de rendu des particules
+    Engine::Graphics::Vector2f direction = {
+        0.f, -1.f};              // direction initiale des particules
+    float spreadAngle = 30.f;    // angle de dispersion en degrés
+    float gravity = 0.f;         // accélération verticale
+    float emissionRadius = 0.f;  // rayon d'apparition des particules
+    float start_size = 1.0f;     // taille de début des particules
+    float end_size = 1.0f;       // taille de fin des particules
+    int z_index = 0;             // layer de rendu des particules
 
     bool emitting = true;  // Does the Particle emit particle
 
@@ -349,12 +400,12 @@ struct ParticleEmitter {
             80, 80, 255, 255),
         Engine::Graphics::Color endColor = Engine::Graphics::Color(
             80, 80, 255, 0),
-        sf::Vector2f offset = {0.f, 0.f}, bool active = true,
+        Engine::Graphics::Vector2f offset = {0.f, 0.f}, bool active = true,
         float particleLifetime = 1.0f, float particleSpeed = 50.f,
-        sf::Vector2f direction = {0.f, -1.f}, float spreadAngle = 30.f,
-        float gravity = 0.f, float emissionRadius = 0.f,
-        float start_size = 1.0f, float end_size = 1.0f, float duration = -1.f,
-        int z_index = 0)
+        Engine::Graphics::Vector2f direction = {0.f, -1.f},
+        float spreadAngle = 30.f, float gravity = 0.f,
+        float emissionRadius = 0.f, float start_size = 1.0f,
+        float end_size = 1.0f, float duration = -1.f, int z_index = 0)
         : active(active),
           duration_active(duration),
           duration_past(0.0f),
@@ -372,6 +423,25 @@ struct ParticleEmitter {
           start_size(start_size),
           end_size(end_size),
           z_index(z_index) {}
+
+    /**
+     * @brief Compatibility overload: Construct using SFML vectors.
+     *
+     * Allows existing system code passing `sf::Vector2f` for `offset` and
+     * `direction` to compile unchanged. Forwards to the engine-typed ctor.
+     */
+    ParticleEmitter(float emissionRate, std::size_t maxParticles,
+        Engine::Graphics::Color startColor, Engine::Graphics::Color endColor,
+        sf::Vector2f offset, bool active, float particleLifetime,
+        float particleSpeed, sf::Vector2f direction, float spreadAngle,
+        float gravity, float emissionRadius, float start_size, float end_size,
+        float duration, int z_index)
+        : ParticleEmitter(emissionRate, maxParticles, startColor, endColor,
+              Engine::Graphics::Vector2f(offset.x, offset.y), active,
+              particleLifetime, particleSpeed,
+              Engine::Graphics::Vector2f(direction.x, direction.y),
+              spreadAngle, gravity, emissionRadius, start_size, end_size,
+              duration, z_index) {}
 };
 
 }  // namespace Rtype::Client::Component
