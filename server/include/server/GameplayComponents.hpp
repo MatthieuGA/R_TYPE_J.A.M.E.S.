@@ -110,7 +110,8 @@ struct Projectile {
     enum class ProjectileType {
         Normal = 0,
         Charged = 1,
-        Enemy_Mermaid = 2
+        Enemy_Mermaid = 2,
+        Enemy_Daemon = 3
     } type = ProjectileType::Normal;
     int damage;
     vector2f direction;

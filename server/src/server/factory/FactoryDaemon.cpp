@@ -28,7 +28,7 @@ void CreateDaemonProjectile(Engine::registry &reg, vector2f direction,
             0.0f, 2.f, Component::Transform::CENTER});
     reg.AddComponent<Component::Projectile>(projectile_entity,
         Component::Projectile{
-            Component::Projectile::ProjectileType::Enemy_Mermaid,
+            Component::Projectile::ProjectileType::Enemy_Daemon,
             enemy_shoot.damage_projectile, direction,
             enemy_shoot.speed_projectile, ownerId, true});
     reg.AddComponent<Component::HitBox>(
@@ -68,7 +68,7 @@ void FactoryActors::CreateDaemonActor(
                     vector2f(-1.0f, 0.0f), info.speed));
 
     // Add enemy shooting component
-    Component::EnemyShootTag enemy_shoot_tag(200.0f, 10.0f, {-3.0f, -15.0f});
+    Component::EnemyShootTag enemy_shoot_tag(200.0f, 10.0f, {-8.0f, 8.0f});
 
     // Add drawable and animated sprite components
     // AnimatedSprite(bool loop, int totalFrames, float frameDuration)

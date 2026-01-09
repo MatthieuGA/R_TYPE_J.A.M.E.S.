@@ -31,7 +31,7 @@ void FactoryActors::CreateDaemonActor(
 
     // Add enemy shooting component
     Component::EnemyShootTag enemy_shoot_tag(info.speed,
-        Rtype::Client::MERMAID_PROJECTILE_DAMAGE, sf::Vector2f(0.0f, 0.0f));
+        Rtype::Client::MERMAID_PROJECTILE_DAMAGE, sf::Vector2f(-7.0f, 8.0f));
 
     reg.AddComponent<Component::TimedEvents>(
         entity, Component::TimedEvents(

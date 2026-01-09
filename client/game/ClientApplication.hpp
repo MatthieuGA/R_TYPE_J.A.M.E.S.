@@ -21,7 +21,8 @@ class ClientApplication {
         enum ProjectileType : uint8_t {
             kPlayerProjectile = 0x00,
             kPlayerChargedProjectile = 0x01,
-            kMermaidProjectile = 0x02
+            kMermaidProjectile = 0x02,
+            kDaemonProjectile = 0x03
         };
 
         enum EntityType : uint8_t {
