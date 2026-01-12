@@ -198,8 +198,8 @@ void RenderOneEntity(Eng::sparse_array<Com::Transform> const &transforms,
     Engine::Graphics::DrawableShader shader_data;
     const Engine::Graphics::DrawableShader *shader_ptr = nullptr;
     if (shaders.has(i) && shaders[i]->is_loaded &&
-        !shaders[i]->shaderPath.empty()) {
-        shader_data.shader_path = shaders[i]->shaderPath.c_str();
+        !shaders[i]->shader_path.empty()) {
+        shader_data.shader_path = shaders[i]->shader_path.c_str();
         shader_data.time_seconds =
             game_world.total_time_clock_.GetElapsedTime().AsSeconds();
         shader_data.float_uniforms.clear();

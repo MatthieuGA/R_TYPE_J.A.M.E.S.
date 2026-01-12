@@ -37,16 +37,13 @@ struct Drawable {
  * @brief Shader metadata for backend-managed shader.
  */
 struct Shader {
-    std::string shaderPath;
     std::string shader_path;
     bool is_loaded = false;
     std::map<std::string, float> uniforms_float = {};
 
     explicit Shader(const std::string &path,
         std::vector<std::pair<std::string, float>> uf = {})
-        : shaderPath("assets/shaders/" + path),
-          shader_path(path),
-          is_loaded(false) {
+        : shader_path("assets/shaders/" + path), is_loaded(false) {
         for (const auto &[name, value] : uf)
             uniforms_float[name] = value;
     }
