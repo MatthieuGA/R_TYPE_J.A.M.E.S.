@@ -6,8 +6,10 @@ namespace Rtype::Client {
 /**
  * @brief Load the texture for an animation if not already loaded.
  *
+ * Marks animation as loaded. Backend will load texture via path.
+ *
  * @param animation Animation to load
- * @return true if loading succeeded or was already loaded, false otherwise
+ * @return true if path is valid and marked loaded, false otherwise
  */
 bool LoadAnimation(Com::AnimatedSprite::Animation &animation) {
     if (animation.isLoaded)
@@ -16,13 +18,7 @@ bool LoadAnimation(Com::AnimatedSprite::Animation &animation) {
     if (animation.path.empty())
         return false;
 
-    if (!animation.texture.loadFromFile(animation.path)) {
-        std::cerr << "ERROR: Failed to load animation texture from "
-                  << animation.path << "\n";
-        return false;
-    }
-
-    animation.sprite.setTexture(animation.texture, true);
+    // Backend will load texture via path; just mark as loaded here
     animation.isLoaded = true;
     return true;
 }

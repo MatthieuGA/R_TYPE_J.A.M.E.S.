@@ -9,26 +9,15 @@ namespace Rtype::Client {
 /**
  * @brief Load and initialize a fragment shader for a Shader component.
  *
- * Loads the shader from disk, sets the `texture` uniform and applies any
- * preconfigured float uniforms.
+ * Marks the shader as loaded (backend will load via shader_path).
+ * Stores preconfigured float uniforms for backend rendering.
  *
  * @param shader_comp Shader component to initialize
  */
 void InitializeShader(Com::Shader &shader_comp) {
     if (!shader_comp.shaderPath.empty()) {
-        shader_comp.shader = std::make_shared<sf::Shader>();
-        if (!shader_comp.shader->loadFromFile(
-                shader_comp.shaderPath, sf::Shader::Type::Fragment)) {
-            std::cerr << "ERROR: Failed to load shader from "
-                      << shader_comp.shaderPath << "\n";
-            shader_comp.shader = nullptr;
-        } else {
-            shader_comp.shader->setUniform(
-                "texture", sf::Shader::CurrentTexture);
-            for (auto &[name, value] : shader_comp.uniforms_float)
-                shader_comp.shader->setUniform(name, value);
-        }
-        // Always mark as loaded to prevent retry spam even on failure
+        // Backend will load shader via shader_path
+        // Just mark as loaded for rendering pipeline
         shader_comp.isLoaded = true;
     }
 }

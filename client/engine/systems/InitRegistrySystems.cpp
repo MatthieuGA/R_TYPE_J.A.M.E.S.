@@ -22,6 +22,12 @@ void InitRenderSystems(Rtype::Client::GameWorld &game_world) {
         Eng::sparse_array<Com::AnimatedSprite>>(
         InitializeDrawableAnimatedSystem);
 
+    // Initialize static (non-animated) drawables
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
+        Eng::sparse_array<Com::Drawable>,
+        Eng::sparse_array<Com::AnimatedSprite>>(
+        InitializeDrawableStaticSystem);
+
     // Shader initialization system
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Shader>>(
         InitializeShaderSystem);

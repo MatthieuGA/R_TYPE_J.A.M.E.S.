@@ -8,6 +8,7 @@
 #include "engine/OriginTool.hpp"
 #include "engine/systems/InitRegistrySystems.hpp"
 #include "graphics/IRenderContext.hpp"
+#include "graphics/SFMLRenderContext.hpp"
 
 namespace Rtype::Client {
 
@@ -163,23 +164,33 @@ void RenderOneEntity(Eng::sparse_array<Com::Transform> const &transforms,
     // GetOffsetFromTransform returns negative offsets; negate to get positive
     // for SFML
     Engine::Graphics::Vector2f origin(0.0f, 0.0f);
-    // We need texture size to calculate origin; get from current_rect if set,
-    // or estimate
+    Engine::Graphics::Vector2f texture_size(0.0f, 0.0f);
+
+    // Get texture size for origin calculation
     if (drawable->current_rect.width > 0 &&
         drawable->current_rect.height > 0) {
-        origin = GetOffsetFromTransform(transform.value(),
-            Engine::Graphics::Vector2f(
-                static_cast<float>(drawable->current_rect.width),
-                static_cast<float>(drawable->current_rect.height)));
+        // Animation frame or cropped sprite - use rect size
+        texture_size = Engine::Graphics::Vector2f(
+            static_cast<float>(drawable->current_rect.width),
+            static_cast<float>(drawable->current_rect.height));
     } else {
-        // Fallback: if current_rect not set, assume full texture (can't know
-        // size without loading). Use identity for now; animation will set it.
-        origin = GetOffsetFromTransform(
-            transform.value(), Engine::Graphics::Vector2f(1.0f, 1.0f));
+        // Static sprite - query backend for full texture size
+        auto *sfml_context =
+            dynamic_cast<Rtype::Client::Graphics::SFMLRenderContext *>(
+                game_world.GetRenderContext());
+        if (sfml_context) {
+            texture_size =
+                sfml_context->GetTextureSize(drawable->texture_path.c_str());
+        }
     }
-    // Negate to convert from offset to origin (positive coordinates for SFML)
-    origin.x = -origin.x;
-    origin.y = -origin.y;
+
+    if (texture_size.x > 0.0f && texture_size.y > 0.0f) {
+        origin = GetOffsetFromTransform(transform.value(), texture_size);
+        // Negate to convert from offset to origin (positive coordinates for
+        // SFML)
+        origin.x = -origin.x;
+        origin.y = -origin.y;
+    }
 
     Engine::Graphics::DrawableSprite sprite_data{
         drawable->texture_path.c_str(), world_position, world_scale,

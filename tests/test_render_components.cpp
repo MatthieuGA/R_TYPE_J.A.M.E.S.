@@ -12,13 +12,13 @@ TEST(RenderComponents, DrawableBasicsAndMove) {
     EXPECT_EQ(d.spritePath, std::string("assets/images/Logo.png"));
     EXPECT_EQ(d.z_index, 3);
     EXPECT_FLOAT_EQ(d.opacity, 0.8f);
-    EXPECT_FALSE(d.isLoaded);
+    EXPECT_FALSE(d.is_loaded);
 
     Com::Drawable moved{std::move(d)};
     EXPECT_EQ(moved.spritePath, std::string("assets/images/Logo.png"));
     EXPECT_EQ(moved.z_index, 3);
     EXPECT_FLOAT_EQ(moved.opacity, 0.8f);
-    EXPECT_FALSE(moved.isLoaded);
+    EXPECT_FALSE(moved.is_loaded);
 }
 
 TEST(RenderComponents, ShaderPathAndUniforms) {
@@ -46,7 +46,8 @@ TEST(RenderComponents, TextDefaults) {
 
 TEST(RenderComponents, TextMoveSemantics) {
     Com::Text src{"dogica.ttf", "Hello", 42, 2,
-        Engine::Graphics::Color::Yellow, sf::Vector2f(3.0f, -1.0f)};
+        Engine::Graphics::Color::Yellow,
+        Engine::Graphics::Vector2f(3.0f, -1.0f)};
     src.opacity = 0.25f;
 
     Com::Text moved{std::move(src)};

@@ -151,10 +151,7 @@ TEST(Systems, AnimationSystemAdvancesFrame) {
 
     // Create a drawable and mark it as loaded so the system advances frames
     drawables.insert_at(0, Com::Drawable("dummy.png"));
-    // Ensure texture has a size so SetFrame won't early-return
-    drawables[0]->texture.create(64, 64);
-    drawables[0]->sprite.setTexture(drawables[0]->texture, true);
-    drawables[0]->isLoaded = true;
+    drawables[0]->is_loaded = true;
 
     // Simulate a delta time that should advance at least one frame
     float delta = 0.05f;  // 50 ms
@@ -173,8 +170,8 @@ TEST(Systems, AnimationSystemAdvancesFrame) {
     // Second call with zero delta will cause SetFrame to update the drawable
     // rect
     AnimationSystem(reg, 0.0f, anim_sprites, drawables);
-    sf::IntRect rect = drawables[0]->sprite.getTextureRect();
-    EXPECT_EQ(rect.left, anim_sprites[0]->GetCurrentAnimation()->frameWidth);
+    EXPECT_EQ(drawables[0]->current_rect.left,
+        anim_sprites[0]->GetCurrentAnimation()->frameWidth);
 }
 
 TEST(Systems, CollisionDetectionPublishesAndResolves) {
