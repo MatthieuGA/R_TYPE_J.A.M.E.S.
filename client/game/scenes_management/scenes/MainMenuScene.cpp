@@ -116,7 +116,7 @@ void MainMenuScene::InitUI(Engine::registry &reg, GameWorld &gameWorld) {
         });
     reg.AddComponent<Component::Text>(play_button_entity,
         Component::Text("dogica.ttf", "Ready", 13, LAYER_UI + 1, WHITE_BLUE,
-            Engine::Graphics::Vector2f(0.0f, 0.0f)));
+            Engine::Graphics::Vector2f(0.0f, -5.0f)));
     reg.AddComponent<Component::LobbyUI>(play_button_entity,
         Component::LobbyUI{Component::LobbyUI::Type::ReadyButton});
     ready_button_entity_ = play_button_entity;
@@ -136,7 +136,7 @@ void MainMenuScene::InitUI(Engine::registry &reg, GameWorld &gameWorld) {
                             });
     reg.AddComponent<Component::Text>(quit_button_entity,
         Component::Text("dogica.ttf", "Quit", 13, LAYER_UI + 1, WHITE_BLUE,
-            Engine::Graphics::Vector2f(0.0f, 0.0f)));
+            Engine::Graphics::Vector2f(0.0f, -5.0f)));
 }
 
 }  // namespace Rtype::Client
