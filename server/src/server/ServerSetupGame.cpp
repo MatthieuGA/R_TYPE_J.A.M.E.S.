@@ -44,18 +44,29 @@ void Server::SetupEntitiesGame() {
         FactoryActors::GetInstance().CreateActor(entity, registry_, "player",
             vector2f{100.f + client.player_id_ * 50.f, 300.f}, true);
 
+        // Link player entity to player_id for disconnect cleanup
+        auto &player_tag =
+            registry_.GetComponent<Component::PlayerTag>(entity);
+        player_tag.playerNumber = static_cast<int>(client.player_id_);
+
+        // Override NetworkId to match player_id for input handling
+        // (GAME_START sends player_id as controlled_entity_id)
+        auto &network_id =
+            registry_.GetComponent<Component::NetworkId>(entity);
+        network_id.id = static_cast<uint32_t>(client.player_id_);
+
         // Track player count
         total_players_++;
         alive_players_++;
     }
 
-    std::cout << "[SetupEntitiesGame] Spawned " << total_players_
-              << " players" << std::endl;
+    std::cout << "[SetupEntitiesGame] Spawned " << total_players_ << " players"
+              << std::endl;
 
     // Create enemy spawner entity with timed event for infinite spawning
     auto spawner_entity = registry_.spawn_entity();
-    registry_.AddComponent<Component::TimedEvents>(spawner_entity,
-        Component::TimedEvents{});
+    registry_.AddComponent<Component::TimedEvents>(
+        spawner_entity, Component::TimedEvents{});
 
     // Get reference and add spawning action (spawn every 2 seconds)
     auto &spawner_events =

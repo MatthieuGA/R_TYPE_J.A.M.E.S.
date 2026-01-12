@@ -1,4 +1,5 @@
 #pragma once
+#include <chrono>
 #include <cstdint>
 #include <vector>
 
@@ -38,7 +39,9 @@ class Server {
     /**
      * @brief Get the singleton instance (for systems to notify player death)
      */
-    static Server* GetInstance() { return instance_; }
+    static Server *GetInstance() {
+        return instance_;
+    }
 
     /**
      * @brief Construct a new Server object
@@ -89,6 +92,35 @@ class Server {
      * Called by HealthDeductionSystem when a player's health reaches 0.
      */
     void NotifyPlayerDeath();
+
+    /**
+     * @brief Destroy the player entity associated with a player_id
+     *
+     * Searches for the player entity with matching playerNumber and kills it.
+     * Called when a client disconnects during an active game.
+     *
+     * @param player_id The player ID to find and destroy
+     * @return true if the entity was found and destroyed, false otherwise
+     */
+    bool DestroyPlayerEntity(uint8_t player_id);
+
+    /**
+     * @brief Handle player disconnect during active game
+     *
+     * Destroys the player's entity, updates tracking, and checks if game
+     * should end (all players gone).
+     *
+     * @param player_id The player ID that disconnected
+     */
+    void HandlePlayerDisconnect(uint8_t player_id);
+
+    /**
+     * @brief Check if game is currently running
+     * @return true if game is in progress
+     */
+    bool IsGameRunning() const {
+        return running_;
+    }
 
     /**
      * @brief Stop the game loop and close all client connections
@@ -163,15 +195,17 @@ class Server {
     PacketSender packet_sender_;
     PacketHandler packet_handler_;
 
-    static constexpr int TICK_RATE_MS = 16;  // ~60 FPS
+    static constexpr int kTickTimerMs =
+        16;  // timer resolution (~60 FPS target)
     int tick_count_;
+    std::chrono::steady_clock::time_point last_tick_time_;
 
     // Player tracking for game over detection
     int total_players_{0};
     int alive_players_{0};
 
     // Singleton instance for system callbacks
-    static Server* instance_;
+    static Server *instance_;
 };
 
 }  // namespace server

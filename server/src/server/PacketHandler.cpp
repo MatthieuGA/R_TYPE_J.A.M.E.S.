@@ -7,6 +7,7 @@
 
 #include "server/Network.hpp"
 #include "server/PacketSender.hpp"
+#include "server/Server.hpp"
 
 namespace server {
 
@@ -15,7 +16,8 @@ PacketHandler::PacketHandler(ClientConnectionManager &connection_manager,
     : connection_manager_(connection_manager),
       packet_sender_(packet_sender),
       network_(network),
-      on_game_start_(nullptr) {}
+      on_game_start_(nullptr),
+      is_game_running_(nullptr) {}
 
 void PacketHandler::RegisterHandlers() {
     // Register CONNECT_REQ handler (0x01)
@@ -56,6 +58,10 @@ void PacketHandler::SetGameStartCallback(GameStartCallback callback) {
     on_game_start_ = callback;
 }
 
+void PacketHandler::SetIsGameRunningCallback(IsGameRunningCallback callback) {
+    is_game_running_ = callback;
+}
+
 void PacketHandler::StartReceiving(uint32_t client_id) {
     HandleClientMessages(client_id);
 }
@@ -86,10 +92,16 @@ void PacketHandler::HandleClientMessages(uint32_t client_id) {
                         connection_manager_.GetClient(client_id);
                     if (client.player_id_ != 0) {
                         packet_sender_.SendNotifyDisconnect(client.player_id_);
+                        // Handle player entity cleanup during active game
+                        if (is_game_running_ && is_game_running_()) {
+                            Server::GetInstance()->HandlePlayerDisconnect(
+                                client.player_id_);
+                        }
                     }
                 }
 
                 connection_manager_.RemoveClient(client_id);
+                TryStartGameAfterDisconnect();
             } else if (bytes_read > 0) {
                 // Update last activity timestamp
                 if (!connection_manager_.HasClient(client_id)) {
@@ -122,10 +134,16 @@ void PacketHandler::HandleClientMessages(uint32_t client_id) {
                         connection_manager_.GetClient(client_id);
                     if (client.player_id_ != 0) {
                         packet_sender_.SendNotifyDisconnect(client.player_id_);
+                        // Handle player entity cleanup during active game
+                        if (is_game_running_ && is_game_running_()) {
+                            Server::GetInstance()->HandlePlayerDisconnect(
+                                client.player_id_);
+                        }
                     }
                 }
 
                 connection_manager_.RemoveClient(client_id);
+                TryStartGameAfterDisconnect();
             }
         });
 }
@@ -165,6 +183,14 @@ void PacketHandler::HandleConnectReq(
     std::string username = Trim(packet.GetUsername());
     std::cout << "CONNECT_REQ from client " << client.client_id_
               << " with username: '" << username << "'" << std::endl;
+
+    // Validation: Game in progress
+    if (is_game_running_ && is_game_running_()) {
+        std::cerr << "Rejected: Game in progress" << std::endl;
+        packet_sender_.SendConnectAck(
+            client, network::ConnectAckPacket::InGame, 0);
+        return;  // Keep connection alive for retry
+    }
 
     // Validation: Empty username
     if (username.empty() ||
@@ -277,6 +303,12 @@ void PacketHandler::HandleDisconnectReq(
 
         // Broadcast disconnect notification to all other players
         packet_sender_.SendNotifyDisconnect(disconnecting_player_id);
+
+        // Handle player entity cleanup during active game
+        if (is_game_running_ && is_game_running_()) {
+            Server::GetInstance()->HandlePlayerDisconnect(
+                disconnecting_player_id);
+        }
     } else {
         std::cout << "Client " << client.client_id_
                   << " (unauthenticated) requested disconnect" << std::endl;
@@ -284,6 +316,7 @@ void PacketHandler::HandleDisconnectReq(
 
     // Remove client (graceful shutdown)
     connection_manager_.RemoveClient(client.client_id_);
+    TryStartGameAfterDisconnect();
 
     // Note: Client disconnect notifications are handled by
     // ClientConnectionManager
@@ -297,6 +330,24 @@ std::string PacketHandler::Trim(
     const auto str_end = str.find_last_not_of(whitespace);
     const auto str_range = str_end - str_begin + 1;
     return str.substr(str_begin, str_range);
+}
+
+void PacketHandler::TryStartGameAfterDisconnect() {
+    // Only check in lobby (game not running)
+    if (is_game_running_ && is_game_running_()) {
+        return;
+    }
+
+    // Start game if remaining players are all ready
+    if (connection_manager_.GetAuthenticatedCount() > 0 &&
+        connection_manager_.AllPlayersReady()) {
+        std::cout << "All remaining players ready after disconnect! "
+                  << "Starting game..." << std::endl;
+        if (on_game_start_) {
+            on_game_start_();
+        }
+        packet_sender_.SendGameStart();
+    }
 }
 
 }  // namespace server
