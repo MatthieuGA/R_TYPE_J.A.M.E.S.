@@ -31,11 +31,19 @@ void HandleCollision(Eng::registry &reg, Component::Health &health,
         bar->timer_damage = 0.0f;
     }
 
-    if (animated_sprites.has(i)) {
-        auto &animSprite = animated_sprites[i];
-        animSprite->SetCurrentAnimation("Hit", true);
-        animSprite->GetCurrentAnimation()->current_frame = 1;
-    }
+    // if (animated_sprites.has(i)) {
+    //     auto &animSprite = animated_sprites[i];
+    //     bool hasAnimationHit = false;
+
+    //     for (const std::string &anim : animSprite->GetAnimationNames()) {
+    //         if (anim == "Hit")
+    //             hasAnimationHit = true;
+    //     }
+    //     if (hasAnimationHit) {
+    //         animSprite->SetCurrentAnimation("Hit", true);
+    //         animSprite->GetCurrentAnimation()->current_frame = 1;
+    //     }
+    // }
 }
 
 /**

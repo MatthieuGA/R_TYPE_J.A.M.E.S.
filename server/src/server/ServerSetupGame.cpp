@@ -18,11 +18,11 @@ namespace server {
 void SpawnEnemyFromRight(Engine::registry &reg) {
     auto enemy_entity = reg.spawn_entity();
     // Random Y position between 100 and 980 (leaving margin from edges)
-    float random_y = 100.0f + static_cast<float>(std::rand() % 780);
+    // float random_y = 100.0f + static_cast<float>(std::rand() % 780);
     // Spawn just off-screen to the right (x = 2000 since screen is 1920 wide)
 
     FactoryActors::GetInstance().CreateActor(
-        enemy_entity, reg, "golem", vector2f{2000.f, random_y}, false);
+        enemy_entity, reg, "golem", vector2f{1700.f, 100}, false);
 }
 
 void Server::SetupEntitiesGame() {
@@ -72,8 +72,9 @@ void Server::SetupEntitiesGame() {
     // Get reference and add spawning action (spawn every 2 seconds)
     auto &spawner_events =
         registry_.GetComponent<Component::TimedEvents>(spawner_entity);
-    spawner_events.AddCooldownAction(
-        [this](int /*entity_id*/) { SpawnEnemyFromRight(registry_); }, 30.0f);
+    // spawner_events.AddCooldownAction(
+    //    [this](int /*entity_id*/) { SpawnEnemyFromRight(registry_);
+    //    }, 30.0f);
 
     // Spawn initial wave of enemies (mix of mermaid and kamifish)
     SpawnEnemyFromRight(registry_);

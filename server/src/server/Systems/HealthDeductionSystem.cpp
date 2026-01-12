@@ -78,11 +78,11 @@ void HandleCollision(Engine::registry &reg, Component::Health &health,
     const Component::Projectile &projectile) {
     health.currentHealth -= projectile.damage;
 
-    if (animated_sprites.has(i)) {
-        auto &animSprite = animated_sprites[i];
-        animSprite->SetCurrentAnimation("Hit", true);
-        animSprite->GetCurrentAnimation()->current_frame = 1;
-    }
+    // if (animated_sprites.has(i)) {
+    //     auto &animSprite = animated_sprites[i];
+    //     animSprite->SetCurrentAnimation("Hit", true);
+    //     animSprite->GetCurrentAnimation()->current_frame = 1;
+    // }
 
     reg.RemoveComponent<Component::Projectile>(projEntity);
     if (animated_sprites.has(j)) {
@@ -117,7 +117,7 @@ void HealthDeductionSystem(Engine::registry &reg,
     Engine::sparse_array<Component::AnimatedSprite> &animated_sprites,
     Engine::sparse_array<Component::HitBox> const &hitBoxes,
     Engine::sparse_array<Component::Transform> const &transforms,
-    Engine::sparse_array<Component::Projectile> const &projectiles) {
+    Engine::sparse_array<Component::Projectile> &projectiles) {
     for (auto &&[i, health, hitBox, transform] :
         make_indexed_zipper(healths, hitBoxes, transforms)) {
         Engine::entity entity = reg.EntityFromIndex(i);
@@ -141,14 +141,45 @@ void HealthDeductionSystem(Engine::registry &reg,
 
             // Simple AABB collision detection
             if (IsColliding(transform, hitBox, projTransform, projHitBox)) {
-                // Collision detected, deduct health
-                HandleCollision(reg, health, animated_sprites, i, projEntity,
-                    j, projectile);
+                // Collision detected
+                if (projectile.damage_mode ==
+                    Component::Projectile::DamageMode::OnImpact) {
+                    // Deduct once and remove projectile
+                    HandleCollision(reg, health, animated_sprites, i,
+                        projEntity, j, projectile);
+                } else {
+                    // DamageOverTime: apply damage each tick interval while
+                    // overlapping, do not remove projectile on hit
+                    if (projectile.tick_timer <= 0.0f) {
+                        health.currentHealth -= projectile.damage;
+
+                        // if (animated_sprites.has(i)) {
+                        //     auto &animSprite = animated_sprites[i];
+                        //     animSprite->SetCurrentAnimation("Hit", true);
+                        //     animSprite->GetCurrentAnimation()->current_frame
+                        //     = 1;
+                        // }
+
+                        // reset projectile tick timer
+                        // Note: projectile is mutable here (projectiles
+                        // non-const)
+                        projectile.tick_timer = projectile.tick_interval;
+                    }
+                }
             }
         }
 
         if (health.currentHealth <= 0)
             DeathHandling(reg, animated_sprites, entity, i);
+    }
+
+    // Update tick timers for projectiles (decrement by tick rate seconds)
+    for (auto &&[j, proj] : make_indexed_zipper(projectiles)) {
+        if (proj.tick_timer > 0.0f) {
+            proj.tick_timer -= TICK_RATE_SECONDS;
+            if (proj.tick_timer < 0.0f)
+                proj.tick_timer = 0.0f;
+        }
     }
 }
 

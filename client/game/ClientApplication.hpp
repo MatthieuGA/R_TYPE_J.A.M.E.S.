@@ -22,7 +22,8 @@ class ClientApplication {
             kPlayerProjectile = 0x00,
             kPlayerChargedProjectile = 0x01,
             kMermaidProjectile = 0x02,
-            kGolemProjectile = 0x04
+            kGolemProjectile = 0x04,
+            kGolemLaser = 0x05
         };
 
         enum EntityType : uint8_t {

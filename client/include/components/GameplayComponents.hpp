@@ -107,6 +107,7 @@ struct Projectile {
     float speed;
     int ownerId;  // ID of the entity that fired the projectile
     bool isEnemyProjectile = false;
+    float lifetime = -1.0f;  // Lifetime in seconds (-1 = infinite)
 };
 
 struct Health {

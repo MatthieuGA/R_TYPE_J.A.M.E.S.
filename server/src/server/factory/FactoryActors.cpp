@@ -81,7 +81,7 @@ void FactoryActors::CreatePlayerActor(Engine::entity &entity,
     Engine::registry &reg, EnnemyInfo info, bool is_local) {
     // Add player-specific components
     reg.AddComponent<Component::PlayerTag>(
-        entity, Component::PlayerTag{400.0f});
+        entity, Component::PlayerTag{800.0f});
     reg.AddComponent<Component::Controllable>(
         entity, Component::Controllable{});
 }

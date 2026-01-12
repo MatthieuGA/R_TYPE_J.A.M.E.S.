@@ -20,6 +20,15 @@ void ProjectileSystem(Engine::registry &reg,
 
     for (auto &&[i, transform, projectile] :
         make_indexed_zipper(transforms, projectiles)) {
+        // Update lifetime and check for expiration
+        if (projectile.lifetime > 0.0f) {
+            projectile.lifetime -= TICK_RATE_SECONDS;
+            if (projectile.lifetime <= 0.0f) {
+                Engine::entity entity = reg.EntityFromIndex(i);
+                to_kill.push_back(entity);
+                continue;
+            }
+        }
         // normalize direction
         float length =
             std::sqrt(projectile.direction.x * projectile.direction.x +

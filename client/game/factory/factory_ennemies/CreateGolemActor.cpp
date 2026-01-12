@@ -11,13 +11,17 @@ void FactoryActors::CreateGolemActor(
     Engine::entity &entity, Engine::registry &reg, EnnemyInfo info) {
     // Add drawable and animated sprite components
     Component::AnimatedSprite animated_sprite(
-        100, 100, 0.2f, true, sf::Vector2f(0.0f, 0.0f), 4);
+        100, 100, 0.1f, true, sf::Vector2f(0.0f, 0.0f), 4);
     animated_sprite.AddAnimation("Idle", "ennemies/golem/golem_Boss.png", 100,
-        100, 4, 0.2f, true, sf::Vector2f(0.0f, 0.0f));
+        100, 4, 0.1f, true, sf::Vector2f(0.0f, 0.0f));
     animated_sprite.AddAnimation("Death", "ennemies/golem/golem_Boss.png", 100,
-        100, 14, 0.2f, false, sf::Vector2f(0.0f, 700.0f));
+        100, 14, 0.1f, false, sf::Vector2f(0.0f, 700.0f));
     animated_sprite.AddAnimation("Block", "ennemies/golem/golem_Boss.png", 100,
-        100, 8, 0.2f, false, sf::Vector2f(0.0f, 300.0f));
+        100, 8, 0.1f, false, sf::Vector2f(0.0f, 300.0f));
+    animated_sprite.AddAnimation("Attack", "ennemies/golem/golem_Boss.png",
+        100, 100, 9, 0.1f, false, sf::Vector2f(0.0f, 200.0f));
+    animated_sprite.AddAnimation("Smash", "ennemies/golem/golem_Boss.png", 100,
+        100, 7, 0.1f, false, sf::Vector2f(0.0f, 400.0f));
     animated_sprite.currentAnimation = "Default";
     reg.AddComponent<Component::AnimatedSprite>(
         entity, std::move(animated_sprite));
