@@ -21,7 +21,8 @@ class ClientApplication {
         enum ProjectileType : uint8_t {
             kPlayerProjectile = 0x00,
             kPlayerChargedProjectile = 0x01,
-            kMermaidProjectile = 0x02
+            kMermaidProjectile = 0x02,
+            kGolemProjectile = 0x04
         };
 
         enum EntityType : uint8_t {
@@ -32,7 +33,8 @@ class ClientApplication {
 
         enum EnemyType : uint8_t {
             kMermaidEnemy = 0x00,
-            kKamiFishEnemy = 0x01
+            kKamiFishEnemy = 0x01,
+            kGolemEnemy = 0x03
         };
 
         uint32_t entity_id;

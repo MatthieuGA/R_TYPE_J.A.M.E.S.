@@ -44,10 +44,10 @@ Adds enemy-specific components:
 - `AnimatedSprite`: default sheet with `Hit`, `Death`, and `Attack` animations; defaults to `currentAnimation = "Default"`.
 
 ## Mermaid specialization (CreateMermaidActor)
-- `PatternMovement`: sine horizontal pattern with configured offsets and `MERMAID_SPEED`.
+- `PatternMovement`: sine horizontal pattern with configured offsets and `BASIC_SPEED`.
 - `EnemyShootTag`: projectile speed/damage and spawn offset.
 - `FrameEvents`: triggers on frame 5 of the `Attack` animation to spawn a projectile via `CreateEnemyProjectile` (safe-guarded by `try/catch`).
-- `TimedEvents`: periodic callback (every `MERMAID_SHOOT_COOLDOWN`) that switches the animation to `Attack` if the enemy is still alive.
+- `TimedEvents`: periodic callback (every `BASIC_SHOOT_COOLDOWN`) that switches the animation to `Attack` if the enemy is still alive.
 - Adds `EnemyShootTag` to the entity after configuring callbacks.
 
 ## Projectile creation helper (CreateEnemyProjectile)

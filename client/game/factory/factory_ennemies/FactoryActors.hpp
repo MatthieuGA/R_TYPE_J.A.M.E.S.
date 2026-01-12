@@ -17,10 +17,6 @@ namespace Rtype::Client {
 
 class FactoryActors {
  public:
-    enum class EnnemyType {
-        MERMAID
-    };
-
     struct EnnemyInfo {
         std::string tag;
         int health;
@@ -44,7 +40,9 @@ class FactoryActors {
      * @brief Reset internal counters for a new game.
      * Should be called when transitioning to lobby or starting a new game.
      */
-    void ResetForNewGame() { id_player_ = 0; }
+    void ResetForNewGame() {
+        id_player_ = 0;
+    }
 
  private:
     void loadConfigEnemy(
@@ -60,6 +58,8 @@ class FactoryActors {
     void CreateMermaidActor(
         Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
     void CreateKamiFishActor(
+        Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
+    void CreateGolemActor(
         Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
 
     std::map<std::string, EnnemyInfo> enemy_info_map_ = {};

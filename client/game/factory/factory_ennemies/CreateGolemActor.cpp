@@ -7,7 +7,7 @@
 
 namespace Rtype::Client {
 
-void FactoryActors::CreateMermaidActor(
+void FactoryActors::CreateGolemActor(
     Engine::entity &entity, Engine::registry &reg, EnnemyInfo info) {
     // Add drawable and animated sprite components
     Component::AnimatedSprite animated_sprite(
