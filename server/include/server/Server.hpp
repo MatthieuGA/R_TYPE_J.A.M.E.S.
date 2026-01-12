@@ -201,6 +201,11 @@ class Server {
     int total_players_{0};
     int alive_players_{0};
 
+    // Game over delay (to let death animation and sound play on client)
+    bool game_over_pending_{false};
+    float game_over_timer_{0.0f};
+    static constexpr float GAME_OVER_DELAY_SEC = 3.0f;  // 3 seconds delay
+
     // Singleton instance for system callbacks
     static Server *instance_;
 };
