@@ -1,23 +1,15 @@
 #include "game/ClientApplication.hpp"
 
-#include <algorithm>
 #include <cstdio>
-#include <iomanip>
 #include <iostream>
-#include <vector>
 
 #include <SFML/Graphics.hpp>
 
 #include "adapters/SFMLInputAdapters.hpp"
-#include "engine/systems/InitRegistrySystems.hpp"
 #include "game/InitRegistry.hpp"
 #include "game/SnapshotTracker.hpp"
-#include "game/factory/factory_ennemies/FactoryActors.hpp"
 #include "game/scenes_management/InitScenes.hpp"
-#include "include/LayersConst.hpp"
-#include "include/components/CoreComponents.hpp"
 #include "include/components/NetworkingComponents.hpp"
-#include "include/components/RenderComponent.hpp"
 #include "include/components/ScenesComponents.hpp"
 #include "include/indexed_zipper.hpp"
 #include "input/Event.hpp"
