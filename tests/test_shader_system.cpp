@@ -18,7 +18,7 @@ TEST(ShaderSystem, LoadsShaderFromAssets) {
     shaders.insert_at(0, shade);
 
     // Initially not loaded
-    EXPECT_FALSE(shaders[0]->isLoaded);
+    EXPECT_FALSE(shaders[0]->is_loaded);
 
     // Run the initialize system which marks shaders as ready for backend
     // loading
@@ -26,7 +26,7 @@ TEST(ShaderSystem, LoadsShaderFromAssets) {
 
     // After initialization, shader should be marked as loaded
     // (Backend will handle actual file loading and error cases)
-    EXPECT_TRUE(shaders[0]->isLoaded);
+    EXPECT_TRUE(shaders[0]->is_loaded);
 }
 
 TEST(ShaderSystem, SkipsAlreadyLoadedShaders) {
@@ -36,16 +36,16 @@ TEST(ShaderSystem, SkipsAlreadyLoadedShaders) {
 
     // Create a shader that's already marked as loaded
     Com::Shader shade("wave.frag");
-    shade.isLoaded = true;  // Already loaded
+    shade.is_loaded = true;  // Already loaded
     shaders.insert_at(0, shade);
 
     // Mark it as loaded
-    EXPECT_TRUE(shaders[0]->isLoaded);
+    EXPECT_TRUE(shaders[0]->is_loaded);
 
     // Run the initialize system - should not re-initialize already loaded
     // shaders
     InitializeShaderSystem(reg, shaders);
 
     // Should still be loaded
-    EXPECT_TRUE(shaders[0]->isLoaded);
+    EXPECT_TRUE(shaders[0]->is_loaded);
 }

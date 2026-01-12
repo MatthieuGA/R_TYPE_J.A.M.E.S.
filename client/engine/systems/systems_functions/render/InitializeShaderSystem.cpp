@@ -18,7 +18,7 @@ void InitializeShader(Com::Shader &shader_comp) {
     if (!shader_comp.shaderPath.empty()) {
         // Backend will load shader via shader_path
         // Just mark as loaded for rendering pipeline
-        shader_comp.isLoaded = true;
+        shader_comp.is_loaded = true;
     }
 }
 
@@ -36,7 +36,7 @@ void InitializeShaderSystem(
     std::vector<int> draw_order;
 
     for (auto &&[i, shader] : make_indexed_zipper(shaders)) {
-        if (!shader.isLoaded && !shader.shaderPath.empty())
+        if (!shader.is_loaded && !shader.shaderPath.empty())
             InitializeShader(shader);
     }
 }
