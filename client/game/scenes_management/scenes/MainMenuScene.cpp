@@ -20,7 +20,12 @@ void MainMenuScene::InitScene(Engine::registry &reg, GameWorld &gameWorld) {
     if (gameWorld.audio_manager_) {
         gameWorld.audio_manager_->RegisterAsset(
             "menu_music", "assets/sounds/menu_music.ogg", true);
-        gameWorld.audio_manager_->PlayMusic("menu_music", true);
+        gameWorld.audio_manager_->RegisterAsset(
+            "button_click", "assets/sounds/button_click.ogg", false);
+        // Only play menu music if it's not already playing
+        if (!gameWorld.audio_manager_->IsMusicPlaying("menu_music")) {
+            gameWorld.audio_manager_->PlayMusic("menu_music", true);
+        }
     }
 
     InitBackground(reg);
@@ -87,7 +92,7 @@ void MainMenuScene::InitUI(Engine::registry &reg, GameWorld &gameWorld) {
 
     // --- Ready Button ---
     auto play_button_entity =
-        CreateButton(reg, "Ready", 960.0f, 400.0f, [&gameWorld]() {
+        CreateButton(reg, gameWorld, "Ready", 960.0f, 400.0f, [&gameWorld]() {
             // OnClick: Toggle READY_STATUS to server
             if (gameWorld.server_connection_ &&
                 gameWorld.server_connection_->is_connected()) {
@@ -108,7 +113,7 @@ void MainMenuScene::InitUI(Engine::registry &reg, GameWorld &gameWorld) {
     ready_button_entity_ = play_button_entity;
 
     // --- Settings Button ---
-    CreateButton(reg, "Settings", 960.0f, 550.0f, [&gameWorld]() {
+    CreateButton(reg, gameWorld, "Settings", 960.0f, 550.0f, [&gameWorld]() {
         // OnClick: Navigate to Settings scene
         gameWorld.registry_.GetComponents<Component::SceneManagement>()
             .begin()
@@ -117,7 +122,7 @@ void MainMenuScene::InitUI(Engine::registry &reg, GameWorld &gameWorld) {
     });
 
     // --- Quit Button ---
-    CreateButton(reg, "Quit", 960.0f, 700.0f,
+    CreateButton(reg, gameWorld, "Quit", 960.0f, 700.0f,
         [&gameWorld]() { gameWorld.window_.close(); });
 }
 

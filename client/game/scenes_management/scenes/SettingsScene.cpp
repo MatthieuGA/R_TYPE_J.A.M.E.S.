@@ -16,13 +16,6 @@
 namespace Rtype::Client {
 
 void SettingsScene::InitScene(Engine::registry &reg, GameWorld &gameWorld) {
-    // Register and play menu music if not already playing
-    if (gameWorld.audio_manager_) {
-        gameWorld.audio_manager_->RegisterAsset(
-            "menu_music", "assets/sounds/menu_music.ogg", true);
-        gameWorld.audio_manager_->PlayMusic("menu_music", true);
-    }
-
     InitBackground(reg);
     InitUI(reg, gameWorld);
 }
@@ -108,7 +101,7 @@ void SettingsScene::InitUI(Engine::registry &reg, GameWorld &gameWorld) {
             LAYER_UI + 2, WHITE_BLUE, sf::Vector2f(0.0f, 0.0f)));
 
     // --- Back Button ---
-    CreateButton(reg, "Back", 960.0f, 700.0f, [&gameWorld]() {
+    CreateButton(reg, gameWorld, "Back", 960.0f, 700.0f, [&gameWorld]() {
         // OnClick: Return to main menu
         std::cout << "[Client] Returning to main menu" << std::endl;
         gameWorld.registry_.GetComponents<Component::SceneManagement>()
