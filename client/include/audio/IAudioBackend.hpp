@@ -60,12 +60,28 @@ class IAudioBackend {
     virtual void SetCategoryVolume(SoundCategory category, float volume) = 0;
 
     /**
+     * @brief Get volume for a specific category.
+     *
+     * @param category The sound category (SFX or MUSIC).
+     * @return Current volume level (0.0 to 1.0).
+     */
+    virtual float GetCategoryVolume(SoundCategory category) const = 0;
+
+    /**
      * @brief Mute or unmute a specific category.
      *
      * @param category The sound category (SFX or MUSIC).
      * @param mute True to mute, false to unmute.
      */
     virtual void SetCategoryMute(SoundCategory category, bool mute) = 0;
+
+    /**
+     * @brief Get mute status for a specific category.
+     *
+     * @param category The sound category (SFX or MUSIC).
+     * @return True if muted, false otherwise.
+     */
+    virtual bool GetCategoryMuteStatus(SoundCategory category) const = 0;
 
     /**
      * @brief Update the backend (e.g., process queued commands).

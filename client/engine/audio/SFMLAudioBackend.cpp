@@ -172,4 +172,20 @@ float SFMLAudioBackend::GetEffectiveVolume(
     }
 }
 
+float SFMLAudioBackend::GetCategoryVolume(SoundCategory category) const {
+    if (category == SoundCategory::SFX) {
+        return sfx_volume_;
+    } else {
+        return music_volume_;
+    }
+}
+
+bool SFMLAudioBackend::GetCategoryMuteStatus(SoundCategory category) const {
+    if (category == SoundCategory::SFX) {
+        return sfx_muted_;
+    } else {
+        return music_muted_;
+    }
+}
+
 }  // namespace Rtype::Client::Audio

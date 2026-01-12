@@ -66,4 +66,20 @@ void AudioManager::Update() {
     backend_->Update();
 }
 
+float AudioManager::GetSfxVolume() const {
+    return backend_->GetCategoryVolume(SoundCategory::SFX);
+}
+
+bool AudioManager::IsSfxMuted() const {
+    return backend_->GetCategoryMuteStatus(SoundCategory::SFX);
+}
+
+float AudioManager::GetMusicVolume() const {
+    return backend_->GetCategoryVolume(SoundCategory::MUSIC);
+}
+
+bool AudioManager::IsMusicMuted() const {
+    return backend_->GetCategoryMuteStatus(SoundCategory::MUSIC);
+}
+
 }  // namespace Rtype::Client::Audio

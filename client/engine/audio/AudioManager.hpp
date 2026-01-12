@@ -94,6 +94,34 @@ class AudioManager {
      */
     void Update();
 
+    /**
+     * @brief Get current SFX volume.
+     *
+     * @return Current SFX volume level (0.0 to 1.0).
+     */
+    float GetSfxVolume() const;
+
+    /**
+     * @brief Check if SFX is muted.
+     *
+     * @return True if SFX is muted, false otherwise.
+     */
+    bool IsSfxMuted() const;
+
+    /**
+     * @brief Get current music volume.
+     *
+     * @return Current music volume level (0.0 to 1.0).
+     */
+    float GetMusicVolume() const;
+
+    /**
+     * @brief Check if music is muted.
+     *
+     * @return True if music is muted, false otherwise.
+     */
+    bool IsMusicMuted() const;
+
  private:
     std::unique_ptr<IAudioBackend> backend_;
 };
