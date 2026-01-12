@@ -26,11 +26,15 @@ bool ApplyAnimationTexture(
  * - Horizontal strip: frames laid out in a single row
  * - Grid layout: frames wrap across multiple rows based on sheet width
  *
- * If first_frame_position is (0,0), assumes grid layout (532px width).
+ * If first_frame_position is (0,0), assumes grid layout.
  * Otherwise, uses first_frame_position as the starting point for a strip.
+ *
+ * @param animation Animation containing frame metadata and sheet_width
+ * @param drawable Drawable to update with calculated rectangle
+ * @param game_world GameWorld for querying texture dimensions (if needed)
  */
-void SetFrame(
-    Com::AnimatedSprite::Animation &animation, Com::Drawable &drawable) {
+void SetFrame(Com::AnimatedSprite::Animation &animation,
+    Com::Drawable &drawable, GameWorld &game_world) {
     if (animation.frameWidth <= 0 || animation.frameHeight <= 0)
         return;
 
@@ -39,13 +43,34 @@ void SetFrame(
     // Grid layout detection: if first_frame is at origin, use grid math
     if (animation.first_frame_position.x == 0.0f &&
         animation.first_frame_position.y == 0.0f) {
-        // Grid layout: wrap frames based on sheet width (532 for r-typesheet1)
-        constexpr int SHEET_WIDTH = 532;
-        const int frames_per_row = SHEET_WIDTH / animation.frameWidth;
-        const int row = animation.current_frame / frames_per_row;
-        const int col = animation.current_frame % frames_per_row;
-        left = col * animation.frameWidth;
-        top = row * animation.frameHeight;
+        // Grid layout: determine sheet width
+        int sheet_width = animation.sheet_width;
+
+        // Auto-detect sheet width from texture if not set
+        if (sheet_width <= 0 && game_world.GetRenderContext()) {
+            // Use animation texture path, or fallback to drawable's texture
+            const char *query_path = !animation.texture_path.empty()
+                                         ? animation.texture_path.c_str()
+                                         : drawable.texture_path.c_str();
+
+            if (query_path && query_path[0] != '\0') {
+                auto tex_size =
+                    game_world.GetRenderContext()->GetTextureSize(query_path);
+                sheet_width = static_cast<int>(tex_size.x);
+            }
+        }
+
+        if (sheet_width <= 0) {
+            // Fallback: can't determine sheet width, use horizontal strip
+            left = animation.current_frame * animation.frameWidth;
+            top = 0;
+        } else {
+            const int frames_per_row = sheet_width / animation.frameWidth;
+            const int row = animation.current_frame / frames_per_row;
+            const int col = animation.current_frame % frames_per_row;
+            left = col * animation.frameWidth;
+            top = row * animation.frameHeight;
+        }
     } else {
         // Horizontal strip layout: offset from first_frame_position
         left = static_cast<int>(animation.first_frame_position.x) +
@@ -64,9 +89,10 @@ void SetFrame(
  *
  * @param animation Animation state to advance
  * @param drawable Drawable component to update
+ * @param game_world GameWorld for querying texture dimensions
  */
-void NextFrame(
-    Com::AnimatedSprite::Animation &animation, Com::Drawable &drawable) {
+void NextFrame(Com::AnimatedSprite::Animation &animation,
+    Com::Drawable &drawable, GameWorld &game_world) {
     animation.current_frame++;
     if (animation.current_frame >= animation.totalFrames) {
         if (animation.loop)
@@ -74,7 +100,7 @@ void NextFrame(
         else
             animation.current_frame = animation.totalFrames - 1;
     }
-    SetFrame(animation, drawable);
+    SetFrame(animation, drawable, game_world);
 }
 
 /**
@@ -86,11 +112,12 @@ void NextFrame(
  * the active animation from the animations map.
  *
  * @param reg Engine registry (unused in current implementation)
+ * @param game_world GameWorld containing RenderContext for texture queries
  * @param dt Delta time (seconds) since last update
  * @param anim_sprites Sparse array of AnimatedSprite components
  * @param drawables Sparse array of Drawable components
  */
-void AnimationSystem(Eng::registry &reg, const float dt,
+void AnimationSystem(Eng::registry &reg, GameWorld &game_world, const float dt,
     Eng::sparse_array<Com::AnimatedSprite> &anim_sprites,
     Eng::sparse_array<Com::Drawable> &drawables) {
     for (auto &&[i, anim_sprite, drawable] :
@@ -100,7 +127,7 @@ void AnimationSystem(Eng::registry &reg, const float dt,
             continue;
 
         ApplyAnimationTexture(*animation, drawable);
-        SetFrame(*animation, drawable);
+        SetFrame(*animation, drawable, game_world);
 
         if (!drawable.is_loaded || !anim_sprite.animated)
             continue;
@@ -127,10 +154,10 @@ void AnimationSystem(Eng::registry &reg, const float dt,
                     auto *defaultAnim = anim_sprite.GetCurrentAnimation();
                     if (defaultAnim != nullptr) {
                         ApplyAnimationTexture(*defaultAnim, drawable);
-                        SetFrame(*defaultAnim, drawable);
+                        SetFrame(*defaultAnim, drawable, game_world);
                     }
                 } else {
-                    NextFrame(*animation, drawable);
+                    NextFrame(*animation, drawable, game_world);
                 }
             }
         }

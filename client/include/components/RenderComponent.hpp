@@ -59,6 +59,7 @@ struct AnimatedSprite {
         int current_frame;
         float frameDuration;
         bool loop;
+        int sheet_width = 0;  // 0 = auto-detect from texture dimensions
         Engine::Graphics::Vector2f first_frame_position =
             Engine::Graphics::Vector2f(0.0f, 0.0f);
         Engine::Graphics::Vector2f offset =
@@ -74,6 +75,7 @@ struct AnimatedSprite {
               current_frame(0),
               frameDuration(0.0f),
               loop(false),
+              sheet_width(0),
               first_frame_position(0.0f, 0.0f),
               offset(0.0f, 0.0f),
               current_rect(),
@@ -92,6 +94,7 @@ struct AnimatedSprite {
               current_frame(0),
               frameDuration(fd),
               loop(lp),
+              sheet_width(0),  // 0 = auto-detect
               first_frame_position(ffp),
               offset(of),
               current_rect(),
