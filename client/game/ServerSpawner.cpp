@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <filesystem>
 #include <iostream>
+#include <mutex>
 #include <stdexcept>
 #include <string>
 #include <thread>
@@ -34,15 +35,49 @@ pid_t ServerSpawner::server_pid_ = -1;
 uint16_t ServerSpawner::server_port_ = 0;
 bool ServerSpawner::server_running_ = false;
 
+namespace {
+
+// Mutex for thread-safe access to static variables
+std::mutex g_server_mutex;
+
+#ifdef _WIN32
+// Cached Winsock initialization state (call WSAStartup once, not per port)
+class WinsockInitializer {
+ public:
+    WinsockInitializer() {
+        WSADATA wsa_data;
+        initialized_ = (WSAStartup(MAKEWORD(2, 2), &wsa_data) == 0);
+    }
+
+    ~WinsockInitializer() {
+        if (initialized_) {
+            WSACleanup();
+        }
+    }
+
+    bool IsInitialized() const {
+        return initialized_;
+    }
+
+ private:
+    bool initialized_ = false;
+};
+
+WinsockInitializer &GetWinsock() {
+    static WinsockInitializer instance;
+    return instance;
+}
+#endif
+
+}  // namespace
+
 bool ServerSpawner::IsPortAvailable(uint16_t port) {
 #ifdef _WIN32
-    WSADATA wsa_data;
-    if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0) {
+    if (!GetWinsock().IsInitialized()) {
         return false;
     }
     SOCKET sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sock == INVALID_SOCKET) {
-        WSACleanup();
         return false;
     }
 #else
@@ -62,7 +97,6 @@ bool ServerSpawner::IsPortAvailable(uint16_t port) {
 
 #ifdef _WIN32
     closesocket(sock);
-    WSACleanup();
     return result != SOCKET_ERROR;
 #else
     close(sock);
@@ -101,6 +135,8 @@ std::string ServerSpawner::FindServerExecutable() {
 }
 
 uint16_t ServerSpawner::SpawnLocalServer() {
+    std::lock_guard<std::mutex> lock(g_server_mutex);
+
     if (server_running_) {
         return server_port_;
     }
@@ -188,6 +224,8 @@ uint16_t ServerSpawner::SpawnLocalServer() {
 }
 
 void ServerSpawner::TerminateServer() {
+    std::lock_guard<std::mutex> lock(g_server_mutex);
+
     if (!server_running_) {
         return;
     }
