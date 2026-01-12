@@ -31,6 +31,7 @@ void InitRegistryComponents(Engine::registry &reg) {
     reg.RegisterComponent<Rtype::Client::Component::ParrallaxLayer>();
     reg.RegisterComponent<Rtype::Client::Component::AnimationEnterPlayer>();
     reg.RegisterComponent<Rtype::Client::Component::AnimationDeath>();
+    reg.RegisterComponent<Rtype::Client::Component::Draggable>();
     reg.RegisterComponent<Rtype::Client::Component::HealthBar>();
     // Register networking components
     reg.RegisterComponent<Rtype::Client::Component::NetworkId>();

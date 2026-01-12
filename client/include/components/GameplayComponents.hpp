@@ -32,7 +32,7 @@ struct EnemyTag {
  * Used to trigger enemy-specific behaviors like death sounds.
  */
 struct EnemyType {
-    std::string type;  /**< Type identifier (e.g., "mermaid", "kamifish") */
+    std::string type; /**< Type identifier (e.g., "mermaid", "kamifish") */
 
     explicit EnemyType(std::string enemy_type = "unknown")
         : type(std::move(enemy_type)) {}

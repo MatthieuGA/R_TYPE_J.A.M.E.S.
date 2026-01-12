@@ -120,6 +120,11 @@ void ButtonClickSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Drawable> &drawables,
     Eng::sparse_array<Com::Transform> &transforms);
 
+void DraggableSystem(Eng::registry &reg, GameWorld &game_world,
+    Eng::sparse_array<Com::HitBox> &hit_boxes,
+    Eng::sparse_array<Com::Draggable> &draggables,
+    Eng::sparse_array<Com::Transform> &transforms);
+
 void HealthDeductionSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Health> &healths,
     Eng::sparse_array<Com::HealthBar> &health_bars,

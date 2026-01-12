@@ -56,6 +56,26 @@ class Scene_A {
         const std::string &label, float x, float y,
         std::function<void()> on_click, float scale = 3.0f);
 
+    /**
+     * @brief Creates a slider entity with a draggable knob.
+     *
+     * @param reg Reference to the registry used for entity management.
+     * @param gameWorld Reference to the game world for audio playback.
+     * @param x The x-coordinate position of the slider center.
+     * @param y The y-coordinate position of the slider center.
+     * @param width The width of the slider track.
+     * @param min_value The minimum value of the slider range.
+     * @param max_value The maximum value of the slider range.
+     * @param initial_value The initial value of the slider.
+     * @param on_value_changed Callback invoked when the slider value changes.
+     * @param scale The scale factor for the slider. Default is 3.0f.
+     * @return The slider knob entity (the draggable part).
+     */
+    Engine::entity CreateSlider(Engine::registry &reg, GameWorld &gameWorld,
+        float x, float y, float width, float min_value, float max_value,
+        float initial_value, std::function<void(float)> on_value_changed,
+        float scale = 4.0f);
+
     std::vector<Engine::entity> scene_entities_;
 };
 }  // namespace Rtype::Client

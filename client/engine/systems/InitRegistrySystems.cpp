@@ -176,6 +176,17 @@ void InitControlsSystem(Rtype::Client::GameWorld &game_world) {
                 r, game_world, hit_boxes, clickables, drawables, transforms);
         });
 
+    // Draggable system
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::HitBox>,
+        Eng::sparse_array<Com::Draggable>,
+        Eng::sparse_array<Com::Transform>>(
+        [&game_world](Eng::registry &r,
+            Eng::sparse_array<Com::HitBox> &hit_boxes,
+            Eng::sparse_array<Com::Draggable> &draggables,
+            Eng::sparse_array<Com::Transform> &transforms) {
+            DraggableSystem(r, game_world, hit_boxes, draggables, transforms);
+        });
+
     // Input control systems
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Inputs>>(
         [&game_world](

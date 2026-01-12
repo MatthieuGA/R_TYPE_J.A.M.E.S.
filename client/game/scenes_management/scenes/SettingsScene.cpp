@@ -63,29 +63,52 @@ void SettingsScene::InitUI(Engine::registry &reg, GameWorld &gameWorld) {
                           LAYER_UI + 2, WHITE_BLUE, sf::Vector2f(0.0f, 0.0f)));
     title_entity_ = title_entity;
 
-    // --- Audio Volume Label ---
-    auto volume_label_entity = CreateEntityInScene(reg);
+    // --- Music Volume Label ---
+    auto music_label_entity = CreateEntityInScene(reg);
     reg.AddComponent<Component::Transform>(
-        volume_label_entity, Component::Transform{760.0f, 300.0f, 0.0f, 2.f,
-                                 Component::Transform::CENTER});
-    reg.AddComponent<Component::Text>(volume_label_entity,
-        Component::Text("dogica.ttf", "Volume:", 14, LAYER_UI + 2, WHITE_BLUE,
+        music_label_entity, Component::Transform{760.0f, 300.0f, 0.0f, 2.f,
+                                Component::Transform::CENTER});
+    reg.AddComponent<Component::Text>(music_label_entity,
+        Component::Text("dogica.ttf", "Music:", 14, LAYER_UI + 2, WHITE_BLUE,
             sf::Vector2f(0.0f, 0.0f)));
 
-    // --- Audio Volume Value Display ---
-    auto volume_value_entity = CreateEntityInScene(reg);
+    // --- Music Volume Slider ---
+    CreateSlider(
+        reg, gameWorld, 1160.0f, 300.0f, 200.0f, 0.0f, 1.0f,
+        gameWorld.audio_manager_ ? gameWorld.audio_manager_->GetMusicVolume()
+                                 : 1.0f,
+        [&gameWorld](float value) {
+            if (gameWorld.audio_manager_) {
+                gameWorld.audio_manager_->SetMusicVolume(value);
+            }
+        },
+        3.0f);
+
+    // --- SFX Volume Label ---
+    auto sfx_label_entity = CreateEntityInScene(reg);
     reg.AddComponent<Component::Transform>(
-        volume_value_entity, Component::Transform{1160.0f, 300.0f, 0.0f, 2.f,
-                                 Component::Transform::CENTER});
-    reg.AddComponent<Component::Text>(volume_value_entity,
-        Component::Text("dogica.ttf", "100%", 14, LAYER_UI + 2, WHITE_BLUE,
+        sfx_label_entity, Component::Transform{760.0f, 400.0f, 0.0f, 2.f,
+                              Component::Transform::CENTER});
+    reg.AddComponent<Component::Text>(sfx_label_entity,
+        Component::Text("dogica.ttf", "SFX:", 14, LAYER_UI + 2, WHITE_BLUE,
             sf::Vector2f(0.0f, 0.0f)));
-    volume_slider_entity_ = volume_value_entity;
+
+    // --- SFX Volume Slider ---
+    CreateSlider(
+        reg, gameWorld, 1160.0f, 400.0f, 200.0f, 0.0f, 1.0f,
+        gameWorld.audio_manager_ ? gameWorld.audio_manager_->GetSfxVolume()
+                                 : 1.0f,
+        [&gameWorld](float value) {
+            if (gameWorld.audio_manager_) {
+                gameWorld.audio_manager_->SetSfxVolume(value);
+            }
+        },
+        3.0f);
 
     // --- Graphics Quality Label (Placeholder) ---
     auto graphics_label_entity = CreateEntityInScene(reg);
     reg.AddComponent<Component::Transform>(
-        graphics_label_entity, Component::Transform{960.0f, 400.0f, 0.0f, 2.f,
+        graphics_label_entity, Component::Transform{960.0f, 500.0f, 0.0f, 2.f,
                                    Component::Transform::CENTER});
     reg.AddComponent<Component::Text>(graphics_label_entity,
         Component::Text("dogica.ttf", "Graphics: High", 14, LAYER_UI + 2,
@@ -94,7 +117,7 @@ void SettingsScene::InitUI(Engine::registry &reg, GameWorld &gameWorld) {
     // --- Controls Info (Placeholder) ---
     auto controls_label_entity = CreateEntityInScene(reg);
     reg.AddComponent<Component::Transform>(
-        controls_label_entity, Component::Transform{960.0f, 500.0f, 0.0f, 2.f,
+        controls_label_entity, Component::Transform{960.0f, 600.0f, 0.0f, 2.f,
                                    Component::Transform::CENTER});
     reg.AddComponent<Component::Text>(controls_label_entity,
         Component::Text("dogica.ttf", "Controls: WASD + Mouse", 14,
