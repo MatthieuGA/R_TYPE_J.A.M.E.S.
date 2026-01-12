@@ -140,7 +140,8 @@ void SFMLAudioBackend::PlaySoundImmediate(const PlaybackRequest &request) {
 
     SoundInstance *instance = GetAvailableSoundInstance();
     if (!instance) {
-        std::cerr << "[Audio] No available sound instance" << std::endl;
+        // std::cerr << "[Audio] No available sound instance" << std::endl;
+        // Commented because it spams the console if too many sounds are played
         return;
     }
 
