@@ -22,6 +22,18 @@ void MainMenuScene::InitScene(Engine::registry &reg, GameWorld &gameWorld) {
             "menu_music", "assets/sounds/menu_music.ogg", true);
         gameWorld.audio_manager_->RegisterAsset(
             "button_click", "assets/sounds/button_click.ogg", false);
+        gameWorld.audio_manager_->RegisterAsset(
+            "small_shot", "assets/sounds/small_shot.ogg", false);
+        gameWorld.audio_manager_->RegisterAsset(
+            "player_shot", "assets/sounds/player_shot.ogg", false);
+        gameWorld.audio_manager_->RegisterAsset(
+            "charged_shot", "assets/sounds/charged_shot.ogg", false);
+        gameWorld.audio_manager_->RegisterAsset(
+            "mermaid_death", "assets/sounds/mermaid_death.ogg", false);
+        gameWorld.audio_manager_->RegisterAsset(
+            "kamifish_death", "assets/sounds/kamifish_death.ogg", false);
+        gameWorld.audio_manager_->RegisterAsset(
+            "player_damage", "assets/sounds/player_damage.ogg", false);
         // Only play menu music if it's not already playing
         if (!gameWorld.audio_manager_->IsMusicPlaying("menu_music")) {
             gameWorld.audio_manager_->PlayMusic("menu_music", true);

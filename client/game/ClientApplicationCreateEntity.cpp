@@ -58,6 +58,11 @@ static void CreateEnemyEntity(GameWorld &game_world,
     }
     FactoryActors::GetInstance().CreateActor(
         new_entity, game_world.registry_, enemy_type_str, false);
+
+    // Add EnemyType component to identify enemy type later
+    game_world.registry_.AddComponent<Component::EnemyType>(
+        new_entity, Component::EnemyType(enemy_type_str));
+
     try {
         auto &animated_sprite = game_world.registry_.GetComponents<
             Component::AnimatedSprite>()[new_entity.GetId()];
@@ -124,18 +129,27 @@ static void CreateProjectileEntity(GameWorld &game_world,
     if (entity_data.projectile_type ==
         ClientApplication::ParsedEntity::kPlayerProjectile) {
         // Basic projectile
+        if (game_world.audio_manager_) {
+            game_world.audio_manager_->PlaySound("player_shot");
+        }
         CreateProjectile(game_world.registry_,
             static_cast<float>(entity_data.pos_x),
             static_cast<float>(entity_data.pos_y), /*ownerId=*/-1, new_entity);
     } else if (entity_data.projectile_type ==
                ClientApplication::ParsedEntity::kPlayerChargedProjectile) {
         // Charged projectile
+        if (game_world.audio_manager_) {
+            game_world.audio_manager_->PlaySound("charged_shot");
+        }
         createChargedProjectile(game_world.registry_,
             static_cast<float>(entity_data.pos_x),
             static_cast<float>(entity_data.pos_y), /*ownerId=*/-1, new_entity);
     } else if (entity_data.projectile_type ==
                ClientApplication::ParsedEntity::kMermaidProjectile) {
         // Mermaid projectile
+        if (game_world.audio_manager_) {
+            game_world.audio_manager_->PlaySound("small_shot");
+        }
         CreateMermaidProjectile(game_world.registry_, entity_data, new_entity);
     } else {
         printf("[Snapshot] Unknown projectile type 0x%02X for entity ID %u\n",

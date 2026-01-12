@@ -13,6 +13,7 @@ namespace Rtype::Client {
  * and handles projectile removal.
  *
  * @param reg The registry.
+ * @param game_world The game world (for audio access).
  * @param health The Health component of the entity.
  * @param health_bars Sparse array of HealthBar components.
  * @param animated_sprites Sparse array of AnimatedSprite components.
@@ -21,11 +22,18 @@ namespace Rtype::Client {
  * @param j Index of the projectile in the registry.
  * @param projectile The Projectile component of the projectile.
  */
-void HandleCollision(Eng::registry &reg, Component::Health &health,
+void HandleCollision(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Component::HealthBar> &health_bars,
     Eng::sparse_array<Component::AnimatedSprite> &animated_sprites,
     std::size_t i, Engine::entity projEntity, std::size_t j,
     const Component::Projectile &projectile) {
+    // Check if this is a player getting hit and play damage sound
+    if (reg.GetComponents<Component::PlayerTag>().has(i)) {
+        if (game_world.audio_manager_) {
+            game_world.audio_manager_->PlaySound("player_damage", 0.1f);
+        }
+    }
+
     if (health_bars.has(i)) {
         auto &bar = health_bars[i];
         bar->timer_damage = 0.0f;
@@ -47,6 +55,7 @@ void HandleCollision(Eng::registry &reg, Component::Health &health,
  * are removed from the registry.
  *
  * @param reg ECS registry used to access entities and components.
+ * @param game_world The game world (for audio access).
  * @param healths Sparse array of Health components.
  * @param enemyTags Sparse array of EnemyTag components.
  * @param playerTags Sparse array of PlayerTag components.
@@ -54,7 +63,7 @@ void HandleCollision(Eng::registry &reg, Component::Health &health,
  * @param transforms Sparse array of Transform components.
  * @param projectiles Sparse array of Projectile components.
  */
-void HealthDeductionSystem(Eng::registry &reg,
+void HealthDeductionSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Component::Health> &healths,
     Eng::sparse_array<Component::HealthBar> &health_bars,
     Eng::sparse_array<Component::AnimatedSprite> &animated_sprites,
@@ -81,8 +90,8 @@ void HealthDeductionSystem(Eng::registry &reg,
             // Simple AABB collision detection
             if (IsColliding(transform, hitBox, projTransform, projHitBox)) {
                 // Collision detected, deduct health
-                HandleCollision(reg, health, health_bars, animated_sprites, i,
-                    projEntity, j, projectile);
+                HandleCollision(reg, game_world, health_bars, animated_sprites,
+                    i, projEntity, j, projectile);
             }
         }
     }
