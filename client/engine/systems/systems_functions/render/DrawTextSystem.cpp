@@ -9,6 +9,24 @@
 
 namespace Rtype::Client {
 
+// Conversion helpers between Engine and SFML types at rendering boundary
+// Should be removed after the migration to Engine Graphics is complete
+inline sf::Vector2f ToSFML(const Engine::Graphics::Vector2f &v) {
+    return sf::Vector2f(v.x, v.y);
+}
+
+inline Engine::Graphics::Vector2f ToEngine(const sf::Vector2f &v) {
+    return Engine::Graphics::Vector2f(v.x, v.y);
+}
+
+inline sf::Color ToSFML(const Engine::Graphics::Color &c) {
+    return sf::Color(c.r, c.g, c.b, c.a);
+}
+
+inline Engine::Graphics::Color ToEngine(const sf::Color &c) {
+    return Engine::Graphics::Color(c.r, c.g, c.b, c.a);
+}
+
 const int FONT_SIZE_SCALE = 10;
 
 /**
@@ -28,13 +46,13 @@ void InitializeText(Com::Text &text, const Com::Transform &transform) {
         text.text.setFont(text.font);
         text.text.setString(text.content);
         text.text.setCharacterSize(text.characterSize * FONT_SIZE_SCALE);
-        text.text.setFillColor(text.color);
+        text.text.setFillColor(ToSFML(text.color));
 
         // Set origin based on transform's origin point
         sf::FloatRect bounds = text.text.getLocalBounds();
-        sf::Vector2f origin = GetOffsetFromTransform(
-            transform, sf::Vector2f(bounds.width, bounds.height));
-        text.text.setOrigin(-origin);
+        Engine::Graphics::Vector2f origin = GetOffsetFromTransform(transform,
+            Engine::Graphics::Vector2f(bounds.width, bounds.height));
+        text.text.setOrigin(-ToSFML(origin));
     }
     text.is_loaded = true;
 }
@@ -53,15 +71,15 @@ void RenderOneTextEntity(Eng::sparse_array<Com::Transform> const &transforms,
     auto &text = texts[i];
 
     // Calculate world position with hierarchical rotation
-    sf::Vector2f world_position =
-        CalculateWorldPositionWithHierarchy(transform.value(), transforms);
+    sf::Vector2f world_position = ToSFML(
+        CalculateWorldPositionWithHierarchy(transform.value(), transforms));
     world_position.x += text->offset.x;
     world_position.y += text->offset.y;
     text->text.setPosition(world_position);
 
     // Apply cumulative scale
     sf::Vector2f world_scale =
-        CalculateCumulativeScale(transform.value(), transforms);
+        ToSFML(CalculateCumulativeScale(transform.value(), transforms));
     world_scale.x /= FONT_SIZE_SCALE;
     world_scale.y /= FONT_SIZE_SCALE;
     text->text.setScale(world_scale);
@@ -70,8 +88,9 @@ void RenderOneTextEntity(Eng::sparse_array<Com::Transform> const &transforms,
     text->text.setRotation(transform->rotationDegrees);
 
     // Apply color with opacity
-    sf::Color color = text->color;
-    color.a = static_cast<sf::Uint8>(text->opacity * 255);
+    Engine::Graphics::Color engine_color = text->color;
+    engine_color.a = static_cast<uint8_t>(text->opacity * 255);
+    sf::Color color = ToSFML(engine_color);
     text->text.setFillColor(color);
 
     // Draw text

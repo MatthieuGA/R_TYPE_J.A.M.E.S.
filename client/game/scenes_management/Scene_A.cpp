@@ -8,6 +8,7 @@ void Scene_A::InitScene(Engine::registry &reg, GameWorld &gameWorld) {
 void Scene_A::DestroyScene(Engine::registry &reg) {
     for (auto &entity : scene_entities_)
         reg.KillEntity(entity);
+    scene_entities_.clear();  // Clear stale entity list for next init
 }
 
 Engine::entity Scene_A::CreateEntityInScene(Engine::registry &reg) {

@@ -40,6 +40,12 @@ class FactoryActors {
         std::string const &tag, bool is_local = false);
     void InitializeEnemyInfoMap(const std::string &jsonFolder);
 
+    /**
+     * @brief Reset internal counters for a new game.
+     * Should be called when transitioning to lobby or starting a new game.
+     */
+    void ResetForNewGame() { id_player_ = 0; }
+
  private:
     void loadConfigEnemy(
         const std::string &jsonFilePath, const std::string &name);
@@ -53,11 +59,8 @@ class FactoryActors {
         Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
     void CreateMermaidActor(
         Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
-
-    // Helper to create a projectile for an enemy
-    void CreateMermaidProjectile(Engine::registry &reg, sf::Vector2f direction,
-        Component::EnemyShootTag &enemy_shoot, int ownerId,
-        Component::Transform const &transform);
+    void CreateKamiFishActor(
+        Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
 
     std::map<std::string, EnnemyInfo> enemy_info_map_ = {};
     int id_player_ = 0;

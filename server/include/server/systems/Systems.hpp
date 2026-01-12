@@ -54,6 +54,15 @@ void AnimationSystem(Engine::registry &reg,
 void TimedEventSystem(Engine::registry &reg,
     Engine::sparse_array<Component::TimedEvents> &timed_events);
 
+void ExplodeOnDeathSystem(Engine::registry &reg,
+    Engine::sparse_array<Component::Transform> &transforms,
+    Engine::sparse_array<Component::Health> &healths,
+    Engine::sparse_array<Component::AnimatedSprite> &animated_sprites,
+    Engine::sparse_array<Component::ExplodeOnDeath> &explode_on_deaths,
+    Engine::sparse_array<Component::AnimationDeath> &animation_deaths,
+    Engine::sparse_array<Component::HitBox> const &hitBoxes,
+    Engine::sparse_array<Component::PlayerTag> const &player_tags);
+
 void FrameBaseEventSystem(Engine::registry &reg,
     Engine::sparse_array<Component::Transform> &transforms,
     Engine::sparse_array<Component::AnimatedSprite> &animated_sprites,

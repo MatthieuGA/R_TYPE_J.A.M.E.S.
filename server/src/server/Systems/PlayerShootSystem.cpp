@@ -28,7 +28,7 @@ const constexpr float PLAYER_MIN_CHARGE_TIME_MS = 500.0f;
  * @param y The y position of the projectile.
  * @param ownerId The ID of the entity that fired the projectile.
  */
-void CreateProjectile(Engine::registry &reg, float x, float y, int ownerId) {
+void createProjectile(Engine::registry &reg, float x, float y, int ownerId) {
     auto projectile_entity = reg.SpawnEntity();
     // Add components to projectile entity
     reg.AddComponent<Component::Transform>(projectile_entity,
@@ -92,7 +92,7 @@ void ShootPlayerSystem(Engine::registry &reg,
             player_tag.shoot_cooldown <= 0.0f) {
             player_tag.charge_time = 0.0f;
             player_tag.shoot_cooldown = player_tag.shoot_cooldown_max;
-            CreateProjectile(reg, transform.x, transform.y, i);
+            createProjectile(reg, transform.x, transform.y, i);
         }
         // Handle charged shooting
         if (input.shoot && input.last_shoot_state &&

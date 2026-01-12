@@ -29,10 +29,10 @@ void FactoryActors::CreatePlayerActor(Engine::entity &entity,
     // reg.AddComponent<Component::AnimationEnterPlayer>(
     //     entity, Component::AnimationEnterPlayer{true});
     // Reactor particle emitter
-    Component::ParticleEmitter emit_reactor(100, 200, sf::Color::Yellow,
-        RED_HIT, sf::Vector2f(-15.f, 3.f), true, 0.25f, 40.f,
-        sf::Vector2f(-1.f, -0.1f), 30.f, 5.f, 10.0f, 4.0f, 3.f, -1.0f,
-        LAYER_ACTORS - 2);
+    Component::ParticleEmitter emit_reactor(100, 200,
+        Engine::Graphics::Color::Yellow, RED_HIT, sf::Vector2f(-15.f, 3.f),
+        true, 0.25f, 40.f, sf::Vector2f(-1.f, -0.1f), 30.f, 5.f, 10.0f, 4.0f,
+        3.f, -1.0f, LAYER_ACTORS - 2);
     reg.AddComponent<Component::ParticleEmitter>(
         entity, std::move(emit_reactor));
 

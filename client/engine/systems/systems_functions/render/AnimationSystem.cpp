@@ -3,6 +3,15 @@
 #include "engine/systems/InitRegistrySystems.hpp"
 
 namespace Rtype::Client {
+
+inline sf::IntRect ToSFML(const Engine::Graphics::IntRect &r) {
+    return sf::IntRect(r.left, r.top, r.width, r.height);
+}
+
+inline Engine::Graphics::IntRect ToEngine(const sf::IntRect &r) {
+    return Engine::Graphics::IntRect(r.left, r.top, r.width, r.height);
+}
+
 /**
  * @brief Load and apply the texture from the animation to the drawable.
  *
@@ -70,8 +79,9 @@ void SetFrame(
     const int top =
         animation.first_frame_position.y +
         (animation.current_frame / columns) * animation.frameHeight;
-    drawable.sprite.setTextureRect(
-        sf::IntRect(left, top, animation.frameWidth, animation.frameHeight));
+    Engine::Graphics::IntRect rect(
+        left, top, animation.frameWidth, animation.frameHeight);
+    drawable.sprite.setTextureRect(ToSFML(rect));
 }
 
 /**

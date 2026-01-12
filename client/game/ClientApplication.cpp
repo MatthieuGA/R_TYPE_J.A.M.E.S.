@@ -8,6 +8,7 @@
 
 #include <SFML/Graphics.hpp>
 
+#include "adapters/SFMLInputAdapters.hpp"
 #include "engine/systems/InitRegistrySystems.hpp"
 #include "game/InitRegistry.hpp"
 #include "game/SnapshotTracker.hpp"
@@ -19,6 +20,7 @@
 #include "include/components/RenderComponent.hpp"
 #include "include/components/ScenesComponents.hpp"
 #include "include/indexed_zipper.hpp"
+#include "input/Event.hpp"
 #include "network/Network.hpp"
 
 namespace Rtype::Client {
@@ -79,6 +81,20 @@ void ClientApplication::ApplySnapshotToRegistry(
     }
 }
 
+namespace {
+/**
+ * @brief Log game-in-progress rejection message.
+ *
+ * Helper function to avoid duplicating the rejection error message.
+ */
+void LogGameInProgressRejection() {
+    std::cerr << "[Network] Connection rejected: Game in progress."
+              << std::endl;
+    std::cerr << "[Network] Cannot join - please wait for the "
+              << "current game to finish." << std::endl;
+}
+}  // namespace
+
 bool ClientApplication::ConnectToServerWithRetry(
     GameWorld &game_world, const ClientConfig &config) {
     bool connected = false;
@@ -93,6 +109,9 @@ bool ClientApplication::ConnectToServerWithRetry(
                       << std::endl;
         }
 
+        // Reset rejection status before each attempt
+        game_world.server_connection_->ResetRejectionStatus();
+
         game_world.server_connection_->ConnectToServer(config.username);
 
         // Poll io_context to process connection attempt
@@ -101,11 +120,23 @@ bool ClientApplication::ConnectToServerWithRetry(
             ++i) {
             game_world.io_context_.poll();
             sf::sleep(sf::milliseconds(kPollDelayMs));
+
+            // Check if we got a permanent rejection (e.g., game in progress)
+            if (game_world.server_connection_->WasRejectedPermanently()) {
+                LogGameInProgressRejection();
+                return false;  // Don't retry
+            }
         }
 
         connected = game_world.server_connection_->is_connected();
 
         if (!connected && retry < kMaxRetries - 1) {
+            // Check again for permanent rejection before retrying
+            if (game_world.server_connection_->WasRejectedPermanently()) {
+                LogGameInProgressRejection();
+                return false;  // Don't retry
+            }
+
             std::cout << "[Network] Connection attempt " << (retry + 1)
                       << " failed. Retrying..." << std::endl;
             // Reset io_context for next attempt
@@ -129,10 +160,13 @@ bool ClientApplication::ConnectToServerWithRetry(
 void ClientApplication::RunGameLoop(GameWorld &game_world) {
     while (game_world.window_.isOpen()) {
         // Handle window events
-        sf::Event event;
-        while (game_world.window_.pollEvent(event)) {
-            if (event.type == sf::Event::Closed) {
-                game_world.window_.close();
+        sf::Event sfml_event;
+        while (game_world.window_.pollEvent(sfml_event)) {
+            Engine::Input::Event event;
+            if (Adapters::FromSFMLEvent(sfml_event, event)) {
+                if (event.type == Engine::Input::EventType::Closed) {
+                    game_world.window_.close();
+                }
             }
         }
 
@@ -195,7 +229,7 @@ void ClientApplication::RunGameLoop(GameWorld &game_world) {
 
         // Calculate delta time at the beginning of the frame
         game_world.last_delta_ =
-            game_world.delta_time_clock_.restart().asSeconds();
+            game_world.delta_time_clock_.Restart().AsSeconds();
 
         // Clear, update, and render
         game_world.window_.clear(sf::Color::Black);

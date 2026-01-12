@@ -58,9 +58,9 @@ TEST_F(ButtonClickSystemTest, UpdatesColorBasedOnState) {
         200.0f, 150.0f, 0.0f, 1.0f, Com::Transform::TOP_LEFT};
     Com::HitBox hitbox{100.0f, 50.0f, true};
     Com::Clickable clickable;
-    clickable.idleColor = sf::Color::White;
-    clickable.hoverColor = sf::Color::Yellow;
-    clickable.clickColor = sf::Color::Red;
+    clickable.idleColor = Engine::Graphics::Color::White;
+    clickable.hoverColor = Engine::Graphics::Color::Yellow;
+    clickable.clickColor = Engine::Graphics::Color::Red;
 
     Com::Drawable drawable{"Logo.png", 0};
 

@@ -37,6 +37,13 @@ namespace server {
 class Server {
  public:
     /**
+     * @brief Get the singleton instance (for systems to notify player death)
+     */
+    static Server *GetInstance() {
+        return instance_;
+    }
+
+    /**
      * @brief Construct a new Server object
      *
      * @param config Server configuration
@@ -63,6 +70,57 @@ class Server {
      * @brief Stop the game loop and reset game state and tick
      */
     void Stop();
+
+    /**
+     * @brief Reset the server to lobby state after game over
+     *
+     * Clears all game entities, resets player ready states, and prepares
+     * for a new game. Called when all players die (game over).
+     */
+    void ResetToLobby();
+
+    /**
+     * @brief Check if all player entities are dead (health <= 0)
+     *
+     * @return true if all players are dead or no players exist
+     */
+    bool AreAllPlayersDead();
+
+    /**
+     * @brief Notify the server that a player has died
+     *
+     * Called by HealthDeductionSystem when a player's health reaches 0.
+     */
+    void NotifyPlayerDeath();
+
+    /**
+     * @brief Destroy the player entity associated with a player_id
+     *
+     * Searches for the player entity with matching playerNumber and kills it.
+     * Called when a client disconnects during an active game.
+     *
+     * @param player_id The player ID to find and destroy
+     * @return true if the entity was found and destroyed, false otherwise
+     */
+    bool DestroyPlayerEntity(uint8_t player_id);
+
+    /**
+     * @brief Handle player disconnect during active game
+     *
+     * Destroys the player's entity, updates tracking, and checks if game
+     * should end (all players gone).
+     *
+     * @param player_id The player ID that disconnected
+     */
+    void HandlePlayerDisconnect(uint8_t player_id);
+
+    /**
+     * @brief Check if game is currently running
+     * @return true if game is in progress
+     */
+    bool IsGameRunning() const {
+        return running_;
+    }
 
     /**
      * @brief Stop the game loop and close all client connections
@@ -141,6 +199,13 @@ class Server {
         16;  // timer resolution (~60 FPS target)
     int tick_count_;
     std::chrono::steady_clock::time_point last_tick_time_;
+
+    // Player tracking for game over detection
+    int total_players_{0};
+    int alive_players_{0};
+
+    // Singleton instance for system callbacks
+    static Server *instance_;
 };
 
 }  // namespace server
