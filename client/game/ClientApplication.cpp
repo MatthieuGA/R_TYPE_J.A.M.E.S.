@@ -173,6 +173,16 @@ void ClientApplication::RunGameLoop(GameWorld &game_world) {
         // Poll asio for network events
         game_world.io_context_.poll();
 
+        // Check for unexpected disconnection (server crashed/closed)
+        if (game_world.server_connection_ &&
+            game_world.server_connection_->WasDisconnectedUnexpectedly()) {
+            std::cerr << "[Client] Lost connection to server!" << std::endl;
+            std::cerr << "[Client] The server may have shut down."
+                      << std::endl;
+            game_world.window_.close();
+            break;
+        }
+
         // Check if game has started (received GAME_START from server)
         if (game_world.server_connection_) {
             if (game_world.server_connection_->HasGameStarted()) {
