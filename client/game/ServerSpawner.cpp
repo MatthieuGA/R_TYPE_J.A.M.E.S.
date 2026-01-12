@@ -268,12 +268,34 @@ namespace {
 
 /**
  * @brief Signal handler callback for graceful shutdown.
+ *
+ * This handler only performs async-signal-safe operations.
+ * It writes a static message to standard error and then
+ * terminates the process using _Exit.
+ *
+ * @param signal The received POSIX signal.
  */
 void SignalHandlerCallback(int signal) {
-    std::cout << "\n[Client] Received signal " << signal
-              << ", shutting down..." << std::endl;
-    ServerSpawner::TerminateServer();
-    std::exit(signal == SIGINT ? EXIT_SUCCESS : EXIT_FAILURE);
+#ifdef SIGINT
+    if (signal == SIGINT) {
+        static const char kMsgInt[] =
+            "\n[Client] Received SIGINT, shutting down...\n";
+        ::write(STDERR_FILENO, kMsgInt, sizeof(kMsgInt) - 1);
+        ::_Exit(EXIT_SUCCESS);
+    }
+#endif
+#ifdef SIGTERM
+    if (signal == SIGTERM) {
+        static const char kMsgTerm[] =
+            "\n[Client] Received SIGTERM, shutting down...\n";
+        ::write(STDERR_FILENO, kMsgTerm, sizeof(kMsgTerm) - 1);
+        ::_Exit(EXIT_FAILURE);
+    }
+#endif
+    static const char kMsgOther[] =
+        "\n[Client] Received termination signal, shutting down...\n";
+    ::write(STDERR_FILENO, kMsgOther, sizeof(kMsgOther) - 1);
+    ::_Exit(EXIT_FAILURE);
 }
 
 }  // namespace
