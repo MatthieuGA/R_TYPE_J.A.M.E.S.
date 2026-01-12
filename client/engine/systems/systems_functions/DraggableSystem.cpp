@@ -28,8 +28,10 @@ void DraggableSystem(Eng::registry &reg, GameWorld &game_world,
     if (!game_world.window_.hasFocus())
         return;
 
-    sf::Vector2f mousePos = game_world.window_.mapPixelToCoords(
+    // TODO : mapPixelToCoords is SFML-specific, will have to abstract
+    sf::Vector2f sfMousePos = game_world.window_.mapPixelToCoords(
         sf::Mouse::getPosition(game_world.window_));
+    Engine::Graphics::Vector2f mousePos(sfMousePos.x, sfMousePos.y);
 
     bool mousePressed =
         Adapters::IsMouseButtonPressed(Engine::Input::MouseButton::Left);
@@ -58,7 +60,7 @@ void DraggableSystem(Eng::registry &reg, GameWorld &game_world,
             // Check if drag should start
             if (isHovered && mousePressed) {
                 draggable.is_dragging = true;
-                draggable.drag_offset = sf::Vector2f(
+                draggable.drag_offset = Engine::Graphics::Vector2f(
                     mousePos.x - transform.x, mousePos.y - transform.y);
 
                 // Call on_drag_start callback
