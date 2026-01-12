@@ -15,7 +15,7 @@ bool LoadAnimation(Com::AnimatedSprite::Animation &animation) {
     if (animation.is_loaded)
         return true;
 
-    if (animation.path.empty())
+    if (animation.texture_path.empty())
         return false;
 
     // Backend will load texture via path; just mark as loaded here

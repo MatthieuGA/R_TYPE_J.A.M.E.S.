@@ -15,7 +15,6 @@ namespace Rtype::Client::Component {
  * Holds path and appearance properties. No SFML types here.
  */
 struct Drawable {
-    std::string spritePath;
     std::string texture_path;
     int z_index = 0;
     float opacity = 1.0f;
@@ -27,8 +26,7 @@ struct Drawable {
 
     explicit Drawable(
         const std::string &spritePath_input, int z = 0, float op = 1.0f)
-        : spritePath("assets/images/" + spritePath_input),
-          texture_path("assets/images/" + spritePath_input),
+        : texture_path("assets/images/" + spritePath_input),
           z_index(z),
           opacity(op) {}
 };
@@ -54,7 +52,6 @@ struct Shader {
  */
 struct AnimatedSprite {
     struct Animation {
-        std::string path;
         std::string texture_path;
         int frameWidth;
         int frameHeight;
@@ -70,8 +67,7 @@ struct AnimatedSprite {
         bool is_loaded = false;
 
         Animation()
-            : path(""),
-              texture_path(""),
+            : texture_path(""),
               frameWidth(0),
               frameHeight(0),
               totalFrames(0),
@@ -89,8 +85,7 @@ struct AnimatedSprite {
                 0.0f, 0.0f),
             Engine::Graphics::Vector2f of = Engine::Graphics::Vector2f(
                 0.0f, 0.0f))
-            : path(p.empty() ? "" : "assets/images/" + p),
-              texture_path(p),
+            : texture_path(p.empty() ? "" : "assets/images/" + p),
               frameWidth(fw),
               frameHeight(fh),
               totalFrames(tf),
@@ -142,7 +137,6 @@ struct AnimatedSprite {
  */
 struct Text {
     std::string content;
-    std::string fontPath;
     std::string font_path;
     unsigned int characterSize = 30;
     Engine::Graphics::Color color = Engine::Graphics::Color::White;
@@ -152,14 +146,14 @@ struct Text {
     Engine::Graphics::Vector2f offset = Engine::Graphics::Vector2f(0.0f, 0.0f);
     bool is_loaded = false;
 
-    explicit Text(const std::string &fontPath, const std::string &content = "",
-        unsigned int characterSize = 30, int z_index = 0,
+    explicit Text(const std::string &fontPath_input,
+        const std::string &content = "", unsigned int characterSize = 30,
+        int z_index = 0,
         Engine::Graphics::Color color = Engine::Graphics::Color::White,
         Engine::Graphics::Vector2f offset = Engine::Graphics::Vector2f(
             0.0f, 0.0f))
         : content(content),
-          fontPath("assets/fonts/" + fontPath),
-          font_path(fontPath),
+          font_path("assets/fonts/" + fontPath_input),
           characterSize(characterSize),
           color(color),
           opacity(1.0f),
