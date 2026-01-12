@@ -20,6 +20,7 @@
 
 #include "game/GameAction.hpp"
 #include "game/GameInputBindings.hpp"
+#include "graphics/IRenderContext.hpp"
 #include "include/WindowConst.hpp"
 #include "include/registry.hpp"
 #include "network/Network.hpp"
@@ -69,6 +70,17 @@ struct GameWorld {
     // Network components
     boost::asio::io_context io_context_;
     std::unique_ptr<client::ServerConnection> server_connection_;
+
+    // Graphics abstraction (Phase 4 integration)
+    Engine::Graphics::IRenderContext *render_context_ = nullptr;
+
+    void SetRenderContext(Engine::Graphics::IRenderContext *ctx) {
+        render_context_ = ctx;
+    }
+
+    Engine::Graphics::IRenderContext *GetRenderContext() {
+        return render_context_;
+    }
 
     /**
      * @brief Construct game world with injected window.

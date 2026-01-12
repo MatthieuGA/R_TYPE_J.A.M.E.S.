@@ -50,6 +50,11 @@ void InitializeDrawableAnimatedSystem(Eng::registry &reg,
     Eng::sparse_array<Com::Drawable> &drawables,
     Eng::sparse_array<Com::AnimatedSprite> const &animated_sprites);
 
+void InitializeDrawableStaticSystem(Eng::registry &reg,
+    Eng::sparse_array<Com::Transform> const &transforms,
+    Eng::sparse_array<Com::Drawable> &drawables,
+    Eng::sparse_array<Com::AnimatedSprite> const &animated_sprites);
+
 // MOVEMENT SYSTEMS
 
 void InputSystem(Eng::registry &reg, GameInputManager &input_manager,

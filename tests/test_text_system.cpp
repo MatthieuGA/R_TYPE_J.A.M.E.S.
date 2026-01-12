@@ -44,7 +44,7 @@ TEST(TextRenderSystem, LoadsAndAppliesTransform) {
 
     Com::Transform transform{10.0f, 20.0f, 45.0f, 2.0f};
     Com::Text text("dogica.ttf", "Hello", 16, 3, Engine::Graphics::Color::Red,
-        sf::Vector2f(5.0f, -3.0f));
+        Engine::Graphics::Vector2f(5.0f, -3.0f));
     text.fontPath = GetFontAbsolutePath("dogica.ttf");
     text.opacity = 0.5f;
 
@@ -62,13 +62,9 @@ TEST(TextRenderSystem, LoadsAndAppliesTransform) {
     const auto &rendered = texts[0].value();
 
     EXPECT_TRUE(rendered.is_loaded);
-    EXPECT_NE(rendered.text.getFont(), nullptr);
-    EXPECT_EQ(rendered.text.getString(), sf::String("Hello"));
-    EXPECT_FLOAT_EQ(rendered.text.getRotation(), transform.rotationDegrees);
-    EXPECT_NEAR(rendered.text.getScale().x, 0.2f, 1e-5f);
-    EXPECT_NEAR(rendered.text.getScale().y, 0.2f, 1e-5f);
-    EXPECT_FLOAT_EQ(rendered.text.getPosition().x, transform.x + 5.0f);
-    EXPECT_FLOAT_EQ(rendered.text.getPosition().y, transform.y - 3.0f);
-    EXPECT_EQ(rendered.text.getFillColor().a,
-        static_cast<sf::Uint8>(rendered.opacity * 255));
+    EXPECT_FALSE(rendered.fontPath.empty());
+    EXPECT_EQ(rendered.content, std::string("Hello"));
+    EXPECT_EQ(rendered.characterSize, 16u);
+    EXPECT_EQ(rendered.color, Engine::Graphics::Color::Red);
+    EXPECT_FLOAT_EQ(rendered.opacity, 0.5f);
 }

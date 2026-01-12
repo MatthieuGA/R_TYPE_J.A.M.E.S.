@@ -126,7 +126,16 @@ struct Projectile {
     int ownerId;  // ID of the entity that fired the projectile
     bool isEnemyProjectile = false;
 
-    // Compatibility constructor: accept SFML direction
+    // Constructors accepting Engine direction type
+    Projectile(int damage, Engine::Graphics::Vector2f dir, float speed,
+        int ownerId, bool isEnemyProjectile = false)
+        : damage(damage),
+          direction(dir),
+          speed(speed),
+          ownerId(ownerId),
+          isEnemyProjectile(isEnemyProjectile) {}
+
+    // Legacy constructor: accept SFML direction
     Projectile(int damage, sf::Vector2f dir, float speed, int ownerId,
         bool isEnemyProjectile = false)
         : damage(damage),
