@@ -85,11 +85,27 @@ class MockAudioBackend : public IAudioBackend {
         }
     }
 
+    float GetCategoryVolume(SoundCategory category) const override {
+        if (category == SoundCategory::SFX) {
+            return sfx_volume_;
+        } else {
+            return music_volume_;
+        }
+    }
+
     void SetCategoryMute(SoundCategory category, bool mute) override {
         if (category == SoundCategory::SFX) {
             sfx_muted_ = mute;
         } else {
             music_muted_ = mute;
+        }
+    }
+
+    bool GetCategoryMuteStatus(SoundCategory category) const override {
+        if (category == SoundCategory::SFX) {
+            return sfx_muted_;
+        } else {
+            return music_muted_;
         }
     }
 
