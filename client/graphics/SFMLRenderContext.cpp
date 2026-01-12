@@ -189,4 +189,29 @@ void SFMLRenderContext::DrawVertexArray(
     window_.draw(sfml_vertices);
 }
 
+Engine::Graphics::Vector2f SFMLRenderContext::GetTextureSize(
+    const char *path) {
+    sf::Texture *texture = GetOrLoadTexture(path);
+    if (!texture) {
+        return Engine::Graphics::Vector2f(0.0f, 0.0f);
+    }
+    sf::Vector2u size = texture->getSize();
+    return Engine::Graphics::Vector2f(
+        static_cast<float>(size.x), static_cast<float>(size.y));
+}
+
+Engine::Graphics::Vector2f SFMLRenderContext::GetTextBounds(
+    const char *font_path, const char *text, unsigned int size) {
+    sf::Font *font = GetOrLoadFont(font_path);
+    if (!font) {
+        return Engine::Graphics::Vector2f(0.0f, 0.0f);
+    }
+    sf::Text sfml_text;
+    sfml_text.setFont(*font);
+    sfml_text.setString(text);
+    sfml_text.setCharacterSize(size);
+    sf::FloatRect bounds = sfml_text.getLocalBounds();
+    return Engine::Graphics::Vector2f(bounds.width, bounds.height);
+}
+
 }  // namespace Rtype::Client::Graphics

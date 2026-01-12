@@ -61,6 +61,25 @@ class SFMLRenderContext : public Engine::Graphics::IRenderContext {
     void DrawVertexArray(
         const Engine::Graphics::VertexArray &vertices) override;
 
+    /**
+     * @brief Get the size of a texture.
+     *
+     * @param path Path to texture file
+     * @return Size as Vector2f, or (0,0) if texture not found
+     */
+    Engine::Graphics::Vector2f GetTextureSize(const char *path);
+
+    /**
+     * @brief Get the bounding box size of rendered text.
+     *
+     * @param font_path Path to font file
+     * @param text Text string
+     * @param size Character size (in pixels)
+     * @return Size as Vector2f, or (0,0) if font not found
+     */
+    Engine::Graphics::Vector2f GetTextBounds(
+        const char *font_path, const char *text, unsigned int size);
+
  private:
     /**
      * @brief Get or load a texture from cache.
