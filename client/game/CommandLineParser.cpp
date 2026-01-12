@@ -145,7 +145,7 @@ ClientConfig CommandLineParser::Parse(int argc, char *argv[]) {
     config.udp_port = config.tcp_port;
 
     // Parse optional UDP port flag
-    for (const auto &[flag, value_index] : flags) {
+    for (const auto &[_, value_index] : flags) {
         try {
             config.udp_port = ParsePort(argv[value_index], "UDP-PORT");
         } catch (const std::exception &e) {
