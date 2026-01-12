@@ -59,7 +59,7 @@ class SFMLAudioBackend : public IAudioBackend {
     std::queue<PlaybackRequest> playback_queue_;
     std::mutex queue_mutex_;
 
-    static constexpr size_t kMaxConcurrentSounds = 16;
+    static constexpr size_t kMaxConcurrentSounds = 64;
 
     void ProcessPlaybackQueue();
     void PlaySoundImmediate(const PlaybackRequest &request);
