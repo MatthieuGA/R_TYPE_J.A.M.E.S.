@@ -223,7 +223,7 @@ void Server::Update() {
             game_over_timer_ = 0.0f;
         } else {
             // Accumulate time (assuming 16ms per tick)
-            game_over_timer_ += TICK_RATE_MS / 1000.0f;
+            game_over_timer_ += g_frame_delta_ms / 1000.0f;
 
             if (game_over_timer_ >= GAME_OVER_DELAY_SEC) {
                 std::cout << "[Server] Game over delay complete. Sending "
