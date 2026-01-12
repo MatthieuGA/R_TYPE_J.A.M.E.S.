@@ -1,6 +1,9 @@
 # Enable Google Test
 include(GoogleTest)
 
+# Find nlohmann_json package for worldgen tests
+find_package(nlohmann_json CONFIG REQUIRED)
+
 # Gather test sources and create test executable
 file(GLOB_RECURSE R_TYPE_TEST_SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
@@ -9,6 +12,7 @@ file(GLOB_RECURSE R_TYPE_TEST_SOURCES CONFIGURE_DEPENDS
 # Exclude server-specific tests (compiled separately with server sources/includes)
 list(REMOVE_ITEM R_TYPE_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/test_server.cpp")
 list(REMOVE_ITEM R_TYPE_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/test_packets.cpp")
+list(REMOVE_ITEM R_TYPE_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/test_worldgen.cpp")
 list(REMOVE_ITEM R_TYPE_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/test_config.cpp")
 list(REMOVE_ITEM R_TYPE_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/test_client_connection_manager.cpp")
 list(REMOVE_ITEM R_TYPE_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/test_packet_handler.cpp")
@@ -98,6 +102,29 @@ target_link_libraries(server_tests
 
 # Discover server tests for CTest
 gtest_discover_tests(server_tests)
+
+# Create test executable for worldgen
+add_executable(worldgen_tests
+    test_worldgen.cpp
+    ${CMAKE_SOURCE_DIR}/server/src/server/worldgen/WorldGenConfigLoader.cpp
+)
+
+# Include directories for worldgen tests
+target_include_directories(worldgen_tests
+    PRIVATE
+        ${CMAKE_SOURCE_DIR}/server/include
+        ${CMAKE_SOURCE_DIR}/engine/include
+)
+
+# Link with Google Test and nlohmann_json
+target_link_libraries(worldgen_tests
+    PRIVATE
+        GTest::gtest_main
+        nlohmann_json::nlohmann_json
+)
+
+# Discover worldgen tests for CTest
+gtest_discover_tests(worldgen_tests)
 
 # Create separate test executable for command-line parser (no network dependencies)
 # This avoids thread safety issues with death tests + Boost.Asio threads

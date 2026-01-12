@@ -1,0 +1,55 @@
+{
+  "uuid": "d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f8a",
+  "name": "Debris Corridor",
+  "description": "Narrow corridor formed by debris and wreckage.",
+  "difficulty": 3.5,
+  "tags": ["debris", "corridor", "tight_spaces"],
+  "width": 800,
+  "spawn_rules": {
+    "min_distance_from_last": 2,
+    "max_frequency": 1.0
+  },
+  "obstacles": [
+    {
+      "type": "static",
+      "sprite": "images/obstacles/debris_wall.png",
+      "position": { "x": 0, "y": 0 },
+      "size": { "width": 800, "height": 80 },
+      "collision": { "enabled": true, "damage": 20 },
+      "health": 0
+    },
+    {
+      "type": "static",
+      "sprite": "images/obstacles/debris_wall.png",
+      "position": { "x": 0, "y": 520 },
+      "size": { "width": 800, "height": 80 },
+      "collision": { "enabled": true, "damage": 20 },
+      "health": 0
+    },
+    {
+      "type": "destructible",
+      "sprite": "images/obstacles/debris_chunk.png",
+      "position": { "x": 300, "y": 200 },
+      "size": { "width": 56, "height": 56 },
+      "collision": { "enabled": true, "damage": 10 },
+      "health": 25
+    },
+    {
+      "type": "destructible",
+      "sprite": "images/obstacles/debris_chunk.png",
+      "position": { "x": 550, "y": 380 },
+      "size": { "width": 56, "height": 56 },
+      "collision": { "enabled": true, "damage": 10 },
+      "health": 25
+    }
+  ],
+  "background": {
+    "layers": [
+      {
+        "sprite": "images/backgrounds/wreckage.png",
+        "parallax_factor": 0.4,
+        "scroll_speed": 0.8
+      }
+    ]
+  }
+}
