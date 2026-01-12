@@ -27,7 +27,7 @@ std::string GetFontAbsolutePath(const std::string &font_name) {
 TEST(TextComponent, Defaults) {
     Com::Text text("dogica.ttf");
     EXPECT_EQ(text.content, std::string(""));
-    EXPECT_EQ(text.fontPath, std::string("assets/fonts/dogica.ttf"));
+    EXPECT_EQ(text.font_path, std::string("assets/fonts/dogica.ttf"));
     EXPECT_EQ(text.characterSize, 30u);
     EXPECT_EQ(text.color, Engine::Graphics::Color::White);
     EXPECT_FLOAT_EQ(text.opacity, 1.0f);
@@ -45,7 +45,7 @@ TEST(TextRenderSystem, LoadsAndAppliesTransform) {
     Com::Transform transform{10.0f, 20.0f, 45.0f, 2.0f};
     Com::Text text("dogica.ttf", "Hello", 16, 3, Engine::Graphics::Color::Red,
         Engine::Graphics::Vector2f(5.0f, -3.0f));
-    text.fontPath = GetFontAbsolutePath("dogica.ttf");
+    text.font_path = GetFontAbsolutePath("dogica.ttf");
     text.opacity = 0.5f;
 
     transforms.insert_at(0, transform);
@@ -62,7 +62,7 @@ TEST(TextRenderSystem, LoadsAndAppliesTransform) {
     const auto &rendered = texts[0].value();
 
     EXPECT_TRUE(rendered.is_loaded);
-    EXPECT_FALSE(rendered.fontPath.empty());
+    EXPECT_FALSE(rendered.font_path.empty());
     EXPECT_EQ(rendered.content, std::string("Hello"));
     EXPECT_EQ(rendered.characterSize, 16u);
     EXPECT_EQ(rendered.color, Engine::Graphics::Color::Red);

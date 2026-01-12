@@ -11,10 +11,10 @@ namespace Rtype::Client {
  */
 bool ApplyAnimationTexture(
     Com::AnimatedSprite::Animation &animation, Com::Drawable &drawable) {
-    if (animation.path.empty()) {
+    if (animation.texture_path.empty()) {
         return true;
     }
-    drawable.texture_path = animation.path;
+    drawable.texture_path = animation.texture_path;
     animation.is_loaded = true;
     return true;
 }

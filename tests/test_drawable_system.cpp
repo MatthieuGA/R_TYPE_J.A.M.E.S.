@@ -40,7 +40,7 @@ TEST(DrawableSystem, LoadsAndAppliesTransform) {
     ASSERT_TRUE(drawables[0].has_value());
     const auto &rendered = drawables[0].value();
     EXPECT_FALSE(rendered.is_loaded);  // No SFML loading in Phase 2
-    EXPECT_EQ(rendered.spritePath, std::string("assets/images/Logo.png"));
+    EXPECT_EQ(rendered.texture_path, std::string("assets/images/Logo.png"));
     EXPECT_FLOAT_EQ(rendered.opacity, 0.6f);
     EXPECT_EQ(rendered.color.r, Engine::Graphics::Color::Green.r);
 }

@@ -42,7 +42,7 @@ void RenderOneTextEntity(Eng::sparse_array<Com::Transform> const &transforms,
     Engine::Graphics::Vector2f text_bounds(1.0f, 1.0f);
     if (game_world.GetRenderContext()) {
         text_bounds = game_world.GetRenderContext()->GetTextBounds(
-            text->fontPath.c_str(), text->content.c_str(),
+            text->font_path.c_str(), text->content.c_str(),
             static_cast<unsigned int>(text->characterSize * FONT_SIZE_SCALE));
     }
 
@@ -54,7 +54,7 @@ void RenderOneTextEntity(Eng::sparse_array<Com::Transform> const &transforms,
     text_origin.x = -text_origin.x;
     text_origin.y = -text_origin.y;
 
-    Engine::Graphics::DrawableText drawable_text{text->fontPath.c_str(),
+    Engine::Graphics::DrawableText drawable_text{text->font_path.c_str(),
         text->content.c_str(),
         static_cast<unsigned int>(text->characterSize * FONT_SIZE_SCALE),
         world_position, engine_color, world_scale, text_origin};
