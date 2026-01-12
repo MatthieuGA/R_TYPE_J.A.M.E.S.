@@ -65,6 +65,25 @@ void GameOverSystem(Engine::registry &reg, GameWorld &game_world,
             state.text_phase = true;  // show text phase only
             server_connection.ResetGameEnded();
 
+            // Play player death sound
+            if (game_world.audio_manager_) {
+                game_world.audio_manager_->PlaySound("player_death");
+                game_world.audio_manager_->StopMusic();
+            }
+
+            // Hide the local player's entity (but not other players)
+            auto &player_tags = reg.GetComponents<Component::PlayerTag>();
+            auto &drawables_all = reg.GetComponents<Component::Drawable>();
+            for (std::size_t p = 0; p < player_tags.size(); ++p) {
+                if (!player_tags.has(p))
+                    continue;
+                // Hide drawable if entity has PlayerTag
+                if (drawables_all.has(p)) {
+                    auto &drawable = drawables_all[p].value();
+                    drawable.opacity = 0.0f;  // Make invisible
+                }
+            }
+
             // Stop all player movement during game over
             auto &velocities = reg.GetComponents<Component::Velocity>();
             for (std::size_t v = 0; v < velocities.size(); ++v) {

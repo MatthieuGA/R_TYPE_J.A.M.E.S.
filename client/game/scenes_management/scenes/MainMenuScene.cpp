@@ -34,6 +34,8 @@ void MainMenuScene::InitScene(Engine::registry &reg, GameWorld &gameWorld) {
             "kamifish_death", "assets/sounds/kamifish_death.ogg", false);
         gameWorld.audio_manager_->RegisterAsset(
             "player_damage", "assets/sounds/player_damage.ogg", false);
+        gameWorld.audio_manager_->RegisterAsset(
+            "player_death", "assets/sounds/player_death.ogg", false);
         // Only play menu music if it's not already playing
         if (!gameWorld.audio_manager_->IsMusicPlaying("menu_music")) {
             gameWorld.audio_manager_->PlayMusic("menu_music", true);
