@@ -15,7 +15,7 @@ namespace Rtype::Client {
 /**
  * @brief Update particle emitter: emit new particles and update existing.
  */
-void updateEmitter(
+void UpdateEmitter(
     Com::ParticleEmitter &emitter, const Com::Transform &transform, float dt) {
     emitter.emissionAccumulator += emitter.emissionRate * dt;
 
@@ -242,7 +242,7 @@ void DrawableSystem(Eng::registry &reg, GameWorld &game_world,
     for (auto &&[i, transform, emitter] :
         make_indexed_zipper(transforms, emitters)) {
         if (emitter.active) {
-            updateEmitter(emitter, transform, game_world.last_delta_);
+            UpdateEmitter(emitter, transform, game_world.last_delta_);
             RenderItem item{i, emitter.z_index, true};
             render_order.push_back(item);
         }
