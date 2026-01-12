@@ -6,9 +6,9 @@
 #include <filesystem>
 #include <iostream>
 #include <stdexcept>
+#include <string>
 #include <thread>
 #include <vector>
-#include <string>
 
 #ifdef _WIN32
 #include <winsock2.h>
@@ -135,8 +135,11 @@ uint16_t ServerSpawner::SpawnLocalServer() {
 
     std::string cmd_line = server_path + " " + port_str;
 
-    if (!CreateProcessA(nullptr, const_cast<char *>(cmd_line.c_str()), nullptr,
-            nullptr, FALSE,
+    // CreateProcessA may modify the command line buffer, so use mutable copy
+    std::vector<char> cmd_buffer(cmd_line.begin(), cmd_line.end());
+    cmd_buffer.push_back('\0');
+
+    if (!CreateProcessA(nullptr, cmd_buffer.data(), nullptr, nullptr, FALSE,
             CREATE_NEW_CONSOLE,  // Create new console window
             nullptr, nullptr, &si, &pi)) {
         throw std::runtime_error(
