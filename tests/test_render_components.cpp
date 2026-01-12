@@ -25,7 +25,7 @@ TEST(RenderComponents, ShaderPathAndUniforms) {
     Com::Shader shader{
         "wave.frag", {{"timeScale", 1.5f}, {"amplitude", 0.7f}}};
     EXPECT_EQ(shader.shaderPath, std::string("assets/shaders/wave.frag"));
-    EXPECT_FALSE(shader.isLoaded);
+    EXPECT_FALSE(shader.is_loaded);
     ASSERT_EQ(shader.uniforms_float.size(), 2u);
     EXPECT_FLOAT_EQ(shader.uniforms_float.at("timeScale"), 1.5f);
     EXPECT_FLOAT_EQ(shader.uniforms_float.at("amplitude"), 0.7f);

@@ -15,7 +15,7 @@ bool ApplyAnimationTexture(
         return true;
     }
     drawable.texture_path = animation.path;
-    animation.isLoaded = true;
+    animation.is_loaded = true;
     return true;
 }
 

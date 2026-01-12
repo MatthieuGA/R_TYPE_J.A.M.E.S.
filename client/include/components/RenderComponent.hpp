@@ -39,14 +39,14 @@ struct Drawable {
 struct Shader {
     std::string shaderPath;
     std::string shader_path;
-    bool isLoaded = false;
+    bool is_loaded = false;
     std::map<std::string, float> uniforms_float = {};
 
     explicit Shader(const std::string &path,
         std::vector<std::pair<std::string, float>> uf = {})
         : shaderPath("assets/shaders/" + path),
           shader_path(path),
-          isLoaded(false) {
+          is_loaded(false) {
         for (const auto &[name, value] : uf)
             uniforms_float[name] = value;
     }
@@ -70,7 +70,7 @@ struct AnimatedSprite {
         Engine::Graphics::Vector2f offset =
             Engine::Graphics::Vector2f(0.0f, 0.0f);
         Engine::Graphics::IntRect current_rect = Engine::Graphics::IntRect();
-        bool isLoaded = false;
+        bool is_loaded = false;
 
         Animation()
             : path(""),
@@ -84,7 +84,7 @@ struct AnimatedSprite {
               first_frame_position(0.0f, 0.0f),
               offset(0.0f, 0.0f),
               current_rect(),
-              isLoaded(false) {}
+              is_loaded(false) {}
 
         Animation(const std::string &p, int fw, int fh, int tf, float fd,
             bool lp,
@@ -103,7 +103,7 @@ struct AnimatedSprite {
               first_frame_position(ffp),
               offset(of),
               current_rect(),
-              isLoaded(false) {}
+              is_loaded(false) {}
     };
 
     std::map<std::string, Animation> animations;

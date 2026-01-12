@@ -200,7 +200,7 @@ void RenderOneEntity(Eng::sparse_array<Com::Transform> const &transforms,
     // Optional shader data
     Engine::Graphics::DrawableShader shader_data;
     const Engine::Graphics::DrawableShader *shader_ptr = nullptr;
-    if (shaders.has(i) && shaders[i]->isLoaded &&
+    if (shaders.has(i) && shaders[i]->is_loaded &&
         !shaders[i]->shaderPath.empty()) {
         shader_data.shader_path = shaders[i]->shaderPath.c_str();
         shader_data.time_seconds =
