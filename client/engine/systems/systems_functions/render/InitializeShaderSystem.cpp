@@ -15,7 +15,7 @@ namespace Rtype::Client {
  * @param shader_comp Shader component to initialize
  */
 void InitializeShader(Com::Shader &shader_comp) {
-    if (!shader_comp.shaderPath.empty()) {
+    if (!shader_comp.shader_path.empty()) {
         // Backend will load shader via shader_path
         // Just mark as loaded for rendering pipeline
         shader_comp.is_loaded = true;
@@ -26,7 +26,7 @@ void InitializeShader(Com::Shader &shader_comp) {
  * @brief System that initializes all Shader components that are not loaded.
  *
  * Iterates over the shader components and calls `InitializeShader` for
- * components that have a `shaderPath` and are not yet loaded.
+ * components that have a `shader_path` and are not yet loaded.
  *
  * @param reg Engine registry (unused)
  * @param shaders Sparse array of Shader components
@@ -36,7 +36,7 @@ void InitializeShaderSystem(
     std::vector<int> draw_order;
 
     for (auto &&[i, shader] : make_indexed_zipper(shaders)) {
-        if (!shader.is_loaded && !shader.shaderPath.empty())
+        if (!shader.is_loaded && !shader.shader_path.empty())
             InitializeShader(shader);
     }
 }
