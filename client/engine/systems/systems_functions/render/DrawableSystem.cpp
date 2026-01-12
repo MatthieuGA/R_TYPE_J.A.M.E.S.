@@ -27,8 +27,8 @@ void UpdateEmitter(
             emitter.offset.x * transform.scale.x,
             emitter.offset.y * transform.scale.y);
 
-        Component::Particle newParticle;
-        newParticle.position = Engine::Graphics::Vector2f(
+        Component::Particle new_particle;
+        new_particle.position = Engine::Graphics::Vector2f(
             transform.x + offset_computed.x, transform.y + offset_computed.y);
 
         std::random_device rd;
@@ -42,9 +42,9 @@ void UpdateEmitter(
 
         float radius_offset_angle = radius_angle_dist(rng);
         float radius_offset_dist = radius_dist(rng);
-        newParticle.position.x +=
+        new_particle.position.x +=
             std::cos(radius_offset_angle) * radius_offset_dist;
-        newParticle.position.y +=
+        new_particle.position.y +=
             std::sin(radius_offset_angle) * radius_offset_dist;
 
         float base_angle =
@@ -54,13 +54,13 @@ void UpdateEmitter(
 
         float cos_angle = std::cos(final_angle);
         float sin_angle = std::sin(final_angle);
-        newParticle.velocity =
+        new_particle.velocity =
             Engine::Graphics::Vector2f(cos_angle * emitter.particleSpeed,
                 sin_angle * emitter.particleSpeed);
 
-        newParticle.maxLifetime = emitter.particleLifetime;
-        newParticle.lifetime = emitter.particleLifetime;
-        emitter.particles.push_back(newParticle);
+        new_particle.maxLifetime = emitter.particleLifetime;
+        new_particle.lifetime = emitter.particleLifetime;
+        emitter.particles.push_back(new_particle);
     }
 
     for (auto it = emitter.particles.begin(); it != emitter.particles.end();) {
