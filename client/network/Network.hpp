@@ -206,13 +206,6 @@ class ServerConnection {
         return was_connected_once_.load() && !connected_.load();
     }
 
-    /**
-     * @brief Mark that we were connected (called after successful connection).
-     */
-    void MarkConnectedOnce() {
-        was_connected_once_.store(true);
-    }
-
  private:
     // Async handlers
     void AsyncReceiveUDP();
