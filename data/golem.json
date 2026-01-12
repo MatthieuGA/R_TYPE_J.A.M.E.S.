@@ -1,11 +1,11 @@
 {
     "tag": "golem",
-    "health": 500,
-    "speed": 100.0,
-    "spritePath": "ennemies/4/Idle.png",
+    "health": 300,
+    "speed": 30.0,
+    "spritePath": "ennemies/golem/golem_Boss.png",
     "hitbox": {
-        "x": 32.0,
-        "y": 32.0
+        "x": 100.0,
+        "y": 100.0
     },
     "offset_healthbar": {
         "x": 7.0,
