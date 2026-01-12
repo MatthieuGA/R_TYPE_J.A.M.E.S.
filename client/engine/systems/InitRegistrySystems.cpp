@@ -38,8 +38,8 @@ void InitRenderSystems(Rtype::Client::GameWorld &game_world) {
         [&game_world](Eng::registry &r,
             Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
             Eng::sparse_array<Com::Drawable> &drawables) {
-            AnimationSystem(
-                r, game_world.last_delta_, animated_sprites, drawables);
+            AnimationSystem(r, game_world, game_world.last_delta_,
+                animated_sprites, drawables);
         });
 
     // Death animation system

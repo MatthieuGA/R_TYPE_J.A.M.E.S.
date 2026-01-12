@@ -35,7 +35,7 @@ void DrawTextRenderSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> const &transforms,
     Eng::sparse_array<Com::Text> &texts);
 
-void AnimationSystem(Eng::registry &reg, const float dt,
+void AnimationSystem(Eng::registry &reg, GameWorld &game_world, const float dt,
     Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
     Eng::sparse_array<Com::Drawable> &drawables);
 

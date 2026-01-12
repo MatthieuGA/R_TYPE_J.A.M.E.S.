@@ -140,6 +140,11 @@ TEST(Systems, AnimationSystemAdvancesFrame) {
     Eng::sparse_array<Com::AnimatedSprite> anim_sprites;
     Eng::sparse_array<Com::Drawable> drawables;
 
+    auto window = std::make_unique<Rtype::Client::Platform::SFMLWindow>(
+        10, 10, "anim-test");
+    Rtype::Client::GameWorld game_world(
+        std::move(window), "127.0.0.1", 50000, 50000);
+
     // Create an animated sprite component with multiple frames
     Com::AnimatedSprite anim(16, 16, 0.02f);  // frameW, frameH, frameDuration
     anim.animations["Default"].totalFrames = 4;
@@ -164,12 +169,12 @@ TEST(Systems, AnimationSystemAdvancesFrame) {
 
     // First call should advance the current_frame because elapsedTime >=
     // frameDuration
-    AnimationSystem(reg, 0.0f, anim_sprites, drawables);
+    AnimationSystem(reg, game_world, 0.0f, anim_sprites, drawables);
     EXPECT_EQ(anim_sprites[0]->GetCurrentAnimation()->current_frame, 1);
 
     // Second call with zero delta will cause SetFrame to update the drawable
     // rect
-    AnimationSystem(reg, 0.0f, anim_sprites, drawables);
+    AnimationSystem(reg, game_world, 0.0f, anim_sprites, drawables);
     EXPECT_EQ(drawables[0]->current_rect.left,
         anim_sprites[0]->GetCurrentAnimation()->frameWidth);
 }
