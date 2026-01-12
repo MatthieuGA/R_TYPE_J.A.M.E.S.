@@ -214,4 +214,24 @@ Engine::Graphics::Vector2f SFMLRenderContext::GetTextBounds(
     return Engine::Graphics::Vector2f(bounds.width, bounds.height);
 }
 
+Engine::Graphics::Vector2i SFMLRenderContext::GetGridFrameSize(
+    const char *texture_path, int grid_cols, int frame_width) {
+    sf::Texture *texture = GetOrLoadTexture(texture_path);
+    if (!texture) {
+        return Engine::Graphics::Vector2i(0, 0);
+    }
+    sf::Vector2u texture_size = texture->getSize();
+    // Calculate frame height based on grid layout
+    // Total height / (texture_height / frame_width * grid_cols) = frame_height
+    if (grid_cols <= 0 || frame_width <= 0) {
+        return Engine::Graphics::Vector2i(frame_width, 0);
+    }
+    int frame_height = static_cast<int>(texture_size.y) /
+                       ((static_cast<int>(texture_size.x) / frame_width));
+    if (frame_height <= 0) {
+        frame_height = static_cast<int>(texture_size.y);
+    }
+    return Engine::Graphics::Vector2i(frame_width, frame_height);
+}
+
 }  // namespace Rtype::Client::Graphics

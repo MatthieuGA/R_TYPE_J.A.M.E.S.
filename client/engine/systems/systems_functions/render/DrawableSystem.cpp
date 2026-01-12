@@ -175,12 +175,9 @@ void RenderOneEntity(Eng::sparse_array<Com::Transform> const &transforms,
             static_cast<float>(drawable->current_rect.height));
     } else {
         // Static sprite - query backend for full texture size
-        auto *sfml_context =
-            dynamic_cast<Rtype::Client::Graphics::SFMLRenderContext *>(
-                game_world.GetRenderContext());
-        if (sfml_context) {
-            texture_size =
-                sfml_context->GetTextureSize(drawable->texture_path.c_str());
+        if (game_world.GetRenderContext()) {
+            texture_size = game_world.GetRenderContext()->GetTextureSize(
+                drawable->texture_path.c_str());
         }
     }
 

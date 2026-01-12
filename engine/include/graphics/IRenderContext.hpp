@@ -182,6 +182,47 @@ class IRenderContext {
      * @param vertices Vertex array data
      */
     virtual void DrawVertexArray(const VertexArray &vertices) = 0;
+
+    /**
+     * @brief Query texture dimensions.
+     *
+     * Used by systems to determine sprite bounds for origin calculation
+     * and animation frame setup. Backend is responsible for caching
+     * textures and returning their dimensions.
+     *
+     * @param texture_path Path to texture file
+     * @return Texture dimensions {width, height} in pixels, or {0, 0} if not
+     * found
+     */
+    virtual Vector2f GetTextureSize(const char *texture_path) = 0;
+
+    /**
+     * @brief Query text bounds.
+     *
+     * Used by text rendering systems to calculate proper text centering
+     * and layout. Returns the bounding box of rendered text.
+     *
+     * @param font_path Path to font file
+     * @param text Text string to measure
+     * @param character_size Font size in pixels
+     * @return Bounding box {x, y, width, height} of the text
+     */
+    virtual Vector2f GetTextBounds(const char *font_path, const char *text,
+        unsigned int character_size) = 0;
+
+    /**
+     * @brief Query grid frame size for animation systems.
+     *
+     * For grid-based sprite sheets, calculates the dimensions of a single
+     * frame given the grid layout.
+     *
+     * @param texture_path Path to texture file
+     * @param grid_cols Number of columns in the grid
+     * @param frame_width Width of one frame in pixels
+     * @return Frame dimensions {width, height} in pixels
+     */
+    virtual Vector2i GetGridFrameSize(
+        const char *texture_path, int grid_cols, int frame_width) = 0;
 };
 
 }  // namespace Graphics

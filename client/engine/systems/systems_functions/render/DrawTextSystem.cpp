@@ -40,12 +40,9 @@ void RenderOneTextEntity(Eng::sparse_array<Com::Transform> const &transforms,
     // Calculate text origin for centering (using GetOffsetFromTransform)
     // Query backend for actual text bounding box
     Engine::Graphics::Vector2f text_bounds(1.0f, 1.0f);
-    auto *sfml_context =
-        dynamic_cast<Rtype::Client::Graphics::SFMLRenderContext *>(
-            game_world.GetRenderContext());
-    if (sfml_context) {
-        text_bounds = sfml_context->GetTextBounds(text->fontPath.c_str(),
-            text->content.c_str(),
+    if (game_world.GetRenderContext()) {
+        text_bounds = game_world.GetRenderContext()->GetTextBounds(
+            text->fontPath.c_str(), text->content.c_str(),
             static_cast<unsigned int>(text->characterSize * FONT_SIZE_SCALE));
     }
 

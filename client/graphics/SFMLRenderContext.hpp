@@ -67,7 +67,7 @@ class SFMLRenderContext : public Engine::Graphics::IRenderContext {
      * @param path Path to texture file
      * @return Size as Vector2f, or (0,0) if texture not found
      */
-    Engine::Graphics::Vector2f GetTextureSize(const char *path);
+    Engine::Graphics::Vector2f GetTextureSize(const char *path) override;
 
     /**
      * @brief Get the bounding box size of rendered text.
@@ -78,7 +78,18 @@ class SFMLRenderContext : public Engine::Graphics::IRenderContext {
      * @return Size as Vector2f, or (0,0) if font not found
      */
     Engine::Graphics::Vector2f GetTextBounds(
-        const char *font_path, const char *text, unsigned int size);
+        const char *font_path, const char *text, unsigned int size) override;
+
+    /**
+     * @brief Get the frame size for an animated grid-based sprite.
+     *
+     * @param texture_path Path to texture file
+     * @param grid_cols Number of columns in the sprite grid
+     * @param frame_width Width of each frame in pixels
+     * @return Frame size as Vector2i {frame_width, calculated_frame_height}
+     */
+    Engine::Graphics::Vector2i GetGridFrameSize(
+        const char *texture_path, int grid_cols, int frame_width) override;
 
  private:
     /**
