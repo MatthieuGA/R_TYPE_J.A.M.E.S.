@@ -44,6 +44,18 @@ void HandleCollision(Eng::registry &reg, GameWorld &game_world,
         animSprite->SetCurrentAnimation("Hit", true);
         animSprite->GetCurrentAnimation()->current_frame = 1;
     }
+
+    // Remove the projectile after collision
+    reg.RemoveComponent<Component::Projectile>(projEntity);
+    if (animated_sprites.has(j)) {
+        auto &projAnimSprite = animated_sprites[j];
+        projAnimSprite->SetCurrentAnimation("Death", false);
+        projAnimSprite->animated = true;
+        reg.AddComponent<Component::AnimationDeath>(
+            projEntity, Component::AnimationDeath{true});
+    } else {
+        reg.KillEntity(projEntity);
+    }
 }
 
 /**
