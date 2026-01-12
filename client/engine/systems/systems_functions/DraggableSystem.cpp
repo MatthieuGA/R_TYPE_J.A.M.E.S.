@@ -28,7 +28,8 @@ void DraggableSystem(Eng::registry &reg, GameWorld &game_world,
     if (!game_world.window_.hasFocus())
         return;
 
-    // TODO : mapPixelToCoords is SFML-specific, will have to abstract
+    // TODO(MatthieuGA): mapPixelToCoords is SFML-specific,
+    // will have to abstract
     sf::Vector2f sfMousePos = game_world.window_.mapPixelToCoords(
         sf::Mouse::getPosition(game_world.window_));
     Engine::Graphics::Vector2f mousePos(sfMousePos.x, sfMousePos.y);
