@@ -30,60 +30,97 @@ class ArgvHelper {
     std::vector<char *> argv_;       // Points into args_
 };
 
-TEST(CommandLineParser, ParsesMinimalValidArguments) {
-    ArgvHelper args({"r-type_client", "192.168.1.1", "50000", "TestUser"});
+// =============================================================================
+// Solo Mode Tests (new functionality)
+// =============================================================================
+
+TEST(CommandLineParser, ParsesUsernameOnlySoloMode) {
+    ArgvHelper args({"r-type_client", "TestPlayer"});
 
     RC::ClientConfig config =
         RC::CommandLineParser::Parse(args.Argc(), args.Argv());
 
-    EXPECT_EQ(config.server_ip, "192.168.1.1");
+    EXPECT_TRUE(config.solo_mode);
+    EXPECT_EQ(config.username, "TestPlayer");
+    EXPECT_EQ(config.server_ip, "127.0.0.1");
     EXPECT_EQ(config.tcp_port, 50000);
-    EXPECT_EQ(config.udp_port, 50000);  // Defaults to TCP port
-    EXPECT_EQ(config.username, "TestUser");
+    EXPECT_EQ(config.udp_port, 50000);
 }
 
-TEST(CommandLineParser, ParsesWithShortUdpFlag) {
-    ArgvHelper args(
-        {"r-type_client", "127.0.0.1", "50000", "Player1", "-up", "50001"});
+TEST(CommandLineParser, ParsesUsernameAndIPWithDefaultPort) {
+    ArgvHelper args({"r-type_client", "Player1", "192.168.1.100"});
 
     RC::ClientConfig config =
         RC::CommandLineParser::Parse(args.Argc(), args.Argv());
 
+    EXPECT_FALSE(config.solo_mode);
+    EXPECT_EQ(config.username, "Player1");
+    EXPECT_EQ(config.server_ip, "192.168.1.100");
+    EXPECT_EQ(config.tcp_port, 50000);  // Default port
+    EXPECT_EQ(config.udp_port, 50000);
+}
+
+TEST(CommandLineParser, ParsesFullArgumentsExplicitMode) {
+    ArgvHelper args({"r-type_client", "TestUser", "192.168.1.1", "50000"});
+
+    RC::ClientConfig config =
+        RC::CommandLineParser::Parse(args.Argc(), args.Argv());
+
+    EXPECT_FALSE(config.solo_mode);
+    EXPECT_EQ(config.username, "TestUser");
+    EXPECT_EQ(config.server_ip, "192.168.1.1");
+    EXPECT_EQ(config.tcp_port, 50000);
+    EXPECT_EQ(config.udp_port, 50000);
+}
+
+TEST(CommandLineParser, ParsesFullArgumentsWithUdpPort) {
+    ArgvHelper args(
+        {"r-type_client", "Player1", "127.0.0.1", "50000", "-up", "50001"});
+
+    RC::ClientConfig config =
+        RC::CommandLineParser::Parse(args.Argc(), args.Argv());
+
+    EXPECT_FALSE(config.solo_mode);
+    EXPECT_EQ(config.username, "Player1");
     EXPECT_EQ(config.server_ip, "127.0.0.1");
     EXPECT_EQ(config.tcp_port, 50000);
     EXPECT_EQ(config.udp_port, 50001);
-    EXPECT_EQ(config.username, "Player1");
 }
 
 TEST(CommandLineParser, ParsesWithLongUdpFlag) {
     ArgvHelper args(
-        {"r-type_client", "10.0.0.1", "12345", "User", "--udp-port", "54321"});
+        {"r-type_client", "User", "10.0.0.1", "12345", "--udp-port", "54321"});
 
     RC::ClientConfig config =
         RC::CommandLineParser::Parse(args.Argc(), args.Argv());
 
+    EXPECT_FALSE(config.solo_mode);
+    EXPECT_EQ(config.username, "User");
     EXPECT_EQ(config.server_ip, "10.0.0.1");
     EXPECT_EQ(config.tcp_port, 12345);
     EXPECT_EQ(config.udp_port, 54321);
-    EXPECT_EQ(config.username, "User");
 }
 
+// =============================================================================
+// Error Handling Tests
+// =============================================================================
+
 TEST(CommandLineParser, ThrowsOnMissingArguments) {
-    ArgvHelper args({"r-type_client", "127.0.0.1"});
+    ArgvHelper args({"r-type_client"});
 
     EXPECT_EXIT(RC::CommandLineParser::Parse(args.Argc(), args.Argv()),
-        ::testing::ExitedWithCode(EXIT_FAILURE), "Missing required arguments");
+        ::testing::ExitedWithCode(EXIT_FAILURE), "Missing required argument");
 }
 
 TEST(CommandLineParser, ThrowsOnInvalidTcpPort) {
-    ArgvHelper args({"r-type_client", "127.0.0.1", "70000", "User"});
+    ArgvHelper args({"r-type_client", "User", "127.0.0.1", "70000"});
 
     EXPECT_EXIT(RC::CommandLineParser::Parse(args.Argc(), args.Argv()),
         ::testing::ExitedWithCode(EXIT_FAILURE), "Invalid TCP-PORT");
 }
 
 TEST(CommandLineParser, ThrowsOnNonNumericTcpPort) {
-    ArgvHelper args({"r-type_client", "127.0.0.1", "abc", "User"});
+    ArgvHelper args({"r-type_client", "User", "127.0.0.1", "abc"});
 
     EXPECT_EXIT(RC::CommandLineParser::Parse(args.Argc(), args.Argv()),
         ::testing::ExitedWithCode(EXIT_FAILURE), "Invalid TCP-PORT");
@@ -91,14 +128,14 @@ TEST(CommandLineParser, ThrowsOnNonNumericTcpPort) {
 
 TEST(CommandLineParser, ThrowsOnInvalidUdpPort) {
     ArgvHelper args(
-        {"r-type_client", "127.0.0.1", "50000", "User", "-up", "0"});
+        {"r-type_client", "User", "127.0.0.1", "50000", "-up", "0"});
 
     EXPECT_EXIT(RC::CommandLineParser::Parse(args.Argc(), args.Argv()),
         ::testing::ExitedWithCode(EXIT_FAILURE), "Invalid UDP-PORT");
 }
 
 TEST(CommandLineParser, ThrowsOnEmptyUsername) {
-    ArgvHelper args({"r-type_client", "127.0.0.1", "50000", ""});
+    ArgvHelper args({"r-type_client", ""});
 
     EXPECT_EXIT(RC::CommandLineParser::Parse(args.Argc(), args.Argv()),
         ::testing::ExitedWithCode(EXIT_FAILURE), "USERNAME cannot be empty");
@@ -106,7 +143,7 @@ TEST(CommandLineParser, ThrowsOnEmptyUsername) {
 
 TEST(CommandLineParser, ThrowsOnUsernameTooLong) {
     std::string long_username(33, 'A');  // 33 characters (max is 32)
-    ArgvHelper args({"r-type_client", "127.0.0.1", "50000", long_username});
+    ArgvHelper args({"r-type_client", long_username});
 
     EXPECT_EXIT(RC::CommandLineParser::Parse(args.Argc(), args.Argv()),
         ::testing::ExitedWithCode(EXIT_FAILURE),
@@ -115,7 +152,7 @@ TEST(CommandLineParser, ThrowsOnUsernameTooLong) {
 
 TEST(CommandLineParser, AcceptsMaxLengthUsername) {
     std::string max_username(32, 'A');  // Exactly 32 characters
-    ArgvHelper args({"r-type_client", "127.0.0.1", "50000", max_username});
+    ArgvHelper args({"r-type_client", max_username, "127.0.0.1", "50000"});
 
     RC::ClientConfig config =
         RC::CommandLineParser::Parse(args.Argc(), args.Argv());
@@ -125,7 +162,7 @@ TEST(CommandLineParser, AcceptsMaxLengthUsername) {
 }
 
 TEST(CommandLineParser, ThrowsOnMissingUdpPortValue) {
-    ArgvHelper args({"r-type_client", "127.0.0.1", "50000", "User", "-up"});
+    ArgvHelper args({"r-type_client", "User", "127.0.0.1", "50000", "-up"});
 
     EXPECT_EXIT(RC::CommandLineParser::Parse(args.Argc(), args.Argv()),
         ::testing::ExitedWithCode(EXIT_FAILURE),
@@ -134,7 +171,7 @@ TEST(CommandLineParser, ThrowsOnMissingUdpPortValue) {
 
 TEST(CommandLineParser, ThrowsOnUnknownFlag) {
     ArgvHelper args(
-        {"r-type_client", "127.0.0.1", "50000", "User", "--verbose"});
+        {"r-type_client", "User", "127.0.0.1", "50000", "--verbose"});
 
     EXPECT_EXIT(RC::CommandLineParser::Parse(args.Argc(), args.Argv()),
         ::testing::ExitedWithCode(EXIT_FAILURE), "Unknown argument");
@@ -147,22 +184,30 @@ TEST(CommandLineParser, ExitsWithSuccessOnHelpFlag) {
         ::testing::ExitedWithCode(EXIT_SUCCESS), "Usage:");
 }
 
+// =============================================================================
+// Port Boundary Tests
+// =============================================================================
+
 TEST(CommandLineParser, ValidatesPortBoundaries) {
     // Test minimum valid port
-    ArgvHelper args_min({"r-type_client", "127.0.0.1", "1", "User"});
+    ArgvHelper args_min({"r-type_client", "User", "127.0.0.1", "1"});
     RC::ClientConfig config_min =
         RC::CommandLineParser::Parse(args_min.Argc(), args_min.Argv());
     EXPECT_EQ(config_min.tcp_port, 1);
 
     // Test maximum valid port
-    ArgvHelper args_max({"r-type_client", "127.0.0.1", "65535", "User"});
+    ArgvHelper args_max({"r-type_client", "User", "127.0.0.1", "65535"});
     RC::ClientConfig config_max =
         RC::CommandLineParser::Parse(args_max.Argc(), args_max.Argv());
     EXPECT_EQ(config_max.tcp_port, 65535);
 }
 
+// =============================================================================
+// IP Address/Hostname Tests
+// =============================================================================
+
 TEST(CommandLineParser, HandlesIPv4Addresses) {
-    ArgvHelper args({"r-type_client", "192.168.1.100", "50000", "User"});
+    ArgvHelper args({"r-type_client", "User", "192.168.1.100", "50000"});
 
     RC::ClientConfig config =
         RC::CommandLineParser::Parse(args.Argc(), args.Argv());
@@ -171,7 +216,7 @@ TEST(CommandLineParser, HandlesIPv4Addresses) {
 }
 
 TEST(CommandLineParser, HandlesHostnames) {
-    ArgvHelper args({"r-type_client", "localhost", "50000", "User"});
+    ArgvHelper args({"r-type_client", "User", "localhost", "50000"});
 
     RC::ClientConfig config =
         RC::CommandLineParser::Parse(args.Argc(), args.Argv());
@@ -180,10 +225,43 @@ TEST(CommandLineParser, HandlesHostnames) {
 }
 
 TEST(CommandLineParser, HandlesSpecialCharactersInUsername) {
-    ArgvHelper args({"r-type_client", "127.0.0.1", "50000", "User_123-XYZ"});
+    ArgvHelper args({"r-type_client", "User_123-XYZ", "127.0.0.1", "50000"});
 
     RC::ClientConfig config =
         RC::CommandLineParser::Parse(args.Argc(), args.Argv());
 
     EXPECT_EQ(config.username, "User_123-XYZ");
+}
+
+// =============================================================================
+// Solo Mode Edge Cases
+// =============================================================================
+
+TEST(CommandLineParser, SoloModeWithUdpPort) {
+    // Solo mode but with UDP port override
+    ArgvHelper args({"r-type_client", "Player1", "-up", "50001"});
+
+    RC::ClientConfig config =
+        RC::CommandLineParser::Parse(args.Argc(), args.Argv());
+
+    EXPECT_TRUE(config.solo_mode);
+    EXPECT_EQ(config.username, "Player1");
+    EXPECT_EQ(config.server_ip, "127.0.0.1");
+    EXPECT_EQ(config.tcp_port, 50000);
+    EXPECT_EQ(config.udp_port, 50001);
+}
+
+TEST(CommandLineParser, TwoArgsWithUdpPort) {
+    // IP but no port, with UDP port flag
+    ArgvHelper args(
+        {"r-type_client", "Player1", "192.168.1.1", "--udp-port", "50002"});
+
+    RC::ClientConfig config =
+        RC::CommandLineParser::Parse(args.Argc(), args.Argv());
+
+    EXPECT_FALSE(config.solo_mode);
+    EXPECT_EQ(config.username, "Player1");
+    EXPECT_EQ(config.server_ip, "192.168.1.1");
+    EXPECT_EQ(config.tcp_port, 50000);
+    EXPECT_EQ(config.udp_port, 50002);
 }

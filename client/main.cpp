@@ -9,10 +9,8 @@
 #include "engine/audio/SFMLAudioBackend.hpp"
 #include "game/ClientApplication.hpp"
 #include "game/CommandLineParser.hpp"
-#include "game/InitRegistry.hpp"
+#include "game/ServerSpawner.hpp"
 #include "game/factory/factory_ennemies/FactoryActors.hpp"
-#include "game/scenes_management/InitScenes.hpp"
-#include "include/registry.hpp"
 
 namespace RC = Rtype::Client;
 namespace Audio = Rtype::Client::Audio;
@@ -22,12 +20,34 @@ int main(int argc, char *argv[]) {
         // Parse command-line arguments
         RC::ClientConfig config = RC::CommandLineParser::Parse(argc, argv);
 
+        // Handle solo mode: spawn local server
+        if (config.solo_mode) {
+            RC::ServerSpawner::SetupSignalHandlers();
+
+            std::cout << "[Client] Starting in solo mode..." << std::endl;
+
+            try {
+                uint16_t port = RC::ServerSpawner::SpawnLocalServer();
+                config.tcp_port = port;
+                config.udp_port = port;
+            } catch (const std::exception &e) {
+                std::cerr << "[Client] Failed to start local server: "
+                          << e.what() << std::endl;
+                return EXIT_FAILURE;
+            }
+        }
+
+        // RAII guard to ensure server cleanup on any exit path
+        RC::ServerGuard server_guard(config.solo_mode);
+
         // Display connection parameters
         std::cout << "[Client] Starting R-Type client...\n"
                   << "[Client] Server IP: " << config.server_ip << "\n"
                   << "[Client] TCP Port: " << config.tcp_port << "\n"
                   << "[Client] UDP Port: " << config.udp_port << "\n"
-                  << "[Client] Username: " << config.username << std::endl;
+                  << "[Client] Username: " << config.username << "\n"
+                  << "[Client] Mode: "
+                  << (config.solo_mode ? "Solo" : "Online") << std::endl;
 
         // Initialize game world with network parameters
         RC::GameWorld game_world(

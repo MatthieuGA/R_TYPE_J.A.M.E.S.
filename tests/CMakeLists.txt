@@ -121,3 +121,28 @@ target_link_libraries(cli_parser_tests
 
 # Discover CLI parser tests for CTest
 gtest_discover_tests(cli_parser_tests)
+
+# Create separate test executable for ServerSpawner
+# Requires filesystem and threading support
+add_executable(server_spawner_tests
+    test_server_spawner.cpp
+    ${CMAKE_SOURCE_DIR}/client/game/ServerSpawner.cpp
+)
+
+# Include directories for ServerSpawner tests
+target_include_directories(server_spawner_tests
+    PRIVATE
+        ${CMAKE_SOURCE_DIR}/client
+        ${CMAKE_SOURCE_DIR}/client/include
+)
+
+# Link with Google Test and threading
+find_package(Threads REQUIRED)
+target_link_libraries(server_spawner_tests
+    PRIVATE
+        GTest::gtest_main
+        Threads::Threads
+)
+
+# Discover ServerSpawner tests for CTest
+gtest_discover_tests(server_spawner_tests)

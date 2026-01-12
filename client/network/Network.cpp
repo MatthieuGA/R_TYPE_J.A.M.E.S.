@@ -263,6 +263,7 @@ void ServerConnection::HandleConnectAck(const std::vector<uint8_t> &data) {
     if (status == 0x00) {
         player_id_.store(pid);
         connected_.store(true);
+        was_connected_once_.store(true);  // Track that we connected
 
         // Initialize lobby counters from CONNECT_ACK
         lobby_connected_count_.store(connected);
