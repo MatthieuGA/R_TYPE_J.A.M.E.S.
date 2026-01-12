@@ -23,6 +23,13 @@ namespace Rtype::Client {
 void DeathHandling(Engine::registry &reg, GameWorld &game_world,
     Engine::sparse_array<Component::AnimatedSprite> &animated_sprites,
     Engine::entity entity, std::size_t i) {
+    // Check if this is a player and play death sound
+    if (reg.GetComponents<Component::PlayerTag>().has(i)) {
+        if (game_world.audio_manager_) {
+            game_world.audio_manager_->PlaySound("player_death");
+        }
+    }
+
     // Check if this is a mermaid and play death sound
     auto &enemy_types = reg.GetComponents<Component::EnemyType>();
     if (enemy_types.has(i)) {

@@ -65,9 +65,7 @@ void GameOverSystem(Engine::registry &reg, GameWorld &game_world,
             state.text_phase = true;  // show text phase only
             server_connection.ResetGameEnded();
 
-            // Play player death sound
             if (game_world.audio_manager_) {
-                game_world.audio_manager_->PlaySound("player_death");
                 game_world.audio_manager_->StopMusic();
             }
 
