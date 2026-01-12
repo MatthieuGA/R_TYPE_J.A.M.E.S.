@@ -60,6 +60,14 @@ class AudioManager {
     void StopMusic();
 
     /**
+     * @brief Check if a specific music track is currently playing.
+     *
+     * @param id Music asset identifier.
+     * @return True if the music is playing, false otherwise.
+     */
+    bool IsMusicPlaying(const std::string &id) const;
+
+    /**
      * @brief Set SFX volume.
      *
      * @param volume Volume level (0.0 to 1.0).

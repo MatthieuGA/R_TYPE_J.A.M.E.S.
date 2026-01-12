@@ -52,6 +52,14 @@ class IAudioBackend {
     virtual void StopMusic() = 0;
 
     /**
+     * @brief Check if a specific music track is currently playing.
+     *
+     * @param id Unique identifier for the music.
+     * @return True if the music is playing, false otherwise.
+     */
+    virtual bool IsMusicPlaying(const std::string &id) const = 0;
+
+    /**
      * @brief Set volume for a specific category.
      *
      * @param category The sound category (SFX or MUSIC).

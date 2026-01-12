@@ -23,6 +23,11 @@ SFMLAudioBackend::~SFMLAudioBackend() {
 
 bool SFMLAudioBackend::LoadSound(
     const std::string &id, const std::string &path) {
+    // Skip if already loaded
+    if (sound_buffers_.find(id) != sound_buffers_.end()) {
+        return true;
+    }
+
     auto buffer = std::make_unique<sf::SoundBuffer>();
     if (!buffer->loadFromFile(path)) {
         std::cerr << "[Audio] Failed to load sound: " << path << std::endl;
@@ -34,6 +39,11 @@ bool SFMLAudioBackend::LoadSound(
 
 bool SFMLAudioBackend::LoadMusic(
     const std::string &id, const std::string &path) {
+    // Skip if already loaded
+    if (music_map_.find(id) != music_map_.end()) {
+        return true;
+    }
+
     auto music = std::make_unique<sf::Music>();
     if (!music->openFromFile(path)) {
         std::cerr << "[Audio] Failed to load music: " << path << std::endl;
@@ -55,6 +65,14 @@ void SFMLAudioBackend::StopMusic() {
         }
     }
     current_music_id_.clear();
+}
+
+bool SFMLAudioBackend::IsMusicPlaying(const std::string &id) const {
+    auto it = music_map_.find(id);
+    if (it == music_map_.end()) {
+        return false;
+    }
+    return it->second->getStatus() == sf::Music::Playing;
 }
 
 void SFMLAudioBackend::SetCategoryVolume(

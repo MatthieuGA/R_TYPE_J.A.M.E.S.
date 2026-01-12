@@ -81,6 +81,11 @@ class MockAudioBackend : public IAudioBackend {
         stop_music_calls_++;
     }
 
+    bool IsMusicPlaying(const std::string &id) const override {
+        // Simple mock: return false (can be extended if needed)
+        return false;
+    }
+
     void SetCategoryVolume(SoundCategory category, float volume) override {
         if (category == SoundCategory::SFX) {
             sfx_volume_ = volume;

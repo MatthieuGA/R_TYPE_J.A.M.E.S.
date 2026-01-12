@@ -32,6 +32,7 @@ class SFMLAudioBackend : public IAudioBackend {
     bool LoadMusic(const std::string &id, const std::string &path) override;
     void Play(const PlaybackRequest &request) override;
     void StopMusic() override;
+    bool IsMusicPlaying(const std::string &id) const override;
     void SetCategoryVolume(SoundCategory category, float volume) override;
     float GetCategoryVolume(SoundCategory category) const override;
     bool GetCategoryMuteStatus(SoundCategory category) const override;

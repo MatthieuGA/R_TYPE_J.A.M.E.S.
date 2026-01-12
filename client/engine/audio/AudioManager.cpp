@@ -46,6 +46,10 @@ void AudioManager::StopMusic() {
     backend_->StopMusic();
 }
 
+bool AudioManager::IsMusicPlaying(const std::string &id) const {
+    return backend_->IsMusicPlaying(id);
+}
+
 void AudioManager::SetSfxVolume(float volume) {
     backend_->SetCategoryVolume(SoundCategory::SFX, volume);
 }
