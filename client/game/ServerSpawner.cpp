@@ -300,8 +300,32 @@ void SignalHandlerCallback(int signal) {
 
 }  // namespace
 
+#ifdef _WIN32
+/**
+ * @brief Windows console control handler for graceful shutdown.
+ *
+ * Called when the user presses Ctrl+C or closes the console window.
+ *
+ * @param ctrl_type The type of console control event.
+ * @return TRUE if handled, FALSE to pass to next handler.
+ */
+BOOL WINAPI ConsoleCtrlHandler(DWORD ctrl_type) {
+    switch (ctrl_type) {
+        case CTRL_C_EVENT:
+        case CTRL_BREAK_EVENT:
+        case CTRL_CLOSE_EVENT:
+            ServerSpawner::TerminateServer();
+            return TRUE;
+        default:
+            return FALSE;
+    }
+}
+#endif
+
 void ServerSpawner::SetupSignalHandlers() {
-#ifndef _WIN32
+#ifdef _WIN32
+    SetConsoleCtrlHandler(ConsoleCtrlHandler, TRUE);
+#else
     std::signal(SIGINT, SignalHandlerCallback);
     std::signal(SIGTERM, SignalHandlerCallback);
 #endif
