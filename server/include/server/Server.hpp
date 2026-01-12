@@ -1,4 +1,5 @@
 #pragma once
+#include <chrono>
 #include <cstdint>
 #include <vector>
 
@@ -194,8 +195,10 @@ class Server {
     PacketSender packet_sender_;
     PacketHandler packet_handler_;
 
-    static constexpr int TICK_RATE_MS = 16;  // ~60 FPS
+    static constexpr int kTickTimerMs =
+        16;  // timer resolution (~60 FPS target)
     int tick_count_;
+    std::chrono::steady_clock::time_point last_tick_time_;
 
     // Player tracking for game over detection
     int total_players_{0};

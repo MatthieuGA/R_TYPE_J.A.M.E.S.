@@ -375,11 +375,11 @@ void PaternMovementSystem(Engine::registry &reg,
     Engine::sparse_array<Component::PatternMovement> &patern_movements) {
     for (auto &&[i, transform, velocity, patern_movement] :
         make_indexed_zipper(transforms, velocities, patern_movements)) {
-        patern_movement.elapsed += TICK_RATE_SECONDS;
+        patern_movement.elapsed += g_frame_delta_seconds;
 
         try {
             GetNextMovementFunction(patern_movement.type)(reg, i, transform,
-                velocity, patern_movement, TICK_RATE_SECONDS);
+                velocity, patern_movement, g_frame_delta_seconds);
         } catch (const std::exception &e) {
             continue;
         }
