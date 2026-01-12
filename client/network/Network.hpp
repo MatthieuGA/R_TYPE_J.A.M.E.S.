@@ -193,6 +193,26 @@ class ServerConnection {
         last_rejection_status_.store(0);
     }
 
+    /**
+     * @brief Check if connection was lost unexpectedly.
+     *
+     * Returns true if the client was previously connected but the connection
+     * was lost (server closed, network error, etc.). This is detected by
+     * checking if connected_ became false after being true.
+     *
+     * @return true if connection was lost unexpectedly
+     */
+    bool WasDisconnectedUnexpectedly() const {
+        return was_connected_once_.load() && !connected_.load();
+    }
+
+    /**
+     * @brief Mark that we were connected (called after successful connection).
+     */
+    void MarkConnectedOnce() {
+        was_connected_once_.store(true);
+    }
+
  private:
     // Async handlers
     void AsyncReceiveUDP();
@@ -215,6 +235,8 @@ class ServerConnection {
     std::atomic<uint8_t> player_id_;
     std::atomic<bool> game_started_;
     std::atomic<bool> game_ended_{false};
+    std::atomic<bool> was_connected_once_{
+        false};  // Track if we ever connected
     uint32_t current_tick_;
     // Entity id the server told us we control (from GAME_START packet)
     uint32_t controlled_entity_id_{0};
