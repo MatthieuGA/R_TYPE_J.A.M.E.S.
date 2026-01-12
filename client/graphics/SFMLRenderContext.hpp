@@ -24,6 +24,7 @@
 namespace sf {
 class Texture;
 class Font;
+class Shader;
 }  // namespace sf
 
 namespace Rtype::Client::Graphics {
@@ -50,7 +51,7 @@ class SFMLRenderContext : public Engine::Graphics::IRenderContext {
 
     // IRenderContext interface implementation
     void DrawSprite(const Engine::Graphics::DrawableSprite &sprite,
-        void *shader_ptr = nullptr) override;
+        const Engine::Graphics::DrawableShader *shader = nullptr) override;
 
     void DrawText(const Engine::Graphics::DrawableText &text) override;
 
@@ -85,6 +86,10 @@ class SFMLRenderContext : public Engine::Graphics::IRenderContext {
      */
     sf::Color ToSFMLColor(const Engine::Graphics::Color &color);
 
+    /// Get or load a shader from cache.
+    sf::Shader *GetOrLoadShader(
+        const Engine::Graphics::DrawableShader &shader);
+
     /// Reference to SFML window
     sf::RenderWindow &window_;
 
@@ -94,6 +99,9 @@ class SFMLRenderContext : public Engine::Graphics::IRenderContext {
 
     /// Font cache (path -> font)
     std::unordered_map<std::string, std::shared_ptr<sf::Font>> font_cache_;
+
+    /// Shader cache (path -> shader)
+    std::unordered_map<std::string, std::shared_ptr<sf::Shader>> shader_cache_;
 };
 
 }  // namespace Rtype::Client::Graphics

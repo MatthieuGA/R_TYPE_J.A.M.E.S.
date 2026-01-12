@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "engine/GameWorld.hpp"
@@ -41,15 +42,10 @@ TEST(DrawableSystem, LoadsAndAppliesTransform) {
 
     ASSERT_TRUE(drawables[0].has_value());
     const auto &rendered = drawables[0].value();
-    EXPECT_TRUE(rendered.isLoaded);
-    EXPECT_FLOAT_EQ(rendered.sprite.getPosition().x, transform.x);
-    EXPECT_FLOAT_EQ(rendered.sprite.getPosition().y, transform.y);
-    EXPECT_FLOAT_EQ(rendered.sprite.getScale().x, transform.scale.x);
-    EXPECT_FLOAT_EQ(rendered.sprite.getScale().y, transform.scale.y);
-    EXPECT_FLOAT_EQ(rendered.sprite.getRotation(), transform.rotationDegrees);
-    EXPECT_EQ(rendered.sprite.getColor().a,
-        static_cast<sf::Uint8>(rendered.opacity * 255));
-    EXPECT_EQ(rendered.sprite.getColor().g, sf::Color::Green.g);
+    EXPECT_FALSE(rendered.is_loaded);  // No SFML loading in Phase 2
+    EXPECT_EQ(rendered.spritePath, std::string("assets/images/Logo.png"));
+    EXPECT_FLOAT_EQ(rendered.opacity, 0.6f);
+    EXPECT_EQ(rendered.color.r, Engine::Graphics::Color::Green.r);
 }
 
 TEST(DrawableSystem, HandlesMultipleEntitiesSortedByZIndex) {
@@ -82,12 +78,8 @@ TEST(DrawableSystem, HandlesMultipleEntitiesSortedByZIndex) {
 
     ASSERT_TRUE(drawables[0].has_value());
     ASSERT_TRUE(drawables[1].has_value());
-    EXPECT_TRUE(drawables[0]->isLoaded);
-    EXPECT_TRUE(drawables[1]->isLoaded);
-
-    // After processing, transforms are applied to positions
-    EXPECT_FLOAT_EQ(drawables[0]->sprite.getPosition().x, 0.0f);
-    EXPECT_FLOAT_EQ(drawables[0]->sprite.getPosition().y, 0.0f);
-    EXPECT_FLOAT_EQ(drawables[1]->sprite.getPosition().x, 1.0f);
-    EXPECT_FLOAT_EQ(drawables[1]->sprite.getPosition().y, 2.0f);
+    EXPECT_FALSE(drawables[0]->is_loaded);  // Phase 2: no SFML loading
+    EXPECT_FALSE(drawables[1]->is_loaded);
+    EXPECT_EQ(drawables[0]->z_index, 5);
+    EXPECT_EQ(drawables[1]->z_index, 1);
 }

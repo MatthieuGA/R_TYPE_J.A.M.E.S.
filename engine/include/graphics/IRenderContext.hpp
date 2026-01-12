@@ -14,6 +14,8 @@
 #ifndef ENGINE_INCLUDE_GRAPHICS_IRENDERCONTEXT_HPP_
 #define ENGINE_INCLUDE_GRAPHICS_IRENDERCONTEXT_HPP_
 
+#include <vector>
+
 #include "graphics/Types.hpp"
 
 namespace Engine {
@@ -36,6 +38,33 @@ struct DrawableSprite {
     float rotation_degrees;
     /// Color tint with alpha
     Color color;
+    /// Source rectangle for texture cropping (animation frames, etc.)
+    /// {0, 0, 0, 0} means use full texture; otherwise crop to this rect
+    IntRect source_rect;
+    /// Origin point for sprite (local coordinates where sprite pivots)
+    /// Used for centering and rotation
+    Vector2f origin;
+};
+
+/**
+ * @brief Shader data passed to the render backend.
+ *
+ * Contains the shader path and a list of float uniforms to apply
+ * before drawing. The backend is responsible for loading/caching
+ * the shader implementation and setting these uniforms.
+ */
+struct DrawableShader {
+    struct Uniform {
+        const char *name;
+        float value;
+    };
+
+    /// Path to shader file (backend-resolvable, typically prefixed)
+    const char *shader_path;
+    /// Float uniforms to apply (re-applied each draw)
+    std::vector<Uniform> float_uniforms;
+    /// Time in seconds for animated shaders (e.g., sine/cos effects)
+    float time_seconds = 0.0f;
 };
 
 /**
@@ -54,6 +83,12 @@ struct DrawableText {
     Vector2f position;
     /// Color with alpha
     Color color;
+    /// Scale factors (1.0 = original size)
+    /// SFML text scaling; default is {1.0, 1.0}
+    Vector2f scale;
+    /// Origin point for text (local coordinates where text pivots)
+    /// Used for centering and rotation
+    Vector2f origin;
 };
 
 /**
@@ -90,11 +125,11 @@ struct VertexArray {
     enum PrimitiveType {
         Points = 0,
         Lines = 1,
-        LineStrip = 3,
-        Triangles = 4,
-        TriangleStrip = 5,
-        TriangleFan = 6,
-        Quads = 7
+        LineStrip = 2,
+        Triangles = 3,
+        TriangleStrip = 4,
+        TriangleFan = 5,
+        Quads = 6
     };
 
     /// Array of vertices
@@ -124,8 +159,8 @@ class IRenderContext {
      * @param sprite Sprite data to draw
      * @param shader_ptr Optional shader (backend-specific, can be nullptr)
      */
-    virtual void DrawSprite(
-        const DrawableSprite &sprite, void *shader_ptr = nullptr) = 0;
+    virtual void DrawSprite(const DrawableSprite &sprite,
+        const DrawableShader *shader = nullptr) = 0;
 
     /**
      * @brief Draw text.

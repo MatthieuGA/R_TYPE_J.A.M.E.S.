@@ -59,8 +59,39 @@ sf::Color SFMLRenderContext::ToSFMLColor(
     return sf::Color(color.r, color.g, color.b, color.a);
 }
 
+sf::Shader *SFMLRenderContext::GetOrLoadShader(
+    const Engine::Graphics::DrawableShader &shader) {
+    std::string path_str(shader.shader_path);
+
+    // Check cache
+    if (shader_cache_.find(path_str) != shader_cache_.end()) {
+        return shader_cache_[path_str].get();
+    }
+
+    // Load shader (fragment)
+    auto sf_shader = std::make_shared<sf::Shader>();
+    if (!sf_shader->loadFromFile(path_str, sf::Shader::Type::Fragment)) {
+        std::cerr << "ERROR: Failed to load shader from " << shader.shader_path
+                  << "\n";
+        return nullptr;
+    }
+
+    // Set static sampler
+    sf_shader->setUniform("texture", sf::Shader::CurrentTexture);
+
+    // Apply float uniforms
+    for (const auto &uniform : shader.float_uniforms) {
+        if (uniform.name != nullptr)
+            sf_shader->setUniform(uniform.name, uniform.value);
+    }
+
+    shader_cache_[path_str] = sf_shader;
+    return sf_shader.get();
+}
+
 void SFMLRenderContext::DrawSprite(
-    const Engine::Graphics::DrawableSprite &sprite, void *shader_ptr) {
+    const Engine::Graphics::DrawableSprite &sprite,
+    const Engine::Graphics::DrawableShader *shader_ptr) {
     // Load texture
     sf::Texture *texture = GetOrLoadTexture(sprite.texture_path);
     if (!texture) {
@@ -69,6 +100,18 @@ void SFMLRenderContext::DrawSprite(
 
     // Create sprite
     sf::Sprite sfml_sprite(*texture);
+
+    // Apply texture rectangle for animation frames or cropping
+    if (sprite.source_rect.width > 0 && sprite.source_rect.height > 0) {
+        sfml_sprite.setTextureRect(
+            sf::IntRect(sprite.source_rect.left, sprite.source_rect.top,
+                sprite.source_rect.width, sprite.source_rect.height));
+    }
+
+    // Apply origin for centering and rotation
+    sfml_sprite.setOrigin(sprite.origin.x, sprite.origin.y);
+
+    // Apply transformation
     sfml_sprite.setPosition(sprite.position.x, sprite.position.y);
     sfml_sprite.setScale(sprite.scale.x, sprite.scale.y);
     sfml_sprite.setRotation(sprite.rotation_degrees);
@@ -76,8 +119,19 @@ void SFMLRenderContext::DrawSprite(
 
     // Draw with optional shader
     if (shader_ptr != nullptr) {
-        auto *shader = static_cast<sf::Shader *>(shader_ptr);
-        window_.draw(sfml_sprite, sf::RenderStates(shader));
+        sf::Shader *sf_shader = GetOrLoadShader(*shader_ptr);
+        if (sf_shader != nullptr) {
+            // Time uniform (per-draw)
+            sf_shader->setUniform("time", shader_ptr->time_seconds);
+            // Apply float uniforms each draw to ensure updates
+            for (const auto &uniform : shader_ptr->float_uniforms) {
+                if (uniform.name != nullptr)
+                    sf_shader->setUniform(uniform.name, uniform.value);
+            }
+            window_.draw(sfml_sprite, sf::RenderStates(sf_shader));
+        } else {
+            window_.draw(sfml_sprite);
+        }
     } else {
         window_.draw(sfml_sprite);
     }
@@ -95,7 +149,13 @@ void SFMLRenderContext::DrawText(const Engine::Graphics::DrawableText &text) {
     sfml_text.setFont(*font);
     sfml_text.setString(text.text);
     sfml_text.setCharacterSize(text.size);
+
+    // Apply origin for centering
+    sfml_text.setOrigin(text.origin.x, text.origin.y);
+
+    // Apply transformation
     sfml_text.setPosition(text.position.x, text.position.y);
+    sfml_text.setScale(text.scale.x, text.scale.y);
     sfml_text.setFillColor(ToSFMLColor(text.color));
 
     // Draw
