@@ -12,31 +12,6 @@ namespace fs = std::filesystem;
 
 namespace server {
 
-void CreateKamiFishProjectile(Engine::registry &reg, vector2f direction,
-    Component::EnemyShootTag &enemy_shoot, int ownerId,
-    Component::Transform const &transform) {
-    auto projectile_entity = reg.SpawnEntity();
-    reg.AddComponent<Component::NetworkId>(
-        projectile_entity, Component::NetworkId{Server::GetNextNetworkId()});
-    // Add components to projectile entity
-    reg.AddComponent<Component::Transform>(projectile_entity,
-        Component::Transform{
-            transform.x + (enemy_shoot.offset_shoot_position.x *
-                              std::abs(transform.scale.x)),
-            transform.y + (enemy_shoot.offset_shoot_position.y *
-                              std::abs(transform.scale.y)),
-            0.0f, 2.f, Component::Transform::CENTER});
-    reg.AddComponent<Component::Projectile>(projectile_entity,
-        Component::Projectile{
-            Component::Projectile::ProjectileType::Enemy_Mermaid,
-            enemy_shoot.damage_projectile, direction,
-            enemy_shoot.speed_projectile, ownerId, true});
-    reg.AddComponent<Component::HitBox>(
-        projectile_entity, Component::HitBox{8.0f, 8.0f});
-    reg.AddComponent<Component::Velocity>(
-        projectile_entity, Component::Velocity{direction.x, direction.y});
-}
-
 void FactoryActors::CreateKamiFishActor(
     Engine::entity &entity, Engine::registry &reg, EnnemyInfo info) {
     // Add pattern movement following the player

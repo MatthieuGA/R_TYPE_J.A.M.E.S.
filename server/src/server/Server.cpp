@@ -215,14 +215,37 @@ void Server::Update() {
 
     // Check for game over condition (all players dead)
     if (AreAllPlayersDead()) {
-        std::cout << "[Server] All players are dead! Game Over." << std::endl;
+        if (!game_over_pending_) {
+            std::cout << "[Server] All players are dead! Starting game over "
+                         "delay..."
+                      << std::endl;
+            game_over_pending_ = true;
+            game_over_timer_ = 0.0f;
+        } else {
+            // Accumulate time (assuming 16ms per tick)
+            game_over_timer_ += g_frame_delta_ms / 1000.0f;
 
-        // Send GAME_END packet to all clients (0 = no winner, game lost)
-        packet_sender_.SendGameEnd(0);
+            if (game_over_timer_ >= GAME_OVER_DELAY_SEC) {
+                std::cout << "[Server] Game over delay complete. Sending "
+                             "GAME_END packet."
+                          << std::endl;
 
-        // Reset server to lobby state
-        ResetToLobby();
-        return;
+                // Send GAME_END packet to all clients (0 = no winner, game
+                // lost)
+                packet_sender_.SendGameEnd(0);
+
+                // Reset server to lobby state
+                ResetToLobby();
+                game_over_pending_ = false;
+                game_over_timer_ = 0.0f;
+                return;
+            }
+        }
+    } else {
+        // Reset game over pending if players are alive again (shouldn't
+        // happen but safe)
+        game_over_pending_ = false;
+        game_over_timer_ = 0.0f;
     }
 
     SendSnapshotsToAllClients();
