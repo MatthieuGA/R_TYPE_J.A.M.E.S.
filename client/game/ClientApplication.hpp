@@ -34,7 +34,8 @@ class ClientApplication {
         enum EnemyType : uint8_t {
             kMermaidEnemy = 0x00,
             kKamiFishEnemy = 0x01,
-            kDaemonEnemy = 0x02
+            kDaemonEnemy = 0x02,
+            kPowerUpInvinsibility = 0x04,
         };
 
         uint32_t entity_id;

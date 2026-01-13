@@ -21,8 +21,12 @@ void FactoryActors::CreateActor(Engine::entity &entity, Engine::registry &reg,
         return;
     }
     EnnemyInfo info = it->second;
-
     CreateBasicActor(pos, entity, reg, info);
+    if (tag == "powerup_invincibility") {
+        CreateInvinsibilityActor(entity, reg);
+        return;
+    }
+
     if (info.tag == "player") {
         CreatePlayerActor(entity, reg, info, is_local);
         return;

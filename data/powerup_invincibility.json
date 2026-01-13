@@ -1,0 +1,14 @@
+{
+    "tag": "powerup_invincibility",
+    "spritePath": "powerups/PowerUp_inv.png",
+    "hitbox": {
+        "x": 32.0,
+        "y": 32.0
+    },
+    "transform" : {
+        "scale": {
+            "x": 3.0,
+            "y": 3.0
+        }
+    }
+}

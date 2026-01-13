@@ -21,6 +21,7 @@ void Server::RegisterComponents() {
     registry_.RegisterComponent<Component::TimedEvents>();
     registry_.RegisterComponent<Component::FrameEvents>();
     registry_.RegisterComponent<Component::EnemyShootTag>();
+    registry_.RegisterComponent<Component::PowerUpTag>();
     registry_.RegisterComponent<Component::Projectile>();
     registry_.RegisterComponent<Component::Health>();
     registry_.RegisterComponent<Component::StatsGame>();

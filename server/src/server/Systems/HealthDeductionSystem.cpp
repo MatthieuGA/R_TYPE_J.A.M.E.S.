@@ -80,8 +80,11 @@ void HandleCollision(Engine::registry &reg, Component::Health &health,
 
     if (animated_sprites.has(i)) {
         auto &animSprite = animated_sprites[i];
-        animSprite->SetCurrentAnimation("Hit", true);
-        animSprite->GetCurrentAnimation()->current_frame = 1;
+        if (animSprite->SetCurrentAnimation("Hit", true)) {
+            auto *cur = animSprite->GetCurrentAnimation();
+            if (cur)
+                cur->current_frame = 1;
+        }
     }
 
     reg.RemoveComponent<Component::Projectile>(projEntity);
@@ -131,6 +134,8 @@ void HealthDeductionSystem(Engine::registry &reg,
             if (i == j)
                 continue;
             try {
+                if (reg.GetComponents<Component::PowerUpTag>().has(i))
+                    continue;  // Power-ups don't get hit by projectiles
                 if (projectile.isEnemyProjectile &&
                     reg.GetComponents<Component::EnemyTag>().has(i))
                     continue;  // Enemy projectiles don't hit enemies

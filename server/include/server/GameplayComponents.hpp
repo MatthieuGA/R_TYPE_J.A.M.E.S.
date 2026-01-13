@@ -31,6 +31,13 @@ struct EnemyTag {
     uint8_t subtype = 0;
 };
 
+struct PowerUpTag {
+    enum class PowerUpType {
+        Health = 0,
+        Invincibility = 1
+    } type = PowerUpType::Invincibility;
+};
+
 struct TimedEvents {
     struct CooldownAction {
         std::function<void(int entity_id)> action;

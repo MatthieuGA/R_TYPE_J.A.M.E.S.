@@ -43,7 +43,7 @@ static void CreatePlayerEntity(GameWorld &game_world,
         new_entity, game_world.registry_, "player", is_local);
 }
 
-static void CreateEnemyEntity(GameWorld &game_world,
+static void CreateActorGameEntity(GameWorld &game_world,
     Engine::registry::entity_t new_entity,
     const ClientApplication::ParsedEntity &entity_data) {
     // Player entity
@@ -58,6 +58,9 @@ static void CreateEnemyEntity(GameWorld &game_world,
     } else if (entity_data.enemy_type ==
                ClientApplication::ParsedEntity::kDaemonEnemy) {
         enemy_type_str = "daemon";
+    } else if (entity_data.enemy_type ==
+               ClientApplication::ParsedEntity::kPowerUpInvinsibility) {
+        enemy_type_str = "powerup_invincibility";
     }
     FactoryActors::GetInstance().CreateActor(
         new_entity, game_world.registry_, enemy_type_str, false);
@@ -207,7 +210,7 @@ void ClientApplication::CreateNewEntity(GameWorld &game_world, int tick,
     } else if (entity_data.entity_type ==
                ClientApplication::ParsedEntity::kEnemyEntity) {
         // Enemy entity
-        CreateEnemyEntity(game_world, new_entity, entity_data);
+        CreateActorGameEntity(game_world, new_entity, entity_data);
     } else if (entity_data.entity_type ==
                ClientApplication::ParsedEntity::kProjectileEntity) {
         // Projectile entity

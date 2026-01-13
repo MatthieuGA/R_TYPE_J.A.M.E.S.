@@ -1,3 +1,4 @@
+#include <cstdio>
 #include <cstdlib>
 #include <iostream>
 #include <utility>
@@ -22,6 +23,9 @@ void SpawnEnemyFromRight(Engine::registry &reg) {
     // Spawn just off-screen to the right (x = 2000 since screen is 1920 wide)
 
     int r = std::rand() % 100;
+
+    FactoryActors::GetInstance().CreateActor(enemy_entity, reg,
+        "powerup_invincibility", vector2f{2000.f, random_y}, false);
 
     if (r < 47)
         FactoryActors::GetInstance().CreateActor(
@@ -83,5 +87,11 @@ void Server::SetupEntitiesGame() {
         registry_.GetComponent<Component::TimedEvents>(spawner_entity);
     spawner_events.AddCooldownAction(
         [this](int /*entity_id*/) { SpawnEnemyFromRight(registry_); }, 2.0f);
+
+    // Power up invincibility spawn one entity
+    auto powerup_entity = registry_.spawn_entity();
+    printf("[SetupEntitiesGame] Spawning invincibility power-up\n");
+    FactoryActors::GetInstance().CreateActor(powerup_entity, registry_,
+        "powerup_invincibility", vector2f{1500.f, 400.f}, false);
 }
 }  // namespace server

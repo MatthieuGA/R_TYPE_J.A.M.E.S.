@@ -55,6 +55,9 @@ class FactoryActors {
     void CreateDaemonActor(
         Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
 
+    void CreateInvinsibilityActor(
+        Engine::entity &entity, Engine::registry &reg);
+
     std::map<std::string, EnnemyInfo> enemy_info_map_ = {};
     int id_player_ = 0;
 };
