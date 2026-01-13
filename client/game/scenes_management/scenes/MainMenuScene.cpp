@@ -20,7 +20,26 @@ void MainMenuScene::InitScene(Engine::registry &reg, GameWorld &gameWorld) {
     if (gameWorld.audio_manager_) {
         gameWorld.audio_manager_->RegisterAsset(
             "menu_music", "assets/sounds/menu_music.ogg", true);
-        gameWorld.audio_manager_->PlayMusic("menu_music", true);
+        gameWorld.audio_manager_->RegisterAsset(
+            "button_click", "assets/sounds/button_click.ogg", false);
+        gameWorld.audio_manager_->RegisterAsset(
+            "small_shot", "assets/sounds/small_shot.ogg", false);
+        gameWorld.audio_manager_->RegisterAsset(
+            "player_shot", "assets/sounds/player_shot.ogg", false);
+        gameWorld.audio_manager_->RegisterAsset(
+            "charged_shot", "assets/sounds/charged_shot.ogg", false);
+        gameWorld.audio_manager_->RegisterAsset(
+            "mermaid_death", "assets/sounds/mermaid_death.ogg", false);
+        gameWorld.audio_manager_->RegisterAsset(
+            "kamifish_death", "assets/sounds/kamifish_death.ogg", false);
+        gameWorld.audio_manager_->RegisterAsset(
+            "player_damage", "assets/sounds/player_damage.ogg", false);
+        gameWorld.audio_manager_->RegisterAsset(
+            "player_death", "assets/sounds/player_death.ogg", false);
+        // Only play menu music if it's not already playing
+        if (!gameWorld.audio_manager_->IsMusicPlaying("menu_music")) {
+            gameWorld.audio_manager_->PlayMusic("menu_music", true);
+        }
     }
 
     InitBackground(reg);
@@ -86,57 +105,39 @@ void MainMenuScene::InitUI(Engine::registry &reg, GameWorld &gameWorld) {
     ready_count_entity_ = ready_count_entity;
 
     // --- Ready Button ---
-    auto play_button_entity = CreateEntityInScene(reg);
-    reg.AddComponent<Component::Transform>(
-        play_button_entity, Component::Transform{960.0f, 400.0f, 0.0f, 3.f,
-                                Component::Transform::CENTER});
-    reg.AddComponent<Component::Drawable>(play_button_entity,
-        Component::Drawable{"ui/button.png", LAYER_UI, 1.0f});
-    reg.AddComponent<Component::HitBox>(
-        play_button_entity, Component::HitBox{128.f, 32.f});
-    reg.AddComponent<Component::Clickable>(play_button_entity,
-        Component::Clickable{
-            [&gameWorld]() {
-                // OnClick: Toggle READY_STATUS to server
-                if (gameWorld.server_connection_ &&
-                    gameWorld.server_connection_->is_connected()) {
-                    // Toggle ready state
-                    bool new_ready_state =
-                        !gameWorld.server_connection_->is_local_player_ready();
-                    std::cout << "[Client] Toggling ready status to: "
-                              << (new_ready_state ? "Ready" : "Not Ready")
-                              << std::endl;
-                    gameWorld.server_connection_->SendReadyStatus(
-                        new_ready_state);
-                } else {
-                    std::cerr << "[Client] Cannot send ready status: "
-                              << "not connected to server" << std::endl;
-                }
-            },
+    auto play_button_entity =
+        CreateButton(reg, gameWorld, "Ready", 960.0f, 400.0f, [&gameWorld]() {
+            // OnClick: Toggle READY_STATUS to server
+            if (gameWorld.server_connection_ &&
+                gameWorld.server_connection_->is_connected()) {
+                // Toggle ready state
+                bool new_ready_state =
+                    !gameWorld.server_connection_->is_local_player_ready();
+                std::cout << "[Client] Toggling ready status to: "
+                          << (new_ready_state ? "Ready" : "Not Ready")
+                          << std::endl;
+                gameWorld.server_connection_->SendReadyStatus(new_ready_state);
+            } else {
+                std::cerr << "[Client] Cannot send ready status: "
+                          << "not connected to server" << std::endl;
+            }
         });
-    reg.AddComponent<Component::Text>(play_button_entity,
-        Component::Text("dogica.ttf", "Ready", 13, LAYER_UI + 1, WHITE_BLUE,
-            sf::Vector2f(0.0f, -5.0f)));
     reg.AddComponent<Component::LobbyUI>(play_button_entity,
         Component::LobbyUI{Component::LobbyUI::Type::ReadyButton});
     ready_button_entity_ = play_button_entity;
 
+    // --- Settings Button ---
+    CreateButton(reg, gameWorld, "Settings", 960.0f, 550.0f, [&gameWorld]() {
+        // OnClick: Navigate to Settings scene
+        gameWorld.registry_.GetComponents<Component::SceneManagement>()
+            .begin()
+            ->value()
+            .next = "SettingsScene";
+    });
+
     // --- Quit Button ---
-    auto quit_button_entity = CreateEntityInScene(reg);
-    reg.AddComponent<Component::Transform>(
-        quit_button_entity, Component::Transform{960.0f, 700.0f, 0.0f, 3.f,
-                                Component::Transform::CENTER});
-    reg.AddComponent<Component::Drawable>(quit_button_entity,
-        Component::Drawable{"ui/button.png", LAYER_UI, 1.0f});
-    reg.AddComponent<Component::HitBox>(
-        quit_button_entity, Component::HitBox{128.f, 32.f});
-    reg.AddComponent<Component::Clickable>(
-        quit_button_entity, Component::Clickable{
-                                [&gameWorld]() { gameWorld.window_.close(); },
-                            });
-    reg.AddComponent<Component::Text>(quit_button_entity,
-        Component::Text("dogica.ttf", "Quit", 13, LAYER_UI + 1, WHITE_BLUE,
-            sf::Vector2f(0.0f, -5.0f)));
+    CreateButton(reg, gameWorld, "Quit", 960.0f, 700.0f,
+        [&gameWorld]() { gameWorld.window_.close(); });
 }
 
 }  // namespace Rtype::Client
