@@ -96,6 +96,14 @@ void ExplodeOnDeathSystem(Engine::registry &reg,
                 if (healths.has(ti.id)) {
                     auto &target_health = healths[ti.id];
                     target_health->currentHealth -= expl.damage;
+                    // Trigger Hit animation on damaged target if present
+                    if (animated_sprites.has(ti.id)) {
+                        auto &animSprite = animated_sprites[ti.id];
+                        animSprite->SetCurrentAnimation("Hit", true);
+                        if (animSprite->GetCurrentAnimation())
+                            animSprite->GetCurrentAnimation()->current_frame =
+                                1;
+                    }
                     // Clamp
                     if (target_health->currentHealth < 0)
                         target_health->currentHealth = 0;
