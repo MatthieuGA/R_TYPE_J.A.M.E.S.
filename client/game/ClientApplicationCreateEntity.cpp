@@ -186,7 +186,10 @@ static void CreateProjectileEntity(GameWorld &game_world,
         CreateMermaidProjectile(game_world.registry_, entity_data, new_entity);
     } else if (entity_data.projectile_type ==
                ClientApplication::ParsedEntity::kDaemonProjectile) {
-        // Mermaid projectile
+        // Daemon projectile
+        if (game_world.audio_manager_) {
+            game_world.audio_manager_->PlaySound("small_shot");
+        }
         CreateDaemonProjectile(game_world.registry_, entity_data, new_entity);
     } else {
         printf("[Snapshot] Unknown projectile type 0x%02X for entity ID %u\n",

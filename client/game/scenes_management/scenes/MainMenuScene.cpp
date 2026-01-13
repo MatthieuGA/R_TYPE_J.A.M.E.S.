@@ -15,27 +15,29 @@
 
 namespace Rtype::Client {
 
+const std::vector<std::pair<std::pair<std::string, std::string>, bool>>
+    kMenuSounds = {{{"menu_music", "assets/sounds/menu_music.ogg"}, true},
+        {{"button_click", "assets/sounds/button_click.ogg"}, false},
+        {{"small_shot", "assets/sounds/small_shot.ogg"}, false},
+        {{"player_shot", "assets/sounds/player_shot.ogg"}, false},
+        {{"charged_shot", "assets/sounds/charged_shot.ogg"}, false},
+        {{"mermaid_death", "assets/sounds/mermaid_death.ogg"}, false},
+        {{"kamifish_death", "assets/sounds/kamifish_death.ogg"}, false},
+        {{"player_damage", "assets/sounds/player_damage.ogg"}, false},
+        {{"player_death", "assets/sounds/player_death.ogg"}, false},
+        {{"daemon_death", "assets/sounds/daemon_death.ogg"}, false},
+        {{"hit", "assets/sounds/hit.ogg"}, false}};
+
 void MainMenuScene::InitScene(Engine::registry &reg, GameWorld &gameWorld) {
     // Register and play menu music
     if (gameWorld.audio_manager_) {
-        gameWorld.audio_manager_->RegisterAsset(
-            "menu_music", "assets/sounds/menu_music.ogg", true);
-        gameWorld.audio_manager_->RegisterAsset(
-            "button_click", "assets/sounds/button_click.ogg", false);
-        gameWorld.audio_manager_->RegisterAsset(
-            "small_shot", "assets/sounds/small_shot.ogg", false);
-        gameWorld.audio_manager_->RegisterAsset(
-            "player_shot", "assets/sounds/player_shot.ogg", false);
-        gameWorld.audio_manager_->RegisterAsset(
-            "charged_shot", "assets/sounds/charged_shot.ogg", false);
-        gameWorld.audio_manager_->RegisterAsset(
-            "mermaid_death", "assets/sounds/mermaid_death.ogg", false);
-        gameWorld.audio_manager_->RegisterAsset(
-            "kamifish_death", "assets/sounds/kamifish_death.ogg", false);
-        gameWorld.audio_manager_->RegisterAsset(
-            "player_damage", "assets/sounds/player_damage.ogg", false);
-        gameWorld.audio_manager_->RegisterAsset(
-            "player_death", "assets/sounds/player_death.ogg", false);
+        for (const auto &sound_info : kMenuSounds) {
+            const auto &sound_key = sound_info.first.first;
+            const auto &sound_path = sound_info.first.second;
+            const bool is_music = sound_info.second;
+            gameWorld.audio_manager_->RegisterAsset(
+                sound_key, sound_path, is_music);
+        }
         // Only play menu music if it's not already playing
         if (!gameWorld.audio_manager_->IsMusicPlaying("menu_music")) {
             gameWorld.audio_manager_->PlayMusic("menu_music", true);

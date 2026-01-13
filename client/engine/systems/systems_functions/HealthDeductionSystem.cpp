@@ -32,6 +32,11 @@ void HandleCollision(Eng::registry &reg, GameWorld &game_world,
         if (game_world.audio_manager_) {
             game_world.audio_manager_->PlaySound("player_damage", 0.1f);
         }
+    } else if (reg.GetComponents<Component::EnemyTag>().has(i)) {
+        // Enemy getting hit sound
+        if (game_world.audio_manager_) {
+            game_world.audio_manager_->PlaySound("hit");
+        }
     }
 
     if (health_bars.has(i)) {

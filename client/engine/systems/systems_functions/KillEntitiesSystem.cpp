@@ -46,6 +46,12 @@ void DeathHandling(Engine::registry &reg, GameWorld &game_world,
                 game_world.audio_manager_->PlaySound("kamifish_death");
             }
         }
+        if (enemy_type.has_value() && enemy_type->type == "daemon") {
+            // Play daemon death sound
+            if (game_world.audio_manager_) {
+                game_world.audio_manager_->PlaySound("daemon_death");
+            }
+        }
     }
 
     // Mark entity with AnimationDeath component to trigger death anim
