@@ -17,6 +17,10 @@ namespace Rtype::Client {
  */
 void UpdateEmitter(
     Com::ParticleEmitter &emitter, const Com::Transform &transform, float dt) {
+    // Initialize random number generator once per function
+    static std::random_device rd;
+    static std::mt19937 rng(rd());
+
     emitter.emissionAccumulator += emitter.emissionRate * dt;
 
     while (emitter.emissionAccumulator >= 1.0f && emitter.emitting &&
@@ -31,8 +35,6 @@ void UpdateEmitter(
         new_particle.position = Engine::Graphics::Vector2f(
             transform.x + offset_computed.x, transform.y + offset_computed.y);
 
-        std::random_device rd;
-        static std::mt19937 rng(rd());
         std::uniform_real_distribution<float> spread_dist(
             -emitter.spreadAngle, emitter.spreadAngle);
         std::uniform_real_distribution<float> radius_dist(
