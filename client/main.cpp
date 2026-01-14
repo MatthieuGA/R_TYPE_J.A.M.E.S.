@@ -73,7 +73,6 @@ int main(int argc, char *argv[]) {
             std::make_unique<RC::Input::SFMLInputBackend>(
                 sfml_window->GetNativeWindow());
 
-<<<<<<< HEAD
         // Create event source
         auto event_source = std::make_unique<RC::Platform::SFMLEventSource>(
             sfml_window->GetNativeWindow());

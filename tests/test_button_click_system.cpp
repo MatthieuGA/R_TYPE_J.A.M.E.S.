@@ -3,12 +3,12 @@
 #include <memory>
 #include <utility>
 
+#include "TestGraphicsSetup.hpp"  // NOLINT(build/include_subdir)
 #include "engine/GameWorld.hpp"
 #include "engine/systems/InitRegistrySystems.hpp"
 #include "include/components/CoreComponents.hpp"
 #include "include/components/RenderComponent.hpp"
 #include "platform/SFMLWindow.hpp"
-#include "tests/TestGraphicsSetup.hpp"
 
 namespace Com = Rtype::Client::Component;
 namespace Eng = Engine;

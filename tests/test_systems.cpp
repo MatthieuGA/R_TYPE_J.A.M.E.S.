@@ -5,6 +5,7 @@
 #include <set>
 #include <utility>
 
+#include "TestGraphicsSetup.hpp"  // NOLINT(build/include_subdir)
 #include "engine/GameWorld.hpp"
 #include "engine/events/EngineEvent.hpp"
 #include "engine/systems/InitRegistrySystems.hpp"
@@ -16,7 +17,6 @@
 #include "input/IInputBackend.hpp"
 #include "input/InputManager.hpp"
 #include "platform/SFMLWindow.hpp"
-#include "tests/TestGraphicsSetup.hpp"
 
 namespace Com = Rtype::Client::Component;
 namespace Eng = Engine;

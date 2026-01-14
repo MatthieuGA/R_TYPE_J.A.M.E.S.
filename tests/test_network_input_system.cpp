@@ -17,12 +17,12 @@
 
 #include <boost/asio.hpp>
 
+#include "TestGraphicsSetup.hpp"  // NOLINT(build/include_subdir)
 #include "engine/GameWorld.hpp"
 #include "engine/systems/InitRegistrySystems.hpp"
 #include "include/components/CoreComponents.hpp"
 #include "include/components/GameplayComponents.hpp"
 #include "platform/SFMLWindow.hpp"
-#include "tests/TestGraphicsSetup.hpp"
 
 namespace Com = Rtype::Client::Component;
 namespace Eng = Engine;

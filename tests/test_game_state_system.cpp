@@ -5,10 +5,10 @@
 #include <unordered_map>
 #include <utility>
 
+#include "TestGraphicsSetup.hpp"  // NOLINT(build/include_subdir)
 #include "engine/systems/InitRegistrySystems.hpp"
 #include "include/components/ScenesComponents.hpp"
 #include "platform/SFMLWindow.hpp"
-#include "tests/TestGraphicsSetup.hpp"
 
 namespace Com = Rtype::Client::Component;
 namespace Eng = Engine;
