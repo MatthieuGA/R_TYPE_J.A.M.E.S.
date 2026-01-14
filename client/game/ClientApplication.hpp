@@ -48,6 +48,7 @@ class ClientApplication {
         uint16_t velocity_x;
         uint16_t velocity_y;
         uint16_t health;
+        uint16_t invincibility_time;
         // Projectiles :
         uint8_t projectile_type;
         // Enemies :

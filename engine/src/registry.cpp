@@ -1,5 +1,7 @@
 #include "../include/registry.hpp"
 
+#include <iostream>
+
 namespace Engine {
 // Entity management
 registry::entity_t registry::SpawnEntity() {
@@ -24,9 +26,19 @@ void registry::KillEntity(entity const &e) {
 }
 
 void registry::RunSystems() {
-    for (auto &s : systems_) {
-        if (s)
+    for (std::size_t idx = 0; idx < systems_.size(); ++idx) {
+        auto &s = systems_[idx];
+        if (!s)
+            continue;
+        try {
             s(*this);
+        } catch (const std::exception &e) {
+            std::cerr << "[Registry] System " << idx
+                      << " threw exception: " << e.what() << std::endl;
+        } catch (...) {
+            std::cerr << "[Registry] System " << idx
+                      << " terminated with unknown error." << std::endl;
+        }
     }
 }
 

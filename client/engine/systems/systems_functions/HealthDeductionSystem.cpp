@@ -79,9 +79,29 @@ void HealthDeductionSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Component::Health> &healths,
     Eng::sparse_array<Component::HealthBar> &health_bars,
     Eng::sparse_array<Component::AnimatedSprite> &animated_sprites,
+    Eng::sparse_array<Component::Drawable> &drawables,
     Eng::sparse_array<Component::HitBox> const &hitBoxes,
     Eng::sparse_array<Component::Transform> const &transforms,
     Eng::sparse_array<Component::Projectile> const &projectiles) {
+    for (auto &&[i, transform, drawable] :
+        make_indexed_zipper(transforms, drawables)) {
+        if (!transform.parent_entity.has_value())
+            continue;  // Skip if not a child entity
+        auto parentEntity = transform.parent_entity.value();
+        try {
+            if (!reg.GetComponents<Component::PlayerTag>().has(parentEntity))
+                continue;  // Skip if parent is not a player
+            auto &health = reg.GetComponent<Component::Health>(
+                reg.EntityFromIndex(parentEntity));
+            if (health.invincibilityDuration > 0.0f)
+                drawable.opacity = 1.f;
+            else
+                drawable.opacity = 0.0f;
+        } catch (...) {
+            continue;  // Parent entity might not have PlayerTag or Health
+        }
+    }
+
     for (auto &&[i, health, hitBox, transform] :
         make_indexed_zipper(healths, hitBoxes, transforms)) {
         Engine::entity entity = reg.EntityFromIndex(i);
