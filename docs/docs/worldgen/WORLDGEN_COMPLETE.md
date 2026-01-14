@@ -4,13 +4,14 @@
 
 ## Overview
 
-The WorldGen system provides deterministic, seed-based world generation using **WorldGen Frames (WGF)** - reusable world segments with obstacles, backgrounds, and metadata. The system supports:
+The WorldGen system provides deterministic, seed-based world generation using **WorldGen Frames (WGF)** - reusable world segments with obstacles, enemies, backgrounds, and metadata. The system supports:
 
 - **Deterministic Generation**: Same seed always produces identical worlds
 - **User Modding**: Drop new WGF files into a folder to add content
 - **Level Editor Support**: Levels are simple JSON lists of WGF UUIDs
 - **Difficulty Scaling**: Dynamic difficulty adjustment in endless mode
 - **Save/Load**: Complete state serialization for game saves
+- **Enemy Spawning**: Define enemy waves with positions and spawn delays
 
 ## Architecture
 
@@ -72,7 +73,9 @@ worldgen::WorldGenManager manager(loader);
 // Set callback for spawn events
 manager.SetSpawnCallback([](const worldgen::SpawnEvent& event) {
     if (event.type == worldgen::SpawnEvent::EventType::kObstacle) {
-        // Create entity from event data
+        // Create obstacle entity from event data
+    } else if (event.type == worldgen::SpawnEvent::EventType::kEnemy) {
+        // Create enemy using FactoryActors::Create with event.enemy_tag
     }
 });
 
@@ -90,14 +93,14 @@ while (manager.HasPendingEvents()) {
 ## WGF File Format
 
 **Required:** `uuid`, `name`, `difficulty`, `obstacles`  
-**Optional:** `description`, `width`, `tags`, `spawn_rules`, `background`
+**Optional:** `description`, `width`, `tags`, `spawn_rules`, `enemies`, `background`
 
 ```json
 {
   "uuid": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
   "name": "Asteroid Field",
   "difficulty": 4.5,
-  "tags": ["space", "obstacles"],
+  "tags": ["space", "obstacles", "enemies"],
   "width": 800,
   "spawn_rules": {
     "min_distance_from_last": 3,
@@ -114,6 +117,18 @@ while (manager.HasPendingEvents()) {
       "health": 20
     }
   ],
+  "enemies": [
+    {
+      "tag": "mermaid",
+      "position": {"x": 100, "y": 200},
+      "spawn_delay": 0.0
+    },
+    {
+      "tag": "kamifish",
+      "position": {"x": 300, "y": 400},
+      "spawn_delay": 1.5
+    }
+  ],
   "background": {
     "layers": [
       {
@@ -127,6 +142,16 @@ while (manager.HasPendingEvents()) {
 ```
 
 **Obstacle Types:** `static`, `destructible`, `hazard`, `decoration`
+
+### Enemy Fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `tag` | string | ✅ | Enemy type from `FactoryActors` (e.g., `"mermaid"`, `"kamifish"`) |
+| `position` | `{x, y}` | ✅ | Spawn position relative to frame start |
+| `spawn_delay` | float | ❌ | Delay in seconds after frame starts (default: 0) |
+
+**Available Enemy Tags:** `mermaid`, `kamifish` (more can be added via `FactoryActors`)
 
 ## Level File Format
 
@@ -158,6 +183,7 @@ If `is_endless` is true, procedural generation continues after the listed frames
 struct SpawnEvent {
     enum class EventType {
         kObstacle,   // Spawn an obstacle
+        kEnemy,      // Spawn an enemy
         kFrameStart, // New frame begins
         kFrameEnd,   // Frame ends
         kLevelEnd    // Level complete (fixed mode)
@@ -167,12 +193,16 @@ struct SpawnEvent {
     size_t obstacle_index;
     float world_x, world_y;
     int frame_number;
-    // Cached obstacle data
+    
+    // For kObstacle events:
     ObstacleType obstacle_type;
     std::string sprite;
     Size2f size;
     CollisionData collision;
     int health;
+    
+    // For kEnemy events:
+    std::string enemy_tag;  // e.g., "mermaid", "kamifish"
 };
 ```
 

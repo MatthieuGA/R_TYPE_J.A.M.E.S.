@@ -1,27 +1,20 @@
 #include "game/ClientApplication.hpp"
 
-#include <algorithm>
 #include <cstdio>
-#include <iomanip>
 #include <iostream>
-#include <vector>
 
 #include <SFML/Graphics.hpp>
 
-#include "adapters/SFMLInputAdapters.hpp"
 #include "engine/systems/InitRegistrySystems.hpp"
 #include "game/InitRegistry.hpp"
 #include "game/SnapshotTracker.hpp"
-#include "game/factory/factory_ennemies/FactoryActors.hpp"
 #include "game/scenes_management/InitScenes.hpp"
-#include "include/LayersConst.hpp"
-#include "include/components/CoreComponents.hpp"
 #include "include/components/NetworkingComponents.hpp"
-#include "include/components/RenderComponent.hpp"
 #include "include/components/ScenesComponents.hpp"
 #include "include/indexed_zipper.hpp"
-#include "input/Event.hpp"
 #include "network/Network.hpp"
+#include "platform/OSEvent.hpp"
+#include "platform/SFMLEventSource.hpp"
 
 namespace Rtype::Client {
 // Parse Player
@@ -162,19 +155,26 @@ bool ClientApplication::ConnectToServerWithRetry(
 
 void ClientApplication::RunGameLoop(GameWorld &game_world) {
     while (game_world.window_.isOpen()) {
-        // Handle window events
-        sf::Event sfml_event;
-        while (game_world.window_.pollEvent(sfml_event)) {
-            Engine::Input::Event event;
-            if (Adapters::FromSFMLEvent(sfml_event, event)) {
-                if (event.type == Engine::Input::EventType::Closed) {
-                    game_world.window_.close();
-                }
+        // Handle window events via platform event source
+        Engine::Platform::OSEvent os_event;
+        while (game_world.event_source_->Poll(os_event)) {
+            if (os_event.type == Engine::Platform::OSEventType::Closed) {
+                game_world.window_.close();
             }
         }
 
         // Poll asio for network events
         game_world.io_context_.poll();
+
+        // Check for unexpected disconnection (server crashed/closed)
+        if (game_world.server_connection_ &&
+            game_world.server_connection_->WasDisconnectedUnexpectedly()) {
+            std::cerr << "[Client] Lost connection to server!" << std::endl;
+            std::cerr << "[Client] The server may have shut down."
+                      << std::endl;
+            game_world.window_.close();
+            break;
+        }
 
         // Check if game has started (received GAME_START from server)
         if (game_world.server_connection_) {

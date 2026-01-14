@@ -1,6 +1,7 @@
 #include <string>
 
 #include "engine/systems/InitRegistrySystems.hpp"
+#include "graphics/utils/SFMLGraphicsUtils.hpp"
 #include "include/ColorsConst.hpp"
 
 namespace Rtype::Client {
@@ -81,21 +82,19 @@ void LobbyUISystem(Eng::registry &reg, GameWorld &game_world,
                                        : WHITE_BLUE;
                     if (texts[i]->color != new_color) {
                         texts[i]->color = new_color;
-                        texts[i]->text.setFillColor(sf::Color(new_color.r,
-                            new_color.g, new_color.b, new_color.a));
+                        texts[i]->text.setFillColor(
+                            Graphics::ToSFMLColor(new_color));
                     }
                 }
                 // Optionally tint the button sprite
                 if (drawables[i].has_value()) {
                     Engine::Graphics::Color tint =
                         is_local_ready
-                            ? Engine::Graphics::Color(
-                                  100, 200, 100)  // Green tint when ready
-                            : Engine::Graphics::Color::White;  // Normal when
-                                                               // not ready
-                    sf::Color sf_tint(tint.r, tint.g, tint.b, tint.a);
-                    if (drawables[i]->sprite.getColor() != sf_tint) {
-                        drawables[i]->sprite.setColor(sf_tint);
+                            ? Engine::Graphics::Color(100, 200, 100)
+                            : Engine::Graphics::Color(255, 255, 255);
+                    sf::Color sfml_tint = Graphics::ToSFMLColor(tint);
+                    if (drawables[i]->sprite.getColor() != sfml_tint) {
+                        drawables[i]->sprite.setColor(sfml_tint);
                     }
                 }
                 break;

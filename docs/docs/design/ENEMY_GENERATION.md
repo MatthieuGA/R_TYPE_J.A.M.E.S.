@@ -4,30 +4,31 @@
 
 ## Overview
 
-The enemy generation system extends WGF (WorldGen Frame) files to include timed enemy spawns. Enemies use the existing `PatternMovement` component system for AI behaviors.
+The enemy generation system extends WGF (WorldGen Frame) files to include enemy spawns. Enemy configuration is stored in WGF files, and `FactoryActors` handles entity creation using asset JSON files.
 
 ## Architecture
 
 ```
-server/assets/worldgen/
-├── core/
-│   ├── asteroid_field_light.wgf.json  ← obstacles + enemies
-│   └── enemy_wave_alpha.wgf.json      ← enemy-focused frame
-└── user/
+server/
+├── assets/worldgen/
+│   ├── core/
+│   │   ├── enemy_wave_alpha.wgf.json      ← enemy-focused frame
+│   │   └── mermaid_patrol.wgf.json        ← enemy patrol frame
+│   └── levels/*.level.json
+└── src/server/Systems/WorldGenSystem.cpp   ← spawns enemies from events
 
 client/
 ├── assets/data/
-│   ├── mermaid.json                   ← enemy stats (existing)
-│   └── grunt.json                     ← new enemy type
-├── include/components/
-│   └── GameplayComponents.hpp         ← PatternMovement (existing)
+│   ├── mermaid.json                       ← enemy stats
+│   ├── kamifish.json                      ← enemy stats
+│   └── player.json
 └── game/factory/factory_ennemies/
-    └── FactoryActors.hpp              ← enemy factory (existing)
+    └── FactoryActors.hpp                  ← enemy factory
 ```
 
-## WGF Schema Extension
+## WGF Schema - Enemy Array
 
-Add `enemies` array to existing WGF files:
+Each WGF file can include an `enemies` array with spawn definitions:
 
 ```json
 {
@@ -37,143 +38,105 @@ Add `enemies` array to existing WGF files:
   "obstacles": [],
   "enemies": [
     {
-      "type": "mermaid",
-      "spawn_time": 2.0,
+      "tag": "mermaid",
       "position": {"x": 100, "y": 200},
-      "pattern": "SineHorizontal",
-      "pattern_params": {
-        "amplitude": {"x": 0, "y": 50},
-        "frequency": {"x": 0, "y": 1},
-        "base_dir": {"x": -1, "y": 0},
-        "speed": 150
-      }
+      "spawn_delay": 0.0
     },
     {
-      "type": "mermaid",
-      "spawn_time": 2.5,
-      "position": {"x": 100, "y": 400},
-      "formation": {
-        "type": "V-shape",
-        "count": 3,
-        "spacing": 60
-      },
-      "pattern": "Straight",
-      "pattern_params": {
-        "base_dir": {"x": -1, "y": 0},
-        "speed": 100
-      }
+      "tag": "kamifish",
+      "position": {"x": 300, "y": 400},
+      "spawn_delay": 1.5
     }
   ]
 }
 ```
 
-### Enemy Spawn Fields
+### Enemy Fields
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `type` | string | ✅ | Enemy tag from `client/assets/data/*.json` |
-| `spawn_time` | float | ✅ | Seconds after frame starts |
-| `position` | Vec2f | ✅ | Spawn position relative to frame |
-| `pattern` | string | ✅ | `PatternMovement::PatternType` name |
-| `pattern_params` | object | ❌ | Pattern-specific parameters |
-| `formation` | object | ❌ | Spawn multiple enemies in formation |
+| `tag` | string | ✅ | Enemy type identifier (matches `FactoryActors` and `assets/data/*.json`) |
+| `position` | `{x, y}` | ✅ | Spawn position relative to frame start (world-x added at runtime) |
+| `spawn_delay` | float | ❌ | Delay in seconds after frame starts (default: 0.0) |
 
-### Supported Patterns (from existing code)
+### Available Enemy Tags
 
-| Pattern | Parameters | Behavior |
-|---------|------------|----------|
-| `Straight` | `base_dir`, `speed` | Move in straight line |
-| `SineHorizontal` | `amplitude`, `frequency`, `base_dir`, `speed` | Move left with vertical sine wave |
-| `SineVertical` | `amplitude`, `frequency`, `base_dir`, `speed` | Move up/down with horizontal sine wave |
-| `ZigZagHorizontal` | `amplitude`, `frequency`, `base_dir`, `speed` | Sharp vertical zig-zag |
-| `ZigZagVertical` | `amplitude`, `frequency`, `base_dir`, `speed` | Sharp horizontal zig-zag |
-| `Wave` | `amplitude`, `frequency`, `base_dir`, `speed` | Combined wave motion |
-| `Waypoints` | `waypoints[]`, `speed` | Follow predefined path |
-| `FollowPlayer` | `speed` | Chase player |
-| `Circular` | `speed`, `radius` | Orbit spawn point |
+| Tag | JSON Config | Description |
+|-----|-------------|-------------|
+| `mermaid` | `mermaid.json` | Standard enemy with sine wave movement |
+| `kamifish` | `kamifish.json` | Kamikaze enemy that targets players |
 
-### Formation Types
-
-| Formation | Description |
-|-----------|-------------|
-| `line` | Horizontal row |
-| `column` | Vertical column |
-| `V-shape` | Inverted V formation |
-| `diamond` | Diamond/rhombus shape |
-| `circle` | Circular arrangement |
+New enemy types can be added by:
+1. Creating `assets/data/<enemy>.json` with stats
+2. Adding handler in `FactoryActors::Create()`
+3. Using the tag in WGF files
 
 ## Data Structures
 
-### Add to `WorldGenTypes.hpp`
+### EnemySpawnData (`WorldGenTypes.hpp`)
 
 ```cpp
-/**
- * @brief Pattern parameters for enemy movement.
- */
-struct PatternParams {
-    Vec2f amplitude = {0.0f, 0.0f};
-    Vec2f frequency = {0.0f, 0.0f};
-    Vec2f base_dir = {-1.0f, 0.0f};
-    float speed = 100.0f;
-    std::vector<Vec2f> waypoints;
-    float radius = 100.0f;
-};
-
-/**
- * @brief Formation configuration for group spawns.
- */
-struct FormationConfig {
-    std::string type = "line";
-    int count = 1;
-    float spacing = 50.0f;
-};
-
 /**
  * @brief Enemy spawn definition within a WGF.
  */
-struct EnemySpawn {
-    std::string type;            ///< Enemy tag (e.g., "mermaid")
-    float spawn_time = 0.0f;     ///< Seconds after frame starts
-    Vec2f position;              ///< Spawn position
-    std::string pattern;         ///< PatternType name
-    PatternParams pattern_params;
-    FormationConfig formation;
+struct EnemySpawnData {
+    std::string tag;             ///< Enemy type tag (e.g., "mermaid", "kamifish")
+    Vec2f position;              ///< Spawn position relative to frame start
+    float spawn_delay = 0.0f;    ///< Delay after frame starts (seconds)
 };
 
-// Add to WGFDefinition:
+// In WGFDefinition:
 struct WGFDefinition {
     // ... existing fields ...
-    std::vector<EnemySpawn> enemies;  ///< Enemy spawn definitions
+    std::vector<EnemySpawnData> enemies;  ///< Enemy spawn definitions
 };
 ```
 
-## Implementation Flow
-
-### 1. Loading (WorldGenConfigLoader)
+### SpawnEvent with Enemy Support
 
 ```cpp
-// In LoadWGFFile(), after parsing obstacles:
-if (json_data.contains("enemies")) {
+struct SpawnEvent {
+    enum class EventType : uint8_t {
+        kObstacle = 0,   // Spawn an obstacle
+        kEnemy = 1,      // Spawn an enemy
+        kFrameStart = 2, // Frame begins
+        kFrameEnd = 3,   // Frame ends
+        kLevelEnd = 4    // Level complete
+    };
+
+    EventType type;
+    std::string wgf_uuid;
+    size_t obstacle_index;       // For kObstacle
+    float world_x, world_y;      // Absolute position
+    int frame_number;
+
+    // For kObstacle events:
+    ObstacleType obstacle_type;
+    std::string sprite;
+    Size2f size;
+    CollisionData collision;
+    int health;
+
+    // For kEnemy events:
+    std::string enemy_tag;       // e.g., "mermaid"
+};
+```
+
+## Implementation
+
+### Loading (WorldGenConfigLoader)
+
+```cpp
+// In ParseWGF(), after parsing obstacles:
+if (json_data.contains("enemies") && json_data["enemies"].is_array()) {
     for (const auto& e : json_data["enemies"]) {
-        EnemySpawn spawn;
-        spawn.type = e.value("type", "mermaid");
-        spawn.spawn_time = e.value("spawn_time", 0.0f);
-        spawn.position = ParseVec2f(e["position"]);
-        spawn.pattern = e.value("pattern", "Straight");
+        EnemySpawnData spawn;
+        spawn.tag = e.value("tag", "mermaid");
+        spawn.spawn_delay = e.value("spawn_delay", 0.0f);
         
-        if (e.contains("pattern_params")) {
-            auto& pp = e["pattern_params"];
-            spawn.pattern_params.amplitude = ParseVec2f(pp, "amplitude");
-            spawn.pattern_params.frequency = ParseVec2f(pp, "frequency");
-            spawn.pattern_params.base_dir = ParseVec2f(pp, "base_dir");
-            spawn.pattern_params.speed = pp.value("speed", 100.0f);
-        }
-        
-        if (e.contains("formation")) {
-            auto& f = e["formation"];
-            spawn.formation.type = f.value("type", "line");
-            spawn.formation.count = f.value("count", 1);
-            spawn.formation.spacing = f.value("spacing", 50.0f);
+        if (e.contains("position")) {
+            spawn.position.x = e["position"].value("x", 0.0f);
+            spawn.position.y = e["position"].value("y", 0.0f);
         }
         
         wgf.enemies.push_back(spawn);
@@ -181,169 +144,152 @@ if (json_data.contains("enemies")) {
 }
 ```
 
-### 2. Runtime Spawning (Server)
+### Runtime Spawning (WorldGenManager)
+
+When a frame starts, `WorldGenManager` queues `SpawnEvent` objects for each enemy:
 
 ```cpp
-class FrameEnemyManager {
-    const WGFDefinition* current_frame_ = nullptr;
-    float frame_elapsed_ = 0.0f;
-    std::set<size_t> spawned_indices_;
-
-public:
-    void SetFrame(const WGFDefinition* frame) {
-        current_frame_ = frame;
-        frame_elapsed_ = 0.0f;
-        spawned_indices_.clear();
-    }
-
-    void Update(float dt, std::function<void(const EnemySpawn&)> spawn_fn) {
-        if (!current_frame_) return;
-        frame_elapsed_ += dt;
-
-        for (size_t i = 0; i < current_frame_->enemies.size(); i++) {
-            const auto& enemy = current_frame_->enemies[i];
-            if (enemy.spawn_time <= frame_elapsed_ && 
-                spawned_indices_.find(i) == spawned_indices_.end()) {
-                spawn_fn(enemy);
-                spawned_indices_.insert(i);
-            }
-        }
-    }
-};
-```
-
-### 3. Entity Creation (Client via FactoryActors)
-
-```cpp
-void SpawnEnemyFromConfig(
-    Engine::registry& reg, 
-    const EnemySpawn& spawn,
-    float frame_x_offset) 
-{
-    auto& factory = FactoryActors::GetInstance();
-    
-    // Calculate formation positions
-    auto positions = CalculateFormation(
-        spawn.position, spawn.formation);
-    
-    for (const auto& pos : positions) {
-        auto entity = reg.spawn_entity();
+void WorldGenManager::GenerateEnemyEvents(const WGFDefinition& wgf, 
+                                           float frame_x_offset, 
+                                           int frame_num) {
+    for (size_t i = 0; i < wgf.enemies.size(); i++) {
+        const auto& enemy = wgf.enemies[i];
         
-        // Use existing factory (loads from JSON config)
-        factory.CreateActor(entity, reg, spawn.type);
+        SpawnEvent event;
+        event.type = SpawnEvent::EventType::kEnemy;
+        event.wgf_uuid = wgf.uuid;
+        event.frame_number = frame_num;
+        event.world_x = frame_x_offset + enemy.position.x;
+        event.world_y = enemy.position.y;
+        event.enemy_tag = enemy.tag;
         
-        // Override position
-        auto& transform = reg.GetComponent<Component::Transform>(entity);
-        transform.x = pos.x + frame_x_offset;
-        transform.y = pos.y;
-        
-        // Override pattern movement from WGF
-        auto& pattern = reg.GetComponent<Component::PatternMovement>(entity);
-        pattern.type = StringToPatternType(spawn.pattern);
-        pattern.amplitude = {spawn.pattern_params.amplitude.x, 
-                             spawn.pattern_params.amplitude.y};
-        pattern.frequency = {spawn.pattern_params.frequency.x,
-                             spawn.pattern_params.frequency.y};
-        pattern.baseDir = {spawn.pattern_params.base_dir.x,
-                           spawn.pattern_params.base_dir.y};
-        pattern.baseSpeed = spawn.pattern_params.speed;
+        // Note: spawn_delay is handled by caller or tracked separately
+        pending_events_.push(std::move(event));
     }
 }
 ```
 
-## Integration with Existing Systems
+### Entity Creation (WorldGenSystem)
 
-### Uses Existing Code
-
-| Component | File | Purpose |
-|-----------|------|---------|
-| `PatternMovement` | `GameplayComponents.hpp` | Enemy AI patterns |
-| `FactoryActors` | `FactoryActors.hpp` | Enemy entity creation |
-| `mermaid.json` | `assets/data/` | Enemy base stats |
-| `TimedEvents` | `GameplayComponents.hpp` | Attack cooldowns |
-| `FrameEvents` | `GameplayComponents.hpp` | Animation triggers |
-
-### Data Flow
-
-```
-1. WGF JSON loaded → EnemySpawn structs stored
-2. Frame selected by seed → Server tracks frame time
-3. spawn_time reached → Server sends SPAWN_ENEMY packet
-4. Client receives → FactoryActors creates entity
-5. PatternMovement system → Handles AI movement
-6. TimedEvents/FrameEvents → Handles shooting
+```cpp
+void WorldGenSystem::ProcessSpawnEvent(const worldgen::SpawnEvent& event,
+                                        Engine::registry& registry) {
+    if (event.type == worldgen::SpawnEvent::EventType::kEnemy) {
+        // Use FactoryActors to create enemy
+        FactoryActors::GetInstance().Create(
+            event.enemy_tag, registry, event.world_x, event.world_y);
+    }
+    // ... handle other event types ...
+}
 ```
 
-## Example: Complete WGF with Enemies
+## Example WGF Files
+
+### Enemy Wave (enemies only)
 
 ```json
 {
-  "uuid": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e",
-  "name": "Mermaid Ambush",
-  "difficulty": 4.0,
-  "tags": ["enemies", "ambush", "medium"],
+  "uuid": "wgf-enemy-wave-alpha-0001-0000-000000000001",
+  "name": "Enemy Wave Alpha",
+  "difficulty": 3.0,
+  "tags": ["enemies", "wave"],
+  "obstacles": [],
+  "enemies": [
+    {
+      "tag": "mermaid",
+      "position": {"x": 50, "y": 150},
+      "spawn_delay": 0.0
+    },
+    {
+      "tag": "mermaid",
+      "position": {"x": 50, "y": 350},
+      "spawn_delay": 0.0
+    },
+    {
+      "tag": "kamifish",
+      "position": {"x": 200, "y": 250},
+      "spawn_delay": 1.0
+    }
+  ]
+}
+```
+
+### Mixed Frame (obstacles + enemies)
+
+```json
+{
+  "uuid": "wgf-asteroid-ambush-0001-0000-000000000001",
+  "name": "Asteroid Ambush",
+  "difficulty": 5.0,
+  "tags": ["space", "obstacles", "enemies"],
   "obstacles": [
     {
-      "type": "decoration",
-      "sprite": "images/debris_small.png",
-      "position": {"x": 200, "y": 100},
-      "size": {"width": 32, "height": 32}
+      "type": "destructible",
+      "sprite": "asteroid.png",
+      "position": {"x": 100, "y": 200},
+      "size": {"width": 48, "height": 48},
+      "collision": {"enabled": true, "damage": 10},
+      "health": 20
     }
   ],
   "enemies": [
     {
-      "type": "mermaid",
-      "spawn_time": 1.0,
-      "position": {"x": 850, "y": 300},
-      "pattern": "SineHorizontal",
-      "pattern_params": {
-        "amplitude": {"x": 0, "y": 80},
-        "frequency": {"x": 0, "y": 1.5},
-        "base_dir": {"x": -1, "y": 0},
-        "speed": 120
-      }
+      "tag": "mermaid",
+      "position": {"x": 300, "y": 100},
+      "spawn_delay": 0.5
     },
     {
-      "type": "mermaid",
-      "spawn_time": 3.0,
-      "position": {"x": 850, "y": 200},
-      "formation": {"type": "V-shape", "count": 3, "spacing": 50},
-      "pattern": "Straight",
-      "pattern_params": {
-        "base_dir": {"x": -1, "y": 0},
-        "speed": 100
-      }
+      "tag": "mermaid",
+      "position": {"x": 300, "y": 500},
+      "spawn_delay": 0.5
     }
-  ],
-  "background": {
-    "layers": [
-      {"sprite": "images/bg_stars.png", "parallax_factor": 0.3}
-    ]
-  }
+  ]
 }
+```
+
+## Integration
+
+### Uses Existing Systems
+
+| Component | Purpose |
+|-----------|---------|
+| `FactoryActors` | Creates enemy entities from tag |
+| `PatternMovement` | Enemy AI movement (configured in JSON) |
+| `mermaid.json`, etc. | Enemy stats and configuration |
+| `WorldGenManager` | Queues spawn events |
+| `WorldGenSystem` | Processes events and creates entities |
+
+### Data Flow
+
+```
+1. WGF JSON loaded → EnemySpawnData stored in WGFDefinition
+2. Frame selected by WorldGenManager
+3. Enemy events queued with world coordinates
+4. WorldGenSystem processes events
+5. FactoryActors::Create() builds entity
+6. PatternMovement system handles AI (from JSON config)
 ```
 
 ## Testing
 
-Add to `test_worldgen.cpp`:
-
 ```cpp
 TEST_F(WorldGenTest, ParseEnemySpawns) {
-    auto wgf = CreateWGFWithEnemies();
+    auto wgf = LoadWGFWithEnemies("test_enemy_wave.wgf.json");
     ASSERT_EQ(wgf.enemies.size(), 2);
     
-    EXPECT_EQ(wgf.enemies[0].type, "mermaid");
-    EXPECT_FLOAT_EQ(wgf.enemies[0].spawn_time, 1.0f);
-    EXPECT_EQ(wgf.enemies[0].pattern, "SineHorizontal");
+    EXPECT_EQ(wgf.enemies[0].tag, "mermaid");
+    EXPECT_FLOAT_EQ(wgf.enemies[0].spawn_delay, 0.0f);
+    EXPECT_FLOAT_EQ(wgf.enemies[0].position.x, 100.0f);
     
-    EXPECT_EQ(wgf.enemies[1].formation.count, 3);
+    EXPECT_EQ(wgf.enemies[1].tag, "kamifish");
+    EXPECT_FLOAT_EQ(wgf.enemies[1].spawn_delay, 1.5f);
 }
 ```
 
 ## Advantages
 
-1. **Reuses existing systems**: `PatternMovement`, `FactoryActors`, enemy JSON configs
-2. **Data-driven**: Designers edit JSON, no code changes
-3. **Deterministic**: Same seed + same frame = same enemy spawns
-4. **Extensible**: Add new patterns by extending `PatternMovement::PatternType`
-5. **Moddable**: Users can create custom WGFs with enemy waves
+1. **Simple schema**: Just `tag`, `position`, `spawn_delay`
+2. **Uses existing factory**: Enemy configuration stays in `assets/data/*.json`
+3. **Deterministic**: Same seed + frame = same enemy spawns
+4. **Extensible**: Add new enemy types via `FactoryActors`
+5. **Moddable**: Users create custom WGFs in `user/` folder

@@ -25,13 +25,21 @@ server/
 ├── include/server/worldgen/
 │   ├── WorldGen.hpp              ← Convenience header
 │   ├── WorldGenTypes.hpp         ← POD data structures
-│   └── WorldGenConfigLoader.hpp  ← Loader interface
+│   ├── WorldGenConfigLoader.hpp  ← Loader interface
+│   ├── WorldGenManager.hpp       ← Runtime generation manager
+│   └── DeterministicRNG.hpp      ← PCG-based PRNG
 ├── src/server/worldgen/
-│   └── WorldGenConfigLoader.cpp  ← JSON parsing & validation
+│   ├── WorldGenConfigLoader.cpp  ← JSON parsing & validation
+│   └── WorldGenManager.cpp       ← Frame selection/spawn events
+├── include/server/systems/
+│   └── WorldGenSystem.hpp        ← ECS integration
+├── src/server/Systems/
+│   └── WorldGenSystem.cpp        ← Entity spawning from events
 └── assets/worldgen/
     ├── config.json               ← Global configuration
-    ├── core/*.wgf.json          ← Built-in frames (6 examples)
-    └── user/*.wgf.json          ← User mods (optional)
+    ├── core/*.wgf.json          ← Built-in frames (10 examples)
+    ├── user/*.wgf.json          ← User mods (optional)
+    └── levels/*.level.json      ← Level definitions
 ```
 
 **Design Choice**: External Manager Pattern (not ECS-integrated)
@@ -66,6 +74,13 @@ server/
       "size": {"width": 48, "height": 48},
       "collision": {"enabled": true, "damage": 10},
       "health": 20
+    }
+  ],
+  "enemies": [                                      // Optional: enemy spawns
+    {
+      "tag": "mermaid",                             // Enemy type from FactoryActors
+      "position": {"x": 100, "y": 200},             // Spawn position in frame
+      "spawn_delay": 0.0                            // Delay after frame starts
     }
   ],
   "background": {                                   // Optional
@@ -118,6 +133,7 @@ server/
 | `Vec2f`, `Size2f` | 2D position/size |
 | `ObstacleType` | Enum: kStatic, kDestructible, kHazard, kDecoration |
 | `ObstacleData` | Single obstacle definition |
+| `EnemySpawnData` | Enemy spawn definition (tag, position, delay) |
 | `BackgroundLayer` | Parallax layer config |
 | `SpawnRules` | Frame selection constraints |
 | `WGFDefinition` | Complete frame definition |
@@ -125,6 +141,9 @@ server/
 | `EndlessModeConfig` | Endless mode parameters |
 | `WorldGenConfig` | Global configuration |
 | `LevelDefinition` | Editor-created level (UUID list) |
+| `SpawnEvent` | Runtime spawn events (obstacles, enemies) |
+| `SeedMetadata` | Seed state for determinism |
+| `WorldGenState` | Complete serializable state |
 
 ### Loader (`WorldGenConfigLoader`)
 
@@ -160,10 +179,12 @@ server/
 - [x] **UUID mapping**: Hash map for O(1) lookup
 - [x] **Deterministic list**: Sorted alphabetically after load
 
-### Deterministic WorldGen Logic ⏳ (Next PR)
+### Deterministic WorldGen Logic ✅
 
-- [ ] **WGF selection algorithm**: Uses seed, difficulty, UUID list
-- [ ] **Endless mode**: Difficulty scaling per frame index
+- [x] **WGF selection algorithm**: Uses seed, difficulty, UUID list
+- [x] **Endless mode**: Difficulty scaling per frame index
+- [x] **DeterministicRNG**: PCG-based PRNG for reproducibility
+- [x] **WorldGenManager**: Runtime frame selection and spawn events
 
 ### Integration into ECS ✅
 
@@ -198,11 +219,11 @@ server/
 
 | Criterion | Status |
 |-----------|--------|
-| Config system loads at server startup | ✅ Ready |
+| Config system loads at server startup | ✅ Implemented |
 | WGF files parsed with correct metadata | ✅ Implemented |
-| Seeds embed UUID list, difficulty, endless flag | ⏳ Runtime PR |
+| Seeds embed UUID list, difficulty, endless flag | ✅ Implemented |
 | New WGFs don't impact old seeds | ✅ Design ensures this |
-| World generation uses config | ⏳ Runtime PR |
+| World generation uses config | ✅ Implemented |
 | Error handling prevents crashes | ✅ Graceful skip + logging |
 | Logs report success/failure | ✅ Statistics + callback |
 | Architecture documented | ✅ External Manager Pattern |
@@ -210,64 +231,59 @@ server/
 
 ---
 
-## Files Delivered in This PR
+## Files Delivered
 
 ### Source Code
 
 | File | Lines | Purpose |
 |------|-------|---------|
-| `WorldGenTypes.hpp` | 180 | All POD data structures |
+| `WorldGenTypes.hpp` | 220+ | All POD data structures |
 | `WorldGenConfigLoader.hpp` | 173 | Loader interface |
-| `WorldGenConfigLoader.cpp` | 476 | JSON parsing & validation |
-| `WorldGen.hpp` | 20 | Convenience include |
+| `WorldGenConfigLoader.cpp` | 550+ | JSON parsing & validation |
+| `WorldGenManager.hpp` | 150+ | Runtime manager interface |
+| `WorldGenManager.cpp` | 400+ | Frame selection & spawn events |
+| `DeterministicRNG.hpp` | 100+ | PCG-based PRNG |
+| `WorldGenSystem.hpp` | 50+ | ECS integration interface |
+| `WorldGenSystem.cpp` | 200+ | Entity spawning from events |
+| `WorldGen.hpp` | 25 | Convenience include |
 
 ### Assets
 
 | File | Purpose |
 |------|---------|
 | `config.json` | Global configuration |
-| `empty_space.wgf.json` | Example: no obstacles |
-| `asteroid_field_light.wgf.json` | Example: few asteroids |
-| `asteroid_field_dense.wgf.json` | Example: many asteroids |
-| `debris_corridor.wgf.json` | Example: corridor layout |
-| `hazard_zone.wgf.json` | Example: hazards |
-| `gauntlet_run.wgf.json` | Example: mixed challenge |
+| `core/*.wgf.json` | 10 built-in frames |
+| `levels/*.level.json` | Level definitions |
 | `user/README.md` | Modding guide |
 
 ### Tests
 
 | File | Tests | Coverage |
 |------|-------|----------|
-| `test_worldgen.cpp` | 13 | Loading, validation, queries |
+| `test_worldgen.cpp` | 20+ | Loading, validation, queries, RNG, runtime |
 
 ### Documentation
 
 | File | Purpose |
 |------|---------|
-| `WORLDGEN_CONFIG_SYSTEM.md` | Complete system documentation |
+| `WORLDGEN_COMPLETE.md` | Full system documentation |
+| `WORLDGEN_CONFIG_SYSTEM.md` | Config system details |
+| `WORLDGEN_IMPLEMENTATION.md` | Implementation summary (this file) |
 
 ---
 
-## What's Next (Future PRs)
+## Future Enhancements
 
-### Runtime Generation PR
-- `WorldGenManager` class for seed-based frame selection
-- `SeedMetadata` struct with embedded UUID list
-- PRNG integration for deterministic selection
-- Difficulty weighting algorithm
-- Endless mode difficulty scaling
-- Server tick integration
-
-### Enemy Generation PR
-- Extend WGF schema with `enemies` array
-- `EnemySpawn` struct with pattern/formation
-- Integration with existing `PatternMovement` system
-- See `docs/docs/design/ENEMY_GENERATION.md`
-
-### Lua Scripting PR (Optional)
+### Lua Scripting (Optional)
 - `LuaScript` component for boss AI
 - Multi-phase behavior support
 - See `docs/docs/design/LUA_ENEMY_SCRIPTS.md`
+
+### Additional Features
+- More enemy types via `FactoryActors`
+- Background layer rendering
+- Boss frames with special mechanics
+- Multiplayer seed sync
 
 ---
 

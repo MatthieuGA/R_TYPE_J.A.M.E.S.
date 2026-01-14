@@ -36,7 +36,6 @@ void ProcessCollision(Eng::registry &reg, GameWorld &game_world,
     std::size_t i = collision.entity_index;
     Engine::entity proj_entity = collision.proj_entity;
     std::size_t j = collision.proj_index;
-
     // Check if this is a player getting hit and play damage sound
     if (reg.GetComponents<Component::PlayerTag>().has(i)) {
         if (game_world.audio_manager_) {
