@@ -1,5 +1,6 @@
 #include <string>
 #include <utility>
+#include <vector>
 
 #include <SFML/Graphics.hpp>
 
@@ -91,19 +92,31 @@ void DeathHandling(Engine::registry &reg, GameWorld &game_world,
 void KillEntitiesSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::NetworkId> &network_ids,
     Eng::sparse_array<Com::AnimationDeath> &animation_deaths) {
-    const int kMaxTickDifference = 2;
+    const uint32_t kMaxTickDifference = 2;
+
+    uint32_t current_tick =
+        SnapshotTracker::GetInstance().GetLastProcessedTick();
+
+    // Collect entities to kill first (avoid modifying registry while
+    // iterating)
+    std::vector<std::size_t> entities_to_kill;
 
     for (auto &&[i, net_id] : make_indexed_zipper(network_ids)) {
         if (animation_deaths.has(i)) {
             continue;  // Skip entities currently playing a death animation
         }
-        if (SnapshotTracker::GetInstance().GetLastProcessedTick() -
-                static_cast<uint32_t>(net_id.last_processed_tick) >
-            kMaxTickDifference) {
-            DeathHandling(reg, game_world,
-                reg.GetComponents<Com::AnimatedSprite>(),
-                reg.EntityFromIndex(i), i);
+        // Safe subtraction check to avoid underflow issues
+        if (current_tick > net_id.last_processed_tick &&
+            (current_tick - net_id.last_processed_tick) > kMaxTickDifference) {
+            entities_to_kill.push_back(i);
         }
+    }
+
+    // Now process the collected entities outside the iteration
+    for (std::size_t i : entities_to_kill) {
+        DeathHandling(reg, game_world,
+            reg.GetComponents<Com::AnimatedSprite>(), reg.EntityFromIndex(i),
+            i);
     }
 }
 }  // namespace Rtype::Client
