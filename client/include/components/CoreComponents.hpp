@@ -1,13 +1,13 @@
 #pragma once
 #include <cstdint>
 #include <functional>
+#include <limits>
 #include <map>
 #include <memory>
 #include <optional>
 #include <string>
 #include <utility>
 #include <vector>
-#include <limits>
 
 #include <SFML/Graphics.hpp>
 #include <graphics/Types.hpp>
@@ -145,7 +145,7 @@ struct Clickable {
 struct Draggable {
     bool is_dragging =
         false; /**< Whether element is currently being dragged */
-    sf::Vector2f drag_offset{
+    Engine::Graphics::Vector2f drag_offset{
         0.0f, 0.0f}; /**< Offset from drag start position */
 
     // Drag constraints

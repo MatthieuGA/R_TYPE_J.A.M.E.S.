@@ -65,14 +65,15 @@ void InitRenderSystems(Rtype::Client::GameWorld &game_world) {
         });
 
     // Health bar system
-    game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
-        Eng::sparse_array<Com::HealthBar>, Eng::sparse_array<Com::Health>>(
-        [&game_world](Eng::registry &r,
-            Eng::sparse_array<Com::Transform> const &transforms,
-            Eng::sparse_array<Com::HealthBar> &health_bars,
-            Eng::sparse_array<Com::Health> const &healths) {
-            HealthBarSystem(r, game_world, transforms, health_bars, healths);
-        });
+    // game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
+    //     Eng::sparse_array<Com::HealthBar>, Eng::sparse_array<Com::Health>>(
+    //     [&game_world](Eng::registry &r,
+    //         Eng::sparse_array<Com::Transform> const &transforms,
+    //         Eng::sparse_array<Com::HealthBar> &health_bars,
+    //         Eng::sparse_array<Com::Health> const &healths) {
+    //         HealthBarSystem(r, game_world, transforms, health_bars,
+    //         healths);
+    //     });
 }
 
 /**
@@ -191,7 +192,7 @@ void InitControlsSystem(Rtype::Client::GameWorld &game_world) {
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Inputs>>(
         [&game_world](
             Eng::registry &r, Eng::sparse_array<Com::Inputs> &inputs) {
-            InputSystem(r, game_world.window_.hasFocus(), inputs);
+            InputSystem(r, *game_world.input_manager_, inputs);
         });
 
     // Timed events system

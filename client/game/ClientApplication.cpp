@@ -5,15 +5,16 @@
 
 #include <SFML/Graphics.hpp>
 
-#include "adapters/SFMLInputAdapters.hpp"
+#include "engine/systems/InitRegistrySystems.hpp"
 #include "game/InitRegistry.hpp"
 #include "game/SnapshotTracker.hpp"
 #include "game/scenes_management/InitScenes.hpp"
 #include "include/components/NetworkingComponents.hpp"
 #include "include/components/ScenesComponents.hpp"
 #include "include/indexed_zipper.hpp"
-#include "input/Event.hpp"
 #include "network/Network.hpp"
+#include "platform/OSEvent.hpp"
+#include "platform/SFMLEventSource.hpp"
 
 namespace Rtype::Client {
 // Parse Player
@@ -151,14 +152,11 @@ bool ClientApplication::ConnectToServerWithRetry(
 
 void ClientApplication::RunGameLoop(GameWorld &game_world) {
     while (game_world.window_.isOpen()) {
-        // Handle window events
-        sf::Event sfml_event;
-        while (game_world.window_.pollEvent(sfml_event)) {
-            Engine::Input::Event event;
-            if (Adapters::FromSFMLEvent(sfml_event, event)) {
-                if (event.type == Engine::Input::EventType::Closed) {
-                    game_world.window_.close();
-                }
+        // Handle window events via platform event source
+        Engine::Platform::OSEvent os_event;
+        while (game_world.event_source_->Poll(os_event)) {
+            if (os_event.type == Engine::Platform::OSEventType::Closed) {
+                game_world.window_.close();
             }
         }
 
