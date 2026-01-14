@@ -10,6 +10,62 @@
 #include "graphics/Types.hpp"
 
 namespace Rtype::Client::Component {
+
+/**
+ * @brief Simple colored rectangle drawable component.
+ *
+ * Used for obstacles, debug visualization, and UI elements that don't need
+ * textures. Renders as a solid colored rectangle with optional border.
+ */
+struct RectangleDrawable {
+    float width = 64.0f;
+    float height = 64.0f;
+    int z_index = 0;
+    float opacity = 1.0f;
+    Engine::Graphics::Color fill_color =
+        Engine::Graphics::Color(200, 50, 50, 255);
+    Engine::Graphics::Color outline_color =
+        Engine::Graphics::Color(255, 100, 100, 255);
+    float outline_thickness = 2.0f;
+    std::unique_ptr<sf::RectangleShape> shape;
+    bool is_initialized = false;
+
+    explicit RectangleDrawable(float w = 64.0f, float h = 64.0f, int z = 0)
+        : width(w),
+          height(h),
+          z_index(z),
+          opacity(1.0f),
+          fill_color(200, 50, 50, 255),
+          outline_color(255, 100, 100, 255),
+          outline_thickness(2.0f),
+          shape(std::make_unique<sf::RectangleShape>()),
+          is_initialized(false) {}
+
+    RectangleDrawable(float w, float h, Engine::Graphics::Color fill,
+        Engine::Graphics::Color outline = Engine::Graphics::Color(
+            255, 100, 100, 255),
+        float outline_thick = 2.0f, int z = 0)
+        : width(w),
+          height(h),
+          z_index(z),
+          opacity(1.0f),
+          fill_color(fill),
+          outline_color(outline),
+          outline_thickness(outline_thick),
+          shape(std::make_unique<sf::RectangleShape>()),
+          is_initialized(false) {}
+
+    // Non-copyable
+    RectangleDrawable(RectangleDrawable const &) = delete;
+    RectangleDrawable &operator=(RectangleDrawable const &) = delete;
+
+    // Move operations - unique_ptr handles this correctly
+    RectangleDrawable(RectangleDrawable &&) = default;
+    RectangleDrawable &operator=(RectangleDrawable &&) = default;
+
+    ~RectangleDrawable() = default;
+};
+
 struct Drawable {
     std::string spritePath;
     int z_index = 0;

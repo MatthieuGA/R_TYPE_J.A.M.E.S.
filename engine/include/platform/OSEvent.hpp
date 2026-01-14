@@ -1,27 +1,32 @@
 /**
- * @file Event.hpp
- * @brief Backend-agnostic event types for the Engine.
+ * @file OSEvent.hpp
+ * @brief Backend-agnostic OS/platform event types for the Engine.
  *
- * Provides an engine-agnostic representation of input events.
- * This allows the client to handle events independent of the
- * underlying input library (e.g., SFML).
+ * Provides an engine-agnostic representation of operating system and window
+ * events. These are raw platform messages (close, resize, focus, key/mouse
+ * input) independent of the underlying backend (SFML, SDL, etc.).
+ *
+ * NOTE: This is separate from engine gameplay events (ECS event system).
+ * OSEvents represent low-level platform input/window messages.
  */
 
-#ifndef ENGINE_INCLUDE_INPUT_EVENT_HPP_
-#define ENGINE_INCLUDE_INPUT_EVENT_HPP_
+#ifndef ENGINE_INCLUDE_PLATFORM_OSEVENT_HPP_
+#define ENGINE_INCLUDE_PLATFORM_OSEVENT_HPP_
+
+#include <cstdint>
 
 #include "input/Key.hpp"
 #include "input/MouseButton.hpp"
 
 namespace Engine {
-namespace Input {
+namespace Platform {
 
 /**
- * @brief Enumeration of event types.
+ * @brief Enumeration of OS event types.
  *
- * Represents different types of window and input events.
+ * Represents different types of window and input events from the OS/platform.
  */
-enum class EventType {
+enum class OSEventType {
     Closed = 0,              ///< The window requested to be closed
     Resized,                 ///< The window was resized
     LostFocus,               ///< The window lost focus
@@ -49,11 +54,11 @@ enum class EventType {
  * Contains information about a keyboard event.
  */
 struct KeyEvent {
-    Key code;      ///< Code of the key that has been pressed
-    bool alt;      ///< Is the Alt key pressed?
-    bool control;  ///< Is the Control key pressed?
-    bool shift;    ///< Is the Shift key pressed?
-    bool system;   ///< Is the System key pressed?
+    Input::Key code;  ///< Code of the key that has been pressed
+    bool alt;         ///< Is the Alt key pressed?
+    bool control;     ///< Is the Control key pressed?
+    bool shift;       ///< Is the Shift key pressed?
+    bool system;      ///< Is the System key pressed?
 };
 
 /**
@@ -62,7 +67,7 @@ struct KeyEvent {
  * Contains information about a mouse button event.
  */
 struct MouseButtonEvent {
-    MouseButton button;  ///< Code of the button that has been pressed
+    Input::MouseButton button;  ///< Code of the button that has been pressed
     int x;  ///< X position of the mouse pointer, relative to the left of the
             ///< window
     int y;  ///< Y position of the mouse pointer, relative to the top of the
@@ -114,13 +119,13 @@ struct TextEvent {
 };
 
 /**
- * @brief Generic event structure.
+ * @brief Generic OS event structure.
  *
- * Encapsulates all types of events that can occur.
+ * Encapsulates all types of OS/platform events that can occur.
  * The type field indicates which union member is valid.
  */
-struct Event {
-    EventType type;  ///< Type of the event
+struct OSEvent {
+    OSEventType type;  ///< Type of the event
 
     union {
         SizeEvent size;                    ///< Size event parameters
@@ -132,7 +137,7 @@ struct Event {
     };
 };
 
-}  // namespace Input
+}  // namespace Platform
 }  // namespace Engine
 
-#endif  // ENGINE_INCLUDE_INPUT_EVENT_HPP_
+#endif  // ENGINE_INCLUDE_PLATFORM_OSEVENT_HPP_

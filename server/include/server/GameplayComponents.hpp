@@ -27,7 +27,18 @@ struct AnimationEnterPlayer {
 struct EnemyTag {
     float speed = 100.0f;
     // Subtype used for network serialization: matches
-    // server::network::EntityState::EnemyType (0=Mermaid,1=KamiFish)
+    // server::network::EntityState::EnemyType (0=Mermaid,1=KamiFish,2=Daemon)
+    uint8_t subtype = 0;
+};
+
+/**
+ * @brief Tag component for obstacle entities (asteroids, walls, etc.)
+ *
+ * Obstacles are solid world objects spawned by WorldGen that can block
+ * players and projectiles. They move with the world scroll.
+ */
+struct ObstacleTag {
+    /// Subtype for network serialization (0=Asteroid, 1=Wall, etc.)
     uint8_t subtype = 0;
 };
 
@@ -111,8 +122,9 @@ struct Projectile {
         Normal = 0,
         Charged = 1,
         Enemy_Mermaid = 2,
+        Enemy_Daemon = 3,
         Enemy_Golem = 4,
-        Enemy_Golem_Laser = 5,
+        Enemy_Golem_Laser = 5
     } type = ProjectileType::Normal;
     int damage;
     vector2f direction;

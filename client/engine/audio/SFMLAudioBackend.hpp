@@ -32,7 +32,10 @@ class SFMLAudioBackend : public IAudioBackend {
     bool LoadMusic(const std::string &id, const std::string &path) override;
     void Play(const PlaybackRequest &request) override;
     void StopMusic() override;
+    bool IsMusicPlaying(const std::string &id) const override;
     void SetCategoryVolume(SoundCategory category, float volume) override;
+    float GetCategoryVolume(SoundCategory category) const override;
+    bool GetCategoryMuteStatus(SoundCategory category) const override;
     void SetCategoryMute(SoundCategory category, bool mute) override;
     void Update() override;
 
@@ -56,7 +59,7 @@ class SFMLAudioBackend : public IAudioBackend {
     std::queue<PlaybackRequest> playback_queue_;
     std::mutex queue_mutex_;
 
-    static constexpr size_t kMaxConcurrentSounds = 16;
+    static constexpr size_t kMaxConcurrentSounds = 64;
 
     void ProcessPlaybackQueue();
     void PlaySoundImmediate(const PlaybackRequest &request);

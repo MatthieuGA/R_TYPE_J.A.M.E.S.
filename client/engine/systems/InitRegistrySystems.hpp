@@ -52,7 +52,7 @@ void InitializeDrawableAnimatedSystem(Eng::registry &reg,
 
 // MOVEMENT SYSTEMS
 
-void InputSystem(Eng::registry &reg, bool has_focus,
+void InputSystem(Eng::registry &reg, GameInputManager &input_manager,
     Eng::sparse_array<Com::Inputs> &inputs);
 
 void MovementSystem(Eng::registry &reg, const float dt,
@@ -120,7 +120,12 @@ void ButtonClickSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Drawable> &drawables,
     Eng::sparse_array<Com::Transform> &transforms);
 
-void HealthDeductionSystem(Eng::registry &reg,
+void DraggableSystem(Eng::registry &reg, GameWorld &game_world,
+    Eng::sparse_array<Com::HitBox> &hit_boxes,
+    Eng::sparse_array<Com::Draggable> &draggables,
+    Eng::sparse_array<Com::Transform> &transforms);
+
+void HealthDeductionSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Health> &healths,
     Eng::sparse_array<Com::HealthBar> &health_bars,
     Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
@@ -163,7 +168,7 @@ uint8_t InputToBitfield(const Com::Inputs &input);
 void AudioSystem(Eng::registry &reg, Audio::AudioManager &audio_manager,
     Eng::sparse_array<Com::SoundRequest> &sound_requests);
 
-void KillEntitiesSystem(Eng::registry &reg,
+void KillEntitiesSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::NetworkId> &network_ids,
     Eng::sparse_array<Com::AnimationDeath> &animation_deaths);
 

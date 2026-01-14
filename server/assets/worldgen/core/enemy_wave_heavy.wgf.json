@@ -1,0 +1,58 @@
+{
+  "uuid": "e3f4a5b6-c7d8-49e0-8f2a-3b4c5d6e7f8a",
+  "name": "Enemy Wave - Heavy",
+  "description": "A challenging wave with many fast enemies.",
+  "difficulty": 7.5,
+  "tags": ["enemies", "hard", "swarm"],
+  "width": 1200,
+  "spawn_rules": {
+    "min_distance_from_last": 2,
+    "max_frequency": 0.7
+  },
+  "obstacles": [],
+  "enemies": [
+    {
+      "tag": "kamifish",
+      "position": { "x": 50, "y": 100 },
+      "spawn_delay": 0.0
+    },
+    {
+      "tag": "kamifish",
+      "position": { "x": 50, "y": 200 },
+      "spawn_delay": 0.0
+    },
+    {
+      "tag": "kamifish",
+      "position": { "x": 50, "y": 300 },
+      "spawn_delay": 0.0
+    },
+    {
+      "tag": "mermaid",
+      "position": { "x": 200, "y": 150 },
+      "spawn_delay": 0.0
+    },
+    {
+      "tag": "mermaid",
+      "position": { "x": 200, "y": 450 },
+      "spawn_delay": 0.0
+    },
+    {
+      "tag": "kamifish",
+      "position": { "x": 400, "y": 250 },
+      "spawn_delay": 0.0
+    },
+    {
+      "tag": "kamifish",
+      "position": { "x": 400, "y": 350 },
+      "spawn_delay": 0.0
+    },
+    {
+      "tag": "mermaid",
+      "position": { "x": 600, "y": 300 },
+      "spawn_delay": 0.0
+    }
+  ],
+  "background": {
+    "layers": []
+  }
+}

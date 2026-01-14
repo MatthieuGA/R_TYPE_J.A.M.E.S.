@@ -1,27 +1,20 @@
 #include "game/ClientApplication.hpp"
 
-#include <algorithm>
 #include <cstdio>
-#include <iomanip>
 #include <iostream>
-#include <vector>
 
 #include <SFML/Graphics.hpp>
 
-#include "adapters/SFMLInputAdapters.hpp"
 #include "engine/systems/InitRegistrySystems.hpp"
 #include "game/InitRegistry.hpp"
 #include "game/SnapshotTracker.hpp"
-#include "game/factory/factory_ennemies/FactoryActors.hpp"
 #include "game/scenes_management/InitScenes.hpp"
-#include "include/LayersConst.hpp"
-#include "include/components/CoreComponents.hpp"
 #include "include/components/NetworkingComponents.hpp"
-#include "include/components/RenderComponent.hpp"
 #include "include/components/ScenesComponents.hpp"
 #include "include/indexed_zipper.hpp"
-#include "input/Event.hpp"
 #include "network/Network.hpp"
+#include "platform/OSEvent.hpp"
+#include "platform/SFMLEventSource.hpp"
 
 namespace Rtype::Client {
 // Parse Player
@@ -52,11 +45,14 @@ void ClientApplication::ApplySnapshotToRegistry(
     GameWorld &game_world, const client::SnapshotPacket &snapshot) {
     auto entities = ParseSnapshotData(snapshot);
 
-    auto &net_ids = game_world.registry_.GetComponents<Component::NetworkId>();
-
     SnapshotTracker::GetInstance().UpdateLastProcessedTick(snapshot.tick);
 
     for (const auto &entity_data : entities) {
+        // Re-fetch net_ids each iteration because CreateNewEntity may resize
+        // the sparse array
+        auto &net_ids =
+            game_world.registry_.GetComponents<Component::NetworkId>();
+
         // Find entity with matching NetworkId
         std::optional<size_t> entity_index;
 
@@ -159,27 +155,30 @@ bool ClientApplication::ConnectToServerWithRetry(
 
 void ClientApplication::RunGameLoop(GameWorld &game_world) {
     while (game_world.window_.isOpen()) {
-        // Handle window events
-        sf::Event sfml_event;
-        while (game_world.window_.pollEvent(sfml_event)) {
-            Engine::Input::Event event;
-            if (Adapters::FromSFMLEvent(sfml_event, event)) {
-                if (event.type == Engine::Input::EventType::Closed) {
-                    game_world.window_.close();
-                }
+        // Handle window events via platform event source
+        Engine::Platform::OSEvent os_event;
+        while (game_world.event_source_->Poll(os_event)) {
+            if (os_event.type == Engine::Platform::OSEventType::Closed) {
+                game_world.window_.close();
             }
         }
 
         // Poll asio for network events
         game_world.io_context_.poll();
 
+        // Check for unexpected disconnection (server crashed/closed)
+        if (game_world.server_connection_ &&
+            game_world.server_connection_->WasDisconnectedUnexpectedly()) {
+            std::cerr << "[Client] Lost connection to server!" << std::endl;
+            std::cerr << "[Client] The server may have shut down."
+                      << std::endl;
+            game_world.window_.close();
+            break;
+        }
+
         // Check if game has started (received GAME_START from server)
         if (game_world.server_connection_) {
             if (game_world.server_connection_->HasGameStarted()) {
-                std::cout
-                    << "[Client] Game started! Switching to GameLevel scene"
-                    << std::endl;
-                std::cout.flush();
                 // Reset the flag to avoid re-triggering
                 game_world.server_connection_->ResetGameStarted();
 
@@ -187,28 +186,10 @@ void ClientApplication::RunGameLoop(GameWorld &game_world) {
                 auto &scene_comps =
                     game_world.registry_
                         .GetComponents<Component::SceneManagement>();
-                std::cout << "[Client] SceneManagement components count: "
-                          << scene_comps.size() << std::endl;
-                std::cout.flush();
 
-                bool found = false;
                 for (auto &&[i, gs] : make_indexed_zipper(scene_comps)) {
-                    found = true;
-                    std::cout << "[Client] Found SceneManagement at index "
-                              << i << ", current=" << gs.current
-                              << ", next=" << gs.next << std::endl;
-                    std::cout.flush();
                     gs.next = "GameLevel";
-                    std::cout << "[Client] Set next to GameLevel" << std::endl;
-                    std::cout.flush();
                     break;  // Only need to set once
-                }
-
-                if (!found) {
-                    std::cerr << "[Client] ERROR: No SceneManagement "
-                                 "component found!"
-                              << std::endl;
-                    std::cerr.flush();
                 }
             }
         }
@@ -217,7 +198,6 @@ void ClientApplication::RunGameLoop(GameWorld &game_world) {
         // (outside game-start check, runs each frame)
         if (game_world.server_connection_) {
             // Process all queued snapshots each frame to avoid backlog
-            // static int packet_count = 0;
             while (true) {
                 auto snapshot = game_world.server_connection_->PollSnapshot();
                 if (!snapshot.has_value())

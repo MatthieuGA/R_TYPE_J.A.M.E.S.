@@ -1,0 +1,79 @@
+{
+  "uuid": "f6a7b8c9-d0e1-4f2a-3b4c-5d6e7f8a9b0c",
+  "name": "Gauntlet Run",
+  "description": "Extreme challenge with narrow passages and multiple hazards.",
+  "difficulty": 8.0,
+  "tags": ["extreme", "gauntlet", "tight_spaces", "hazard"],
+  "width": 1200,
+  "spawn_rules": {
+    "min_distance_from_last": 6,
+    "max_frequency": 0.5
+  },
+  "obstacles": [
+    {
+      "type": "static",
+      "sprite": "images/obstacles/wall_top.png",
+      "position": { "x": 0, "y": 0 },
+      "size": { "width": 400, "height": 150 },
+      "collision": { "enabled": true, "damage": 50 },
+      "health": 0
+    },
+    {
+      "type": "static",
+      "sprite": "images/obstacles/wall_bottom.png",
+      "position": { "x": 0, "y": 450 },
+      "size": { "width": 400, "height": 150 },
+      "collision": { "enabled": true, "damage": 50 },
+      "health": 0
+    },
+    {
+      "type": "hazard",
+      "sprite": "images/obstacles/laser_gate.png",
+      "position": { "x": 450, "y": 0 },
+      "size": { "width": 20, "height": 250 },
+      "collision": { "enabled": true, "damage": 40 },
+      "health": 0
+    },
+    {
+      "type": "hazard",
+      "sprite": "images/obstacles/laser_gate.png",
+      "position": { "x": 450, "y": 350 },
+      "size": { "width": 20, "height": 250 },
+      "collision": { "enabled": true, "damage": 40 },
+      "health": 0
+    },
+    {
+      "type": "destructible",
+      "sprite": "images/obstacles/barrier.png",
+      "position": { "x": 600, "y": 200 },
+      "size": { "width": 80, "height": 200 },
+      "collision": { "enabled": true, "damage": 20 },
+      "health": 100
+    },
+    {
+      "type": "static",
+      "sprite": "images/obstacles/wall_top.png",
+      "position": { "x": 800, "y": 0 },
+      "size": { "width": 400, "height": 200 },
+      "collision": { "enabled": true, "damage": 50 },
+      "health": 0
+    },
+    {
+      "type": "static",
+      "sprite": "images/obstacles/wall_bottom.png",
+      "position": { "x": 800, "y": 400 },
+      "size": { "width": 400, "height": 200 },
+      "collision": { "enabled": true, "damage": 50 },
+      "health": 0
+    }
+  ],
+  "background": {
+    "layers": [
+      {
+        "sprite": "images/backgrounds/danger_zone.png",
+        "parallax_factor": 0.2,
+        "scroll_speed": 0.4
+      }
+    ]
+  }
+}

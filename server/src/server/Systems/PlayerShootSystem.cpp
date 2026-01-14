@@ -87,7 +87,7 @@ void ShootPlayerSystem(Engine::registry &reg,
         make_indexed_zipper(transforms, inputs, player_tags)) {
         // Handle shooting normal projectiles
         if (player_tag.shoot_cooldown > 0.0f)
-            player_tag.shoot_cooldown -= TICK_RATE_MS / 1000.0f;
+            player_tag.shoot_cooldown -= g_frame_delta_seconds;
         if (input.shoot && !input.last_shoot_state &&
             player_tag.shoot_cooldown <= 0.0f) {
             player_tag.charge_time = 0.0f;
@@ -97,7 +97,7 @@ void ShootPlayerSystem(Engine::registry &reg,
         // Handle charged shooting
         if (input.shoot && input.last_shoot_state &&
             player_tag.charge_time < player_tag.charge_time_min)
-            player_tag.charge_time += TICK_RATE_MS / 1000.0f;
+            player_tag.charge_time += g_frame_delta_seconds;
         if (!input.shoot && input.last_shoot_state &&
             player_tag.charge_time >= player_tag.charge_time_min) {
             player_tag.charge_time = 0.0f;

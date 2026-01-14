@@ -20,12 +20,14 @@ void GameStateSystem(Eng::registry &reg, GameWorld &gameWorld,
             continue;
 
         // Call onExit hook of the previous state if it exists
-        if (gs.scenes.find(gs.current) != gs.scenes.end())
+        if (gs.scenes.find(gs.current) != gs.scenes.end()) {
             gs.scenes[gs.current]->DestroyScene(reg);
+        }
 
         // Call onEnter hook of the new state if it exists
-        if (gs.scenes.find(gs.next) != gs.scenes.end())
+        if (gs.scenes.find(gs.next) != gs.scenes.end()) {
             gs.scenes[gs.next]->InitScene(reg, gameWorld);
+        }
 
         gs.current = gs.next;
         gs.next = "";

@@ -13,10 +13,13 @@ sidebar_position: 2
 - [5. Network Protocol Integration](#5-network-protocol-integration)
 - [6. Client Components](#6-client-components)
 - [7. Client Systems](#7-client-systems)
+- [8. Platform Abstraction](#8-platform-abstraction)
 
 ## 1. Overview
 
 R-TYPE J.A.M.E.S. is built upon a **Client-Server** architecture using a custom **Entity Component System (ECS)** engine. The system is designed to be modular, performant, and network-efficient, adhering to the **Authoritative Server** model.
+
+The engine features backend-agnostic abstractions for input, graphics, and platform events, making it portable and suitable for reuse in other game projects.
 
 ### High-Level Architecture
 
@@ -326,5 +329,71 @@ This system is used for:
 - Player taking damage
 - Enemy death events
 - Projectile collisions
+
+---
+
+## 8. Platform Abstraction
+
+The engine provides backend-agnostic abstractions to decouple game logic from specific platform libraries (SFML, SDL, etc.).
+
+### OS Event System
+
+The **OS Event Abstraction Layer** handles window and input events without exposing the underlying backend:
+
+```cpp
+// Engine defines the interface and event types
+Engine::Platform::OSEvent event;
+while (game_world.event_source_->Poll(event)) {
+    if (event.type == Engine::Platform::OSEventType::Closed) {
+        game_world.window_.close();
+    }
+}
+```
+
+**Key Components:**
+- `Engine::Platform::OSEvent` - Backend-agnostic event structure
+- `IPlatformEventSource` - Abstract polling interface
+- `SFMLEventSource` - SFML concrete implementation
+
+**Benefits:**
+- Engine has zero SFML dependencies in core code
+- Future backends (SDL, GLFW) can be added via plugins
+- Improved testability with mock event sources
+
+For detailed information, see [OS Event Abstraction Layer](./design/OS_EVENT_ABSTRACTION.md).
+
+### Input Abstraction
+
+Game actions are decoupled from physical keys through an abstraction layer:
+
+```cpp
+// Engine provides generic input primitives
+Engine::Input::Key, Engine::Input::MouseButton
+
+// Game defines its own actions
+Game::Action::MoveUp, Game::Action::Shoot
+
+// Mappings configured at game layer
+input_manager.BindKey(Engine::Input::Key::W, Game::Action::MoveUp);
+```
+
+### Graphics Abstraction
+
+Engine graphics types are backend-independent:
+
+```cpp
+// Engine types (not SFML types)
+Engine::Graphics::Color
+Engine::Graphics::Vector2f
+
+// Adapters convert at the boundary
+sf::Color sfml_color = Adapters::ToSFMLColor(engine_color);
+```
+
+This architecture enables:
+- **Portability** - Engine can run on different platforms/backends
+- **Reusability** - Core engine can be used in other games
+- **Testability** - Mock implementations for unit testing
+- **Plugin Support** - Dynamic backend loading (future)
 - Power-up pickups
 - Boss AI triggers

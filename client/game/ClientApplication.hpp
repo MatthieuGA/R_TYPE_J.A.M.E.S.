@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 #include <vector>
 
 #include "engine/GameWorld.hpp"
@@ -22,6 +23,7 @@ class ClientApplication {
             kPlayerProjectile = 0x00,
             kPlayerChargedProjectile = 0x01,
             kMermaidProjectile = 0x02,
+            kDaemonProjectile = 0x03,
             kGolemProjectile = 0x04,
             kGolemLaser = 0x05
         };
@@ -29,12 +31,14 @@ class ClientApplication {
         enum EntityType : uint8_t {
             kPlayerEntity = 0x00,
             kEnemyEntity = 0x01,
-            kProjectileEntity = 0x02
+            kProjectileEntity = 0x02,
+            kObstacleEntity = 0x03
         };
 
         enum EnemyType : uint8_t {
             kMermaidEnemy = 0x00,
             kKamiFishEnemy = 0x01,
+            kDaemonEnemy = 0x02,
             kGolemEnemy = 0x03
         };
 
@@ -96,7 +100,7 @@ class ClientApplication {
 
     static void ApplySnapshotToRegistry(
         GameWorld &game_world, const client::SnapshotPacket &snapshot);
-    static void CreateNewEntity(GameWorld &game_world, int tick,
+    static void CreateNewEntity(GameWorld &game_world, uint32_t tick,
         const ParsedEntity &entity_data, std::optional<size_t> &entity_index);
     static void UpdateExistingEntity(GameWorld &game_world,
         size_t entity_index, const ParsedEntity &entity_data);

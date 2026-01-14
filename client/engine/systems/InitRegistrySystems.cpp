@@ -177,11 +177,21 @@ void InitControlsSystem(Rtype::Client::GameWorld &game_world) {
                 r, game_world, hit_boxes, clickables, drawables, transforms);
         });
 
+    // Draggable system
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::HitBox>,
+        Eng::sparse_array<Com::Draggable>, Eng::sparse_array<Com::Transform>>(
+        [&game_world](Eng::registry &r,
+            Eng::sparse_array<Com::HitBox> &hit_boxes,
+            Eng::sparse_array<Com::Draggable> &draggables,
+            Eng::sparse_array<Com::Transform> &transforms) {
+            DraggableSystem(r, game_world, hit_boxes, draggables, transforms);
+        });
+
     // Input control systems
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Inputs>>(
         [&game_world](
             Eng::registry &r, Eng::sparse_array<Com::Inputs> &inputs) {
-            InputSystem(r, game_world.window_.hasFocus(), inputs);
+            InputSystem(r, *game_world.input_manager_, inputs);
         });
 
     // Timed events system
@@ -274,7 +284,16 @@ void InitGameplaySystems(Rtype::Client::GameWorld &game_world) {
         Eng::sparse_array<Com::HealthBar>,
         Eng::sparse_array<Com::AnimatedSprite>, Eng::sparse_array<Com::HitBox>,
         Eng::sparse_array<Com::Transform>, Eng::sparse_array<Com::Projectile>>(
-        HealthDeductionSystem);
+        [&game_world](Eng::registry &reg,
+            Eng::sparse_array<Com::Health> &healths,
+            Eng::sparse_array<Com::HealthBar> &health_bars,
+            Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
+            Eng::sparse_array<Com::HitBox> const &hitBoxes,
+            Eng::sparse_array<Com::Transform> const &transforms,
+            Eng::sparse_array<Com::Projectile> const &projectiles) {
+            HealthDeductionSystem(reg, game_world, healths, health_bars,
+                animated_sprites, hitBoxes, transforms, projectiles);
+        });
 }
 
 /**
@@ -340,8 +359,13 @@ void InitAudioSystem(
 }
 
 void InitKillEntitiesSystem(Rtype::Client::GameWorld &game_world) {
-    game_world.registry_.AddSystem<Com::NetworkId, Com::AnimationDeath>(
-        KillEntitiesSystem);
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::NetworkId>,
+        Eng::sparse_array<Com::AnimationDeath>>(
+        [&game_world](Eng::registry &reg,
+            Eng::sparse_array<Com::NetworkId> &network_ids,
+            Eng::sparse_array<Com::AnimationDeath> &animation_deaths) {
+            KillEntitiesSystem(reg, game_world, network_ids, animation_deaths);
+        });
 }
 
 /**

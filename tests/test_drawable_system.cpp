@@ -12,6 +12,9 @@ namespace Eng = Engine;
 
 TEST(DrawableSystem, LoadsAndAppliesTransform) {
     Eng::registry reg;
+    // Register RectangleDrawable since DrawableSystem uses it
+    reg.RegisterComponent<Com::RectangleDrawable>();
+
     Eng::sparse_array<Com::Transform> transforms;
     Eng::sparse_array<Com::Drawable> drawables;
     Eng::sparse_array<Com::Shader> shaders;
@@ -49,6 +52,9 @@ TEST(DrawableSystem, LoadsAndAppliesTransform) {
 
 TEST(DrawableSystem, HandlesMultipleEntitiesSortedByZIndex) {
     Eng::registry reg;
+    // Register RectangleDrawable since DrawableSystem uses it
+    reg.RegisterComponent<Com::RectangleDrawable>();
+
     Eng::sparse_array<Com::Transform> transforms;
     Eng::sparse_array<Com::Drawable> drawables;
     Eng::sparse_array<Com::Shader> shaders;

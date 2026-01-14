@@ -35,6 +35,8 @@ void FactoryActors::CreateActor(Engine::entity &entity, Engine::registry &reg,
         CreateKamiFishActor(entity, reg, info);
     else if (info.tag == "golem")
         CreateGolemActor(entity, reg, info);
+    else if (info.tag == "daemon")
+        CreateDaemonActor(entity, reg, info);
 }
 
 void FactoryActors::CreateBasicActor(vector2f pos, Engine::entity &entity,
@@ -61,6 +63,8 @@ void FactoryActors::CreateBasicEnnemy(
         subtype = 0;
     else if (info.tag == "golem")
         subtype = 3;
+    else if (info.tag == "daemon")
+        subtype = 2;
 
     // Add basic enemy components with subtype
     reg.AddComponent<Component::EnemyTag>(

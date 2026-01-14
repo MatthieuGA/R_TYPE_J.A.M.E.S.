@@ -35,6 +35,8 @@ void FactoryActors::CreateActor(Engine::entity &entity, Engine::registry &reg,
         CreateKamiFishActor(entity, reg, info);
     else if (info.tag == "golem")
         CreateGolemActor(entity, reg, info);
+    else if (info.tag == "daemon")
+        CreateDaemonActor(entity, reg, info);
 }
 
 void FactoryActors::CreateBasicActor(

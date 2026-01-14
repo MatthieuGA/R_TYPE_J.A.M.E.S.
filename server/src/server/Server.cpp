@@ -1,12 +1,16 @@
 #include "server/Server.hpp"
 
 #include <iostream>
+#include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
 #include "server/CoreComponents.hpp"
 #include "server/GameplayComponents.hpp"
 #include "server/NetworkComponents.hpp"
+#include "server/systems/Systems.hpp"
+#include "server/systems/WorldGenSystem.hpp"
 
 namespace server {
 
@@ -27,6 +31,7 @@ Server::Server(Config &config, boost::asio::io_context &io_context)
     instance_ = this;
     // Set game start callback
     packet_handler_.SetGameStartCallback([this]() { Start(); });
+    last_tick_time_ = std::chrono::steady_clock::now();
     // Set callback to check if game is running
     packet_handler_.SetIsGameRunningCallback([this]() { return running_; });
 }
@@ -39,6 +44,39 @@ void Server::Initialize() {
     std::cout << "Initializing server..." << std::endl;
     RegisterComponents();
     RegisterSystems();
+
+    // Initialize WorldGen
+    worldgen_loader_ = std::make_unique<worldgen::WorldGenConfigLoader>();
+    worldgen_loader_->SetLogCallback(
+        [](worldgen::LogLevel level, const std::string &msg) {
+            std::string level_str;
+            switch (level) {
+                case worldgen::LogLevel::kInfo:
+                    level_str = "[WORLDGEN INFO]";
+                    break;
+                case worldgen::LogLevel::kWarning:
+                    level_str = "[WORLDGEN WARN]";
+                    break;
+                case worldgen::LogLevel::kError:
+                    level_str = "[WORLDGEN ERROR]";
+                    break;
+            }
+            std::cout << level_str << " " << msg << std::endl;
+        });
+
+    // Load WGF files
+    if (!worldgen_loader_->LoadFromDirectories(
+            "assets/worldgen/core", "assets/worldgen/user")) {
+        std::cerr << "[WARNING] Failed to load WorldGen files, procedural "
+                     "generation disabled"
+                  << std::endl;
+    } else {
+        worldgen_manager_ =
+            std::make_unique<worldgen::WorldGenManager>(*worldgen_loader_);
+        std::cout << "[WorldGen] Loaded "
+                  << worldgen_loader_->GetAllWGFs().size() << " WGF files"
+                  << std::endl;
+    }
 
     // Register packet handlers
     packet_handler_.RegisterHandlers();
@@ -172,6 +210,16 @@ void Server::ResetToLobby() {
     // Clear all entities from the registry
     registry_.ClearAllEntities();
 
+    // Reset WorldGen manager state BEFORE destroying the system
+    // This prevents the manager from using stale callbacks during reset
+    if (worldgen_manager_) {
+        worldgen_manager_->Stop();           // Stop activity first
+        worldgen_manager_->ClearCallback();  // Clear the spawn callback
+    }
+
+    // Now safe to destroy the system
+    worldgen_system_.reset();
+
     // Reset all client ready states
     connection_manager_.ResetAllReadyStates();
 
@@ -192,9 +240,16 @@ void Server::SetupGameTick() {
         return;
     }
 
-    tick_timer_.expires_after(std::chrono::milliseconds(TICK_RATE_MS));
+    tick_timer_.expires_after(std::chrono::milliseconds(kTickTimerMs));
     tick_timer_.async_wait([this](const boost::system::error_code &ec) {
         if (!ec && running_) {
+            // Calculate real elapsed time since last tick and update global
+            // frame delta
+            auto now = std::chrono::steady_clock::now();
+            std::chrono::duration<float> elapsed = now - last_tick_time_;
+            UpdateFrameDeltaFromSeconds(elapsed.count());
+            last_tick_time_ = now;
+
             Update();
             SetupGameTick();
         }
@@ -204,16 +259,45 @@ void Server::SetupGameTick() {
 void Server::Update() {
     registry_.run_systems();
 
+    // Update WorldGen system if initialized
+    // scroll_speed should match enemy/background movement (~200 pixels/second)
+    if (worldgen_system_) {
+        worldgen_system_->Update(1.0f / 60.0f, 200.0f, registry_);
+    }
+
     // Check for game over condition (all players dead)
     if (AreAllPlayersDead()) {
-        std::cout << "[Server] All players are dead! Game Over." << std::endl;
+        if (!game_over_pending_) {
+            std::cout << "[Server] All players are dead! Starting game over "
+                         "delay..."
+                      << std::endl;
+            game_over_pending_ = true;
+            game_over_timer_ = 0.0f;
+        } else {
+            // Accumulate time (assuming 16ms per tick)
+            game_over_timer_ += g_frame_delta_ms / 1000.0f;
 
-        // Send GAME_END packet to all clients (0 = no winner, game lost)
-        packet_sender_.SendGameEnd(0);
+            if (game_over_timer_ >= GAME_OVER_DELAY_SEC) {
+                std::cout << "[Server] Game over delay complete. Sending "
+                             "GAME_END packet."
+                          << std::endl;
 
-        // Reset server to lobby state
-        ResetToLobby();
-        return;
+                // Send GAME_END packet to all clients (0 = no winner, game
+                // lost)
+                packet_sender_.SendGameEnd(0);
+
+                // Reset server to lobby state
+                ResetToLobby();
+                game_over_pending_ = false;
+                game_over_timer_ = 0.0f;
+                return;
+            }
+        }
+    } else {
+        // Reset game over pending if players are alive again (shouldn't
+        // happen but safe)
+        game_over_pending_ = false;
+        game_over_timer_ = 0.0f;
     }
 
     SendSnapshotsToAllClients();

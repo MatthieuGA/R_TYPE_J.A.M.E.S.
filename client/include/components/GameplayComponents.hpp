@@ -26,6 +26,18 @@ struct EnemyTag {
     float speed = 100.0f;
 };
 
+/**
+ * @brief Component to identify the type of enemy.
+ *
+ * Used to trigger enemy-specific behaviors like death sounds.
+ */
+struct EnemyType {
+    std::string type; /**< Type identifier (e.g., "mermaid", "kamifish") */
+
+    explicit EnemyType(std::string enemy_type = "unknown")
+        : type(std::move(enemy_type)) {}
+};
+
 struct TimedEvents {
     struct CooldownAction {
         std::function<void(int entity_id)> action;

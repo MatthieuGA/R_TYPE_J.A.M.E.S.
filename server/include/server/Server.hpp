@@ -1,5 +1,7 @@
 #pragma once
+#include <chrono>
 #include <cstdint>
+#include <memory>
 #include <vector>
 
 #include <boost/asio.hpp>
@@ -10,8 +12,12 @@
 #include "server/Network.hpp"
 #include "server/PacketHandler.hpp"
 #include "server/PacketSender.hpp"
+#include "server/worldgen/WorldGen.hpp"
 
 namespace server {
+
+// Forward declarations
+class WorldGenSystem;
 
 /**
  * @brief Main server class that manages game state using ECS
@@ -194,12 +200,24 @@ class Server {
     PacketSender packet_sender_;
     PacketHandler packet_handler_;
 
-    static constexpr int TICK_RATE_MS = 16;  // ~60 FPS
+    // WorldGen components
+    std::unique_ptr<worldgen::WorldGenConfigLoader> worldgen_loader_;
+    std::unique_ptr<worldgen::WorldGenManager> worldgen_manager_;
+    std::unique_ptr<WorldGenSystem> worldgen_system_;
+
+    static constexpr int kTickTimerMs =
+        16;  // timer resolution (~60 FPS target)
     int tick_count_;
+    std::chrono::steady_clock::time_point last_tick_time_;
 
     // Player tracking for game over detection
     int total_players_{0};
     int alive_players_{0};
+
+    // Game over delay (to let death animation and sound play on client)
+    bool game_over_pending_{false};
+    float game_over_timer_{0.0f};
+    static constexpr float GAME_OVER_DELAY_SEC = 3.0f;  // 3 seconds delay
 
     // Singleton instance for system callbacks
     static Server *instance_;
