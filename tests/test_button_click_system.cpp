@@ -8,16 +8,21 @@
 #include "include/components/CoreComponents.hpp"
 #include "include/components/RenderComponent.hpp"
 #include "platform/SFMLWindow.hpp"
+#include "tests/TestGraphicsSetup.hpp"
 
 namespace Com = Rtype::Client::Component;
 namespace Eng = Engine;
 
 class ButtonClickSystemTest : public ::testing::Test {
  protected:
+    static void SetUpTestSuite() {
+        TestHelper::RegisterTestBackend();
+    }
+
     ButtonClickSystemTest()
         : game_world(std::make_unique<Rtype::Client::Platform::SFMLWindow>(
                          800, 600, "test"),
-              "127.0.0.1", 50000, 50000) {}
+              "test", "127.0.0.1", 50000, 50000) {}
 
     Rtype::Client::GameWorld game_world;
     Eng::registry reg;

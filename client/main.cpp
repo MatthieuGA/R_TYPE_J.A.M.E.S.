@@ -12,6 +12,7 @@
 #include "game/ServerSpawner.hpp"
 #include "game/factory/factory_ennemies/FactoryActors.hpp"
 #include "game/scenes_management/InitScenes.hpp"
+#include "graphics/GraphicsBackendFactory.hpp"
 #include "graphics/SFMLRenderContext.hpp"
 #include "include/WindowConst.hpp"
 #include "include/registry.hpp"
@@ -72,20 +73,21 @@ int main(int argc, char *argv[]) {
             std::make_unique<RC::Input::SFMLInputBackend>(
                 sfml_window->GetNativeWindow());
 
+<<<<<<< HEAD
         // Create event source
         auto event_source = std::make_unique<RC::Platform::SFMLEventSource>(
             sfml_window->GetNativeWindow());
 
-        // Graphics backend: SFMLRenderContext (lives for game loop scope)
-        auto render_context =
-            std::make_unique<RC::Graphics::SFMLRenderContext>(
-                sfml_window->GetNativeWindow());
+        // Register graphics backends (must happen before GameWorld creation)
+        RC::Graphics::GraphicsBackendFactory::Register(
+            "sfml", [](sf::RenderWindow &window) {
+                return std::make_unique<RC::Graphics::SFMLRenderContext>(
+                    window);
+            });
 
-        RC::GameWorld game_world(std::move(window), config.server_ip,
+        // Create game world with SFML backend selection
+        RC::GameWorld game_world(std::move(window), "sfml", config.server_ip,
             config.tcp_port, config.udp_port);
-
-        // Wire render context into game world
-        game_world.SetRenderContext(render_context.get());
 
         // Inject dependencies
         game_world.event_source_ = std::move(event_source);

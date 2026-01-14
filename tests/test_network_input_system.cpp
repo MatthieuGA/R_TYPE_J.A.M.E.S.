@@ -22,6 +22,7 @@
 #include "include/components/CoreComponents.hpp"
 #include "include/components/GameplayComponents.hpp"
 #include "platform/SFMLWindow.hpp"
+#include "tests/TestGraphicsSetup.hpp"
 
 namespace Com = Rtype::Client::Component;
 namespace Eng = Engine;
@@ -81,6 +82,8 @@ class MockServerConnection {
 // ============================================================================
 
 TEST(NetworkInputSystem, DoesNotSendWhenNotConnected) {
+    TestHelper::RegisterTestBackend();
+
     Eng::registry reg;
     boost::asio::io_context io;
 
@@ -88,7 +91,8 @@ TEST(NetworkInputSystem, DoesNotSendWhenNotConnected) {
     auto window = std::make_unique<Rtype::Client::Platform::SFMLWindow>(
         800, 600, "test");
 
-    RC::GameWorld game_world(std::move(window), "127.0.0.1", 50000, 50000);
+    RC::GameWorld game_world(
+        std::move(window), "test", "127.0.0.1", 50000, 50000);
     game_world.server_connection_.reset();  // No connection
 
     Eng::sparse_array<Com::Inputs> inputs;
@@ -104,13 +108,16 @@ TEST(NetworkInputSystem, DoesNotSendWhenNotConnected) {
 
 TEST(
     NetworkInputSystem, DoesNotSendWhenServerConnectionExistsButNotConnected) {
+    TestHelper::RegisterTestBackend();
+
     Eng::registry reg;
     boost::asio::io_context io;
 
     auto window = std::make_unique<Rtype::Client::Platform::SFMLWindow>(
         800, 600, "test");
 
-    RC::GameWorld game_world(std::move(window), "127.0.0.1", 50000, 50000);
+    RC::GameWorld game_world(
+        std::move(window), "test", "127.0.0.1", 50000, 50000);
     // Server connection exists but is_connected() returns false (default
     // state)
 
@@ -126,13 +133,16 @@ TEST(
 }
 
 TEST(NetworkInputSystem, PollsIoContextWhenConnected) {
+    TestHelper::RegisterTestBackend();
+
     Eng::registry reg;
     boost::asio::io_context io;
 
     auto window = std::make_unique<Rtype::Client::Platform::SFMLWindow>(
         800, 600, "test");
 
-    RC::GameWorld game_world(std::move(window), "127.0.0.1", 50000, 50000);
+    RC::GameWorld game_world(
+        std::move(window), "test", "127.0.0.1", 50000, 50000);
 
     Eng::sparse_array<Com::Inputs> inputs;
     Eng::sparse_array<Com::PlayerTag> player_tags;
@@ -154,13 +164,16 @@ TEST(NetworkInputSystem, PollsIoContextWhenConnected) {
 }
 
 TEST(NetworkInputSystem, SkipsEntitiesWithoutBothComponents) {
+    TestHelper::RegisterTestBackend();
+
     Eng::registry reg;
     boost::asio::io_context io;
 
     auto window = std::make_unique<Rtype::Client::Platform::SFMLWindow>(
         800, 600, "test");
 
-    RC::GameWorld game_world(std::move(window), "127.0.0.1", 50000, 50000);
+    RC::GameWorld game_world(
+        std::move(window), "test", "127.0.0.1", 50000, 50000);
 
     Eng::sparse_array<Com::Inputs> inputs;
     Eng::sparse_array<Com::PlayerTag> player_tags;
@@ -176,13 +189,16 @@ TEST(NetworkInputSystem, SkipsEntitiesWithoutBothComponents) {
 }
 
 TEST(NetworkInputSystem, HandlesMultiplePlayerEntities) {
+    TestHelper::RegisterTestBackend();
+
     Eng::registry reg;
     boost::asio::io_context io;
 
     auto window = std::make_unique<Rtype::Client::Platform::SFMLWindow>(
         800, 600, "test");
 
-    RC::GameWorld game_world(std::move(window), "127.0.0.1", 50000, 50000);
+    RC::GameWorld game_world(
+        std::move(window), "test", "127.0.0.1", 50000, 50000);
 
     Eng::sparse_array<Com::Inputs> inputs;
     Eng::sparse_array<Com::PlayerTag> player_tags;
@@ -248,13 +264,16 @@ TEST(NetworkInputSystem, ConvertsNoInputToZero) {
 // ============================================================================
 
 TEST(NetworkInputSystem, HandlesEmptyRegistry) {
+    TestHelper::RegisterTestBackend();
+
     Eng::registry reg;
     boost::asio::io_context io;
 
     auto window = std::make_unique<Rtype::Client::Platform::SFMLWindow>(
         800, 600, "test");
 
-    RC::GameWorld game_world(std::move(window), "127.0.0.1", 50000, 50000);
+    RC::GameWorld game_world(
+        std::move(window), "test", "127.0.0.1", 50000, 50000);
 
     Eng::sparse_array<Com::Inputs> inputs;
     Eng::sparse_array<Com::PlayerTag> player_tags;
@@ -264,13 +283,16 @@ TEST(NetworkInputSystem, HandlesEmptyRegistry) {
 }
 
 TEST(NetworkInputSystem, HandlesPartialInputComponents) {
+    TestHelper::RegisterTestBackend();
+
     Eng::registry reg;
     boost::asio::io_context io;
 
     auto window = std::make_unique<Rtype::Client::Platform::SFMLWindow>(
         800, 600, "test");
 
-    RC::GameWorld game_world(std::move(window), "127.0.0.1", 50000, 50000);
+    RC::GameWorld game_world(
+        std::move(window), "test", "127.0.0.1", 50000, 50000);
 
     Eng::sparse_array<Com::Inputs> inputs;
     Eng::sparse_array<Com::PlayerTag> player_tags;

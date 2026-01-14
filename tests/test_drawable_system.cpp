@@ -9,11 +9,14 @@
 #include "include/components/CoreComponents.hpp"
 #include "include/components/RenderComponent.hpp"
 #include "platform/SFMLWindow.hpp"
+#include "tests/TestGraphicsSetup.hpp"
 
 namespace Com = Rtype::Client::Component;
 namespace Eng = Engine;
 
 TEST(DrawableSystem, LoadsAndAppliesTransform) {
+    TestHelper::RegisterTestBackend();
+
     Eng::registry reg;
 
     Eng::sparse_array<Com::Transform> transforms;
@@ -33,7 +36,7 @@ TEST(DrawableSystem, LoadsAndAppliesTransform) {
         800, 600, "test");
 
     Rtype::Client::GameWorld game_world(
-        std::move(window), "127.0.0.1", 50000, 50000);
+        std::move(window), "test", "127.0.0.1", 50000, 50000);
 
     DrawableSystem(reg, game_world, transforms, drawables, shaders,
         animated_sprites, emitters);
@@ -47,6 +50,8 @@ TEST(DrawableSystem, LoadsAndAppliesTransform) {
 }
 
 TEST(DrawableSystem, HandlesMultipleEntitiesSortedByZIndex) {
+    TestHelper::RegisterTestBackend();
+
     Eng::registry reg;
 
     Eng::sparse_array<Com::Transform> transforms;
@@ -65,7 +70,7 @@ TEST(DrawableSystem, HandlesMultipleEntitiesSortedByZIndex) {
         800, 600, "test");
 
     Rtype::Client::GameWorld game_world(
-        std::move(window), "127.0.0.1", 50000, 50000);
+        std::move(window), "test", "127.0.0.1", 50000, 50000);
 
     Eng::sparse_array<Com::AnimatedSprite> animated_sprites;
     Eng::sparse_array<Com::ParticleEmitter> emitters;
