@@ -109,6 +109,8 @@ void CreateProjectile(Eng::registry &reg, float x, float y, int ownerId,
     Eng::registry::entity_t projectile_entity);
 void createChargedProjectile(Eng::registry &reg, float x, float y, int ownerId,
     Eng::registry::entity_t projectile_entity);
+void createGatlingProjectile(Eng::registry &reg, float x, float y, int ownerId,
+    Eng::registry::entity_t projectile_entity);
 
 void ProjectileSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> &transforms,

@@ -22,9 +22,15 @@ void InitRenderSystems(Rtype::Client::GameWorld &game_world) {
         Eng::sparse_array<Com::AnimatedSprite>>(
         InitializeDrawableAnimatedSystem);
 
-    // Shader initialization system
+    // Shader initialization system - ensure window OpenGL context is active
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Shader>>(
-        InitializeShaderSystem);
+        [&game_world](
+            Eng::registry &r, Eng::sparse_array<Com::Shader> &shaders) {
+            // Make sure the SFML window OpenGL context is active on this
+            // thread
+            game_world.window_.setActive(true);
+            InitializeShaderSystem(r, shaders);
+        });
 
     // Main render system
     game_world.registry_.AddSystem<Eng::sparse_array<Com::AnimatedSprite>,

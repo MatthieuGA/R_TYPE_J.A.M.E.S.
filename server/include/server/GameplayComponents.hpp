@@ -22,6 +22,10 @@ struct PlayerTag {
     float shoot_cooldown = 0.0f;
     float charge_time = 0.0f;
     int playerNumber = 0;
+
+    float gatling_duration = 0.0f;
+    float clock_shoot_gatling = 0.0f;
+    float delta_shoot_gatling = 0.1f;
 };
 
 struct AnimationEnterPlayer {
@@ -117,7 +121,8 @@ struct Projectile {
         Normal = 0,
         Charged = 1,
         Enemy_Mermaid = 2,
-        Enemy_Daemon = 3
+        Enemy_Daemon = 3,
+        Gatling = 5
     } type = ProjectileType::Normal;
     int damage;
     vector2f direction;

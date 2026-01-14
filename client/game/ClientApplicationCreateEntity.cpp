@@ -64,9 +64,9 @@ static void CreateEnemyEntity(GameWorld &game_world,
     } else if (entity_data.enemy_type ==
                ClientApplication::ParsedEntity::kHealthPU) {
         enemy_type_str = "health";
-    } else {
-        printf("[Snapshot] Unknown enemy type 0x%02X for entity ID %u\n",
-            entity_data.enemy_type, entity_data.entity_id);
+    } else if (entity_data.enemy_type ==
+               ClientApplication::ParsedEntity::kGatlingPU) {
+        enemy_type_str = "gatling";
     }
     FactoryActors::GetInstance().CreateActor(
         new_entity, game_world.registry_, enemy_type_str, false);
@@ -184,6 +184,15 @@ static void CreateProjectileEntity(GameWorld &game_world,
             game_world.audio_manager_->PlaySound("charged_shot");
         }
         createChargedProjectile(game_world.registry_,
+            static_cast<float>(entity_data.pos_x),
+            static_cast<float>(entity_data.pos_y), /*ownerId=*/-1, new_entity);
+    } else if (entity_data.projectile_type ==
+               ClientApplication::ParsedEntity::kPlayerGatlingProjectile) {
+        // Gatling projectile
+        if (game_world.audio_manager_) {
+            game_world.audio_manager_->PlaySound("player_shot");
+        }
+        createGatlingProjectile(game_world.registry_,
             static_cast<float>(entity_data.pos_x),
             static_cast<float>(entity_data.pos_y), /*ownerId=*/-1, new_entity);
     } else if (entity_data.projectile_type ==

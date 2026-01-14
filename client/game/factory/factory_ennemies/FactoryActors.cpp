@@ -39,6 +39,8 @@ void FactoryActors::CreateActor(Engine::entity &entity, Engine::registry &reg,
         CreateInvActor(entity, reg, info);
     else if (info.tag == "health")
         CreateHealthActor(entity, reg, info);
+    else if (info.tag == "gatling")
+        CreateGatlingActor(entity, reg, info);
 }
 
 void FactoryActors::CreateBasicActor(

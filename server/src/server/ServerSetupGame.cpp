@@ -23,11 +23,9 @@ void SpawnEnemyFromRight(Engine::registry &reg) {
     float random_y = 100.0f + static_cast<float>(std::rand() % 780);
     // Spawn just off-screen to the right (x = 2000 since screen is 1920 wide)
 
-    std::vector<std::pair<std::string, int>> enemy_types = {
-        {"health", 15}, {"invinsibility", 15}  // {"kamifish", 17},
-                                               // {"mermaid", 47},
-                                               // {"daemon", 6}
-    };
+    std::vector<std::pair<std::string, int>> enemy_types = {{"health", 15},
+        {"invinsibility", 15}, {"gatling", 15}, {"mermaid", 40},
+        {"kami_fish", 40}, {"daemon", 15}};
     int tt = 0;
     for (const auto &et : enemy_types)
         tt += et.second;
@@ -51,7 +49,7 @@ void Server::SetupEntitiesGame() {
     // Setup factory enemy info map
     FactoryActors::GetInstance().InitializeEnemyInfoMap("data/");
 
-    // Reset player tracking
+    // Reset player trackingd q
     total_players_ = 0;
     alive_players_ = 0;
 
