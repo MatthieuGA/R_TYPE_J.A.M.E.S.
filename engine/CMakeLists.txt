@@ -24,6 +24,9 @@ target_sources(r-type_engine
       include/graphics/IWindow.hpp
       include/graphics/IGraphicsBackend.hpp
       include/graphics/GraphicsManager.hpp
+      include/graphics/IRenderContext.hpp
+      include/graphics/plugin_api.h
+      include/graphics/PluginBackendWrapper.hpp
       include/time/Clock.hpp
       include/input/Key.hpp
       include/input/MouseButton.hpp
