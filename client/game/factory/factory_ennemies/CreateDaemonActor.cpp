@@ -30,8 +30,8 @@ void FactoryActors::CreateDaemonActor(
                     sf::Vector2f(0.f, 0.f), info.speed));
 
     // Add enemy shooting component
-    Component::EnemyShootTag enemy_shoot_tag(info.speed,
-        Rtype::Client::MERMAID_PROJECTILE_DAMAGE, sf::Vector2f(-7.0f, 8.0f));
+    Component::EnemyShootTag enemy_shoot_tag(
+        info.speed, 10, sf::Vector2f(-7.0f, 8.0f));
 
     reg.AddComponent<Component::TimedEvents>(
         entity, Component::TimedEvents(
@@ -50,7 +50,7 @@ void FactoryActors::CreateDaemonActor(
                             return;
                         }
                     },
-                    MERMAID_SHOOT_COOLDOWN));
+                    2.0f));
     reg.AddComponent<Component::EnemyShootTag>(
         entity, std::move(enemy_shoot_tag));
 }

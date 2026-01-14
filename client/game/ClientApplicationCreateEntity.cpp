@@ -200,10 +200,9 @@ void CreateDaemonProjectile(Engine::registry &reg,
     reg.AddComponent<Component::Drawable>(
         new_entity, Component::Drawable(
                         "ennemies/Daemon/Projectile.png", LAYER_PROJECTILE));
-    reg.AddComponent<Component::Projectile>(new_entity,
-        Component::Projectile{static_cast<int>(MERMAID_PROJECTILE_DAMAGE),
-            sf::Vector2f(decoded_vx, decoded_vy), MERMAID_PROJECTILE_SPEED, -1,
-            true});
+    reg.AddComponent<Component::Projectile>(
+        new_entity, Component::Projectile{static_cast<int>(10),
+                        sf::Vector2f(decoded_vx, decoded_vy), 200, -1, true});
     reg.AddComponent<Component::HitBox>(
         new_entity, Component::HitBox{8.0f, 8.0f});
     reg.AddComponent<Component::Velocity>(
