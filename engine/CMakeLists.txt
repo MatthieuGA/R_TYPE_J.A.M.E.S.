@@ -29,8 +29,6 @@ target_sources(r-type_engine
       include/input/MouseButton.hpp
       include/platform/OSEvent.hpp
       include/platform/IPlatformEventSource.hpp
-      include/input/Key.hpp
-      include/input/MouseButton.hpp
       include/input/IInputBackend.hpp
       include/input/InputManager.hpp
 )

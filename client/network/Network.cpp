@@ -263,6 +263,7 @@ void ServerConnection::HandleConnectAck(const std::vector<uint8_t> &data) {
     if (status == 0x00) {
         player_id_.store(pid);
         connected_.store(true);
+        was_connected_once_.store(true);  // Track that we connected
 
         // Initialize lobby counters from CONNECT_ACK
         lobby_connected_count_.store(connected);
@@ -317,6 +318,7 @@ void ServerConnection::HandleConnectAck(const std::vector<uint8_t> &data) {
     } else {
         std::cerr << "[Network] CONNECT_ACK failed. Status="
                   << static_cast<int>(status) << std::endl;
+        last_rejection_status_.store(status);
         Disconnect();
     }
 }
@@ -356,6 +358,8 @@ void ServerConnection::HandleGameEnd(const std::vector<uint8_t> &data) {
 
     game_ended_.store(true);
     game_started_.store(false);
+    lobby_ready_count_.store(0);  // Reset ready count for lobby display
+    is_local_player_ready_.store(false);  // Reset local player's ready state
 }
 
 void ServerConnection::HandleNotifyDisconnect(

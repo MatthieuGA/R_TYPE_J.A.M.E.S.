@@ -22,6 +22,7 @@
 #include "game/GameInputBindings.hpp"
 #include "include/WindowConst.hpp"
 #include "include/registry.hpp"
+#include "input/SFMLInputBackend.hpp"
 #include "network/Network.hpp"
 #include "platform/IPlatformEventSource.hpp"
 

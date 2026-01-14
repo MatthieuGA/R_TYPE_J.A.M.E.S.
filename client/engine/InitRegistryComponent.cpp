@@ -5,6 +5,7 @@ void InitRegistryComponents(Engine::registry &reg) {
     // Register core components
     reg.RegisterComponent<Rtype::Client::Component::Transform>();
     reg.RegisterComponent<Rtype::Client::Component::Drawable>();
+    reg.RegisterComponent<Rtype::Client::Component::RectangleDrawable>();
     reg.RegisterComponent<Rtype::Client::Component::Velocity>();
     reg.RegisterComponent<Rtype::Client::Component::Controllable>();
     reg.RegisterComponent<Rtype::Client::Component::InputState>();
@@ -23,6 +24,7 @@ void InitRegistryComponents(Engine::registry &reg) {
     // Register gameplay components
     reg.RegisterComponent<Rtype::Client::Component::PlayerTag>();
     reg.RegisterComponent<Rtype::Client::Component::EnemyTag>();
+    reg.RegisterComponent<Rtype::Client::Component::EnemyType>();
     reg.RegisterComponent<Rtype::Client::Component::EnemyShootTag>();
     reg.RegisterComponent<Rtype::Client::Component::Projectile>();
     reg.RegisterComponent<Rtype::Client::Component::Health>();
@@ -30,6 +32,7 @@ void InitRegistryComponents(Engine::registry &reg) {
     reg.RegisterComponent<Rtype::Client::Component::ParrallaxLayer>();
     reg.RegisterComponent<Rtype::Client::Component::AnimationEnterPlayer>();
     reg.RegisterComponent<Rtype::Client::Component::AnimationDeath>();
+    reg.RegisterComponent<Rtype::Client::Component::Draggable>();
     reg.RegisterComponent<Rtype::Client::Component::HealthBar>();
     // Register networking components
     reg.RegisterComponent<Rtype::Client::Component::NetworkId>();

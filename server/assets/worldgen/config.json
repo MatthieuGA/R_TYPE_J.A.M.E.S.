@@ -1,0 +1,12 @@
+{
+  "frame_width_default": 800,
+  "difficulty_scaling": {
+    "base": 1.0,
+    "per_frame": 0.05,
+    "max": 10.0
+  },
+  "endless_mode": {
+    "difficulty_increase_rate": 0.1,
+    "max_difficulty": 10.0
+  }
+}

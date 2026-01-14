@@ -1,4 +1,6 @@
 
+#include <vector>
+
 #include <SFML/Graphics.hpp>
 
 #include "engine/CollidingTools.hpp"
@@ -7,34 +9,62 @@
 namespace Rtype::Client {
 
 /**
- * @brief Handle collision between an entity and a projectile.
+ * @brief Information about a collision to be processed.
+ */
+struct CollisionInfo {
+    std::size_t entity_index;
+    Engine::entity proj_entity;
+    std::size_t proj_index;
+    bool has_anim_sprite;
+};
+
+/**
+ * @brief Process a collision between an entity and a projectile.
  *
- * Deducts health, updates health bar, triggers hit animation,
- * and handles projectile removal.
+ * Handles audio, health bar, and hit animation for the entity.
+ * Handles projectile removal or death animation.
  *
  * @param reg The registry.
- * @param health The Health component of the entity.
- * @param health_bars Sparse array of HealthBar components.
- * @param animated_sprites Sparse array of AnimatedSprite components.
- * @param i Index of the entity in the registry.
- * @param projEntity The entity ID of the projectile.
- * @param j Index of the projectile in the registry.
- * @param projectile The Projectile component of the projectile.
+ * @param game_world The game world (for audio access).
+ * @param collision The collision info to process.
  */
-void HandleCollision(Eng::registry &reg, Component::Health &health,
-    Eng::sparse_array<Component::HealthBar> &health_bars,
-    Eng::sparse_array<Component::AnimatedSprite> &animated_sprites,
-    std::size_t i, Engine::entity projEntity, std::size_t j,
-    const Component::Projectile &projectile) {
+void ProcessCollision(Eng::registry &reg, GameWorld &game_world,
+    const CollisionInfo &collision) {
+    auto &health_bars = reg.GetComponents<Component::HealthBar>();
+    auto &animated_sprites = reg.GetComponents<Component::AnimatedSprite>();
+
+    std::size_t i = collision.entity_index;
+    Engine::entity proj_entity = collision.proj_entity;
+    std::size_t j = collision.proj_index;
+    // Check if this is a player getting hit and play damage sound
+    if (reg.GetComponents<Component::PlayerTag>().has(i)) {
+        if (game_world.audio_manager_) {
+            game_world.audio_manager_->PlaySound("player_damage", 0.1f);
+        }
+    }
+
     if (health_bars.has(i)) {
         auto &bar = health_bars[i];
         bar->timer_damage = 0.0f;
     }
 
     if (animated_sprites.has(i)) {
-        auto &animSprite = animated_sprites[i];
-        animSprite->SetCurrentAnimation("Hit", true);
-        animSprite->GetCurrentAnimation()->current_frame = 1;
+        auto &anim_sprite = animated_sprites[i];
+        anim_sprite->SetCurrentAnimation("Hit", true);
+        anim_sprite->GetCurrentAnimation()->current_frame = 1;
+    }
+
+    // Remove the projectile component after collision
+    reg.RemoveComponent<Component::Projectile>(proj_entity);
+
+    if (collision.has_anim_sprite && animated_sprites.has(j)) {
+        auto &proj_anim_sprite = animated_sprites[j];
+        proj_anim_sprite->SetCurrentAnimation("Death", false);
+        proj_anim_sprite->animated = true;
+        reg.AddComponent<Component::AnimationDeath>(
+            proj_entity, Component::AnimationDeath{true});
+    } else {
+        reg.KillEntity(proj_entity);
     }
 }
 
@@ -47,6 +77,7 @@ void HandleCollision(Eng::registry &reg, Component::Health &health,
  * are removed from the registry.
  *
  * @param reg ECS registry used to access entities and components.
+ * @param game_world The game world (for audio access).
  * @param healths Sparse array of Health components.
  * @param enemyTags Sparse array of EnemyTag components.
  * @param playerTags Sparse array of PlayerTag components.
@@ -54,21 +85,22 @@ void HandleCollision(Eng::registry &reg, Component::Health &health,
  * @param transforms Sparse array of Transform components.
  * @param projectiles Sparse array of Projectile components.
  */
-void HealthDeductionSystem(Eng::registry &reg,
+void HealthDeductionSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Component::Health> &healths,
     Eng::sparse_array<Component::HealthBar> &health_bars,
     Eng::sparse_array<Component::AnimatedSprite> &animated_sprites,
     Eng::sparse_array<Component::HitBox> const &hitBoxes,
     Eng::sparse_array<Component::Transform> const &transforms,
     Eng::sparse_array<Component::Projectile> const &projectiles) {
+    // Collect all collisions first to avoid modifying sparse arrays during
+    // iteration
+    std::vector<CollisionInfo> collisions;
+
     for (auto &&[i, health, hitBox, transform] :
         make_indexed_zipper(healths, hitBoxes, transforms)) {
-        Engine::entity entity = reg.EntityFromIndex(i);
-
         // Check for collisions with projectiles
         for (auto &&[j, projectile, projHitBox, projTransform] :
             make_indexed_zipper(projectiles, hitBoxes, transforms)) {
-            Engine::entity projEntity = reg.EntityFromIndex(j);
             try {
                 if (projectile.isEnemyProjectile &&
                     reg.GetComponents<Component::EnemyTag>().has(i))
@@ -80,11 +112,17 @@ void HealthDeductionSystem(Eng::registry &reg,
 
             // Simple AABB collision detection
             if (IsColliding(transform, hitBox, projTransform, projHitBox)) {
-                // Collision detected, deduct health
-                HandleCollision(reg, health, health_bars, animated_sprites, i,
-                    projEntity, j, projectile);
+                // Record collision for later processing
+                Engine::entity proj_entity = reg.EntityFromIndex(j);
+                collisions.push_back(
+                    CollisionInfo{i, proj_entity, j, animated_sprites.has(j)});
             }
         }
+    }
+
+    // Now process all collisions after iteration is complete
+    for (const auto &collision : collisions) {
+        ProcessCollision(reg, game_world, collision);
     }
 }
 

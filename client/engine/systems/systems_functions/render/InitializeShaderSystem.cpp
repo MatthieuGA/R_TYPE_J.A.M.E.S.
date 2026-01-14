@@ -27,8 +27,9 @@ void InitializeShader(Com::Shader &shader_comp) {
                 "texture", sf::Shader::CurrentTexture);
             for (auto &[name, value] : shader_comp.uniforms_float)
                 shader_comp.shader->setUniform(name, value);
-            shader_comp.isLoaded = true;
         }
+        // Always mark as loaded to prevent retry spam even on failure
+        shader_comp.isLoaded = true;
     }
 }
 

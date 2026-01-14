@@ -81,6 +81,11 @@ class MockAudioBackend : public IAudioBackend {
         stop_music_calls_++;
     }
 
+    bool IsMusicPlaying(const std::string &id) const override {
+        // Simple mock: return false (can be extended if needed)
+        return false;
+    }
+
     void SetCategoryVolume(SoundCategory category, float volume) override {
         if (category == SoundCategory::SFX) {
             sfx_volume_ = volume;
@@ -89,11 +94,27 @@ class MockAudioBackend : public IAudioBackend {
         }
     }
 
+    float GetCategoryVolume(SoundCategory category) const override {
+        if (category == SoundCategory::SFX) {
+            return sfx_volume_;
+        } else {
+            return music_volume_;
+        }
+    }
+
     void SetCategoryMute(SoundCategory category, bool mute) override {
         if (category == SoundCategory::SFX) {
             sfx_muted_ = mute;
         } else {
             music_muted_ = mute;
+        }
+    }
+
+    bool GetCategoryMuteStatus(SoundCategory category) const override {
+        if (category == SoundCategory::SFX) {
+            return sfx_muted_;
+        } else {
+            return music_muted_;
         }
     }
 

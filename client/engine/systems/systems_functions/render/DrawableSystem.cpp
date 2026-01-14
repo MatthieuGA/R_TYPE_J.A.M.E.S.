@@ -227,7 +227,8 @@ void InitializeDrawable(
  */
 void DrawSprite(GameWorld &game_world, sf::Sprite &sprite,
     Com::Drawable *drawable, std::optional<Com::Shader *> shaderCompOpt) {
-    if (shaderCompOpt.has_value() && (*shaderCompOpt)->isLoaded) {
+    if (shaderCompOpt.has_value() && (*shaderCompOpt)->isLoaded &&
+        (*shaderCompOpt)->shader != nullptr) {
         ((*shaderCompOpt)->shader)
             ->setUniform("time",
                 game_world.total_time_clock_.GetElapsedTime().AsSeconds());
@@ -256,11 +257,23 @@ void RenderOneEntity(Eng::sparse_array<Com::Transform> const &transforms,
     Eng::sparse_array<Com::Shader> &shaders,
     Eng::sparse_array<Com::AnimatedSprite> const &animated_sprites,
     GameWorld &game_world, int i) {
+    // Safety check for valid components
+    if (!transforms.has(i) || !drawables.has(i)) {
+        std::cerr << "[RenderOneEntity] Invalid entity at index " << i
+                  << std::endl;
+        return;
+    }
     auto &transform = transforms[i];
     auto &drawable = drawables[i];
 
+    if (!transform.has_value() || !drawable.has_value()) {
+        std::cerr << "[RenderOneEntity] Missing value at index " << i
+                  << std::endl;
+        return;
+    }
+
     std::optional<Com::Shader *> shaderCompOpt = std::nullopt;
-    if (shaders.has(i))
+    if (shaders.has(i) && shaders[i].has_value())
         shaderCompOpt = &shaders[i].value();
 
     // Calculate world position with hierarchical rotation
@@ -309,15 +322,22 @@ void DrawableSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Shader> &shaders,
     Eng::sparse_array<Com::AnimatedSprite> const &animated_sprites,
     Eng::sparse_array<Com::ParticleEmitter> &emitters) {
+    // Get RectangleDrawable components for rendering
+    auto &rect_drawables = reg.GetComponents<Com::RectangleDrawable>();
+
     struct RenderItem {
         int index;
         int z_index;
-        bool is_particle;
+        enum class Type {
+            kSprite,
+            kParticle,
+            kRectangle
+        } type;
     };
 
     std::vector<RenderItem> render_order;
 
-    // Collect drawable entities
+    // Collect drawable entities (sprite-based)
     for (auto &&[i, transform, drawable] :
         make_indexed_zipper(transforms, drawables)) {
         if (!drawable.isLoaded)
@@ -325,7 +345,35 @@ void DrawableSystem(Eng::registry &reg, GameWorld &game_world,
         RenderItem item;
         item.index = i;
         item.z_index = drawable.z_index;
-        item.is_particle = false;
+        item.type = RenderItem::Type::kSprite;
+        render_order.push_back(item);
+    }
+
+    // Collect RectangleDrawable entities
+    for (auto &&[i, transform, rect_drawable] :
+        make_indexed_zipper(transforms, rect_drawables)) {
+        // Skip if shape pointer is null
+        if (!rect_drawable.shape) {
+            continue;
+        }
+        // Initialize rectangle shape if needed
+        if (!rect_drawable.is_initialized) {
+            rect_drawable.shape->setSize(
+                sf::Vector2f(rect_drawable.width, rect_drawable.height));
+            rect_drawable.shape->setOrigin(
+                rect_drawable.width / 2.0f, rect_drawable.height / 2.0f);
+            rect_drawable.shape->setFillColor(
+                ToSFML(rect_drawable.fill_color));
+            rect_drawable.shape->setOutlineColor(
+                ToSFML(rect_drawable.outline_color));
+            rect_drawable.shape->setOutlineThickness(
+                rect_drawable.outline_thickness);
+            rect_drawable.is_initialized = true;
+        }
+        RenderItem item;
+        item.index = i;
+        item.z_index = rect_drawable.z_index;
+        item.type = RenderItem::Type::kRectangle;
         render_order.push_back(item);
     }
 
@@ -336,7 +384,7 @@ void DrawableSystem(Eng::registry &reg, GameWorld &game_world,
             RenderItem item;
             item.index = i;
             item.z_index = emitter.z_index;
-            item.is_particle = true;
+            item.type = RenderItem::Type::kParticle;
             render_order.push_back(item);
         }
     }
@@ -349,7 +397,7 @@ void DrawableSystem(Eng::registry &reg, GameWorld &game_world,
 
     // Render in sorted order
     for (const auto &item : render_order) {
-        if (item.is_particle) {
+        if (item.type == RenderItem::Type::kParticle) {
             auto &transform = transforms[item.index];
             auto &emitter = emitters[item.index];
 
@@ -365,6 +413,54 @@ void DrawableSystem(Eng::registry &reg, GameWorld &game_world,
             updateEmitter(
                 emitter.value(), transform.value(), game_world.last_delta_);
             drawEmitter(emitter.value(), game_world);
+        } else if (item.type == RenderItem::Type::kRectangle) {
+            // Safety check for valid index
+            if (!transforms.has(item.index) ||
+                !rect_drawables.has(item.index)) {
+                std::cerr
+                    << "[DrawableSystem] Invalid rectangle entity at index "
+                    << item.index << std::endl;
+                continue;
+            }
+            auto &transform = transforms[item.index];
+            auto &rect_drawable = rect_drawables[item.index];
+
+            if (!transform.has_value() || !rect_drawable.has_value()) {
+                std::cerr
+                    << "[DrawableSystem] Missing value for rectangle at index "
+                    << item.index << std::endl;
+                continue;
+            }
+
+            // Skip if shape pointer is null
+            if (!rect_drawable->shape) {
+                continue;
+            }
+
+            // Calculate world position
+            sf::Vector2f world_position =
+                ToSFML(CalculateWorldPositionWithHierarchy(
+                    transform.value(), transforms));
+            rect_drawable->shape->setPosition(world_position);
+
+            // Apply scale
+            sf::Vector2f world_scale = ToSFML(
+                CalculateCumulativeScale(transform.value(), transforms));
+            rect_drawable->shape->setScale(world_scale);
+
+            // Apply rotation
+            rect_drawable->shape->setRotation(transform->rotationDegrees);
+
+            // Apply opacity
+            sf::Color fill = rect_drawable->shape->getFillColor();
+            fill.a = static_cast<uint8_t>(rect_drawable->opacity * 255);
+            rect_drawable->shape->setFillColor(fill);
+
+            sf::Color outline = rect_drawable->shape->getOutlineColor();
+            outline.a = static_cast<uint8_t>(rect_drawable->opacity * 255);
+            rect_drawable->shape->setOutlineColor(outline);
+
+            game_world.window_.draw(*rect_drawable->shape);
         } else {
             RenderOneEntity(transforms, drawables, shaders, animated_sprites,
                 game_world, item.index);

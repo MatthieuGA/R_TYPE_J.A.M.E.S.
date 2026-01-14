@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <iostream>
+#include <memory>
 #include <utility>
 
 #include "server/CoreComponents.hpp"
@@ -7,6 +8,7 @@
 #include "server/NetworkComponents.hpp"
 #include "server/Server.hpp"
 #include "server/factory/FactoryActors.hpp"
+#include "server/systems/WorldGenSystem.hpp"
 
 namespace server {
 
@@ -20,8 +22,18 @@ void SpawnEnemyFromRight(Engine::registry &reg) {
     // Random Y position between 100 and 980 (leaving margin from edges)
     float random_y = 100.0f + static_cast<float>(std::rand() % 780);
     // Spawn just off-screen to the right (x = 2000 since screen is 1920 wide)
-    FactoryActors::GetInstance().CreateActor(
-        enemy_entity, reg, "mermaid", vector2f{2000.f, random_y}, false);
+
+    int r = std::rand() % 100;
+
+    if (r < 47)
+        FactoryActors::GetInstance().CreateActor(
+            enemy_entity, reg, "kamifish", vector2f{2000.f, random_y}, false);
+    else if (r < 94)
+        FactoryActors::GetInstance().CreateActor(
+            enemy_entity, reg, "mermaid", vector2f{2000.f, random_y}, false);
+    else
+        FactoryActors::GetInstance().CreateActor(
+            enemy_entity, reg, "daemon", vector2f{2000.f, random_y}, false);
 }
 
 void Server::SetupEntitiesGame() {
@@ -44,35 +56,74 @@ void Server::SetupEntitiesGame() {
         FactoryActors::GetInstance().CreateActor(entity, registry_, "player",
             vector2f{100.f + client.player_id_ * 50.f, 300.f}, true);
 
+        // Link player entity to player_id for disconnect cleanup
+        auto &player_tag =
+            registry_.GetComponent<Component::PlayerTag>(entity);
+        player_tag.playerNumber = static_cast<int>(client.player_id_);
+
+        // Override NetworkId to match player_id for input handling
+        // (GAME_START sends player_id as controlled_entity_id)
+        auto &network_id =
+            registry_.GetComponent<Component::NetworkId>(entity);
+        network_id.id = static_cast<uint32_t>(client.player_id_);
+
         // Track player count
         total_players_++;
         alive_players_++;
     }
 
-    std::cout << "[SetupEntitiesGame] Spawned " << total_players_
-              << " players" << std::endl;
+    std::cout << "[SetupEntitiesGame] Spawned " << total_players_ << " players"
+              << std::endl;
 
-    // Create enemy spawner entity with timed event for infinite spawning
-    auto spawner_entity = registry_.spawn_entity();
-    registry_.AddComponent<Component::TimedEvents>(spawner_entity,
-        Component::TimedEvents{});
+    // Initialize WorldGen system if available
+    // Check if manager exists and system needs to be (re)created
+    if (worldgen_manager_ && !worldgen_system_) {
+        // If worldgen was already active (replay), it's already initialized
+        // via Reset() Otherwise, initialize it fresh for first game
+        if (!worldgen_manager_->IsActive()) {
+            uint64_t seed = worldgen_manager_->InitializeEndlessRandom(0.5f);
+            std::cout << "[WorldGen] Initialized endless mode with seed: "
+                      << seed << std::endl;
+        } else {
+            std::cout << "[WorldGen] Resuming from Reset() state (replay)"
+                      << std::endl;
+        }
 
-    // Get reference and add spawning action (spawn every 2 seconds)
-    auto &spawner_events =
-        registry_.GetComponent<Component::TimedEvents>(spawner_entity);
-    spawner_events.AddCooldownAction(
-        [this](int /*entity_id*/) { SpawnEnemyFromRight(registry_); }, 2.0f);
+        // Create and register WorldGenSystem
+        worldgen_system_ =
+            std::make_unique<WorldGenSystem>(*worldgen_manager_, registry_);
 
-    // Spawn initial wave of enemies (mix of mermaid and kamifish)
-    for (int i = 0; i < 3; ++i) {
-        SpawnEnemyFromRight(registry_);
-    }
+        std::cout << "[WorldGen] System registered and active" << std::endl;
+    } else if (!worldgen_manager_) {
+        // Fallback: Old simple spawning system (only if no worldgen manager at
+        // all)
+        std::cout << "[WorldGen] Not available, using fallback spawning"
+                  << std::endl;
 
-    // Spawn some kamifish enemies
-    for (int i = 0; i < 2; ++i) {
-        auto enemy_entity = registry_.spawn_entity();
-        FactoryActors::GetInstance().CreateActor(enemy_entity, registry_,
-            "kamifish", vector2f{1400.f + i * 150.f, 200.f * (i + 1)}, false);
+        // Create enemy spawner entity with timed event for infinite spawning
+        auto spawner_entity = registry_.spawn_entity();
+        registry_.AddComponent<Component::TimedEvents>(
+            spawner_entity, Component::TimedEvents{});
+
+        // Get reference and add spawning action (spawn every 2 seconds)
+        auto &spawner_events =
+            registry_.GetComponent<Component::TimedEvents>(spawner_entity);
+        spawner_events.AddCooldownAction(
+            [this](int /*entity_id*/) { SpawnEnemyFromRight(registry_); },
+            2.0f);
+
+        // Spawn initial wave of enemies (mix of mermaid and kamifish)
+        for (int i = 0; i < 3; ++i) {
+            SpawnEnemyFromRight(registry_);
+        }
+
+        // Spawn some kamifish enemies
+        for (int i = 0; i < 2; ++i) {
+            auto enemy_entity = registry_.spawn_entity();
+            FactoryActors::GetInstance().CreateActor(enemy_entity, registry_,
+                "kamifish", vector2f{1400.f + i * 150.f, 200.f * (i + 1)},
+                false);
+        }
     }
 }
 }  // namespace server

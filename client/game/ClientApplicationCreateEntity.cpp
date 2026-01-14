@@ -55,9 +55,17 @@ static void CreateEnemyEntity(GameWorld &game_world,
     } else if (entity_data.enemy_type ==
                ClientApplication::ParsedEntity::kMermaidEnemy) {
         enemy_type_str = "mermaid";
+    } else if (entity_data.enemy_type ==
+               ClientApplication::ParsedEntity::kDaemonEnemy) {
+        enemy_type_str = "daemon";
     }
     FactoryActors::GetInstance().CreateActor(
         new_entity, game_world.registry_, enemy_type_str, false);
+
+    // Add EnemyType component to identify enemy type later
+    game_world.registry_.AddComponent<Component::EnemyType>(
+        new_entity, Component::EnemyType(enemy_type_str));
+
     try {
         auto &animated_sprite = game_world.registry_.GetComponents<
             Component::AnimatedSprite>()[new_entity.GetId()];
@@ -117,6 +125,36 @@ void CreateMermaidProjectile(Engine::registry &reg,
             45.f, 0, 8, 3.0f, 2.0f, -1.0f, LAYER_PARTICLE));
 }
 
+void CreateDaemonProjectile(Engine::registry &reg,
+    const ClientApplication::ParsedEntity &entity_data,
+    Engine::registry::entity_t new_entity) {
+    // Decode velocity from encoded format (encoded = actual + 32768)
+    int16_t decoded_vx = static_cast<int16_t>(entity_data.velocity_x) - 32768;
+    int16_t decoded_vy = static_cast<int16_t>(entity_data.velocity_y) - 32768;
+
+    // Add components to projectile entity
+    reg.AddComponent<Component::Transform>(
+        new_entity, Component::Transform{static_cast<float>(entity_data.pos_x),
+                        static_cast<float>(entity_data.pos_y), 0.0f, 2.f,
+                        Component::Transform::CENTER});
+    reg.AddComponent<Component::Drawable>(
+        new_entity, Component::Drawable(
+                        "ennemies/Daemon/Projectile.png", LAYER_PROJECTILE));
+    reg.AddComponent<Component::Projectile>(new_entity,
+        Component::Projectile{static_cast<int>(MERMAID_PROJECTILE_DAMAGE),
+            sf::Vector2f(decoded_vx, decoded_vy), MERMAID_PROJECTILE_SPEED, -1,
+            true});
+    reg.AddComponent<Component::HitBox>(
+        new_entity, Component::HitBox{8.0f, 8.0f});
+    reg.AddComponent<Component::Velocity>(
+        new_entity, Component::Velocity{static_cast<float>(decoded_vx),
+                        static_cast<float>(decoded_vy)});
+    reg.AddComponent<Component::ParticleEmitter>(new_entity,
+        Component::ParticleEmitter(50, 50, ORANGE_HIT, ORANGE_HIT,
+            sf::Vector2f(0.f, 0.f), true, 0.3f, 4.f, sf::Vector2f(-1.f, 0.f),
+            45.f, 0, 8, 3.0f, 2.0f, -1.0f, LAYER_PARTICLE));
+}
+
 static void CreateProjectileEntity(GameWorld &game_world,
     Engine::registry::entity_t new_entity,
     const ClientApplication::ParsedEntity &entity_data) {
@@ -124,31 +162,98 @@ static void CreateProjectileEntity(GameWorld &game_world,
     if (entity_data.projectile_type ==
         ClientApplication::ParsedEntity::kPlayerProjectile) {
         // Basic projectile
+        if (game_world.audio_manager_) {
+            game_world.audio_manager_->PlaySound("player_shot");
+        }
         CreateProjectile(game_world.registry_,
             static_cast<float>(entity_data.pos_x),
             static_cast<float>(entity_data.pos_y), /*ownerId=*/-1, new_entity);
     } else if (entity_data.projectile_type ==
                ClientApplication::ParsedEntity::kPlayerChargedProjectile) {
         // Charged projectile
+        if (game_world.audio_manager_) {
+            game_world.audio_manager_->PlaySound("charged_shot");
+        }
         createChargedProjectile(game_world.registry_,
             static_cast<float>(entity_data.pos_x),
             static_cast<float>(entity_data.pos_y), /*ownerId=*/-1, new_entity);
     } else if (entity_data.projectile_type ==
                ClientApplication::ParsedEntity::kMermaidProjectile) {
         // Mermaid projectile
+        if (game_world.audio_manager_) {
+            game_world.audio_manager_->PlaySound("small_shot");
+        }
         CreateMermaidProjectile(game_world.registry_, entity_data, new_entity);
+    } else if (entity_data.projectile_type ==
+               ClientApplication::ParsedEntity::kDaemonProjectile) {
+        // Mermaid projectile
+        CreateDaemonProjectile(game_world.registry_, entity_data, new_entity);
     } else {
         printf("[Snapshot] Unknown projectile type 0x%02X for entity ID %u\n",
             entity_data.projectile_type, entity_data.entity_id);
     }
 }
 
-void ClientApplication::CreateNewEntity(GameWorld &game_world, int tick,
+/**
+ * @brief Creates a visual obstacle entity on the client side.
+ *
+ * Obstacles are solid world objects that move with the world scroll.
+ * They block player movement and can crush players against the screen edge.
+ *
+ * @param game_world The game world containing the registry
+ * @param new_entity The newly spawned entity
+ * @param entity_data Network data for the entity
+ */
+static void CreateObstacleEntity(GameWorld &game_world,
+    Engine::registry::entity_t new_entity,
+    const ClientApplication::ParsedEntity &entity_data) {
+    // Decode velocity from encoded format (encoded = actual + 32768)
+    int16_t decoded_vx = static_cast<int16_t>(entity_data.velocity_x) - 32768;
+    int16_t decoded_vy = static_cast<int16_t>(entity_data.velocity_y) - 32768;
+
+    // Obstacle size - using a reasonable default since size isn't in packet
+    // Server can spawn 48x48, 64x64, or 128x128 obstacles
+    // Using 48x48 as default for better visual balance with player
+    constexpr float kObstacleWidth = 48.0f;
+    constexpr float kObstacleHeight = 48.0f;
+
+    // Add Transform component
+    // Scale 1.0 - hitbox will define the collision size
+    game_world.registry_.AddComponent<Component::Transform>(
+        new_entity, Component::Transform{static_cast<float>(entity_data.pos_x),
+                        static_cast<float>(entity_data.pos_y), 0.0f, 1.0f,
+                        Component::Transform::CENTER});
+
+    // Add RectangleDrawable - simple red box for obstacles
+    // Render behind players (LAYER_ACTORS - 1)
+    game_world.registry_.AddComponent<Component::RectangleDrawable>(new_entity,
+        Component::RectangleDrawable{
+            kObstacleWidth, kObstacleHeight,
+            Engine::Graphics::Color(180, 40, 40, 255),  // Dark red fill
+            Engine::Graphics::Color(255, 80, 80, 255),  // Lighter red outline
+            2.0f,                                       // Outline thickness
+            LAYER_ACTORS - 1  // z_index (behind players)
+        });
+
+    // Add Velocity for interpolation
+    game_world.registry_.AddComponent<Component::Velocity>(
+        new_entity, Component::Velocity{static_cast<float>(decoded_vx),
+                        static_cast<float>(decoded_vy)});
+
+    // Add HitBox matching the obstacle's visual size
+    game_world.registry_.AddComponent<Component::HitBox>(
+        new_entity, Component::HitBox{kObstacleWidth, kObstacleHeight});
+
+    // Add Solid component - obstacles are solid and locked (cannot be pushed)
+    game_world.registry_.AddComponent<Component::Solid>(new_entity,
+        Component::Solid{true, true});  // isSolid=true, isLocked=true
+}
+
+void ClientApplication::CreateNewEntity(GameWorld &game_world, uint32_t tick,
     const ClientApplication::ParsedEntity &entity_data,
     std::optional<size_t> &entity_index) {
     auto new_entity = game_world.registry_.SpawnEntity();
-    printf("[Snapshot] Creating new entity of type 0x%02X ...\n",
-        entity_data.entity_type);
+
     if (entity_data.entity_type ==
         ClientApplication::ParsedEntity::kPlayerEntity) {
         // Player entity
@@ -161,6 +266,10 @@ void ClientApplication::CreateNewEntity(GameWorld &game_world, int tick,
                ClientApplication::ParsedEntity::kProjectileEntity) {
         // Projectile entity
         CreateProjectileEntity(game_world, new_entity, entity_data);
+    } else if (entity_data.entity_type ==
+               ClientApplication::ParsedEntity::kObstacleEntity) {
+        // Obstacle entity (asteroids, walls, etc.)
+        CreateObstacleEntity(game_world, new_entity, entity_data);
     } else {
         printf("[Snapshot] Unknown entity type 0x%02X for entity ID %u\n",
             entity_data.entity_type, entity_data.entity_id);
@@ -169,12 +278,7 @@ void ClientApplication::CreateNewEntity(GameWorld &game_world, int tick,
 
     game_world.registry_.AddComponent<Component::NetworkId>(new_entity,
         Component::NetworkId{static_cast<int>(entity_data.entity_id), tick});
-    size_t entity_id = new_entity.GetId();
-    entity_index = entity_id;
-
-    std::cout << "[Snapshot] Created entity #" << entity_id
-              << " for NetworkId=" << entity_data.entity_id << "at tick "
-              << tick << std::endl;
+    entity_index = new_entity.GetId();
 }
 
 }  // namespace Rtype::Client

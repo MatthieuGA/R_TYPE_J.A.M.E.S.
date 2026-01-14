@@ -100,3 +100,11 @@ build_log.txt
 *.pdf
 r-type.txt
 vcpkg_installed/
+
+# WorldGen user-created content (for custom WGFs and levels)
+# This directory is for testing and modding - not for version control
+server/assets/worldgen/user/*.wgf.json
+server/assets/worldgen/user/*.level.json
+
+# WorldGen test scripts (developer-specific)
+run_worldgen_tests.sh
