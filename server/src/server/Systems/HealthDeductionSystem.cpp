@@ -42,6 +42,8 @@ void DeathHandling(Engine::registry &reg,
         reg.RemoveComponent<Component::PlayerTag>(entity);
     if (reg.GetComponents<Component::EnemyTag>().has(i))
         reg.RemoveComponent<Component::EnemyTag>(entity);
+    if (reg.GetComponents<Component::PowerUp>().has(i))
+        reg.RemoveComponent<Component::PowerUp>(entity);
     reg.RemoveComponent<Component::TimedEvents>(entity);
     reg.RemoveComponent<Component::FrameEvents>(entity);
     reg.RemoveComponent<Component::PatternMovement>(entity);
@@ -142,6 +144,8 @@ void HealthDeductionSystem(Engine::registry &reg,
             if (i == j)
                 continue;
             try {
+                if (reg.GetComponents<Component::PowerUp>().has(i))
+                    continue;  // Player projectiles don't hit players
                 if (projectile.isEnemyProjectile &&
                     reg.GetComponents<Component::EnemyTag>().has(i))
                     continue;  // Enemy projectiles don't hit enemies

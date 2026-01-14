@@ -139,6 +139,9 @@ void ExplodeOnDeathSystem(Engine::registry &reg,
             if (reg.GetComponents<Component::EnemyTag>().has(eid))
                 reg.RemoveComponent<Component::EnemyTag>(
                     reg.EntityFromIndex(eid));
+            if (reg.GetComponents<Component::PowerUp>().has(eid))
+                reg.RemoveComponent<Component::PowerUp>(
+                    reg.EntityFromIndex(eid));
             // ensure AnimationDeath marker exists so it will be removed later
             reg.AddComponent<Component::AnimationDeath>(
                 reg.EntityFromIndex(eid), Component::AnimationDeath{true});

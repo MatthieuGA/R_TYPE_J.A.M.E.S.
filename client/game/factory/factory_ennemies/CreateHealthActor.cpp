@@ -25,5 +25,6 @@ void FactoryActors::CreateHealthActor(
     // Add basic enemy components
     reg.AddComponent<Component::PatternMovement>(
         entity, Component::PatternMovement());
+    reg.AddComponent<Component::PowerUp>(entity, Component::PowerUp{});
 }
 }  // namespace Rtype::Client

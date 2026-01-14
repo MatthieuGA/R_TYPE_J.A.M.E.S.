@@ -179,8 +179,7 @@ void InitControlsSystem(Rtype::Client::GameWorld &game_world) {
 
     // Draggable system
     game_world.registry_.AddSystem<Eng::sparse_array<Com::HitBox>,
-        Eng::sparse_array<Com::Draggable>,
-        Eng::sparse_array<Com::Transform>>(
+        Eng::sparse_array<Com::Draggable>, Eng::sparse_array<Com::Transform>>(
         [&game_world](Eng::registry &r,
             Eng::sparse_array<Com::HitBox> &hit_boxes,
             Eng::sparse_array<Com::Draggable> &draggables,
@@ -283,17 +282,20 @@ void InitGameplaySystems(Rtype::Client::GameWorld &game_world) {
     // Health deduction system
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Health>,
         Eng::sparse_array<Com::HealthBar>,
-        Eng::sparse_array<Com::AnimatedSprite>, Eng::sparse_array<Com::HitBox>,
+        Eng::sparse_array<Com::AnimatedSprite>,
+        Eng::sparse_array<Com::Drawable>, Eng::sparse_array<Com::HitBox>,
         Eng::sparse_array<Com::Transform>, Eng::sparse_array<Com::Projectile>>(
         [&game_world](Eng::registry &reg,
             Eng::sparse_array<Com::Health> &healths,
             Eng::sparse_array<Com::HealthBar> &health_bars,
             Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
+            Eng::sparse_array<Com::Drawable> &drawables,
             Eng::sparse_array<Com::HitBox> const &hitBoxes,
             Eng::sparse_array<Com::Transform> const &transforms,
             Eng::sparse_array<Com::Projectile> const &projectiles) {
             HealthDeductionSystem(reg, game_world, healths, health_bars,
-                animated_sprites, hitBoxes, transforms, projectiles);
+                animated_sprites, drawables, hitBoxes, transforms,
+                projectiles);
         });
 }
 

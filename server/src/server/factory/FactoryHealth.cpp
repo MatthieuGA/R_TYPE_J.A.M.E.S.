@@ -57,6 +57,7 @@ void FactoryActors::CreateHealthActor(
                 h->currentHealth + 50, h->maxHealth);  // Heal 50 health points
         });
     reg.AddComponent<Component::ExplodeOnDeath>(entity, std::move(expl));
+    reg.AddComponent<Component::PowerUp>(entity, Component::PowerUp{});
 }
 
 }  // namespace server

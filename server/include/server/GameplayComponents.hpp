@@ -35,6 +35,8 @@ struct EnemyTag {
     uint8_t subtype = 0;
 };
 
+struct PowerUp {};
+
 struct TimedEvents {
     struct CooldownAction {
         std::function<void(int entity_id)> action;

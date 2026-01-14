@@ -56,6 +56,7 @@ void FactoryActors::CreateInvinsibilityActor(
             h->invincibilityDuration += duration_invincibility;
         });
     reg.AddComponent<Component::ExplodeOnDeath>(entity, std::move(expl));
+    reg.AddComponent<Component::PowerUp>(entity, Component::PowerUp{});
 }
 
 }  // namespace server

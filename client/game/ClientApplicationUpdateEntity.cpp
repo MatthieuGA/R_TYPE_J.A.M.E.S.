@@ -64,6 +64,24 @@ static void UpdatePlayerEntity(GameWorld &game_world, size_t entity_index,
     } catch (const std::exception &e) {
         // Health component might not exist; ignore if so
     }
+    try {
+        auto &invincibility =
+            game_world.registry_
+                .GetComponents<Component::Health>()[entity_index];
+        if (invincibility.has_value()) {
+            invincibility->invincible = (entity_data.invincibility_time > 0);
+            invincibility->invincibilityDuration =
+                static_cast<float>(entity_data.invincibility_time);
+            if (invincibility->invincible) {
+                invincibility->invincibilityTimer =
+                    invincibility->invincibilityDuration;
+            } else {
+                invincibility->invincibilityTimer = 0.0f;
+            }
+        }
+    } catch (const std::exception &e) {
+        // Invincibility component might not exist; ignore if so
+    }
 }
 
 static void UpdateEnemyEntity(GameWorld &game_world, size_t entity_index,
