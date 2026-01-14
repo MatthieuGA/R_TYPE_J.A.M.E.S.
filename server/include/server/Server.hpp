@@ -1,6 +1,7 @@
 #pragma once
 #include <chrono>
 #include <cstdint>
+#include <memory>
 #include <vector>
 
 #include <boost/asio.hpp>
@@ -11,8 +12,12 @@
 #include "server/Network.hpp"
 #include "server/PacketHandler.hpp"
 #include "server/PacketSender.hpp"
+#include "server/worldgen/WorldGen.hpp"
 
 namespace server {
+
+// Forward declarations
+class WorldGenSystem;
 
 /**
  * @brief Main server class that manages game state using ECS
@@ -194,6 +199,11 @@ class Server {
     ClientConnectionManager connection_manager_;
     PacketSender packet_sender_;
     PacketHandler packet_handler_;
+
+    // WorldGen components
+    std::unique_ptr<worldgen::WorldGenConfigLoader> worldgen_loader_;
+    std::unique_ptr<worldgen::WorldGenManager> worldgen_manager_;
+    std::unique_ptr<WorldGenSystem> worldgen_system_;
 
     static constexpr int kTickTimerMs =
         16;  // timer resolution (~60 FPS target)
