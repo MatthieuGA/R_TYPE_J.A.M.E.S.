@@ -1,22 +1,15 @@
 #include "game/ClientApplication.hpp"
 
-#include <algorithm>
 #include <cstdio>
-#include <iomanip>
 #include <iostream>
-#include <vector>
 
 #include <SFML/Graphics.hpp>
 
 #include "engine/systems/InitRegistrySystems.hpp"
 #include "game/InitRegistry.hpp"
 #include "game/SnapshotTracker.hpp"
-#include "game/factory/factory_ennemies/FactoryActors.hpp"
 #include "game/scenes_management/InitScenes.hpp"
-#include "include/LayersConst.hpp"
-#include "include/components/CoreComponents.hpp"
 #include "include/components/NetworkingComponents.hpp"
-#include "include/components/RenderComponent.hpp"
 #include "include/components/ScenesComponents.hpp"
 #include "include/indexed_zipper.hpp"
 #include "network/Network.hpp"
@@ -169,6 +162,16 @@ void ClientApplication::RunGameLoop(GameWorld &game_world) {
 
         // Poll asio for network events
         game_world.io_context_.poll();
+
+        // Check for unexpected disconnection (server crashed/closed)
+        if (game_world.server_connection_ &&
+            game_world.server_connection_->WasDisconnectedUnexpectedly()) {
+            std::cerr << "[Client] Lost connection to server!" << std::endl;
+            std::cerr << "[Client] The server may have shut down."
+                      << std::endl;
+            game_world.window_.close();
+            break;
+        }
 
         // Check if game has started (received GAME_START from server)
         if (game_world.server_connection_) {
