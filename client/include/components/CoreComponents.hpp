@@ -8,7 +8,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include <limits>
 
 #include <SFML/Graphics.hpp>
 #include <graphics/Types.hpp>
