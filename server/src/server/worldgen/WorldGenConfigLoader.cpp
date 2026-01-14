@@ -313,6 +313,26 @@ std::optional<WGFDefinition> WorldGenConfigLoader::LoadWGFFile(
         wgf.obstacles.push_back(std::move(obstacle));
     }
 
+    // Parse enemies (optional)
+    if (j.contains("enemies") && j["enemies"].is_array()) {
+        for (const auto &enemy_json : j["enemies"]) {
+            EnemySpawnData enemy;
+
+            enemy.tag = enemy_json.value("tag", "mermaid");
+
+            if (enemy_json.contains("position") &&
+                enemy_json["position"].is_object()) {
+                const auto &pos = enemy_json["position"];
+                enemy.position.x = pos.value("x", 0.0f);
+                enemy.position.y = pos.value("y", 0.0f);
+            }
+
+            enemy.spawn_delay = enemy_json.value("spawn_delay", 0.0f);
+
+            wgf.enemies.push_back(std::move(enemy));
+        }
+    }
+
     // Parse background
     if (j.contains("background") && j["background"].is_object()) {
         const auto &bg = j["background"];
