@@ -8,6 +8,10 @@
 
 #include "server/Vector2f.hpp"
 
+namespace Engine {
+class registry;
+}
+
 namespace server::Component {
 
 struct PlayerTag {
@@ -123,14 +127,11 @@ struct Projectile {
 struct Health {
     int currentHealth;
     int maxHealth;
-    bool invincible;
-    float invincibilityDuration = 1.0f;
-    float invincibilityTimer = 0.0f;
+    float invincibilityDuration = 0.0f;
 
     explicit Health(int maxHealth = 100)
         : currentHealth(maxHealth),
           maxHealth(maxHealth),
-          invincible(false),
           invincibilityDuration(0.0f) {}
 };
 
@@ -174,13 +175,13 @@ struct PatternMovement {
     };
 
     // Constructor for Straight movement
-    explicit PatternMovement()
+    explicit PatternMovement(PatternType type, float baseSpeed)
         : currentWaypoint(0),
           type(PatternType::Straight),
           elapsed(0.f),
           spawnPos({0.f, 0.f}),
           baseDir({1.f, 0.f}),
-          baseSpeed(0.f),
+          baseSpeed(baseSpeed),
           amplitude({0.f, 0.f}),
           frequency({0.f, 0.f}),
           waypoints({}),
@@ -286,9 +287,20 @@ struct PatternMovement {
  * trigger the entity's `AnimatedSprite` to play the "Attack" animation.
  */
 struct ExplodeOnDeath {
-    float radius = 64.0f;  /**< Explosion radius in world units */
-    int damage = 20;       /**< Damage dealt to nearby entities */
+    float radius = 64.0f; /**< Explosion radius in world units */
+    int damage = 20;      /**< Damage dealt to nearby entities */
+    std::function<void(
+        Engine::registry &reg, int exploding_entity_id, int target_entity_id)>
+        onExplode;
     bool exploded = false; /**< Internal flag to avoid re-triggering */
+
+    ExplodeOnDeath(float radius_ = 64.0f, int damage_ = 20,
+        std::function<void(Engine::registry &reg, int, int)> onExplode_ =
+            nullptr)
+        : radius(radius_),
+          damage(damage_),
+          onExplode(std::move(onExplode_)),
+          exploded(false) {}
 };
 
 struct AnimatedSprite {

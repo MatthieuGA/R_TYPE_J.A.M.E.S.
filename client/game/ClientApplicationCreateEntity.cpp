@@ -58,6 +58,15 @@ static void CreateEnemyEntity(GameWorld &game_world,
     } else if (entity_data.enemy_type ==
                ClientApplication::ParsedEntity::kDaemonEnemy) {
         enemy_type_str = "daemon";
+    } else if (entity_data.enemy_type ==
+               ClientApplication::ParsedEntity::kInvinsibilityPU) {
+        enemy_type_str = "invinsibility";
+    } else if (entity_data.enemy_type ==
+               ClientApplication::ParsedEntity::kHealthPU) {
+        enemy_type_str = "health";
+    } else {
+        printf("[Snapshot] Unknown enemy type 0x%02X for entity ID %u\n",
+            entity_data.enemy_type, entity_data.entity_id);
     }
     FactoryActors::GetInstance().CreateActor(
         new_entity, game_world.registry_, enemy_type_str, false);

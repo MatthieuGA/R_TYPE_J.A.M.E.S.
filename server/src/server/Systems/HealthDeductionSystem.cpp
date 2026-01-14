@@ -76,15 +76,17 @@ void HandleCollision(Engine::registry &reg, Component::Health &health,
     Engine::sparse_array<Component::AnimatedSprite> &animated_sprites,
     std::size_t i, Engine::entity projEntity, std::size_t j,
     const Component::Projectile &projectile) {
-    health.currentHealth -= projectile.damage;
+    if (health.invincibilityDuration <= 0.0f) {
+        health.currentHealth -= projectile.damage;
 
-    if (animated_sprites.has(i)) {
-        auto &animSprite = animated_sprites[i];
-        animSprite->SetCurrentAnimation("Hit", true);
-        animSprite->GetCurrentAnimation()->current_frame = 1;
+        if (animated_sprites.has(i)) {
+            auto &animSprite = animated_sprites[i];
+            animSprite->SetCurrentAnimation("Hit", true);
+            animSprite->GetCurrentAnimation()->current_frame = 1;
+        }
     }
-
     reg.RemoveComponent<Component::Projectile>(projEntity);
+
     if (animated_sprites.has(j)) {
         auto &projAnimSprite = animated_sprites[j];
         projAnimSprite->SetCurrentAnimation("Death", false);
@@ -118,6 +120,15 @@ void HealthDeductionSystem(Engine::registry &reg,
     Engine::sparse_array<Component::HitBox> const &hitBoxes,
     Engine::sparse_array<Component::Transform> const &transforms,
     Engine::sparse_array<Component::Projectile> const &projectiles) {
+    for (auto &&[i, health] : make_indexed_zipper(healths)) {
+        if (health.invincibilityDuration > 0.0f) {
+            // Decrease invincibility duration
+            health.invincibilityDuration -= g_frame_delta_seconds;
+            if (health.invincibilityDuration < 0.0f)
+                health.invincibilityDuration = 0.0f;
+        }
+    }
+
     for (auto &&[i, health, hitBox, transform] :
         make_indexed_zipper(healths, hitBoxes, transforms)) {
         Engine::entity entity = reg.EntityFromIndex(i);

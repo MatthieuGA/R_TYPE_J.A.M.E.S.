@@ -404,7 +404,9 @@ struct EntityState {
     enum class EnemyType : uint8_t {
         Mermaid = 0x00,
         KamiFish = 0x01,
-        Daemon = 0x02
+        Daemon = 0x02,
+        Invinsibility = 0x04,
+        Health = 0x05
     };
 
     EntityId entity_id;         // 4 bytes
