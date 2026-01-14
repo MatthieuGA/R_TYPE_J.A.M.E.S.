@@ -13,6 +13,7 @@
 #include "game/factory/factory_ennemies/FactoryActors.hpp"
 #include "game/scenes_management/InitScenes.hpp"
 #include "graphics/GraphicsBackendFactory.hpp"
+#include "graphics/GraphicsPluginLoader.hpp"
 #include "graphics/SFMLRenderContext.hpp"
 #include "include/WindowConst.hpp"
 #include "include/registry.hpp"
@@ -77,12 +78,21 @@ int main(int argc, char *argv[]) {
         auto event_source = std::make_unique<RC::Platform::SFMLEventSource>(
             sfml_window->GetNativeWindow());
 
+        // Load graphics backend plugins (optional - graceful fallback to
+        // static) Attempt to load plugin from standard plugin directory
+        RC::Graphics::GraphicsPluginLoader::LoadPlugin(
+            "./plugins/libgraphics_sfml.so", "sfml");
+
         // Register graphics backends (must happen before GameWorld creation)
-        RC::Graphics::GraphicsBackendFactory::Register(
-            "sfml", [](sf::RenderWindow &window) {
-                return std::make_unique<RC::Graphics::SFMLRenderContext>(
-                    window);
-            });
+        // If plugin was loaded, it's already registered. This fallback ensures
+        // static SFML backend is available if plugin load fails.
+        if (!RC::Graphics::GraphicsBackendFactory::IsRegistered("sfml")) {
+            RC::Graphics::GraphicsBackendFactory::Register(
+                "sfml", [](sf::RenderWindow &window) {
+                    return std::make_unique<RC::Graphics::SFMLRenderContext>(
+                        window);
+                });
+        }
 
         // Create game world with SFML backend selection
         RC::GameWorld game_world(std::move(window), "sfml", config.server_ip,
