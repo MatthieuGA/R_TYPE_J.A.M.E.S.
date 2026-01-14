@@ -107,6 +107,7 @@ gtest_discover_tests(server_tests)
 add_executable(worldgen_tests
     test_worldgen.cpp
     ${CMAKE_SOURCE_DIR}/server/src/server/worldgen/WorldGenConfigLoader.cpp
+    ${CMAKE_SOURCE_DIR}/server/src/server/worldgen/WorldGenManager.cpp
 )
 
 # Include directories for worldgen tests
@@ -114,6 +115,7 @@ target_include_directories(worldgen_tests
     PRIVATE
         ${CMAKE_SOURCE_DIR}/server/include
         ${CMAKE_SOURCE_DIR}/engine/include
+        ${CMAKE_SOURCE_DIR}/external
 )
 
 # Link with Google Test and nlohmann_json
