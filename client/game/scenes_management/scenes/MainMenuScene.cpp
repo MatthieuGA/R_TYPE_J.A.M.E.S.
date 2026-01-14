@@ -137,7 +137,7 @@ void MainMenuScene::InitUI(Engine::registry &reg, GameWorld &gameWorld) {
 
     // --- Quit Button ---
     CreateButton(reg, gameWorld, "Quit", 960.0f, 700.0f,
-        [&gameWorld]() { gameWorld.window_.close(); });
+        [&gameWorld]() { gameWorld.window_->Close(); });
 }
 
 }  // namespace Rtype::Client

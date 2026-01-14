@@ -285,7 +285,7 @@ void Test6_SaveRestore(WorldGenConfigLoader &loader) {
     }
 
     PrintInfo("Saving state...");
-    WorldGenState saved = manager.SaveState();
+    worldgen::WorldGenState saved = manager.SaveState();
     std::cout << "  Frame index: " << saved.current_frame_index << "\n";
     std::cout << "  Difficulty: " << saved.current_difficulty << "\n";
     std::cout << "  Current WGF: " << saved.current_wgf_uuid << "\n";
@@ -339,7 +339,7 @@ void Test7_LevelMode(WorldGenConfigLoader &loader) {
             "programmatically");
 
         // Create a level programmatically
-        LevelDefinition level;
+        worldgen::LevelDefinition level;
         level.uuid = "test-level-001";
         level.name = "Test Level";
         level.author = "Manual Test";
@@ -368,7 +368,7 @@ void Test7_LevelMode(WorldGenConfigLoader &loader) {
         }
     } else {
         // Get the loaded level
-        const LevelDefinition *level =
+        const worldgen::LevelDefinition *level =
             manager.GetLevelByUUID("tutorial-0000-0000-0000-000000000001");
 
         if (!level) {
@@ -421,20 +421,20 @@ void Test8_SpawnEvents(WorldGenConfigLoader &loader) {
     int frame_start_count = 0;
 
     // Set up callback
-    manager.SetSpawnCallback([&](const SpawnEvent &event) {
+    manager.SetSpawnCallback([&](const worldgen::SpawnEvent &event) {
         event_count++;
 
         switch (event.type) {
-            case SpawnEvent::EventType::kObstacle:
+            case worldgen::SpawnEvent::EventType::kObstacle:
                 obstacle_count++;
                 break;
-            case SpawnEvent::EventType::kFrameStart:
+            case worldgen::SpawnEvent::EventType::kFrameStart:
                 frame_start_count++;
                 std::cout << MAGENTA << "  [FRAME START] " << RESET
                           << "Frame #" << event.frame_number
                           << " at x=" << event.world_x << "\n";
                 break;
-            case SpawnEvent::EventType::kFrameEnd:
+            case worldgen::SpawnEvent::EventType::kFrameEnd:
                 std::cout << CYAN << "  [FRAME END] " << RESET << "Frame #"
                           << event.frame_number << " at x=" << event.world_x
                           << "\n";

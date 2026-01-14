@@ -460,7 +460,7 @@ void DrawableSystem(Eng::registry &reg, GameWorld &game_world,
             outline.a = static_cast<uint8_t>(rect_drawable->opacity * 255);
             rect_drawable->shape->setOutlineColor(outline);
 
-            game_world.window_.draw(*rect_drawable->shape);
+            game_world.GetNativeWindow().draw(*rect_drawable->shape);
         } else {
             RenderOneEntity(transforms, drawables, shaders, animated_sprites,
                 game_world, item.index);

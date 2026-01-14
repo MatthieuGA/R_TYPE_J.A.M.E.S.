@@ -24,13 +24,14 @@ void DraggableSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::HitBox> &hit_boxes,
     Eng::sparse_array<Com::Draggable> &draggables,
     Eng::sparse_array<Com::Transform> &transforms) {
-    if (!game_world.window_.hasFocus())
+    auto &native_window = game_world.GetNativeWindow();
+    if (!native_window.hasFocus())
         return;
 
     // TODO(MatthieuGA): mapPixelToCoords is SFML-specific,
     // will have to abstract
-    sf::Vector2f sfMousePos = game_world.window_.mapPixelToCoords(
-        sf::Mouse::getPosition(game_world.window_));
+    sf::Vector2f sfMousePos = native_window.mapPixelToCoords(
+        sf::Mouse::getPosition(native_window));
     Engine::Graphics::Vector2f mousePos(sfMousePos.x, sfMousePos.y);
 
     bool mousePressed = game_world.input_manager_->IsMouseButtonPressed(
