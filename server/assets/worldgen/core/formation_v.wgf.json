@@ -1,0 +1,43 @@
+{
+  "uuid": "f4a5b6c7-d8e9-40f1-8a3b-4c5d6e7f8a9b",
+  "name": "V Formation",
+  "description": "Enemies in a V formation flying towards the player.",
+  "difficulty": 4.0,
+  "tags": ["enemies", "formation", "v-shape"],
+  "width": 600,
+  "spawn_rules": {
+    "min_distance_from_last": 1,
+    "max_frequency": 0.85
+  },
+  "obstacles": [],
+  "enemies": [
+    {
+      "tag": "mermaid",
+      "position": { "x": 100, "y": 300 },
+      "spawn_delay": 0.0
+    },
+    {
+      "tag": "mermaid",
+      "position": { "x": 200, "y": 200 },
+      "spawn_delay": 0.0
+    },
+    {
+      "tag": "mermaid",
+      "position": { "x": 200, "y": 400 },
+      "spawn_delay": 0.0
+    },
+    {
+      "tag": "mermaid",
+      "position": { "x": 300, "y": 100 },
+      "spawn_delay": 0.0
+    },
+    {
+      "tag": "mermaid",
+      "position": { "x": 300, "y": 500 },
+      "spawn_delay": 0.0
+    }
+  ],
+  "background": {
+    "layers": []
+  }
+}

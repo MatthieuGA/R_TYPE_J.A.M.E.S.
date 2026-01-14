@@ -1,6 +1,8 @@
 #include "server/Server.hpp"
 
 #include <iostream>
+#include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -8,6 +10,7 @@
 #include "server/GameplayComponents.hpp"
 #include "server/NetworkComponents.hpp"
 #include "server/systems/Systems.hpp"
+#include "server/systems/WorldGenSystem.hpp"
 
 namespace server {
 
@@ -41,6 +44,39 @@ void Server::Initialize() {
     std::cout << "Initializing server..." << std::endl;
     RegisterComponents();
     RegisterSystems();
+
+    // Initialize WorldGen
+    worldgen_loader_ = std::make_unique<worldgen::WorldGenConfigLoader>();
+    worldgen_loader_->SetLogCallback(
+        [](worldgen::LogLevel level, const std::string &msg) {
+            std::string level_str;
+            switch (level) {
+                case worldgen::LogLevel::kInfo:
+                    level_str = "[WORLDGEN INFO]";
+                    break;
+                case worldgen::LogLevel::kWarning:
+                    level_str = "[WORLDGEN WARN]";
+                    break;
+                case worldgen::LogLevel::kError:
+                    level_str = "[WORLDGEN ERROR]";
+                    break;
+            }
+            std::cout << level_str << " " << msg << std::endl;
+        });
+
+    // Load WGF files
+    if (!worldgen_loader_->LoadFromDirectories(
+            "assets/worldgen/core", "assets/worldgen/user")) {
+        std::cerr << "[WARNING] Failed to load WorldGen files, procedural "
+                     "generation disabled"
+                  << std::endl;
+    } else {
+        worldgen_manager_ =
+            std::make_unique<worldgen::WorldGenManager>(*worldgen_loader_);
+        std::cout << "[WorldGen] Loaded "
+                  << worldgen_loader_->GetAllWGFs().size() << " WGF files"
+                  << std::endl;
+    }
 
     // Register packet handlers
     packet_handler_.RegisterHandlers();
@@ -174,6 +210,16 @@ void Server::ResetToLobby() {
     // Clear all entities from the registry
     registry_.ClearAllEntities();
 
+    // Reset WorldGen manager state BEFORE destroying the system
+    // This prevents the manager from using stale callbacks during reset
+    if (worldgen_manager_) {
+        worldgen_manager_->Stop();           // Stop activity first
+        worldgen_manager_->ClearCallback();  // Clear the spawn callback
+    }
+
+    // Now safe to destroy the system
+    worldgen_system_.reset();
+
     // Reset all client ready states
     connection_manager_.ResetAllReadyStates();
 
@@ -212,6 +258,12 @@ void Server::SetupGameTick() {
 
 void Server::Update() {
     registry_.run_systems();
+
+    // Update WorldGen system if initialized
+    // scroll_speed should match enemy/background movement (~200 pixels/second)
+    if (worldgen_system_) {
+        worldgen_system_->Update(1.0f / 60.0f, 200.0f, registry_);
+    }
 
     // Check for game over condition (all players dead)
     if (AreAllPlayersDead()) {

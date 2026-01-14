@@ -199,6 +199,9 @@ void ClientApplication::UpdateExistingEntity(GameWorld &game_world,
         // Projectile entity
         // Projectiles are usually short-lived; may not need updates
         UpdateProjectileEntity(game_world, entity_index, entity_data);
+    } else if (entity_data.entity_type == 0x03) {
+        // Obstacle entity - update like enemies (position, velocity)
+        UpdateEnemyEntity(game_world, entity_index, entity_data);
     } else {
         printf("[Snapshot] Unknown entity type 0x%02X for entity ID %u\n",
             entity_data.entity_type, entity_data.entity_id);

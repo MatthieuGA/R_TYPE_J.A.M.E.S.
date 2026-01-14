@@ -292,6 +292,10 @@ ClientApplication::ParseSnapshotData(const client::SnapshotPacket &snapshot) {
         // Similar parsing function can be created for projectiles if needed
         // For now, we can reuse the same parsing logic
         ParseSnapshotProjectile(entities, snapshot);
+    } else if (snapshot.entity_type ==
+               ClientApplication::ParsedEntity::kObstacleEntity) {
+        // Obstacles use same packet format as enemies
+        ParseSnapshotEnemy(entities, snapshot);
     } else {
         // Unknown entity type, fallback to player parsing
     }

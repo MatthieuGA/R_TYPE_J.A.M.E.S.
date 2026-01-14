@@ -283,14 +283,31 @@ void SendSnapshotEnemyState(int tick, network::EntityState entity_state,
     // Write WORLD_SNAPSHOT header (opcode 0x20 with entity data as payload)
     network::CommonHeader header(
         static_cast<uint8_t>(network::PacketType::WorldSnapshot),
-        21,    // payload_size = 20 bytes (one EntityState with animation helth
-        tick,  // tick_id = 0
+        21,  // payload_size = 21 bytes (one EntityState with animation/health)
+        tick,  // tick_id
         0,     // packet_index = 0
         1,     // packet_count = 1
         1);    // entity_type = 1 (Enemy)
     buffer.WriteHeader(header);
 
     // Serialize entity state into the payload
+    entity_state.Serialize(buffer, network::EntityState::EntityType::Enemy);
+}
+
+void SendSnapshotObstacleState(int tick, network::EntityState entity_state,
+    network::PacketBuffer &buffer) {
+    // Obstacles use the same serialization format as enemies but with
+    // different entity_type in header (3 = Obstacle)
+    network::CommonHeader header(
+        static_cast<uint8_t>(network::PacketType::WorldSnapshot),
+        21,    // payload_size = 21 bytes (same as enemy format)
+        tick,  // tick_id
+        0,     // packet_index = 0
+        1,     // packet_count = 1
+        3);    // entity_type = 3 (Obstacle)
+    buffer.WriteHeader(header);
+
+    // Serialize entity state using enemy format (position, velocity, health)
     entity_state.Serialize(buffer, network::EntityState::EntityType::Enemy);
 }
 
@@ -304,6 +321,8 @@ void PacketSender::SendSnapshot(network::EntityState entity_state, int tick) {
         SendSnapshotEnemyState(tick, entity_state, buffer);
     } else if (entity_state.entity_type == 2) {  // PROJECTILE
         SendSnapshotProjectileState(tick, entity_state, buffer);
+    } else if (entity_state.entity_type == 3) {  // OBSTACLE
+        SendSnapshotObstacleState(tick, entity_state, buffer);
     } else {
         std::cerr << "Unknown entity type for snapshot: "
                   << static_cast<int>(entity_state.entity_type) << std::endl;

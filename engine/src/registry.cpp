@@ -26,20 +26,14 @@ void registry::KillEntity(entity const &e) {
 }
 
 void registry::RunSystems() {
-    for (std::size_t idx = 0; idx < systems_.size(); ++idx) {
-        auto &s = systems_[idx];
-        if (!s)
-            continue;
-        try {
+    for (size_t i = 0; i < systems_.size(); ++i) {
+        auto &s = systems_[i];
+        if (s) {
+            std::cerr << "S" << i << " " << std::flush;
             s(*this);
-        } catch (const std::exception &e) {
-            std::cerr << "[Registry] System " << idx
-                      << " threw exception: " << e.what() << std::endl;
-        } catch (...) {
-            std::cerr << "[Registry] System " << idx
-                      << " terminated with unknown error." << std::endl;
         }
     }
+    std::cerr << "OK" << std::endl;
 }
 
 void registry::ClearAllEntities() {

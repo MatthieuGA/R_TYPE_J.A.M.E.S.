@@ -12,6 +12,7 @@ struct ClientConfig {
     uint16_t tcp_port;
     uint16_t udp_port;
     std::string username;
+    bool solo_mode;  ///< True if client should spawn its own local server
 };
 
 /**

@@ -40,6 +40,16 @@ struct EnemyTag {
 };
 
 struct PowerUp {};
+/**
+ * @brief Tag component for obstacle entities (asteroids, walls, etc.)
+ *
+ * Obstacles are solid world objects spawned by WorldGen that can block
+ * players and projectiles. They move with the world scroll.
+ */
+struct ObstacleTag {
+    /// Subtype for network serialization (0=Asteroid, 1=Wall, etc.)
+    uint8_t subtype = 0;
+};
 
 struct TimedEvents {
     struct CooldownAction {

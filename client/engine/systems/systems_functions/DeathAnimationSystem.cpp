@@ -1,3 +1,5 @@
+#include <vector>
+
 #include "engine/systems/InitRegistrySystems.hpp"
 
 namespace Rtype::Client {
@@ -19,6 +21,10 @@ namespace Rtype::Client {
 void DeathAnimationSystem(Eng::registry &reg,
     Eng::sparse_array<Component::AnimatedSprite> &animated_sprites,
     Eng::sparse_array<Component::AnimationDeath> &animation_deaths) {
+    // Collect entities to kill to avoid modifying sparse arrays during
+    // iteration
+    std::vector<Engine::entity> entities_to_kill;
+
     for (auto &&[i, animation_death] : make_indexed_zipper(animation_deaths)) {
         Engine::entity entity = reg.EntityFromIndex(i);
 
@@ -27,13 +33,18 @@ void DeathAnimationSystem(Eng::registry &reg,
             auto &anim_sprite = animated_sprites[i];
 
             if (anim_sprite->currentAnimation == "Default") {
-                // Remove the entity entirely
-                reg.KillEntity(entity);
+                // Mark entity for removal
+                entities_to_kill.push_back(entity);
             }
         } else {
-            // If no animated sprite, remove immediately
-            reg.KillEntity(entity);
+            // If no animated sprite, mark for immediate removal
+            entities_to_kill.push_back(entity);
         }
+    }
+
+    // Now kill entities after iteration is complete
+    for (Engine::entity entity : entities_to_kill) {
+        reg.KillEntity(entity);
     }
 }
 

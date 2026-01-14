@@ -1,10 +1,12 @@
 #pragma once
+#include <cstdint>
+
 #include <SFML/Graphics.hpp>
 
 namespace Rtype::Client::Component {
 struct NetworkId {
     int id;
-    int last_processed_tick;
+    uint32_t last_processed_tick;
 };
 
 struct InterpolatedPosition {

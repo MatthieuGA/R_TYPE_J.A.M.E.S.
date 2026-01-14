@@ -13,16 +13,18 @@ TEST(ShaderSystem, LoadsShaderFromAssets) {
 
     Eng::sparse_array<Com::Shader> shaders;
 
-    // Use the existing test shader placed in client/assets/shaders/wave.frag
+    // Use a non-existent shader file to test failure behavior
     Com::Shader shade("error.frag");
     shaders.insert_at(0, shade);
 
     // Initially not loaded
     EXPECT_FALSE(shaders[0]->isLoaded);
 
-    // Run the initialize system which should load the shader
+    // Run the initialize system which should attempt to load the shader
     InitializeShaderSystem(reg, shaders);
 
-    // The shader asset should not exist, so loading should fail
-    EXPECT_FALSE(shaders[0]->isLoaded);
+    // After loading attempt, isLoaded is set to true to prevent retry spam
+    // But the shader pointer should be nullptr since the file doesn't exist
+    EXPECT_TRUE(shaders[0]->isLoaded);
+    EXPECT_EQ(shaders[0]->shader, nullptr);
 }
