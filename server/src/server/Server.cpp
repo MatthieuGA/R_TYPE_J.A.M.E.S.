@@ -7,6 +7,7 @@
 #include "server/CoreComponents.hpp"
 #include "server/GameplayComponents.hpp"
 #include "server/NetworkComponents.hpp"
+#include "server/systems/Systems.hpp"
 
 namespace server {
 
@@ -27,6 +28,7 @@ Server::Server(Config &config, boost::asio::io_context &io_context)
     instance_ = this;
     // Set game start callback
     packet_handler_.SetGameStartCallback([this]() { Start(); });
+    last_tick_time_ = std::chrono::steady_clock::now();
     // Set callback to check if game is running
     packet_handler_.SetIsGameRunningCallback([this]() { return running_; });
 }
@@ -192,9 +194,16 @@ void Server::SetupGameTick() {
         return;
     }
 
-    tick_timer_.expires_after(std::chrono::milliseconds(TICK_RATE_MS));
+    tick_timer_.expires_after(std::chrono::milliseconds(kTickTimerMs));
     tick_timer_.async_wait([this](const boost::system::error_code &ec) {
         if (!ec && running_) {
+            // Calculate real elapsed time since last tick and update global
+            // frame delta
+            auto now = std::chrono::steady_clock::now();
+            std::chrono::duration<float> elapsed = now - last_tick_time_;
+            UpdateFrameDeltaFromSeconds(elapsed.count());
+            last_tick_time_ = now;
+
             Update();
             SetupGameTick();
         }
@@ -206,14 +215,37 @@ void Server::Update() {
 
     // Check for game over condition (all players dead)
     if (AreAllPlayersDead()) {
-        std::cout << "[Server] All players are dead! Game Over." << std::endl;
+        if (!game_over_pending_) {
+            std::cout << "[Server] All players are dead! Starting game over "
+                         "delay..."
+                      << std::endl;
+            game_over_pending_ = true;
+            game_over_timer_ = 0.0f;
+        } else {
+            // Accumulate time (assuming 16ms per tick)
+            game_over_timer_ += g_frame_delta_ms / 1000.0f;
 
-        // Send GAME_END packet to all clients (0 = no winner, game lost)
-        packet_sender_.SendGameEnd(0);
+            if (game_over_timer_ >= GAME_OVER_DELAY_SEC) {
+                std::cout << "[Server] Game over delay complete. Sending "
+                             "GAME_END packet."
+                          << std::endl;
 
-        // Reset server to lobby state
-        ResetToLobby();
-        return;
+                // Send GAME_END packet to all clients (0 = no winner, game
+                // lost)
+                packet_sender_.SendGameEnd(0);
+
+                // Reset server to lobby state
+                ResetToLobby();
+                game_over_pending_ = false;
+                game_over_timer_ = 0.0f;
+                return;
+            }
+        }
+    } else {
+        // Reset game over pending if players are alive again (shouldn't
+        // happen but safe)
+        game_over_pending_ = false;
+        game_over_timer_ = 0.0f;
     }
 
     SendSnapshotsToAllClients();

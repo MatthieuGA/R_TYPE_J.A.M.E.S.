@@ -31,8 +31,10 @@ void FactoryActors::CreateActor(Engine::entity &entity, Engine::registry &reg,
     CreateBasicEnnemy(entity, reg, info);
     if (info.tag == "mermaid")
         CreateMermaidActor(entity, reg, info);
-    if (info.tag == "kamifish")
+    else if (info.tag == "kamifish")
         CreateKamiFishActor(entity, reg, info);
+    else if (info.tag == "daemon")
+        CreateDaemonActor(entity, reg, info);
 }
 
 void FactoryActors::CreateBasicActor(
