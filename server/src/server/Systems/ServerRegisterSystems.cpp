@@ -49,6 +49,15 @@ void Server::RegisterSystems() {
         Engine::sparse_array<Component::Transform>,
         Engine::sparse_array<Component::Projectile>>(HealthDeductionSystem);
 
+    // Obstacle collision system - handles player vs obstacle collisions
+    // Must run after movement systems to ensure positions are up to date
+    registry_.AddSystem<Engine::sparse_array<Component::Transform>,
+        Engine::sparse_array<Component::HitBox>,
+        Engine::sparse_array<Component::PlayerTag>,
+        Engine::sparse_array<Component::ObstacleTag>,
+        Engine::sparse_array<Component::AnimatedSprite>>(
+        ObstacleCollisionSystem);
+
     // Explode-on-death system must run after health deduction to catch deaths
     registry_.AddSystem<Engine::sparse_array<Component::Transform>,
         Engine::sparse_array<Component::Health>,

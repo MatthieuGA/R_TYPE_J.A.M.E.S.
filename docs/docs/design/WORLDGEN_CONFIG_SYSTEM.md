@@ -4,9 +4,9 @@
 
 ## Overview
 
-The WorldGen config system loads JSON-defined **WorldGen Frames (WGF)** - reusable world segments with obstacles, backgrounds, and metadata. Designers can create/modify levels without code changes.
+The WorldGen config system loads JSON-defined **WorldGen Frames (WGF)** - reusable world segments with obstacles, enemies, backgrounds, and metadata. Designers can create/modify levels without code changes.
 
-**Key Features:** UUID-based determinism, user modding support, validated parsing, ECS-decoupled design
+**Key Features:** UUID-based determinism, enemy spawning, user modding support, validated parsing, ECS-decoupled design
 
 ## Architecture
 
@@ -15,26 +15,30 @@ server/
 ├── include/server/worldgen/
 │   ├── WorldGen.hpp              # Convenience header
 │   ├── WorldGenTypes.hpp         # POD data structures
-│   └── WorldGenConfigLoader.hpp  # Loader interface
+│   ├── WorldGenConfigLoader.hpp  # Loader interface
+│   ├── WorldGenManager.hpp       # Runtime manager
+│   └── DeterministicRNG.hpp      # PCG-based PRNG
 ├── src/server/worldgen/
-│   └── WorldGenConfigLoader.cpp  # JSON parsing/validation
+│   ├── WorldGenConfigLoader.cpp  # JSON parsing/validation
+│   └── WorldGenManager.cpp       # Frame selection/spawn events
 └── assets/worldgen/
     ├── config.json               # Global settings
-    ├── core/*.wgf.json          # 6 built-in frames
-    └── user/*.wgf.json          # User mods (optional)
+    ├── core/*.wgf.json          # 10 built-in frames
+    ├── user/*.wgf.json          # User mods (gitignored)
+    └── levels/*.level.json      # Level definitions
 ```
 
 ## WGF File Format
 
 **Required:** `uuid`, `name`, `difficulty`, `obstacles`  
-**Optional:** `description`, `width`, `tags`, `spawn_rules`, `background`
+**Optional:** `description`, `width`, `tags`, `spawn_rules`, `enemies`, `background`
 
 ```json
 {
   "uuid": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
   "name": "Asteroid Field",
   "difficulty": 4.5,
-  "tags": ["space", "obstacles"],
+  "tags": ["space", "obstacles", "enemies"],
   "obstacles": [
     {
       "type": "destructible",
@@ -43,6 +47,18 @@ server/
       "size": {"width": 48, "height": 48},
       "collision": {"enabled": true, "damage": 10},
       "health": 20
+    }
+  ],
+  "enemies": [
+    {
+      "tag": "mermaid",
+      "position": {"x": 100, "y": 200},
+      "spawn_delay": 0.0
+    },
+    {
+      "tag": "kamifish",
+      "position": {"x": 300, "y": 400},
+      "spawn_delay": 1.5
     }
   ],
   "spawn_rules": {
@@ -54,6 +70,11 @@ server/
 
 **Obstacle Types:** `static`, `destructible`, `hazard`, `decoration`
 
+**Enemy Fields:**
+- `tag`: Enemy type from FactoryActors (e.g., `"mermaid"`, `"kamifish"`)
+- `position`: Spawn position relative to frame
+- `spawn_delay`: Delay after frame starts (default: 0)
+
 ## C++ API
 
 ### Usage Example
@@ -63,17 +84,16 @@ server/
 
 worldgen::WorldGenConfigLoader loader;
 loader.LoadFromDirectories("assets/worldgen/core", "assets/worldgen/user");
-loader.LoadGlobalConfig("assets/worldgen/config.json");
 
-// Access WGF by UUID
-const auto* wgf = loader.GetWGFByUUID("a1b2c3d4-...");
+worldgen::WorldGenManager manager(loader);
+manager.InitializeEndless(12345, 2.0f);  // seed, difficulty
 
-// Query by criteria
-auto easy_frames = loader.FindByDifficulty(0.0f, 3.0f);
-auto space_frames = loader.FindByTags({"space"}, false);
-
-// Check statistics
-const auto& stats = loader.GetStatistics();
+// In game loop
+manager.Update(delta_time, scroll_speed);
+while (auto event = manager.PopNextEvent()) {
+    if (event->type == SpawnEvent::EventType::kObstacle) { /* ... */ }
+    else if (event->type == SpawnEvent::EventType::kEnemy) { /* ... */ }
+}
 ```
 
 ### Key Types
@@ -86,16 +106,22 @@ struct WGFDefinition {
     int width;
     SpawnRules spawn_rules;
     std::vector<ObstacleData> obstacles;
+    std::vector<EnemySpawnData> enemies;
     BackgroundData background;
 };
 
-struct ObstacleData {
-    ObstacleType type;  // kStatic, kDestructible, kHazard, kDecoration
-    std::string sprite;
-    Vec2f position;
-    Size2f size;
-    CollisionData collision;
-    int health;
+struct EnemySpawnData {
+    std::string tag;             // Enemy type (e.g., "mermaid")
+    Vec2f position;              // Spawn position
+    float spawn_delay = 0.0f;    // Delay after frame starts
+};
+
+struct SpawnEvent {
+    enum class EventType { kObstacle, kEnemy, kFrameStart, kFrameEnd, kLevelEnd };
+    EventType type;
+    float world_x, world_y;
+    std::string enemy_tag;       // For kEnemy events
+    // ... obstacle fields for kObstacle events
 };
 ```
 
@@ -104,7 +130,8 @@ struct ObstacleData {
 - `LoadFromDirectories()` - Load WGFs from core/user dirs
 - `GetWGFByUUID()` - O(1) lookup by UUID
 - `FindByDifficulty()` / `FindByTags()` - Query WGFs
-- `GetStatistics()` - Load stats (files loaded/skipped/errors)
+- `InitializeEndless()` - Start endless mode with seed
+- `Update()` / `PopNextEvent()` - Runtime generation
 
 ## Validation & Error Handling
 
@@ -117,16 +144,6 @@ struct ObstacleData {
 - Missing required fields → skip file
 - Invalid values → skip file
 
-**Graceful Degradation:**
-```cpp
-if (!loader.LoadFromDirectories("core", "user")) {
-    // Use fallback or minimal procedural generation
-}
-if (stats.files_skipped > 0) {
-    // Check stats.parse_errors, validation_errors, duplicate_uuids
-}
-```
-
 ## User Modding
 
 **Create custom WGF:** Place `.wgf.json` in `server/assets/worldgen/user/`
@@ -136,29 +153,24 @@ if (stats.files_skipped > 0) {
   "uuid": "12345678-1234-4123-8123-123456789abc",
   "name": "My Frame",
   "difficulty": 3.0,
-  "obstacles": [...]
+  "obstacles": [...],
+  "enemies": [{"tag": "mermaid", "position": {"x": 100, "y": 200}}]
 }
 ```
 
-**Rules:** User files load after core. Duplicate UUIDs are skipped. Generate UUIDs with `uuidgen` or online tools.
+**Rules:** User files load after core. Duplicate UUIDs are skipped. Generate UUIDs with `uuidgen` or online tools. User files are gitignored.
 
 ## Testing
 
-**13 unit tests** in `tests/test_worldgen.cpp` covering loading, validation, querying, and config parsing.
+**20+ unit tests** in `tests/test_worldgen.cpp` covering loading, validation, querying, RNG, and runtime generation.
 
 ```bash
-cmake --build build --target worldgen_tests
-./build/tests/worldgen_tests --gtest_brief=1
+cmake --build build
+ctest --test-dir build -R WorldGen --output-on-failure
 ```
 
-## Build Integration
+## See Also
 
-**Dependencies:** `nlohmann-json` (via vcpkg)
-
-```cmake
-# server/CMakeLists.txt
-target_sources(r-type_server PRIVATE
-    src/server/worldgen/WorldGenConfigLoader.cpp)
-find_package(nlohmann_json CONFIG REQUIRED)
-target_link_libraries(r-type_server PRIVATE nlohmann_json::nlohmann_json)
-```
+- `WORLDGEN_COMPLETE.md` - Full system documentation
+- `WORLDGEN_IMPLEMENTATION.md` - Implementation summary
+- `ENEMY_GENERATION.md` - Enemy spawning design

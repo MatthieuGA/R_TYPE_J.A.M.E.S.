@@ -14,7 +14,8 @@ namespace server {
 enum EntityType : uint8_t {
     PLAYER = 0,
     ENEMY = 1,
-    PROJECTILE = 2
+    PROJECTILE = 2,
+    OBSTACLE = 3
 };
 
 int GetEntityTypeFromRegistry(Engine::registry &registry_, size_t i) {
@@ -26,6 +27,9 @@ int GetEntityTypeFromRegistry(Engine::registry &registry_, size_t i) {
     }
     if (registry_.GetComponents<Component::Projectile>().has(i)) {
         return EntityType::PROJECTILE;
+    }
+    if (registry_.GetComponents<Component::ObstacleTag>().has(i)) {
+        return EntityType::OBSTACLE;
     }
     // Add more component checks for other entity types as needed
     return -1;  // Unknown entity type
@@ -224,6 +228,10 @@ void Server::SendSnapshotsToAllClients() {
             SendServerSnapshotProjectile(
                 entity_state, registry_, i, entity_network);
         } else if (registry_.GetComponents<Component::EnemyTag>().has(i)) {
+            SendServerSnapshotEnemy(
+                entity_state, registry_, i, entity_network);
+        } else if (registry_.GetComponents<Component::ObstacleTag>().has(i)) {
+            // Send obstacle as a basic entity (similar to enemies)
             SendServerSnapshotEnemy(
                 entity_state, registry_, i, entity_network);
         } else {

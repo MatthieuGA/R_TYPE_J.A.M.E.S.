@@ -1,0 +1,42 @@
+{
+  "uuid": "c1d2e3f4-a5b6-4c78-9d0e-1f2a3b4c5d6e",
+  "name": "Enemy Wave - Light",
+  "description": "A light wave of enemies for early game. Contains mermaids in a simple formation.",
+  "difficulty": 2.0,
+  "tags": ["enemies", "easy", "mermaid"],
+  "width": 800,
+  "spawn_rules": {
+    "min_distance_from_last": 1,
+    "max_frequency": 1.0
+  },
+  "obstacles": [
+    {
+      "type": "destructible",
+      "sprite": "images/obstacles/asteroid_medium.png",
+      "position": { "x": 400, "y": 300 },
+      "size": { "width": 128, "height": 128 },
+      "collision": { "enabled": true, "damage": 10 },
+      "health": 50
+    }
+  ],
+  "enemies": [
+    {
+      "tag": "mermaid",
+      "position": { "x": 100, "y": 150 },
+      "spawn_delay": 0.0
+    },
+    {
+      "tag": "mermaid",
+      "position": { "x": 200, "y": 350 },
+      "spawn_delay": 0.0
+    },
+    {
+      "tag": "mermaid",
+      "position": { "x": 300, "y": 250 },
+      "spawn_delay": 0.0
+    }
+  ],
+  "background": {
+    "layers": []
+  }
+}

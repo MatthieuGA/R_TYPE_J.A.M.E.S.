@@ -1,0 +1,36 @@
+{
+  "uuid": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+  "name": "Empty Space",
+  "description": "A calm section with no obstacles. Good for beginners or as a breather between intense sections.",
+  "difficulty": 0.5,
+  "tags": ["space", "easy", "breather"],
+  "width": 800,
+  "spawn_rules": {
+    "min_distance_from_last": 3,
+    "max_frequency": 0.8
+  },
+  "obstacles": [
+    {
+      "type": "destructible",
+      "sprite": "images/obstacles/test_asteroid.png",
+      "position": { "x": 300, "y": 300 },
+      "size": { "width": 128, "height": 128 },
+      "collision": { "enabled": true, "damage": 5 },
+      "health": 100
+    }
+  ],
+  "background": {
+    "layers": [
+      {
+        "sprite": "images/backgrounds/stars_distant.png",
+        "parallax_factor": 0.2,
+        "scroll_speed": 0.5
+      },
+      {
+        "sprite": "images/backgrounds/stars_mid.png",
+        "parallax_factor": 0.5,
+        "scroll_speed": 1.0
+      }
+    ]
+  }
+}
