@@ -49,6 +49,19 @@ namespace Graphics {
 
 bool GraphicsPluginLoader::LoadPlugin(
     const std::string &plugin_path, const std::string &backend_name) {
+    // Validate input parameters
+    if (plugin_path.empty()) {
+        std::cerr << "[GraphicsPluginLoader] Error: plugin path is empty"
+                  << std::endl;
+        return false;
+    }
+
+    if (backend_name.empty()) {
+        std::cerr << "[GraphicsPluginLoader] Error: backend name is empty"
+                  << std::endl;
+        return false;
+    }
+
     // Load the shared library
     ModuleHandle handle = LOAD_LIBRARY(plugin_path.c_str());
     if (!handle) {
