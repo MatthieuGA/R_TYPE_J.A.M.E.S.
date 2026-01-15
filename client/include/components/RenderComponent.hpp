@@ -20,6 +20,8 @@ namespace Rtype::Client::Component {
 struct RectangleDrawable {
     float width = 64.0f;
     float height = 64.0f;
+    float offset_x = 0.0f;  ///< Visual offset from transform position (X)
+    float offset_y = 0.0f;  ///< Visual offset from transform position (Y)
     int z_index = 0;
     float opacity = 1.0f;
     Engine::Graphics::Color fill_color =
@@ -33,6 +35,8 @@ struct RectangleDrawable {
     explicit RectangleDrawable(float w = 64.0f, float h = 64.0f, int z = 0)
         : width(w),
           height(h),
+          offset_x(0.0f),
+          offset_y(0.0f),
           z_index(z),
           opacity(1.0f),
           fill_color(200, 50, 50, 255),
@@ -44,9 +48,12 @@ struct RectangleDrawable {
     RectangleDrawable(float w, float h, Engine::Graphics::Color fill,
         Engine::Graphics::Color outline = Engine::Graphics::Color(
             255, 100, 100, 255),
-        float outline_thick = 2.0f, int z = 0)
+        float outline_thick = 2.0f, int z = 0, float off_x = 0.0f,
+        float off_y = 0.0f)
         : width(w),
           height(h),
+          offset_x(off_x),
+          offset_y(off_y),
           z_index(z),
           opacity(1.0f),
           fill_color(fill),
@@ -80,11 +87,12 @@ struct Drawable {
         const std::string &spritePath, int z_index = 0, float opacity = 1.0f)
         : spritePath("assets/images/" + spritePath),
           z_index(z_index),
-          texture(),
           opacity(opacity),
-          sprite(texture),
-          isLoaded(false),
-          color(Engine::Graphics::Color::White) {}
+          rotation(0.0f),
+          color(Engine::Graphics::Color::White),
+          sprite(),
+          texture(),
+          isLoaded(false) {}
 
     // Non-copyable to avoid accidental sprite/texture pointer mismatches
     Drawable(Drawable const &) = delete;
@@ -96,17 +104,21 @@ struct Drawable {
         : spritePath(std::move(other.spritePath)),
           z_index(other.z_index),
           opacity(other.opacity),
-          texture(std::move(other.texture)),
+          rotation(other.rotation),
+          color(other.color),
           sprite(),
+          texture(std::move(other.texture)),
           isLoaded(other.isLoaded) {
-        // Rebind sprite to the moved texture and copy visual state
-        sprite.setTexture(texture, true);
-        sprite.setTextureRect(other.sprite.getTextureRect());
-        sprite.setScale(other.sprite.getScale());
-        sprite.setOrigin(other.sprite.getOrigin());
-        sprite.setPosition(other.sprite.getPosition());
-        sprite.setRotation(other.sprite.getRotation());
-        sprite.setColor(other.sprite.getColor());
+        // Only rebind sprite if texture was loaded
+        if (isLoaded) {
+            sprite.setTexture(texture, true);
+            sprite.setTextureRect(other.sprite.getTextureRect());
+            sprite.setScale(other.sprite.getScale());
+            sprite.setOrigin(other.sprite.getOrigin());
+            sprite.setPosition(other.sprite.getPosition());
+            sprite.setRotation(other.sprite.getRotation());
+            sprite.setColor(other.sprite.getColor());
+        }
     }
 
     // Move assignment: similar to move ctor
@@ -116,17 +128,22 @@ struct Drawable {
         spritePath = std::move(other.spritePath);
         z_index = other.z_index;
         opacity = other.opacity;
+        rotation = other.rotation;
+        color = other.color;
         texture = std::move(other.texture);
         isLoaded = other.isLoaded;
 
         sprite = sf::Sprite();
-        sprite.setTexture(texture, true);
-        sprite.setTextureRect(other.sprite.getTextureRect());
-        sprite.setScale(other.sprite.getScale());
-        sprite.setOrigin(other.sprite.getOrigin());
-        sprite.setPosition(other.sprite.getPosition());
-        sprite.setRotation(other.sprite.getRotation());
-        sprite.setColor(other.sprite.getColor());
+        // Only rebind sprite if texture was loaded
+        if (isLoaded) {
+            sprite.setTexture(texture, true);
+            sprite.setTextureRect(other.sprite.getTextureRect());
+            sprite.setScale(other.sprite.getScale());
+            sprite.setOrigin(other.sprite.getOrigin());
+            sprite.setPosition(other.sprite.getPosition());
+            sprite.setRotation(other.sprite.getRotation());
+            sprite.setColor(other.sprite.getColor());
+        }
 
         return *this;
     }

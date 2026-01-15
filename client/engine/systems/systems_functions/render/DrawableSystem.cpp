@@ -441,6 +441,9 @@ void DrawableSystem(Eng::registry &reg, GameWorld &game_world,
             sf::Vector2f world_position =
                 ToSFML(CalculateWorldPositionWithHierarchy(
                     transform.value(), transforms));
+            // Apply visual offset
+            world_position.x += rect_drawable->offset_x;
+            world_position.y += rect_drawable->offset_y;
             rect_drawable->shape->setPosition(world_position);
 
             // Apply scale

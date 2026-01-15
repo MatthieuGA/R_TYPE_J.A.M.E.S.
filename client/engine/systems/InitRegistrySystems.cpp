@@ -143,14 +143,18 @@ void InitMovementSystem(Rtype::Client::GameWorld &game_world) {
         });
 
     // Collision detection system
+    // Note: Only resolves collisions for controllable (local) entities
+    // to maintain server authority over non-local entity positions
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
-        Eng::sparse_array<Com::HitBox>, Eng::sparse_array<Com::Solid>>(
+        Eng::sparse_array<Com::HitBox>, Eng::sparse_array<Com::Solid>,
+        Eng::sparse_array<Com::Controllable>>(
         [&game_world](Eng::registry &r,
             Eng::sparse_array<Com::Transform> &transforms,
             Eng::sparse_array<Com::HitBox> const &hitbox,
-            Eng::sparse_array<Com::Solid> const &solids) {
+            Eng::sparse_array<Com::Solid> const &solids,
+            Eng::sparse_array<Com::Controllable> const &controllables) {
             CollisionDetectionSystem(
-                r, game_world, transforms, hitbox, solids);
+                r, game_world, transforms, hitbox, solids, controllables);
         });
 }
 

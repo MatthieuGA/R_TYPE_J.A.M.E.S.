@@ -71,7 +71,8 @@ void PlayfieldLimitSystem(Eng::registry &reg, const GameWorld &game_world,
 void CollisionDetectionSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> &transforms,
     Eng::sparse_array<Com::HitBox> const &hit_boxes,
-    Eng::sparse_array<Com::Solid> const &solids);
+    Eng::sparse_array<Com::Solid> const &solids,
+    Eng::sparse_array<Com::Controllable> const &controllables);
 
 void ControllablePlayerSystem(Eng::registry &reg,
     Eng::sparse_array<Com::Inputs> &inputs,

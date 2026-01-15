@@ -186,6 +186,7 @@ TEST(Systems, CollisionDetectionPublishesAndResolves) {
     Eng::sparse_array<Com::Transform> transforms;
     Eng::sparse_array<Com::HitBox> hitboxes;
     Eng::sparse_array<Com::Solid> solids;
+    Eng::sparse_array<Com::Controllable> controllables;
 
     // Two entities that overlap on X axis
     transforms.insert_at(0, Com::Transform{0.0f, 0.0f, 0.0f, 1.0f});
@@ -197,6 +198,10 @@ TEST(Systems, CollisionDetectionPublishesAndResolves) {
     solids.insert_at(0, Com::Solid{true, false});
     solids.insert_at(1, Com::Solid{true, false});
 
+    // Mark entity 0 as controllable (local player) so collision resolution
+    // is applied
+    controllables.insert_at(0, Com::Controllable{true});
+
     bool published = false;
     size_t a = SIZE_MAX, b = SIZE_MAX;
     gw.event_bus_.Subscribe<::CollisionEvent>(
@@ -206,7 +211,8 @@ TEST(Systems, CollisionDetectionPublishesAndResolves) {
             b = e.entity_b_;
         });
 
-    CollisionDetectionSystem(reg, gw, transforms, hitboxes, solids);
+    CollisionDetectionSystem(
+        reg, gw, transforms, hitboxes, solids, controllables);
 
     EXPECT_TRUE(published);
     EXPECT_EQ(a, 0u);

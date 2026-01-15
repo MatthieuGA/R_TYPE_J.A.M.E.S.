@@ -211,11 +211,18 @@ static void CreateObstacleEntity(GameWorld &game_world,
     int16_t decoded_vx = static_cast<int16_t>(entity_data.velocity_x) - 32768;
     int16_t decoded_vy = static_cast<int16_t>(entity_data.velocity_y) - 32768;
 
-    // Obstacle size - using a reasonable default since size isn't in packet
-    // Server can spawn 48x48, 64x64, or 128x128 obstacles
-    // Using 48x48 as default for better visual balance with player
-    constexpr float kObstacleWidth = 48.0f;
-    constexpr float kObstacleHeight = 48.0f;
+    // Obstacle size - must match server default (32x32)
+    // Server's WorldGenConfigLoader defaults to 32x32 when not specified in WGF
+    // This ensures collision detection works consistently
+    constexpr float kObstacleWidth = 32.0f;
+    constexpr float kObstacleHeight = 32.0f;
+
+    // Visual offset to align the debug rectangle with the collision hitbox
+    // The player sprite (34x18 @ 4x scale) has its visual center slightly
+    // offset from its hitbox center (30x10 @ 4x scale), so we add a small
+    // offset to the obstacle visual to match better
+    constexpr float kVisualOffsetX = 0.0f;
+    constexpr float kVisualOffsetY = 0.0f;
 
     // Add Transform component
     // Scale 1.0 - hitbox will define the collision size
@@ -232,7 +239,9 @@ static void CreateObstacleEntity(GameWorld &game_world,
             Engine::Graphics::Color(180, 40, 40, 255),  // Dark red fill
             Engine::Graphics::Color(255, 80, 80, 255),  // Lighter red outline
             2.0f,                                       // Outline thickness
-            LAYER_ACTORS - 1  // z_index (behind players)
+            LAYER_ACTORS - 1,                           // z_index (behind players)
+            kVisualOffsetX,                             // Visual X offset
+            kVisualOffsetY                              // Visual Y offset
         });
 
     // Add Velocity for interpolation
