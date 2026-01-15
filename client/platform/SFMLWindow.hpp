@@ -43,6 +43,9 @@ class SFMLWindow : public Engine::Graphics::IWindow {
     Engine::Graphics::Vector2i GetSize() const override;
     void SetTitle(const std::string &title) override;
     void Display() override;
+    bool HasFocus() const override;
+    Engine::Graphics::Vector2f MapPixelToCoords(
+        const Engine::Graphics::Vector2i &pixel) const override;
 
     /**
      * @brief Get access to the underlying SFML window.
