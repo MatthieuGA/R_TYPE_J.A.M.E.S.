@@ -30,7 +30,8 @@ void DraggableSystem(Eng::registry &reg, GameWorld &game_world,
     // Get mouse position and map to world coordinates
     Engine::Input::MousePosition mouse_screen_pos =
         game_world.input_manager_->GetMousePosition();
-    Engine::Graphics::Vector2i pixel_pos(mouse_screen_pos.x, mouse_screen_pos.y);
+    Engine::Graphics::Vector2i pixel_pos(mouse_screen_pos.x,
+        mouse_screen_pos.y);
     Engine::Graphics::Vector2f mousePos =
         game_world.window_->MapPixelToCoords(pixel_pos);
 
