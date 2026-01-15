@@ -173,7 +173,7 @@ void drawEmitter(Com::ParticleEmitter &emitter, GameWorld &game_world) {
         emitter.vertices.append(v4);
     }
 
-    game_world.window_.draw(emitter.vertices);
+    game_world.GetNativeWindow().draw(emitter.vertices);
 }
 
 /**
@@ -232,10 +232,10 @@ void DrawSprite(GameWorld &game_world, sf::Sprite &sprite,
         ((*shaderCompOpt)->shader)
             ->setUniform("time",
                 game_world.total_time_clock_.GetElapsedTime().AsSeconds());
-        game_world.window_.draw(
+        game_world.GetNativeWindow().draw(
             sprite, sf::RenderStates((*shaderCompOpt)->shader.get()));
     } else {
-        game_world.window_.draw(sprite);
+        game_world.GetNativeWindow().draw(sprite);
     }
 }
 
@@ -460,7 +460,7 @@ void DrawableSystem(Eng::registry &reg, GameWorld &game_world,
             outline.a = static_cast<uint8_t>(rect_drawable->opacity * 255);
             rect_drawable->shape->setOutlineColor(outline);
 
-            game_world.window_.draw(*rect_drawable->shape);
+            game_world.GetNativeWindow().draw(*rect_drawable->shape);
         } else {
             RenderOneEntity(transforms, drawables, shaders, animated_sprites,
                 game_world, item.index);

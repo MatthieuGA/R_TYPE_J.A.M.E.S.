@@ -154,12 +154,12 @@ bool ClientApplication::ConnectToServerWithRetry(
 }
 
 void ClientApplication::RunGameLoop(GameWorld &game_world) {
-    while (game_world.window_.isOpen()) {
+    while (game_world.window_->IsOpen()) {
         // Handle window events via platform event source
         Engine::Platform::OSEvent os_event;
         while (game_world.event_source_->Poll(os_event)) {
             if (os_event.type == Engine::Platform::OSEventType::Closed) {
-                game_world.window_.close();
+                game_world.window_->Close();
             }
         }
 
@@ -172,7 +172,7 @@ void ClientApplication::RunGameLoop(GameWorld &game_world) {
             std::cerr << "[Client] Lost connection to server!" << std::endl;
             std::cerr << "[Client] The server may have shut down."
                       << std::endl;
-            game_world.window_.close();
+            game_world.window_->Close();
             break;
         }
 
@@ -216,9 +216,9 @@ void ClientApplication::RunGameLoop(GameWorld &game_world) {
         game_world.window_.setActive(true);
 
         // Clear, update, and render
-        game_world.window_.clear(sf::Color::Black);
+        game_world.GetNativeWindow().clear(sf::Color::Black);
         game_world.registry_.RunSystems();
-        game_world.window_.display();
+        game_world.window_->Display();
     }
 }
 
