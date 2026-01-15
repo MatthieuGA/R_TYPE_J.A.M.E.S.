@@ -6,7 +6,6 @@
  * window, renders a deterministic test scene to an offscreen buffer, and saves
  * it as PNG.
  *
- * SCOPE: Phase E - Integration testing (test-only helper)
  */
 
 #ifndef TESTS_INTEGRATION_HEADLESSTESTRENDERER_HPP_

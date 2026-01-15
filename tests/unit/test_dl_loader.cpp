@@ -8,7 +8,6 @@
  * crash
  * - Successfully loading a valid plugin registers it in the factory
  *
- * SCOPE: Phase E - Plugin loader unit tests
  */
 
 #include <gtest/gtest.h>

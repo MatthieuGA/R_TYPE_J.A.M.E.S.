@@ -7,7 +7,6 @@
  * graphics_backend_name_v1). Used to test that the plugin loader correctly
  * detects and reports missing symbols.
  *
- * SCOPE: Phase E - Plugin loader unit tests (test helper only)
  */
 
 // Deliberately exports nothing that the plugin loader expects.

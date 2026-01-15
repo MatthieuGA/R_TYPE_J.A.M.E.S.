@@ -8,7 +8,6 @@
  * 3. Fallback to default with warning if plugin load fails
  * 4. Fatal error if no backend available
  *
- * SCOPE: Phase D - Host integration and configuration
  */
 
 #ifndef CLIENT_GRAPHICS_BACKENDRESOLVER_HPP_

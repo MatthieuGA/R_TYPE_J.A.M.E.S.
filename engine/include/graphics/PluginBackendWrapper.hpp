@@ -8,7 +8,7 @@
  * std::function<std::unique_ptr<IRenderContext>>. These patterns are
  * incompatible without this adapter.
  *
- * SOLUTION (Option A): PluginBackendWrapper inherits from IRenderContext,
+ * SOLUTION : PluginBackendWrapper inherits from IRenderContext,
  * forwards all virtual methods to the plugin's IRenderContext*, and calls
  * destroy_graphics_backend_v1() in its destructor. This allows the wrapper
  * to be managed with std::unique_ptr using the default deleter (calls delete),
