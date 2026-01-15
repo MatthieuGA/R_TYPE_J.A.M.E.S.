@@ -24,6 +24,7 @@
 namespace sf {
 class Texture;
 class Font;
+class Shader;
 }  // namespace sf
 
 namespace Rtype::Client::Graphics {
@@ -50,7 +51,7 @@ class SFMLRenderContext : public Engine::Graphics::IRenderContext {
 
     // IRenderContext interface implementation
     void DrawSprite(const Engine::Graphics::DrawableSprite &sprite,
-        void *shader_ptr = nullptr) override;
+        const Engine::Graphics::DrawableShader *shader = nullptr) override;
 
     void DrawText(const Engine::Graphics::DrawableText &text) override;
 
@@ -59,6 +60,36 @@ class SFMLRenderContext : public Engine::Graphics::IRenderContext {
 
     void DrawVertexArray(
         const Engine::Graphics::VertexArray &vertices) override;
+
+    /**
+     * @brief Get the size of a texture.
+     *
+     * @param path Path to texture file
+     * @return Size as Vector2f, or (0,0) if texture not found
+     */
+    Engine::Graphics::Vector2f GetTextureSize(const char *path) override;
+
+    /**
+     * @brief Get the bounding box size of rendered text.
+     *
+     * @param font_path Path to font file
+     * @param text Text string
+     * @param size Character size (in pixels)
+     * @return Size as Vector2f, or (0,0) if font not found
+     */
+    Engine::Graphics::Vector2f GetTextBounds(
+        const char *font_path, const char *text, unsigned int size) override;
+
+    /**
+     * @brief Get the frame size for an animated grid-based sprite.
+     *
+     * @param texture_path Path to texture file
+     * @param grid_cols Number of columns in the sprite grid
+     * @param frame_width Width of each frame in pixels
+     * @return Frame size as Vector2i {frame_width, calculated_frame_height}
+     */
+    Engine::Graphics::Vector2i GetGridFrameSize(
+        const char *texture_path, int grid_cols, int frame_width) override;
 
  private:
     /**
@@ -85,6 +116,10 @@ class SFMLRenderContext : public Engine::Graphics::IRenderContext {
      */
     sf::Color ToSFMLColor(const Engine::Graphics::Color &color);
 
+    /// Get or load a shader from cache.
+    sf::Shader *GetOrLoadShader(
+        const Engine::Graphics::DrawableShader &shader);
+
     /// Reference to SFML window
     sf::RenderWindow &window_;
 
@@ -94,6 +129,9 @@ class SFMLRenderContext : public Engine::Graphics::IRenderContext {
 
     /// Font cache (path -> font)
     std::unordered_map<std::string, std::shared_ptr<sf::Font>> font_cache_;
+
+    /// Shader cache (path -> shader)
+    std::unordered_map<std::string, std::shared_ptr<sf::Shader>> shader_cache_;
 };
 
 }  // namespace Rtype::Client::Graphics

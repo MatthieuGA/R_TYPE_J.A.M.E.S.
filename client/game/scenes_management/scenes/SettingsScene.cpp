@@ -60,7 +60,8 @@ void SettingsScene::InitUI(Engine::registry &reg, GameWorld &gameWorld) {
                           Component::Transform::CENTER});
     reg.AddComponent<Component::Text>(
         title_entity, Component::Text("dogica.ttf", "Settings", 20,
-                          LAYER_UI + 2, WHITE_BLUE, sf::Vector2f(0.0f, 0.0f)));
+                          LAYER_UI + 2, WHITE_BLUE,
+                          Engine::Graphics::Vector2f(0.0f, 0.0f)));
     title_entity_ = title_entity;
 
     // --- Music Volume Label ---
@@ -70,7 +71,7 @@ void SettingsScene::InitUI(Engine::registry &reg, GameWorld &gameWorld) {
                                 Component::Transform::RIGHT_CENTER});
     reg.AddComponent<Component::Text>(music_label_entity,
         Component::Text("dogica.ttf", "Music:", 14, LAYER_UI + 2, WHITE_BLUE,
-            sf::Vector2f(0.0f, 0.0f)));
+            Engine::Graphics::Vector2f(0.0f, 0.0f)));
 
     // --- Music Volume Slider ---
     CreateSlider(
@@ -91,7 +92,7 @@ void SettingsScene::InitUI(Engine::registry &reg, GameWorld &gameWorld) {
                               Component::Transform::RIGHT_CENTER});
     reg.AddComponent<Component::Text>(sfx_label_entity,
         Component::Text("dogica.ttf", "SFX:", 14, LAYER_UI + 2, WHITE_BLUE,
-            sf::Vector2f(0.0f, 0.0f)));
+            Engine::Graphics::Vector2f(0.0f, 0.0f)));
 
     // --- SFX Volume Slider ---
     CreateSlider(

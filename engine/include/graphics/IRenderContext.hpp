@@ -14,6 +14,8 @@
 #ifndef ENGINE_INCLUDE_GRAPHICS_IRENDERCONTEXT_HPP_
 #define ENGINE_INCLUDE_GRAPHICS_IRENDERCONTEXT_HPP_
 
+#include <vector>
+
 #include "graphics/Types.hpp"
 
 namespace Engine {
@@ -36,6 +38,33 @@ struct DrawableSprite {
     float rotation_degrees;
     /// Color tint with alpha
     Color color;
+    /// Source rectangle for texture cropping (animation frames, etc.)
+    /// {0, 0, 0, 0} means use full texture; otherwise crop to this rect
+    IntRect source_rect;
+    /// Origin point for sprite (local coordinates where sprite pivots)
+    /// Used for centering and rotation
+    Vector2f origin;
+};
+
+/**
+ * @brief Shader data passed to the render backend.
+ *
+ * Contains the shader path and a list of float uniforms to apply
+ * before drawing. The backend is responsible for loading/caching
+ * the shader implementation and setting these uniforms.
+ */
+struct DrawableShader {
+    struct Uniform {
+        const char *name;
+        float value;
+    };
+
+    /// Path to shader file (backend-resolvable, typically prefixed)
+    const char *shader_path;
+    /// Float uniforms to apply (re-applied each draw)
+    std::vector<Uniform> float_uniforms;
+    /// Time in seconds for animated shaders (e.g., sine/cos effects)
+    float time_seconds = 0.0f;
 };
 
 /**
@@ -54,6 +83,12 @@ struct DrawableText {
     Vector2f position;
     /// Color with alpha
     Color color;
+    /// Scale factors (1.0 = original size)
+    /// SFML text scaling; default is {1.0, 1.0}
+    Vector2f scale;
+    /// Origin point for text (local coordinates where text pivots)
+    /// Used for centering and rotation
+    Vector2f origin;
 };
 
 /**
@@ -90,11 +125,11 @@ struct VertexArray {
     enum PrimitiveType {
         Points = 0,
         Lines = 1,
-        LineStrip = 3,
-        Triangles = 4,
-        TriangleStrip = 5,
-        TriangleFan = 6,
-        Quads = 7
+        LineStrip = 2,
+        Triangles = 3,
+        TriangleStrip = 4,
+        TriangleFan = 5,
+        Quads = 6
     };
 
     /// Array of vertices
@@ -124,8 +159,8 @@ class IRenderContext {
      * @param sprite Sprite data to draw
      * @param shader_ptr Optional shader (backend-specific, can be nullptr)
      */
-    virtual void DrawSprite(
-        const DrawableSprite &sprite, void *shader_ptr = nullptr) = 0;
+    virtual void DrawSprite(const DrawableSprite &sprite,
+        const DrawableShader *shader = nullptr) = 0;
 
     /**
      * @brief Draw text.
@@ -147,6 +182,47 @@ class IRenderContext {
      * @param vertices Vertex array data
      */
     virtual void DrawVertexArray(const VertexArray &vertices) = 0;
+
+    /**
+     * @brief Query texture dimensions.
+     *
+     * Used by systems to determine sprite bounds for origin calculation
+     * and animation frame setup. Backend is responsible for caching
+     * textures and returning their dimensions.
+     *
+     * @param texture_path Path to texture file
+     * @return Texture dimensions {width, height} in pixels, or {0, 0} if not
+     * found
+     */
+    virtual Vector2f GetTextureSize(const char *texture_path) = 0;
+
+    /**
+     * @brief Query text bounds.
+     *
+     * Used by text rendering systems to calculate proper text centering
+     * and layout. Returns the bounding box of rendered text.
+     *
+     * @param font_path Path to font file
+     * @param text Text string to measure
+     * @param character_size Font size in pixels
+     * @return Bounding box {x, y, width, height} of the text
+     */
+    virtual Vector2f GetTextBounds(const char *font_path, const char *text,
+        unsigned int character_size) = 0;
+
+    /**
+     * @brief Query grid frame size for animation systems.
+     *
+     * For grid-based sprite sheets, calculates the dimensions of a single
+     * frame given the grid layout.
+     *
+     * @param texture_path Path to texture file
+     * @param grid_cols Number of columns in the grid
+     * @param frame_width Width of one frame in pixels
+     * @return Frame dimensions {width, height} in pixels
+     */
+    virtual Vector2i GetGridFrameSize(
+        const char *texture_path, int grid_cols, int frame_width) = 0;
 };
 
 }  // namespace Graphics
