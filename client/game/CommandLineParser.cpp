@@ -19,18 +19,23 @@ void CommandLineParser::PrintUsageAndExit(
         std::cerr << "Error: " << error_message << "\n\n";
     }
     std::cerr << "Usage: " << program_name
-              << " <USERNAME> [IP] [TCP-PORT] [-up/--udp-port UDP-PORT]\n"
+              << " <IP> <TCP-PORT> <USERNAME> [-up/--udp-port UDP-PORT] "
+                 "[--graphics-backend=<NAME>]\n"
               << "\n"
               << "Positional arguments:\n"
-              << "  USERNAME     Player username (max 32 characters)\n"
               << "  IP           Server IP address (default: 127.0.0.1, solo "
                  "mode)\n"
               << "  TCP-PORT     TCP port number (1-65535, default: 50000)\n"
+              << "  USERNAME     Player username (max 32 characters)\n"
               << "\n"
               << "Optional arguments:\n"
               << "  -up, --udp-port UDP-PORT\n"
               << "               UDP port number (1-65535).\n"
               << "               Defaults to TCP-PORT if not specified.\n"
+              << "  --graphics-backend=<NAME>\n"
+              << "               Graphics backend name (e.g., \"sfml\", "
+                 "\"opengl\").\n"
+              << "               Defaults to \"sfml\" if not specified.\n"
               << "\n"
               << "Modes:\n"
               << "  Solo mode:   Only USERNAME provided. Spawns a local "
@@ -43,7 +48,7 @@ void CommandLineParser::PrintUsageAndExit(
               << "  " << program_name << " Player1 192.168.1.100\n"
               << "  " << program_name << " Player1 192.168.1.100 50000\n"
               << "  " << program_name
-              << " Player1 192.168.1.100 50000 --udp-port 50001\n";
+              << " 192.168.1.100 50000 Player1 --graphics-backend=sfml\n";
     std::exit(error_message ? EXIT_FAILURE : EXIT_SUCCESS);
 }
 
@@ -143,13 +148,27 @@ ClientConfig CommandLineParser::Parse(int argc, char *argv[]) {
 
     // Default UDP port to TCP port
     config.udp_port = config.tcp_port;
+    config.graphics_backend = "";  // Empty string means use default "sfml"
 
-    // Parse optional UDP port flag
+    // Parse optional flags
     for (const auto &[_, value_index] : flags) {
         try {
             config.udp_port = ParsePort(argv[value_index], "UDP-PORT");
         } catch (const std::exception &e) {
             PrintUsageAndExit(argv[0], e.what());
+        }
+    }
+
+    // Parse optional graphics backend flag
+    for (int i = 1; i < argc; ++i) {
+        std::string arg = argv[i];
+        if (arg.substr(0, 19) == "--graphics-backend=") {
+            // Parse --graphics-backend=<name>
+            config.graphics_backend = arg.substr(19);
+            if (config.graphics_backend.empty()) {
+                PrintUsageAndExit(argv[0],
+                    "--graphics-backend requires a non-empty backend name");
+            }
         }
     }
 
