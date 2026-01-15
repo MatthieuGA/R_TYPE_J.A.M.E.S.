@@ -143,8 +143,8 @@ void CreateDaemonProjectile(Engine::registry &reg,
                         "ennemies/Daemon/Projectile.png", LAYER_PROJECTILE));
     reg.AddComponent<Component::Projectile>(new_entity,
         Component::Projectile{static_cast<int>(MERMAID_PROJECTILE_DAMAGE),
-            Engine::Graphics::Vector2f(decoded_vx, decoded_vy), MERMAID_PROJECTILE_SPEED, -1,
-            true});
+            Engine::Graphics::Vector2f(decoded_vx, decoded_vy),
+            MERMAID_PROJECTILE_SPEED, -1, true});
     reg.AddComponent<Component::HitBox>(
         new_entity, Component::HitBox{8.0f, 8.0f});
     reg.AddComponent<Component::Velocity>(
@@ -152,8 +152,9 @@ void CreateDaemonProjectile(Engine::registry &reg,
                         static_cast<float>(decoded_vy)});
     reg.AddComponent<Component::ParticleEmitter>(new_entity,
         Component::ParticleEmitter(50, 50, ORANGE_HIT, ORANGE_HIT,
-            Engine::Graphics::Vector2f(0.f, 0.f), true, 0.3f, 4.f, Engine::Graphics::Vector2f(-1.f, 0.f),
-            45.f, 0, 8, 3.0f, 2.0f, -1.0f, LAYER_PARTICLE));
+            Engine::Graphics::Vector2f(0.f, 0.f), true, 0.3f, 4.f,
+            Engine::Graphics::Vector2f(-1.f, 0.f), 45.f, 0, 8, 3.0f,
+            2.0f, -1.0f, LAYER_PARTICLE));
 }
 
 static void CreateProjectileEntity(GameWorld &game_world,
@@ -195,7 +196,7 @@ static void CreateProjectileEntity(GameWorld &game_world,
     }
 }
 
-// TODO: Re-implement obstacle rendering with new component structure
+// TODO(copilot): Re-implement obstacle rendering with new component
 // The RectangleDrawable component was removed in the decoupling refactor
 // This function needs to be adapted to use the Drawable component instead
 /*
@@ -264,9 +265,10 @@ void ClientApplication::CreateNewEntity(GameWorld &game_world, uint32_t tick,
         CreateProjectileEntity(game_world, new_entity, entity_data);
     } else if (entity_data.entity_type ==
                ClientApplication::ParsedEntity::kObstacleEntity) {
-        // TODO: Implement obstacle rendering with decoupled component structure
-        // Previously used RectangleDrawable which was removed in component refactor
-        // Obstacles need to be re-implemented using the Drawable component
+        // TODO(copilot): Implement obstacle rendering with decoupled
+        // component structure. Previously used RectangleDrawable which
+        // was removed in component refactor. Obstacles need to be
+        // re-implemented using the Drawable component.
         // CreateObstacleEntity(game_world, new_entity, entity_data);
         return;
     } else {

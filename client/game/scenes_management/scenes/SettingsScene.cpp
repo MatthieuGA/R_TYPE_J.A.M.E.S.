@@ -60,7 +60,8 @@ void SettingsScene::InitUI(Engine::registry &reg, GameWorld &gameWorld) {
                           Component::Transform::CENTER});
     reg.AddComponent<Component::Text>(
         title_entity, Component::Text("dogica.ttf", "Settings", 20,
-                          LAYER_UI + 2, WHITE_BLUE, Engine::Graphics::Vector2f(0.0f, 0.0f)));
+                          LAYER_UI + 2, WHITE_BLUE,
+                          Engine::Graphics::Vector2f(0.0f, 0.0f)));
     title_entity_ = title_entity;
 
     // --- Music Volume Label ---

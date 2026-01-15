@@ -26,7 +26,8 @@ void FactoryActors::CreateDaemonActor(
     reg.AddComponent<Component::PatternMovement>(
         entity, Component::PatternMovement(
                     Component::PatternMovement::PatternType::SineHorizontal,
-                    Engine::Graphics::Vector2f(0.f, 50.f), Engine::Graphics::Vector2f(0.f, 1.f),
+                    Engine::Graphics::Vector2f(0.f, 50.f),
+                    Engine::Graphics::Vector2f(0.f, 1.f),
                     Engine::Graphics::Vector2f(0.f, 0.f), info.speed));
 
     // Add enemy shooting component
