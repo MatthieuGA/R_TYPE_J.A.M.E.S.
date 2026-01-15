@@ -5,7 +5,6 @@
  * This test renders a deterministic scene and compares it pixel-by-pixel
  * to a known-good baseline image. Used to catch rendering regressions.
  *
- * SCOPE: Phase E - Regression testing
  */
 
 #include <gtest/gtest.h>

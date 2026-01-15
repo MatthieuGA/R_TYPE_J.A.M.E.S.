@@ -7,7 +7,6 @@
  * - Backend registration works
  * - Rendering produces output without crashing
  *
- * SCOPE: Phase E - Integration testing
  */
 
 #include <gtest/gtest.h>

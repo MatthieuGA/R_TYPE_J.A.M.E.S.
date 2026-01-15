@@ -1,6 +1,6 @@
 /**
  * @file sfml_plugin.cpp
- * @brief Graphics backend plugin implementing the Phase A C ABI.
+ * @brief Graphics backend plugin implementing the C ABI.
  *
  * This plugin wraps the SFMLRenderContext implementation as a standalone
  * shared library, demonstrating the plugin loading architecture.
