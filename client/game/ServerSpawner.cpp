@@ -1,7 +1,6 @@
-#include "game/ServerSpawner.hpp"
-
 #include <chrono>
 #include <csignal>
+#include <cstdio>
 #include <cstdlib>
 #include <filesystem>
 #include <iostream>
@@ -12,6 +11,12 @@
 #include <vector>
 
 #ifdef _WIN32
+// Ensure winsock2 is included before windows.h to avoid winsock.h/winsock2.h
+// redefinition conflicts. Use WIN32_LEAN_AND_MEAN to minimize windows.h
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <windows.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #pragma comment(lib, "ws2_32.lib")
@@ -24,11 +29,13 @@
 #include <unistd.h>
 #endif
 
+#include "game/ServerSpawner.hpp"
+
 namespace Rtype::Client {
 
 // Static member initialization
 #ifdef _WIN32
-HANDLE ServerSpawner::server_process_ = nullptr;
+std::uintptr_t ServerSpawner::server_process_ = 0;
 #else
 pid_t ServerSpawner::server_pid_ = -1;
 #endif
@@ -183,7 +190,8 @@ uint16_t ServerSpawner::SpawnLocalServer() {
             std::to_string(GetLastError()));
     }
 
-    server_process_ = pi.hProcess;
+    // Store handle as an opaque integer in header-visible storage
+    server_process_ = reinterpret_cast<std::uintptr_t>(pi.hProcess);
     CloseHandle(pi.hThread);
 #else
     // Linux/Unix: Use fork + exec
@@ -214,7 +222,7 @@ uint16_t ServerSpawner::SpawnLocalServer() {
 
     std::cout << "[Solo Mode] Server started successfully (PID: "
 #ifdef _WIN32
-              << GetProcessId(server_process_)
+              << GetProcessId(reinterpret_cast<HANDLE>(server_process_))
 #else
               << server_pid_
 #endif
@@ -233,11 +241,12 @@ void ServerSpawner::TerminateServer() {
     std::cout << "[Solo Mode] Shutting down local server..." << std::endl;
 
 #ifdef _WIN32
-    if (server_process_ != nullptr) {
-        TerminateProcess(server_process_, 0);
-        WaitForSingleObject(server_process_, 3000);  // Wait up to 3 seconds
-        CloseHandle(server_process_);
-        server_process_ = nullptr;
+    if (server_process_ != 0) {
+        HANDLE h = reinterpret_cast<HANDLE>(server_process_);
+        TerminateProcess(h, 0);
+        WaitForSingleObject(h, 3000);  // Wait up to 3 seconds
+        CloseHandle(h);
+        server_process_ = 0;
     }
 #else
     if (server_pid_ > 0) {
@@ -276,9 +285,10 @@ bool ServerSpawner::IsServerRunning() {
     }
 
 #ifdef _WIN32
-    if (server_process_ != nullptr) {
+    if (server_process_ != 0) {
+        HANDLE h = reinterpret_cast<HANDLE>(server_process_);
         DWORD exit_code;
-        if (GetExitCodeProcess(server_process_, &exit_code)) {
+        if (GetExitCodeProcess(h, &exit_code)) {
             return exit_code == STILL_ACTIVE;
         }
     }
@@ -314,26 +324,37 @@ namespace {
  * @param signal The received POSIX signal.
  */
 void SignalHandlerCallback(int signal) {
-#ifdef SIGINT
+#ifdef _WIN32
+    // On Windows use C IO to write to stderr (no POSIX write)
+    if (signal == SIGINT) {
+        fputs("\n[Client] Received SIGINT, shutting down...\n", stderr);
+        _Exit(EXIT_SUCCESS);
+    }
+    if (signal == SIGTERM) {
+        fputs("\n[Client] Received SIGTERM, shutting down...\n", stderr);
+        _Exit(EXIT_FAILURE);
+    }
+    fputs(
+        "\n[Client] Received termination signal, shutting down...\n", stderr);
+    _Exit(EXIT_FAILURE);
+#else
     if (signal == SIGINT) {
         static const char kMsgInt[] =
             "\n[Client] Received SIGINT, shutting down...\n";
         ::write(STDERR_FILENO, kMsgInt, sizeof(kMsgInt) - 1);
         ::_Exit(EXIT_SUCCESS);
     }
-#endif
-#ifdef SIGTERM
     if (signal == SIGTERM) {
         static const char kMsgTerm[] =
             "\n[Client] Received SIGTERM, shutting down...\n";
         ::write(STDERR_FILENO, kMsgTerm, sizeof(kMsgTerm) - 1);
         ::_Exit(EXIT_FAILURE);
     }
-#endif
     static const char kMsgOther[] =
         "\n[Client] Received termination signal, shutting down...\n";
     ::write(STDERR_FILENO, kMsgOther, sizeof(kMsgOther) - 1);
     ::_Exit(EXIT_FAILURE);
+#endif
 }
 
 }  // namespace

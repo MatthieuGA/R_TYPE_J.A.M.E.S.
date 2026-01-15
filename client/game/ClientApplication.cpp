@@ -213,7 +213,7 @@ void ClientApplication::RunGameLoop(GameWorld &game_world) {
 
         // Ensure the SFML OpenGL context is active on this thread before
         // running systems that may load textures/shaders.
-        game_world.window_.setActive(true);
+        game_world.GetNativeWindow().setActive(true);
 
         // Clear, update, and render
         game_world.GetNativeWindow().clear(sf::Color::Black);

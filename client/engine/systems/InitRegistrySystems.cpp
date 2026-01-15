@@ -28,7 +28,7 @@ void InitRenderSystems(Rtype::Client::GameWorld &game_world) {
             Eng::registry &r, Eng::sparse_array<Com::Shader> &shaders) {
             // Make sure the SFML window OpenGL context is active on this
             // thread
-            game_world.window_.setActive(true);
+            game_world.GetNativeWindow().setActive(true);
             InitializeShaderSystem(r, shaders);
         });
 

@@ -1,9 +1,11 @@
 #pragma once
-#include <cstdint>
 #include <string>
 
 #ifdef _WIN32
-#include <windows.h>
+// Avoid including heavyweight Windows headers in a public header; use
+// an opaque integer handle type instead. Concrete HANDLE usage is
+// confined to the implementation file.
+#include <cstdint>
 #else
 #include <sys/types.h>
 #endif
@@ -66,7 +68,7 @@ class ServerSpawner {
 
  private:
 #ifdef _WIN32
-    static HANDLE server_process_;
+    static std::uintptr_t server_process_;
 #else
     static pid_t server_pid_;
 #endif
