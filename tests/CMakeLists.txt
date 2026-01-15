@@ -21,6 +21,13 @@ list(REMOVE_ITEM R_TYPE_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/test_packet_se
 # Exclude command-line parser tests (compiled separately without network dependencies)
 list(REMOVE_ITEM R_TYPE_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/test_command_line_parser.cpp")
 
+# Exclude plugin loader tests (compiled separately with plugin-specific dependencies)
+list(REMOVE_ITEM R_TYPE_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/unit/test_dl_loader.cpp")
+
+# Exclude integration tests (compiled separately with test helpers)
+list(REMOVE_ITEM R_TYPE_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/integration/smoke_plugin_load.cpp")
+list(REMOVE_ITEM R_TYPE_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/integration/pixel_compare_test.cpp")
+
 if (R_TYPE_TEST_SOURCES)
     add_executable(engine_tests ${R_TYPE_TEST_SOURCES})
 else()
@@ -179,3 +186,97 @@ target_link_libraries(server_spawner_tests
 
 # Discover ServerSpawner tests for CTest
 gtest_discover_tests(server_spawner_tests)
+
+# ========================================
+# Plugin Loader Tests (Phase E)
+# ========================================
+# Create separate test executable for plugin loader tests
+# These tests load actual shared libraries and verify error handling
+add_executable(plugin_loader_tests
+    unit/test_dl_loader.cpp
+    ${CMAKE_SOURCE_DIR}/client/graphics/GraphicsPluginLoader.cpp
+    ${CMAKE_SOURCE_DIR}/client/graphics/GraphicsBackendFactory.cpp
+    ${CMAKE_SOURCE_DIR}/client/graphics/BackendResolver.cpp
+)
+
+# Include directories for plugin loader tests
+target_include_directories(plugin_loader_tests
+    PRIVATE
+        ${CMAKE_SOURCE_DIR}/client
+        ${CMAKE_SOURCE_DIR}/client/include
+        ${CMAKE_SOURCE_DIR}/client/graphics
+        ${CMAKE_SOURCE_DIR}/engine/include
+        ${CMAKE_SOURCE_DIR}/external
+)
+
+# Link with Google Test and SFML
+target_link_libraries(plugin_loader_tests
+    PRIVATE
+        GTest::gtest_main
+        r-type_engine
+        SFML::Graphics SFML::Window SFML::System
+)
+
+# Discover plugin loader tests for CTest
+gtest_discover_tests(plugin_loader_tests
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+# ========================================
+# Integration Tests (Phase E)
+# ========================================
+# Integration smoke test: verify plugin loads and renders
+add_executable(integration_smoke_test
+    integration/smoke_plugin_load.cpp
+    ${CMAKE_SOURCE_DIR}/client/graphics/GraphicsPluginLoader.cpp
+    ${CMAKE_SOURCE_DIR}/client/graphics/GraphicsBackendFactory.cpp
+)
+
+target_include_directories(integration_smoke_test
+    PRIVATE
+        ${CMAKE_SOURCE_DIR}/client
+        ${CMAKE_SOURCE_DIR}/client/include
+        ${CMAKE_SOURCE_DIR}/client/graphics
+        ${CMAKE_SOURCE_DIR}/engine/include
+        ${CMAKE_SOURCE_DIR}/external
+        ${CMAKE_CURRENT_SOURCE_DIR}/integration
+)
+
+target_link_libraries(integration_smoke_test
+    PRIVATE
+        GTest::gtest_main
+        r-type_engine
+        SFML::Graphics SFML::Window SFML::System
+)
+
+gtest_discover_tests(integration_smoke_test
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+# Pixel comparison test: verify rendering output matches baseline
+add_executable(pixel_compare_test
+    integration/pixel_compare_test.cpp
+    ${CMAKE_SOURCE_DIR}/client/graphics/GraphicsPluginLoader.cpp
+    ${CMAKE_SOURCE_DIR}/client/graphics/GraphicsBackendFactory.cpp
+)
+
+target_include_directories(pixel_compare_test
+    PRIVATE
+        ${CMAKE_SOURCE_DIR}/client
+        ${CMAKE_SOURCE_DIR}/client/include
+        ${CMAKE_SOURCE_DIR}/client/graphics
+        ${CMAKE_SOURCE_DIR}/engine/include
+        ${CMAKE_SOURCE_DIR}/external
+        ${CMAKE_CURRENT_SOURCE_DIR}/integration
+)
+
+target_link_libraries(pixel_compare_test
+    PRIVATE
+        GTest::gtest_main
+        r-type_engine
+        SFML::Graphics SFML::Window SFML::System
+)
+
+gtest_discover_tests(pixel_compare_test
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
