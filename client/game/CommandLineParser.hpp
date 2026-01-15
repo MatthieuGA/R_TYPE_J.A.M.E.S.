@@ -13,6 +13,8 @@ struct ClientConfig {
     uint16_t udp_port;
     std::string username;
     bool solo_mode;  ///< True if client should spawn its own local server
+    std::string graphics_backend;  // Graphics backend name (e.g., "sfml")
+                                   // Empty string means use default
 };
 
 /**
@@ -25,6 +27,13 @@ class CommandLineParser {
      *
      * Parses arguments with the following syntax:
      * <IP> <TCP-PORT> <USERNAME> [-up/--udp-port UDP-PORT]
+     * [--graphics-backend=<NAME>]
+     *
+     * Optional flags:
+     *   -up, --udp-port <PORT>     Specify UDP port (default from config or
+     * command)
+     *   --graphics-backend=<NAME>  Specify graphics backend name (e.g.,
+     * "sfml")
      *
      * @param argc Argument count
      * @param argv Argument values
