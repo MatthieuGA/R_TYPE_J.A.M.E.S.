@@ -37,6 +37,17 @@ void SFMLWindow::Display() {
     window_.display();
 }
 
+bool SFMLWindow::HasFocus() const {
+    return window_.hasFocus();
+}
+
+Engine::Graphics::Vector2f SFMLWindow::MapPixelToCoords(
+    const Engine::Graphics::Vector2i &pixel) const {
+    sf::Vector2i sf_pixel(pixel.x, pixel.y);
+    sf::Vector2f sf_coords = window_.mapPixelToCoords(sf_pixel);
+    return Engine::Graphics::Vector2f(sf_coords.x, sf_coords.y);
+}
+
 sf::RenderWindow &SFMLWindow::GetNativeWindow() {
     return window_;
 }

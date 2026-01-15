@@ -56,6 +56,23 @@ class IWindow {
      * Presents the rendered frame to the screen.
      */
     virtual void Display() = 0;
+
+    /**
+     * @brief Check if the window currently has input focus.
+     * @return true if the window has focus, false otherwise
+     */
+    virtual bool HasFocus() const = 0;
+
+    /**
+     * @brief Convert pixel coordinates to world/view coordinates.
+     *
+     * This is useful for mapping mouse positions from screen space
+     * to game world space, accounting for camera transforms.
+     *
+     * @param pixel Pixel coordinates (screen space)
+     * @return World coordinates (view space)
+     */
+    virtual Vector2f MapPixelToCoords(const Vector2i &pixel) const = 0;
 };
 
 }  // namespace Engine::Graphics
