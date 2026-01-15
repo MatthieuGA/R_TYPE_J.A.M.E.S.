@@ -239,7 +239,7 @@ target_include_directories(integration_smoke_test
         ${CMAKE_SOURCE_DIR}/client/graphics
         ${CMAKE_SOURCE_DIR}/engine/include
         ${CMAKE_SOURCE_DIR}/external
-        ${CMAKE_CURRENT_SOURCE_DIR}/integration
+        ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 target_link_libraries(integration_smoke_test
@@ -267,7 +267,7 @@ target_include_directories(pixel_compare_test
         ${CMAKE_SOURCE_DIR}/client/graphics
         ${CMAKE_SOURCE_DIR}/engine/include
         ${CMAKE_SOURCE_DIR}/external
-        ${CMAKE_CURRENT_SOURCE_DIR}/integration
+        ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 target_link_libraries(pixel_compare_test
