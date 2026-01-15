@@ -11,13 +11,13 @@ void FactoryActors::CreateDaemonActor(
     Engine::entity &entity, Engine::registry &reg, EnnemyInfo info) {
     // Add drawable and animated sprite components
     Component::AnimatedSprite animated_sprite(
-        64, 64, 0.1f, true, sf::Vector2f(0.0f, 0.0f), 6);
+        64, 64, 0.1f, true, Engine::Graphics::Vector2f(0.0f, 0.0f), 6);
     animated_sprite.AddAnimation("Hit", "ennemies/Daemon/Daemon_Sheet.png", 64,
-        64, 4, 0.1f, false, sf::Vector2f(0.0f, 128.0f));
+        64, 4, 0.1f, false, Engine::Graphics::Vector2f(0.0f, 128.0f));
     animated_sprite.AddAnimation("Death", "ennemies/Daemon/Daemon_Sheet.png",
-        64, 64, 8, 0.1f, false, sf::Vector2f(0.0f, 192.0f));
+        64, 64, 8, 0.1f, false, Engine::Graphics::Vector2f(0.0f, 192.0f));
     animated_sprite.AddAnimation("Attack", "ennemies/Daemon/Daemon_Sheet.png",
-        64, 64, 6, 0.1f, false, sf::Vector2f(0.0f, 64.0f));
+        64, 64, 6, 0.1f, false, Engine::Graphics::Vector2f(0.0f, 64.0f));
     animated_sprite.currentAnimation = "Default";
     reg.AddComponent<Component::AnimatedSprite>(
         entity, std::move(animated_sprite));
@@ -26,8 +26,8 @@ void FactoryActors::CreateDaemonActor(
     reg.AddComponent<Component::PatternMovement>(
         entity, Component::PatternMovement(
                     Component::PatternMovement::PatternType::SineHorizontal,
-                    sf::Vector2f(0.f, 50.f), sf::Vector2f(0.f, 1.f),
-                    sf::Vector2f(0.f, 0.f), info.speed));
+                    Engine::Graphics::Vector2f(0.f, 50.f), Engine::Graphics::Vector2f(0.f, 1.f),
+                    Engine::Graphics::Vector2f(0.f, 0.f), info.speed));
 
     // Add enemy shooting component
     Component::EnemyShootTag enemy_shoot_tag(info.speed,
