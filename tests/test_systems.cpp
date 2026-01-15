@@ -140,6 +140,11 @@ TEST(Systems, AnimationSystemAdvancesFrame) {
     Eng::sparse_array<Com::AnimatedSprite> anim_sprites;
     Eng::sparse_array<Com::Drawable> drawables;
 
+    auto window = std::make_unique<Rtype::Client::Platform::SFMLWindow>(
+        10, 10, "anim-test");
+    Rtype::Client::GameWorld game_world(
+        std::move(window), "127.0.0.1", 50000, 50000);
+
     // Create an animated sprite component with multiple frames
     Com::AnimatedSprite anim(16, 16, 0.02f);  // frameW, frameH, frameDuration
     anim.animations["Default"].totalFrames = 4;
@@ -151,10 +156,7 @@ TEST(Systems, AnimationSystemAdvancesFrame) {
 
     // Create a drawable and mark it as loaded so the system advances frames
     drawables.insert_at(0, Com::Drawable("dummy.png"));
-    // Ensure texture has a size so SetFrame won't early-return
-    drawables[0]->texture.create(64, 64);
-    drawables[0]->sprite.setTexture(drawables[0]->texture, true);
-    drawables[0]->isLoaded = true;
+    drawables[0]->is_loaded = true;
 
     // Simulate a delta time that should advance at least one frame
     float delta = 0.05f;  // 50 ms
@@ -167,14 +169,14 @@ TEST(Systems, AnimationSystemAdvancesFrame) {
 
     // First call should advance the current_frame because elapsedTime >=
     // frameDuration
-    AnimationSystem(reg, 0.0f, anim_sprites, drawables);
+    AnimationSystem(reg, game_world, 0.0f, anim_sprites, drawables);
     EXPECT_EQ(anim_sprites[0]->GetCurrentAnimation()->current_frame, 1);
 
     // Second call with zero delta will cause SetFrame to update the drawable
     // rect
-    AnimationSystem(reg, 0.0f, anim_sprites, drawables);
-    sf::IntRect rect = drawables[0]->sprite.getTextureRect();
-    EXPECT_EQ(rect.left, anim_sprites[0]->GetCurrentAnimation()->frameWidth);
+    AnimationSystem(reg, game_world, 0.0f, anim_sprites, drawables);
+    EXPECT_EQ(drawables[0]->current_rect.left,
+        anim_sprites[0]->GetCurrentAnimation()->frameWidth);
 }
 
 TEST(Systems, CollisionDetectionPublishesAndResolves) {

@@ -87,7 +87,7 @@ void MainMenuScene::InitUI(Engine::registry &reg, GameWorld &gameWorld) {
                                  Component::Transform::CENTER});
     reg.AddComponent<Component::Text>(player_count_entity,
         Component::Text("dogica.ttf", "Players: 0/4", 16, LAYER_UI + 2,
-            WHITE_BLUE, sf::Vector2f(0.0f, 0.0f)));
+            WHITE_BLUE, Engine::Graphics::Vector2f(0.0f, 0.0f)));
     reg.AddComponent<Component::LobbyUI>(player_count_entity,
         Component::LobbyUI{Component::LobbyUI::Type::PlayerCount});
     player_count_entity_ = player_count_entity;
@@ -99,7 +99,7 @@ void MainMenuScene::InitUI(Engine::registry &reg, GameWorld &gameWorld) {
                                 Component::Transform::CENTER});
     reg.AddComponent<Component::Text>(ready_count_entity,
         Component::Text("dogica.ttf", "Ready: 0/0", 16, LAYER_UI + 2,
-            WHITE_BLUE, sf::Vector2f(0.0f, 0.0f)));
+            WHITE_BLUE, Engine::Graphics::Vector2f(0.0f, 0.0f)));
     reg.AddComponent<Component::LobbyUI>(ready_count_entity,
         Component::LobbyUI{Component::LobbyUI::Type::ReadyCount});
     ready_count_entity_ = ready_count_entity;

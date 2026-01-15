@@ -22,6 +22,12 @@ void InitRenderSystems(Rtype::Client::GameWorld &game_world) {
         Eng::sparse_array<Com::AnimatedSprite>>(
         InitializeDrawableAnimatedSystem);
 
+    // Initialize static (non-animated) drawables
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
+        Eng::sparse_array<Com::Drawable>,
+        Eng::sparse_array<Com::AnimatedSprite>>(
+        InitializeDrawableStaticSystem);
+
     // Shader initialization system
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Shader>>(
         InitializeShaderSystem);
@@ -32,8 +38,8 @@ void InitRenderSystems(Rtype::Client::GameWorld &game_world) {
         [&game_world](Eng::registry &r,
             Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
             Eng::sparse_array<Com::Drawable> &drawables) {
-            AnimationSystem(
-                r, game_world.last_delta_, animated_sprites, drawables);
+            AnimationSystem(r, game_world, game_world.last_delta_,
+                animated_sprites, drawables);
         });
 
     // Death animation system
