@@ -22,6 +22,8 @@ constexpr uint8_t kOpNotifyConnect = 0x08;
 constexpr uint8_t kOpNotifyReady = 0x09;
 constexpr uint8_t kOpSetGameSpeed = 0x0A;
 constexpr uint8_t kOpNotifyGameSpeed = 0x0B;
+constexpr uint8_t kOpSetDifficulty = 0x0C;
+constexpr uint8_t kOpSetKillableProjectiles = 0x0D;
 constexpr uint8_t kOpPlayerInput = 0x10;
 constexpr uint8_t kOpWorldSnapshot = 0x20;
 
@@ -562,6 +564,72 @@ void ServerConnection::SendGameSpeed(float speed) {
             } else {
                 std::cout << "[Network] SET_GAME_SPEED sent successfully ("
                           << bytes_sent << " bytes)" << std::endl;
+            }
+        });
+}
+
+void ServerConnection::SendDifficulty(uint8_t difficulty) {
+    if (!connected_.load()) {
+        std::cerr << "[Network] Cannot send SET_DIFFICULTY: not connected"
+                  << std::endl;
+        return;
+    }
+
+    // SET_DIFFICULTY (0x0C) payload: 1 byte (difficulty level)
+    constexpr uint8_t kOpSetDifficulty = 0x0C;
+    auto pkt = std::make_shared<std::vector<uint8_t>>(kHeaderSize + 1);
+    WriteHeader(pkt->data(), kOpSetDifficulty, 1, 0);  // TickId = 0 for TCP
+
+    // Write difficulty (0=Easy, 1=Normal, 2=Hard)
+    (*pkt)[kHeaderSize] = difficulty;
+
+    std::cout << "[Network] Sending SET_DIFFICULTY (level: "
+              << static_cast<int>(difficulty) << ")" << std::endl;
+
+    boost::asio::async_write(tcp_socket_, boost::asio::buffer(*pkt),
+        [pkt, difficulty](
+            const boost::system::error_code &ec, std::size_t bytes_sent) {
+            if (ec) {
+                std::cerr << "[Network] Failed to send SET_DIFFICULTY: "
+                          << ec.message() << std::endl;
+            } else {
+                std::cout << "[Network] SET_DIFFICULTY sent successfully ("
+                          << bytes_sent << " bytes)" << std::endl;
+            }
+        });
+}
+
+void ServerConnection::SendKillableEnemyProjectiles(bool enabled) {
+    if (!connected_.load()) {
+        std::cerr
+            << "[Network] Cannot send SET_KILLABLE_PROJECTILES: not connected"
+            << std::endl;
+        return;
+    }
+
+    // SET_KILLABLE_PROJECTILES (0x0D) payload: 1 byte (bool)
+    constexpr uint8_t kOpSetKillableProjectiles = 0x0D;
+    auto pkt = std::make_shared<std::vector<uint8_t>>(kHeaderSize + 1);
+    WriteHeader(
+        pkt->data(), kOpSetKillableProjectiles, 1, 0);  // TickId = 0 for TCP
+
+    // Write boolean (0=false, 1=true)
+    (*pkt)[kHeaderSize] = enabled ? 1 : 0;
+
+    std::cout << "[Network] Sending SET_KILLABLE_PROJECTILES ("
+              << (enabled ? "ON" : "OFF") << ")" << std::endl;
+
+    boost::asio::async_write(tcp_socket_, boost::asio::buffer(*pkt),
+        [pkt, enabled](
+            const boost::system::error_code &ec, std::size_t bytes_sent) {
+            if (ec) {
+                std::cerr
+                    << "[Network] Failed to send SET_KILLABLE_PROJECTILES: "
+                    << ec.message() << std::endl;
+            } else {
+                std::cout
+                    << "[Network] SET_KILLABLE_PROJECTILES sent successfully ("
+                    << bytes_sent << " bytes)" << std::endl;
             }
         });
 }
