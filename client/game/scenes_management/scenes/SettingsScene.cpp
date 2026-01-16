@@ -1,7 +1,9 @@
 #include "game/scenes_management/scenes/SettingsScene.hpp"
 
+#include <algorithm>
 #include <iostream>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "engine/audio/AudioManager.hpp"
@@ -19,8 +21,59 @@
 namespace Rtype::Client {
 
 void SettingsScene::InitScene(Engine::registry &reg, GameWorld &gameWorld) {
+    // Store GameWorld pointer for cleanup
+    game_world_ = &gameWorld;
+
+    // Reset internal state before re-initializing
+    active_tab_ = SettingsTab::Inputs;
+    inputs_tab_entities_.clear();
+    accessibility_tab_entities_.clear();
+    graphics_tab_entities_.clear();
+    audio_tab_entities_.clear();
+    entity_original_y_.clear();
+    rebind_buttons_.clear();
+    action_icon_entities_.clear();
+    action_icon_y_.clear();
+    title_entity_.reset();
+    volume_slider_entity_.reset();
+    back_button_entity_.reset();
+    speed_slider_knob_.reset();
+
+    // Set up callback for real-time key icon refresh during rebinding
+    gameWorld.on_binding_added_ = [this, &reg, &gameWorld](
+                                      Game::Action action) {
+        RefreshKeyIcons(reg, gameWorld, action);
+    };
+
     InitBackground(reg);
     InitUI(reg, gameWorld);
+}
+
+void SettingsScene::DestroyScene(Engine::registry &reg) {
+    // Clear external callbacks to prevent them from referencing dead entities
+    if (game_world_) {
+        game_world_->on_external_game_speed_change_ = nullptr;
+        game_world_->on_binding_added_ = nullptr;
+    }
+
+    // Clear all tab entity vectors
+    inputs_tab_entities_.clear();
+    accessibility_tab_entities_.clear();
+    graphics_tab_entities_.clear();
+    audio_tab_entities_.clear();
+    entity_original_y_.clear();
+    rebind_buttons_.clear();
+    action_icon_entities_.clear();
+    action_icon_y_.clear();
+
+    // Reset optional entity references
+    title_entity_.reset();
+    volume_slider_entity_.reset();
+    back_button_entity_.reset();
+    speed_slider_knob_.reset();
+
+    // Call base class to actually destroy the entities
+    Scene_A::DestroyScene(reg);
 }
 
 void SettingsScene::InitBackground(Engine::registry &reg) {
@@ -91,8 +144,9 @@ void SettingsScene::InitUI(Engine::registry &reg, GameWorld &gameWorld) {
 void SettingsScene::InitTabButtons(
     Engine::registry &reg, GameWorld &gameWorld) {
     const float tab_y = 180.0f;
-    const float tab_start_x = 560.0f;
-    const float tab_spacing = 200.0f;
+    const float tab_spacing = 280.0f;
+    // Center 4 buttons: start_x = center - (3 * spacing / 2)
+    const float tab_start_x = 960.0f - (1.5f * tab_spacing);
 
     // Inputs Tab Button
     CreateButton(
@@ -119,6 +173,7 @@ void SettingsScene::InitTabButtons(
 void SettingsScene::InitInputsTab(
     Engine::registry &reg, GameWorld &gameWorld) {
     const float content_start_y = 280.0f;
+    const float row_spacing = 70.0f;  // More spacing between rows
 
     // --- Input Bindings Title ---
     auto input_title_entity = CreateEntityInScene(reg);
@@ -138,37 +193,97 @@ void SettingsScene::InitInputsTab(
         {Game::Action::MoveRight, "Move Right"},
         {Game::Action::Shoot, "Shoot"}};
 
-    float rebind_y = content_start_y + 60.0f;
+    float rebind_y = content_start_y + 70.0f;
     for (const auto &[action, label] : rebind_actions) {
         // Action label
         auto label_entity = CreateEntityInScene(reg);
         reg.AddComponent<Component::Transform>(
-            label_entity, Component::Transform{750.0f, rebind_y, 0.0f, 1.8f,
+            label_entity, Component::Transform{650.0f, rebind_y, 0.0f, 1.8f,
                               Component::Transform::RIGHT_CENTER});
         reg.AddComponent<Component::Text>(label_entity,
             Component::Text("dogica.ttf", label + ":", 12, LAYER_UI + 2,
                 WHITE_BLUE, Engine::Graphics::Vector2f(0.0f, 0.0f)));
         inputs_tab_entities_.push_back(label_entity);
 
+        // Store Y position for this action (for RefreshKeyIcons)
+        action_icon_y_[action] = rebind_y;
+
+        // Display current key binding icon(s)
+        if (gameWorld.input_manager_) {
+            const auto &bindings =
+                gameWorld.input_manager_->GetBindings(action);
+            float icon_x = 700.0f;
+            std::vector<Engine::entity> icon_entities;
+            for (const auto &binding : bindings) {
+                if (binding.type == Engine::Input::InputBinding::Type::Key) {
+                    std::string asset_path =
+                        Game::GetKeyAssetPath(binding.key);
+                    if (!asset_path.empty()) {
+                        auto icon_entity = CreateEntityInScene(reg);
+                        reg.AddComponent<Component::Transform>(icon_entity,
+                            Component::Transform{icon_x, rebind_y, 0.0f, 2.0f,
+                                Component::Transform::CENTER});
+                        reg.AddComponent<Component::Drawable>(icon_entity,
+                            Component::Drawable{asset_path, LAYER_UI + 1});
+                        inputs_tab_entities_.push_back(icon_entity);
+                        icon_entities.push_back(icon_entity);
+                        icon_x += 60.0f;  // Space between icons
+                    }
+                }
+                // Only show first 3 bindings to avoid overflow
+                if (icon_x > 880.0f)
+                    break;
+            }
+            action_icon_entities_[action] = std::move(icon_entities);
+        }
+
         // Rebind button (single entity returned)
         auto btn_entity = CreateButton(
-            reg, gameWorld, "Rebind", 900.0f, rebind_y,
-            [&gameWorld, action]() {
+            reg, gameWorld, "Rebind", 1050.0f, rebind_y,
+            [this, &gameWorld, &reg, action]() {
+                // If already rebinding another action, exit that first
+                if (gameWorld.waiting_for_rebind_key_ &&
+                    gameWorld.rebinding_action_.has_value()) {
+                    ExitRebindMode(reg, gameWorld);
+                }
+
+                // Clear previous bindings for this action when starting rebind
+                if (gameWorld.input_manager_) {
+                    gameWorld.input_manager_->ClearBindings(action);
+                }
+                // Refresh icons (will show empty since we cleared bindings)
+                RefreshKeyIcons(reg, gameWorld, action);
+
                 gameWorld.rebinding_action_ = action;
                 gameWorld.waiting_for_rebind_key_ = true;
+                // Set the button entity from our map
+                auto it = rebind_buttons_.find(action);
+                if (it != rebind_buttons_.end()) {
+                    gameWorld.rebinding_button_entity_ = it->second;
+                    // Change button text to yellow
+                    try {
+                        auto &text =
+                            reg.GetComponent<Component::Text>(it->second);
+                        text.color = YELLOW_REBIND;
+                    } catch (...) {}
+                }
                 std::cout << "[Settings] Waiting for key rebind for "
-                          << Game::GetActionName(action) << std::endl;
+                          << Game::GetActionName(action)
+                          << " (press keys to add, Escape to finish)"
+                          << std::endl;
             },
             2.0f);
+        // Store button entity in map for later reference
+        rebind_buttons_.insert_or_assign(action, btn_entity);
         inputs_tab_entities_.push_back(btn_entity);
 
-        rebind_y += 50.0f;
+        rebind_y += row_spacing;
     }
 
     // --- Instructions ---
     auto instructions_entity = CreateEntityInScene(reg);
     reg.AddComponent<Component::Transform>(
-        instructions_entity, Component::Transform{960.0f, rebind_y + 30.0f,
+        instructions_entity, Component::Transform{960.0f, rebind_y + 40.0f,
                                  0.0f, 1.5f, Component::Transform::CENTER});
     reg.AddComponent<Component::Text>(instructions_entity,
         Component::Text("dogica.ttf", "Click Rebind, then press a key", 10,
@@ -465,6 +580,96 @@ void SettingsScene::SwitchToTab(Engine::registry &reg, SettingsTab tab) {
 
     std::cout << "[Settings] Switched to tab: " << static_cast<int>(tab)
               << std::endl;
+}
+
+void SettingsScene::ExitRebindMode(
+    Engine::registry &reg, GameWorld &gameWorld) {
+    if (!gameWorld.waiting_for_rebind_key_) {
+        return;  // Not in rebind mode
+    }
+
+    // Reset button color to white
+    if (gameWorld.rebinding_button_entity_.has_value()) {
+        try {
+            auto &text = reg.GetComponent<Component::Text>(
+                gameWorld.rebinding_button_entity_.value());
+            text.color = WHITE_BLUE;
+        } catch (...) {}
+    }
+
+    // Refresh icons for the action that was being rebound
+    if (gameWorld.rebinding_action_.has_value()) {
+        RefreshKeyIcons(reg, gameWorld, gameWorld.rebinding_action_.value());
+    }
+
+    // Clear rebinding state
+    gameWorld.rebinding_action_ = std::nullopt;
+    gameWorld.waiting_for_rebind_key_ = false;
+    gameWorld.rebinding_button_entity_ = std::nullopt;
+
+    std::cout << "[Settings] Exited rebind mode" << std::endl;
+}
+
+void SettingsScene::RefreshKeyIcons(
+    Engine::registry &reg, GameWorld &gameWorld, Game::Action action) {
+    // Get Y position for this action
+    auto y_it = action_icon_y_.find(action);
+    if (y_it == action_icon_y_.end()) {
+        return;  // Action not found
+    }
+    float rebind_y = y_it->second;
+
+    // Remove old icon entities from inputs_tab_entities_ and destroy them
+    auto icons_it = action_icon_entities_.find(action);
+    if (icons_it != action_icon_entities_.end()) {
+        for (Engine::entity old_icon : icons_it->second) {
+            // Remove from inputs_tab_entities_
+            auto it = std::find_if(inputs_tab_entities_.begin(),
+                inputs_tab_entities_.end(),
+                [&old_icon](const Engine::entity &e) {
+                    return e.GetId() == old_icon.GetId();
+                });
+            if (it != inputs_tab_entities_.end()) {
+                inputs_tab_entities_.erase(it);
+            }
+            // Destroy the entity
+            try {
+                reg.KillEntity(old_icon);
+            } catch (...) {}
+        }
+        icons_it->second.clear();
+    }
+
+    // Create new icons based on current bindings
+    if (!gameWorld.input_manager_) {
+        return;
+    }
+
+    const auto &bindings = gameWorld.input_manager_->GetBindings(action);
+    float icon_x = 700.0f;
+    std::vector<Engine::entity> new_icons;
+
+    for (const auto &binding : bindings) {
+        if (binding.type == Engine::Input::InputBinding::Type::Key) {
+            std::string asset_path = Game::GetKeyAssetPath(binding.key);
+            if (!asset_path.empty()) {
+                auto icon_entity = CreateEntityInScene(reg);
+                reg.AddComponent<Component::Transform>(
+                    icon_entity, Component::Transform{icon_x, rebind_y, 0.0f,
+                                     2.0f, Component::Transform::CENTER});
+                reg.AddComponent<Component::Drawable>(icon_entity,
+                    Component::Drawable{asset_path, LAYER_UI + 1});
+                inputs_tab_entities_.push_back(icon_entity);
+                new_icons.push_back(icon_entity);
+                icon_x += 60.0f;  // Space between icons
+            }
+        }
+        // Only show first 3 bindings to avoid overflow
+        if (icon_x > 880.0f)
+            break;
+    }
+
+    action_icon_entities_[action] = std::move(new_icons);
 }
 
 }  // namespace Rtype::Client

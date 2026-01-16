@@ -28,6 +28,15 @@ class SettingsScene : public Scene_A {
  public:
     SettingsScene() = default;
     void InitScene(registry &reg, GameWorld &gameWorld) override;
+    void DestroyScene(registry &reg) override;
+
+    /**
+     * @brief Set GameWorld pointer for cleanup (clearing external callbacks).
+     * @param gameWorld Pointer to the game world.
+     */
+    void SetGameWorld(GameWorld *gameWorld) {
+        game_world_ = gameWorld;
+    }
 
     /**
      * @brief Get the entity holding the title text.
@@ -63,6 +72,13 @@ class SettingsScene : public Scene_A {
     // Tab switching
     void SwitchToTab(registry &reg, SettingsTab tab);
 
+    // Refresh key icons for a specific action (destroys old, creates new)
+    void RefreshKeyIcons(
+        registry &reg, GameWorld &gameWorld, Game::Action action);
+
+    // Exit current rebind mode (reset button color and state)
+    void ExitRebindMode(registry &reg, GameWorld &gameWorld);
+
     // Entity references for dynamic updates
     std::optional<Engine::entity> title_entity_;
     std::optional<Engine::entity> volume_slider_entity_;
@@ -76,6 +92,15 @@ class SettingsScene : public Scene_A {
     float speed_slider_min_ = 0.25f;
     float speed_slider_max_ = 2.0f;
 
+    // Rebind button entities per action (for highlighting during rebind)
+    std::map<Game::Action, Engine::entity> rebind_buttons_;
+
+    // Key icon entities per action (for real-time refresh)
+    std::map<Game::Action, std::vector<Engine::entity>> action_icon_entities_;
+
+    // Y position per action for icon creation (set during InitInputsTab)
+    std::map<Game::Action, float> action_icon_y_;
+
     // Tab state
     SettingsTab active_tab_ = SettingsTab::Inputs;
     std::vector<Engine::entity> inputs_tab_entities_;
@@ -85,5 +110,8 @@ class SettingsScene : public Scene_A {
 
     // Store original Y positions for visibility toggling (entity id -> y)
     std::map<size_t, float> entity_original_y_;
+
+    // Pointer to GameWorld for callback cleanup
+    GameWorld *game_world_ = nullptr;
 };
 }  // namespace Rtype::Client
