@@ -616,10 +616,22 @@ void SettingsScene::InitGraphicsTab(
         [this, &gameWorld, &reg]() {
             gameWorld.graphics_settings_.vsync_enabled =
                 !gameWorld.graphics_settings_.vsync_enabled;
-            std::cout << "[Settings] VSync: "
-                      << (gameWorld.graphics_settings_.vsync_enabled ? "ON"
-                                                                     : "OFF")
-                      << std::endl;
+
+            // Apply VSync immediately
+            try {
+                auto &native_window = gameWorld.GetNativeWindow();
+                native_window.setVerticalSyncEnabled(
+                    gameWorld.graphics_settings_.vsync_enabled);
+                std::cout << "[Settings] VSync applied immediately: "
+                          << (gameWorld.graphics_settings_.vsync_enabled
+                                     ? "ON"
+                                     : "OFF")
+                          << std::endl;
+            } catch (const std::exception &e) {
+                std::cerr << "[Settings] Failed to apply VSync: " << e.what()
+                          << std::endl;
+            }
+
             // Update button text
             if (vsync_btn_entity.has_value()) {
                 try {
@@ -658,11 +670,22 @@ void SettingsScene::InitGraphicsTab(
             reg, gameWorld, fps_label_text, fps_btn_x, current_y,
             [this, &gameWorld, fps_limit]() {
                 gameWorld.graphics_settings_.frame_rate_limit = fps_limit;
-                std::cout << "[Settings] Frame rate limit set to: "
-                          << (fps_limit == 0
-                                     ? "Unlimited"
-                                     : std::to_string(fps_limit) + " FPS")
-                          << std::endl;
+
+                // Apply frame rate limit immediately
+                try {
+                    auto &native_window = gameWorld.GetNativeWindow();
+                    native_window.setFramerateLimit(fps_limit);
+                    std::cout
+                        << "[Settings] Frame rate limit applied immediately: "
+                        << (fps_limit == 0
+                                   ? "Unlimited"
+                                   : std::to_string(fps_limit) + " FPS")
+                        << std::endl;
+                } catch (const std::exception &e) {
+                    std::cerr
+                        << "[Settings] Failed to apply frame rate limit: "
+                        << e.what() << std::endl;
+                }
             },
             1.5f);
         graphics_tab_entities_.push_back(fps_btn);
