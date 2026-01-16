@@ -101,6 +101,10 @@ class SettingsScene : public Scene_A {
     // Y position per action for icon creation (set during InitInputsTab)
     std::map<Game::Action, float> action_icon_y_;
 
+    // Accessibility toggle button entities (for updating text on toggle)
+    std::optional<Engine::entity> hc_toggle_btn_entity_;  // High contrast
+    std::optional<Engine::entity> rv_toggle_btn_entity_;  // Reduced visuals
+
     // Tab state
     SettingsTab active_tab_ = SettingsTab::Inputs;
     std::vector<Engine::entity> inputs_tab_entities_;
