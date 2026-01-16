@@ -95,9 +95,10 @@ void createGatlingProjectile(Eng::registry &reg, float x, float y, int ownerId,
     reg.AddComponent<Component::Drawable>(projectile_entity,
         Component::Drawable(
             "original_rtype/Ammo_Gatling.png", LAYER_PROJECTILE));
-    reg.AddComponent<Component::Projectile>(projectile_entity,
-        Component::Projectile{PLAYER_GATLING_DAMAGE, {1.0f, 0.0f},
-            PLAYER_GATLING_PROJECTILE_SPEED, ownerId});
+    reg.AddComponent<Component::Projectile>(
+        projectile_entity, Component::Projectile{PLAYER_GATLING_DAMAGE,
+                               Engine::Graphics::Vector2f(1.0f, 0.0f),
+                               PLAYER_GATLING_PROJECTILE_SPEED, ownerId});
     reg.AddComponent<Component::HitBox>(
         projectile_entity, Component::HitBox{16.0f, 8.0f});
 }

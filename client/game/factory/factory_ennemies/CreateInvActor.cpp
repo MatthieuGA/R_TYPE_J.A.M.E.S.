@@ -11,7 +11,7 @@ void FactoryActors::CreateInvActor(
     Engine::entity &entity, Engine::registry &reg, EnnemyInfo info) {
     // Add drawable and animated sprite components
     Component::AnimatedSprite animated_sprite(
-        16, 16, 0.2f, true, sf::Vector2f(0.0f, 0.0f), 2);
+        16, 16, 0.2f, true, Engine::Graphics::Vector2f(0.0f, 0.0f), 2);
     animated_sprite.AddAnimation(
         "Hit", "ennemies/powerups/PowerUp_Inv.png", 16, 16, 2, 0.1f, false);
     animated_sprite.AddAnimation("Death", "ennemies/powerups/Death_Inv_PU.png",
