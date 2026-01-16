@@ -150,6 +150,62 @@ void HealthDeductionSystem(Engine::registry &reg,
         if (health.currentHealth <= 0)
             DeathHandling(reg, animated_sprites, entity, i);
     }
+
+    // Check if killable enemy projectiles setting is enabled
+    extern bool g_killable_enemy_projectiles;
+    if (g_killable_enemy_projectiles) {
+        // Check for projectile-to-projectile collisions
+        // Player projectiles can destroy enemy projectiles
+        for (auto &&[i, projectile1, hitBox1, transform1] :
+            make_indexed_zipper(projectiles, hitBoxes, transforms)) {
+            // Skip if not a player projectile
+            if (projectile1.isEnemyProjectile)
+                continue;
+
+            Engine::entity playerProj = reg.EntityFromIndex(i);
+
+            for (auto &&[j, projectile2, hitBox2, transform2] :
+                make_indexed_zipper(projectiles, hitBoxes, transforms)) {
+                // Skip self-collision and non-enemy projectiles
+                if (i == j || !projectile2.isEnemyProjectile)
+                    continue;
+
+                Engine::entity enemyProj = reg.EntityFromIndex(j);
+
+                // Check collision between player projectile and enemy
+                // projectile
+                if (IsColliding(transform1, hitBox1, transform2, hitBox2)) {
+                    // Destroy both projectiles
+                    reg.RemoveComponent<Component::Projectile>(playerProj);
+                    reg.RemoveComponent<Component::Projectile>(enemyProj);
+
+                    // Trigger death animations if available
+                    if (animated_sprites.has(i)) {
+                        auto &animSprite1 = animated_sprites[i];
+                        animSprite1->SetCurrentAnimation("Death", false);
+                        animSprite1->animated = true;
+                        reg.AddComponent<Component::AnimationDeath>(
+                            playerProj, Component::AnimationDeath{true});
+                    } else {
+                        reg.KillEntity(playerProj);
+                    }
+
+                    if (animated_sprites.has(j)) {
+                        auto &animSprite2 = animated_sprites[j];
+                        animSprite2->SetCurrentAnimation("Death", false);
+                        animSprite2->animated = true;
+                        reg.AddComponent<Component::AnimationDeath>(
+                            enemyProj, Component::AnimationDeath{true});
+                    } else {
+                        reg.KillEntity(enemyProj);
+                    }
+
+                    // Break inner loop since player projectile is destroyed
+                    break;
+                }
+            }
+        }
+    }
 }
 
 }  // namespace server

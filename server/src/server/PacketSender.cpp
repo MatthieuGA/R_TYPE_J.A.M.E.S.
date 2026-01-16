@@ -293,6 +293,106 @@ void PacketSender::SendNotifyGameSpeed(float speed) {
               << "(speed=" << speed << "x)" << std::endl;
 }
 
+void PacketSender::SendNotifyDifficulty(uint8_t difficulty) {
+    // Build NOTIFY_DIFFICULTY packet: header (12 bytes) + uint8_t (1 byte)
+    constexpr size_t kHeaderSize = 12;
+    constexpr size_t kPayloadSize = 1;
+    auto pkt =
+        std::make_shared<std::vector<uint8_t>>(kHeaderSize + kPayloadSize);
+
+    // Write header
+    (*pkt)[0] = static_cast<uint8_t>(network::PacketType::NotifyDifficulty);
+    (*pkt)[1] = kPayloadSize & 0xFF;         // PayloadSize low byte
+    (*pkt)[2] = (kPayloadSize >> 8) & 0xFF;  // PayloadSize high byte
+    // TickId (4 bytes) - set to 0 for TCP control messages
+    (*pkt)[3] = 0;
+    (*pkt)[4] = 0;
+    (*pkt)[5] = 0;
+    (*pkt)[6] = 0;
+    // Reserved (5 bytes)
+    (*pkt)[7] = 0;
+    (*pkt)[8] = 0;
+    (*pkt)[9] = 0;
+    (*pkt)[10] = 0;
+    (*pkt)[11] = 0;
+
+    // Write difficulty
+    (*pkt)[kHeaderSize] = difficulty;
+
+    // Send to all authenticated players via TCP
+    auto &clients = connection_manager_.GetClients();
+    for (auto &[client_id, client_ref] : clients) {
+        if (client_ref.player_id_ == 0)
+            continue;  // Skip unauthenticated clients
+
+        auto data_copy = std::make_shared<std::vector<uint8_t>>(*pkt);
+        client_ref.tcp_socket_.async_send(boost::asio::buffer(*data_copy),
+            [data_copy, difficulty](
+                boost::system::error_code ec, std::size_t) {
+                if (ec) {
+                    std::cerr << "Failed to send NOTIFY_DIFFICULTY ("
+                              << static_cast<int>(difficulty)
+                              << "): " << ec.message() << std::endl;
+                }
+            });
+    }
+
+    const char *difficulty_names[] = {"Easy", "Normal", "Hard"};
+    std::cout << "NOTIFY_DIFFICULTY packet sent to all authenticated players "
+              << "(difficulty=" << difficulty_names[difficulty] << ")"
+              << std::endl;
+}
+
+void PacketSender::SendNotifyKillableProjectiles(bool enabled) {
+    // Build NOTIFY_KILLABLE_PROJECTILES packet: header (12 bytes) + bool (1
+    // byte)
+    constexpr size_t kHeaderSize = 12;
+    constexpr size_t kPayloadSize = 1;
+    auto pkt =
+        std::make_shared<std::vector<uint8_t>>(kHeaderSize + kPayloadSize);
+
+    // Write header
+    (*pkt)[0] =
+        static_cast<uint8_t>(network::PacketType::NotifyKillableProjectiles);
+    (*pkt)[1] = kPayloadSize & 0xFF;         // PayloadSize low byte
+    (*pkt)[2] = (kPayloadSize >> 8) & 0xFF;  // PayloadSize high byte
+    // TickId (4 bytes) - set to 0 for TCP control messages
+    (*pkt)[3] = 0;
+    (*pkt)[4] = 0;
+    (*pkt)[5] = 0;
+    (*pkt)[6] = 0;
+    // Reserved (5 bytes)
+    (*pkt)[7] = 0;
+    (*pkt)[8] = 0;
+    (*pkt)[9] = 0;
+    (*pkt)[10] = 0;
+    (*pkt)[11] = 0;
+
+    // Write enabled flag
+    (*pkt)[kHeaderSize] = enabled ? 1 : 0;
+
+    // Send to all authenticated players via TCP
+    auto &clients = connection_manager_.GetClients();
+    for (auto &[client_id, client_ref] : clients) {
+        if (client_ref.player_id_ == 0)
+            continue;  // Skip unauthenticated clients
+
+        auto data_copy = std::make_shared<std::vector<uint8_t>>(*pkt);
+        client_ref.tcp_socket_.async_send(boost::asio::buffer(*data_copy),
+            [data_copy, enabled](boost::system::error_code ec, std::size_t) {
+                if (ec) {
+                    std::cerr << "Failed to send NOTIFY_KILLABLE_PROJECTILES ("
+                              << (enabled ? "ON" : "OFF")
+                              << "): " << ec.message() << std::endl;
+                }
+            });
+    }
+
+    std::cout
+        << "NOTIFY_KILLABLE_PROJECTILES packet sent to all authenticated "
+        << "players (enabled=" << (enabled ? "ON" : "OFF") << ")" << std::endl;
+}
+
 void SendSnapshotPlayerState(int tick, network::EntityState entity_state,
     network::PacketBuffer &buffer) {
     // Serialize entity state into the payload

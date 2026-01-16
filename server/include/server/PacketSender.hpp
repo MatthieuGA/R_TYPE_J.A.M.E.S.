@@ -106,6 +106,25 @@ class PacketSender {
      */
     void SendNotifyGameSpeed(float speed);
 
+    /**
+     * @brief Send NOTIFY_DIFFICULTY packet to all authenticated players
+     *
+     * Broadcasts when a player changes the difficulty level.
+     *
+     * @param difficulty The difficulty level (0=Easy, 1=Normal, 2=Hard)
+     */
+    void SendNotifyDifficulty(uint8_t difficulty);
+
+    /**
+     * @brief Send NOTIFY_KILLABLE_PROJECTILES packet to all authenticated
+     * players
+     *
+     * Broadcasts when a player changes the killable projectiles setting.
+     *
+     * @param enabled Whether player projectiles can destroy enemy fire
+     */
+    void SendNotifyKillableProjectiles(bool enabled);
+
     void SendSnapshot(network::EntityState entity_state, int tick);
 
  private:

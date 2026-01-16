@@ -169,6 +169,30 @@ class PacketHandler {
         ClientConnection &client, const network::SetGameSpeedPacket &packet);
 
     /**
+     * @brief Handle SET_DIFFICULTY packet from client
+     *
+     * Client sets difficulty level (0=Easy, 1=Normal, 2=Hard).
+     * Updates server's global difficulty affecting damage and fire rates.
+     *
+     * @param client Reference to client connection
+     * @param packet Parsed SET_DIFFICULTY packet
+     */
+    void HandleSetDifficulty(
+        ClientConnection &client, const network::SetDifficultyPacket &packet);
+
+    /**
+     * @brief Handle SET_KILLABLE_PROJECTILES packet from client
+     *
+     * Client sets whether player projectiles can destroy enemy fire.
+     * Updates server's global collision detection setting.
+     *
+     * @param client Reference to client connection
+     * @param packet Parsed SET_KILLABLE_PROJECTILES packet
+     */
+    void HandleSetKillableProjectiles(ClientConnection &client,
+        const network::SetKillableProjectilesPacket &packet);
+
+    /**
      * @brief Check if game should start after a player disconnect
      *
      * Called after removing a client to check if remaining players

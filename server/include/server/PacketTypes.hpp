@@ -25,6 +25,12 @@ enum class PacketType : uint8_t {
     NotifyReady = 0x09,       // Server -> Client: Player ready status changed
     SetGameSpeed = 0x0A,      // Client -> Server: Set game speed multiplier
     NotifyGameSpeed = 0x0B,   // Server -> Client: Game speed changed
+    SetDifficulty = 0x0C,     // Client -> Server: Set difficulty level
+    SetKillableProjectiles =
+        0x0D,                 // Client -> Server: Set killable projectiles
+    NotifyDifficulty = 0x0E,  // Server -> Client: Difficulty changed
+    NotifyKillableProjectiles =
+        0x0F,  // Server -> Client: Killable projectiles changed
 
     // UDP Client Inputs (0x10+)
     PlayerInput = 0x10,  // Client -> Server: Input bitmask
