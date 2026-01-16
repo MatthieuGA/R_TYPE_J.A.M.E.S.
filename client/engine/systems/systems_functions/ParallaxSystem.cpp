@@ -18,6 +18,11 @@ void ParallaxSystem(Eng::registry &reg, const GameWorld &game_world,
     Eng::sparse_array<Com::Transform> &transforms,
     Eng::sparse_array<Com::ParrallaxLayer> const &parallax_layers,
     Eng::sparse_array<Com::Drawable> const &drawables) {
+    // Skip parallax animation when reduced_visuals is enabled
+    if (game_world.accessibility_settings_.reduced_visuals) {
+        return;
+    }
+
     for (auto &&[i, transform, parallax_layer, drawable] :
         make_indexed_zipper(transforms, parallax_layers, drawables)) {
         if (!drawable.is_loaded)

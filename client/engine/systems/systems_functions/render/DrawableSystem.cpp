@@ -196,10 +196,11 @@ void RenderOneEntity(Eng::sparse_array<Com::Transform> const &transforms,
         transform->rotationDegrees, engine_color, drawable->current_rect,
         origin};
 
-    // Optional shader data
+    // Optional shader data (skip when reduced_visuals is enabled)
     Engine::Graphics::DrawableShader shader_data;
     const Engine::Graphics::DrawableShader *shader_ptr = nullptr;
-    if (shaders.has(i) && shaders[i]->is_loaded &&
+    if (!game_world.accessibility_settings_.reduced_visuals &&
+        shaders.has(i) && shaders[i]->is_loaded &&
         !shaders[i]->shader_path.empty()) {
         shader_data.shader_path = shaders[i]->shader_path.c_str();
         shader_data.time_seconds =
@@ -238,12 +239,15 @@ void DrawableSystem(Eng::registry &reg, GameWorld &game_world,
         render_order.push_back(item);
     }
 
-    for (auto &&[i, transform, emitter] :
-        make_indexed_zipper(transforms, emitters)) {
-        if (emitter.active) {
-            UpdateEmitter(emitter, transform, game_world.last_delta_);
-            RenderItem item{i, emitter.z_index, true};
-            render_order.push_back(item);
+    // Skip particles when reduced_visuals is enabled
+    if (!game_world.accessibility_settings_.reduced_visuals) {
+        for (auto &&[i, transform, emitter] :
+            make_indexed_zipper(transforms, emitters)) {
+            if (emitter.active) {
+                UpdateEmitter(emitter, transform, game_world.last_delta_);
+                RenderItem item{i, emitter.z_index, true};
+                render_order.push_back(item);
+            }
         }
     }
 
