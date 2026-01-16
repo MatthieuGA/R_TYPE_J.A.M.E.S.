@@ -58,10 +58,9 @@ void SettingsScene::InitUI(Engine::registry &reg, GameWorld &gameWorld) {
     reg.AddComponent<Component::Transform>(
         title_entity, Component::Transform{960.0f, 150.0f, 0.0f, 3.f,
                           Component::Transform::CENTER});
-    reg.AddComponent<Component::Text>(
-        title_entity, Component::Text("dogica.ttf", "Settings", 20,
-                          LAYER_UI + 2, WHITE_BLUE,
-                          Engine::Graphics::Vector2f(0.0f, 0.0f)));
+    reg.AddComponent<Component::Text>(title_entity,
+        Component::Text("dogica.ttf", "Settings", 20, LAYER_UI + 2, WHITE_BLUE,
+            Engine::Graphics::Vector2f(0.0f, 0.0f)));
     title_entity_ = title_entity;
 
     // --- Music Volume Label ---
@@ -102,6 +101,28 @@ void SettingsScene::InitUI(Engine::registry &reg, GameWorld &gameWorld) {
         [&gameWorld](float value) {
             if (gameWorld.audio_manager_) {
                 gameWorld.audio_manager_->SetSfxVolume(value);
+            }
+        },
+        3.0f);
+
+    // --- Game Speed Label ---
+    auto speed_label_entity = CreateEntityInScene(reg);
+    reg.AddComponent<Component::Transform>(
+        speed_label_entity, Component::Transform{800.0f, 500.0f, 0.0f, 2.f,
+                                Component::Transform::RIGHT_CENTER});
+    reg.AddComponent<Component::Text>(speed_label_entity,
+        Component::Text("dogica.ttf", "Game Speed:", 14, LAYER_UI + 2,
+            WHITE_BLUE, Engine::Graphics::Vector2f(0.0f, 0.0f)));
+
+    // --- Game Speed Slider ---
+    CreateSlider(
+        reg, gameWorld, 1060.0f, 500.0f, 150.0f, 0.25f, 2.0f,
+        gameWorld.game_speed_,
+        [&gameWorld](float value) {
+            gameWorld.game_speed_ = value;
+            // Send game speed to server
+            if (gameWorld.server_connection_) {
+                gameWorld.server_connection_->SendGameSpeed(value);
             }
         },
         3.0f);

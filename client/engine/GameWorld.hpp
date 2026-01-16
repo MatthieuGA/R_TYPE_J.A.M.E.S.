@@ -59,6 +59,7 @@ struct GameWorld {
     Engine::Time::Clock delta_time_clock_;
     Engine::Time::Clock total_time_clock_;
     float last_delta_ = 0.0f;
+    float game_speed_ = 2.0f;  // Game speed multiplier (0.25 to 2.0)
     EventBus event_bus_;
     Audio::AudioManager *audio_manager_ = nullptr;
 
