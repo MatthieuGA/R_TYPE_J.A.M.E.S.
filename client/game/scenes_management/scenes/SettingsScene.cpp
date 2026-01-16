@@ -9,6 +9,7 @@
 #include "engine/audio/AudioManager.hpp"
 #include "game/GameAction.hpp"
 #include "game/InputRebindHelper.hpp"
+#include "include/AccessibilitySettings.hpp"
 #include "include/ColorsConst.hpp"
 #include "include/LayersConst.hpp"
 #include "include/components/CoreComponents.hpp"
@@ -71,6 +72,8 @@ void SettingsScene::DestroyScene(Engine::registry &reg) {
     volume_slider_entity_.reset();
     back_button_entity_.reset();
     speed_slider_knob_.reset();
+    hc_toggle_btn_entity_.reset();
+    rv_toggle_btn_entity_.reset();
 
     // Call base class to actually destroy the entities
     Scene_A::DestroyScene(reg);
@@ -381,15 +384,127 @@ void SettingsScene::InitAccessibilityTab(
         }
     };
 
-    // --- Placeholder text ---
-    auto placeholder_entity = CreateEntityInScene(reg);
-    reg.AddComponent<Component::Transform>(placeholder_entity,
-        Component::Transform{960.0f, content_start_y + 180.0f, 0.0f, 1.5f,
-            Component::Transform::CENTER});
-    reg.AddComponent<Component::Text>(placeholder_entity,
-        Component::Text("dogica.ttf", "More options coming soon...", 10,
-            LAYER_UI + 2, WHITE_BLUE, Engine::Graphics::Vector2f(0.0f, 0.0f)));
-    accessibility_tab_entities_.push_back(placeholder_entity);
+    // --- High Contrast Toggle ---
+    float toggle_y = content_start_y + 180.0f;
+
+    auto hc_label_entity = CreateEntityInScene(reg);
+    reg.AddComponent<Component::Transform>(
+        hc_label_entity, Component::Transform{700.0f, toggle_y, 0.0f, 1.8f,
+                             Component::Transform::RIGHT_CENTER});
+    reg.AddComponent<Component::Text>(hc_label_entity,
+        Component::Text("dogica.ttf", "High Contrast:", 12, LAYER_UI + 2,
+            WHITE_BLUE, Engine::Graphics::Vector2f(0.0f, 0.0f)));
+    accessibility_tab_entities_.push_back(hc_label_entity);
+
+    auto hc_toggle_btn = CreateButton(
+        reg, gameWorld,
+        gameWorld.accessibility_settings_.high_contrast ? "ON" : "OFF",
+        1050.0f, toggle_y,
+        [this, &gameWorld, &reg]() {
+            gameWorld.accessibility_settings_.high_contrast =
+                !gameWorld.accessibility_settings_.high_contrast;
+            std::cout << "[Settings] High contrast mode: "
+                      << (gameWorld.accessibility_settings_.high_contrast
+                                 ? "ON"
+                                 : "OFF")
+                      << std::endl;
+            // Update button text
+            if (hc_toggle_btn_entity_.has_value()) {
+                try {
+                    auto &text = reg.GetComponent<Component::Text>(
+                        hc_toggle_btn_entity_.value());
+                    text.content =
+                        gameWorld.accessibility_settings_.high_contrast
+                            ? "ON"
+                            : "OFF";
+                } catch (...) {}
+            }
+        },
+        2.0f);
+    hc_toggle_btn_entity_ = hc_toggle_btn;
+    accessibility_tab_entities_.push_back(hc_toggle_btn);
+
+    // --- Text Size Buttons ---
+    toggle_y += 80.0f;
+
+    auto ts_label_entity = CreateEntityInScene(reg);
+    reg.AddComponent<Component::Transform>(
+        ts_label_entity, Component::Transform{700.0f, toggle_y, 0.0f, 1.8f,
+                             Component::Transform::RIGHT_CENTER});
+    reg.AddComponent<Component::Text>(ts_label_entity,
+        Component::Text("dogica.ttf", "Text Size:", 12, LAYER_UI + 2,
+            WHITE_BLUE, Engine::Graphics::Vector2f(0.0f, 0.0f)));
+    accessibility_tab_entities_.push_back(ts_label_entity);
+
+    auto ts_small_btn = CreateButton(
+        reg, gameWorld, "Small", 850.0f, toggle_y,
+        [this, &gameWorld]() {
+            gameWorld.accessibility_settings_.text_scale =
+                TextSizeScale::Small;
+            std::cout << "[Settings] Text size: Small (0.8x)" << std::endl;
+        },
+        1.8f);
+    accessibility_tab_entities_.push_back(ts_small_btn);
+
+    auto ts_normal_btn = CreateButton(
+        reg, gameWorld, "Normal", 980.0f, toggle_y,
+        [this, &gameWorld]() {
+            gameWorld.accessibility_settings_.text_scale =
+                TextSizeScale::Normal;
+            std::cout << "[Settings] Text size: Normal (1.0x)" << std::endl;
+        },
+        1.8f);
+    accessibility_tab_entities_.push_back(ts_normal_btn);
+
+    auto ts_large_btn = CreateButton(
+        reg, gameWorld, "Large", 1110.0f, toggle_y,
+        [this, &gameWorld]() {
+            gameWorld.accessibility_settings_.text_scale =
+                TextSizeScale::Large;
+            std::cout << "[Settings] Text size: Large (1.2x)" << std::endl;
+        },
+        1.8f);
+    accessibility_tab_entities_.push_back(ts_large_btn);
+
+    // --- Reduced Visuals Toggle ---
+    toggle_y += 80.0f;
+
+    auto rv_label_entity = CreateEntityInScene(reg);
+    reg.AddComponent<Component::Transform>(
+        rv_label_entity, Component::Transform{700.0f, toggle_y, 0.0f, 1.8f,
+                             Component::Transform::RIGHT_CENTER});
+    reg.AddComponent<Component::Text>(rv_label_entity,
+        Component::Text("dogica.ttf", "Reduced Visuals:", 12, LAYER_UI + 2,
+            WHITE_BLUE, Engine::Graphics::Vector2f(0.0f, 0.0f)));
+    accessibility_tab_entities_.push_back(rv_label_entity);
+
+    auto rv_toggle_btn = CreateButton(
+        reg, gameWorld,
+        gameWorld.accessibility_settings_.reduced_visuals ? "ON" : "OFF",
+        1050.0f, toggle_y,
+        [this, &gameWorld, &reg]() {
+            gameWorld.accessibility_settings_.reduced_visuals =
+                !gameWorld.accessibility_settings_.reduced_visuals;
+            std::cout << "[Settings] Reduced visuals mode: "
+                      << (gameWorld.accessibility_settings_.reduced_visuals
+                                 ? "ON"
+                                 : "OFF")
+                      << std::endl;
+            // Update button text
+            if (rv_toggle_btn_entity_.has_value()) {
+                try {
+                    auto &text = reg.GetComponent<Component::Text>(
+                        rv_toggle_btn_entity_.value());
+                    text.content =
+                        gameWorld.accessibility_settings_.reduced_visuals
+                            ? "ON"
+                            : "OFF";
+                } catch (...) {}
+            }
+        },
+        2.0f);
+    rv_toggle_btn_entity_ = rv_toggle_btn;
+    accessibility_tab_entities_.push_back(rv_toggle_btn);
 
     // Store original Y positions for all accessibility tab entities
     for (auto &entity : accessibility_tab_entities_) {

@@ -23,6 +23,7 @@
 #include "game/GameAction.hpp"
 #include "game/GameInputBindings.hpp"
 #include "graphics/IRenderContext.hpp"
+#include "include/AccessibilitySettings.hpp"
 #include "include/WindowConst.hpp"
 #include "include/registry.hpp"
 #include "input/SFMLInputBackend.hpp"
@@ -89,6 +90,9 @@ struct GameWorld {
 
     // Callback for when game speed is changed by another player (for UI sync)
     std::function<void(float)> on_external_game_speed_change_;
+
+    // Accessibility settings (applies to UI only)
+    AccessibilitySettings accessibility_settings_;
 
     // Graphics backend (owned by GameWorld as of PR 1.9)
     std::unique_ptr<Engine::Graphics::IRenderContext> render_context_;
