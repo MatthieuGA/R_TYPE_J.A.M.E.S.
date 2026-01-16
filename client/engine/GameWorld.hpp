@@ -10,6 +10,7 @@
 #pragma once
 #include <functional>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 
@@ -63,6 +64,13 @@ struct GameWorld {
     float game_speed_ = 2.0f;  // Game speed multiplier (0.25 to 2.0)
     EventBus event_bus_;
     Audio::AudioManager *audio_manager_ = nullptr;
+
+    // Input rebinding state (for Settings scene)
+    std::optional<Game::Action>
+        rebinding_action_;  // Current action being rebound (nullopt if not
+                            // rebinding)
+    bool waiting_for_rebind_key_ =
+        false;  // True when waiting for next key press
 
     // Input abstraction layer (templated on Game::Action)
     std::unique_ptr<GameInputManager> input_manager_;
