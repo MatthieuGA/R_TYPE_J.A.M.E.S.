@@ -11,6 +11,7 @@
 #include "game/InputRebindHelper.hpp"
 #include "include/AccessibilitySettings.hpp"
 #include "include/ColorsConst.hpp"
+#include "include/GameplaySettings.hpp"
 #include "include/LayersConst.hpp"
 #include "include/components/CoreComponents.hpp"
 #include "include/components/RenderComponent.hpp"
@@ -30,6 +31,7 @@ void SettingsScene::InitScene(Engine::registry &reg, GameWorld &gameWorld) {
     inputs_tab_entities_.clear();
     accessibility_tab_entities_.clear();
     graphics_tab_entities_.clear();
+    gameplay_tab_entities_.clear();
     audio_tab_entities_.clear();
     entity_original_y_.clear();
     rebind_buttons_.clear();
@@ -61,6 +63,7 @@ void SettingsScene::DestroyScene(Engine::registry &reg) {
     inputs_tab_entities_.clear();
     accessibility_tab_entities_.clear();
     graphics_tab_entities_.clear();
+    gameplay_tab_entities_.clear();
     audio_tab_entities_.clear();
     entity_original_y_.clear();
     rebind_buttons_.clear();
@@ -129,6 +132,7 @@ void SettingsScene::InitUI(Engine::registry &reg, GameWorld &gameWorld) {
     InitInputsTab(reg, gameWorld);
     InitAccessibilityTab(reg, gameWorld);
     InitGraphicsTab(reg, gameWorld);
+    InitGameplayTab(reg, gameWorld);
     InitAudioTab(reg, gameWorld);
 
     // Show only the active tab
@@ -147,9 +151,9 @@ void SettingsScene::InitUI(Engine::registry &reg, GameWorld &gameWorld) {
 void SettingsScene::InitTabButtons(
     Engine::registry &reg, GameWorld &gameWorld) {
     const float tab_y = 180.0f;
-    const float tab_spacing = 280.0f;
-    // Center 4 buttons: start_x = center - (3 * spacing / 2)
-    const float tab_start_x = 960.0f - (1.5f * tab_spacing);
+    const float tab_spacing = 230.0f;
+    // Center 5 buttons: start_x = center - (2 * spacing)
+    const float tab_start_x = 960.0f - (2.0f * tab_spacing);
 
     // Inputs Tab Button
     CreateButton(
@@ -167,9 +171,14 @@ void SettingsScene::InitTabButtons(
         reg, gameWorld, "Graphics", tab_start_x + tab_spacing * 2, tab_y,
         [this, &reg]() { SwitchToTab(reg, SettingsTab::Graphics); }, 2.0f);
 
+    // Gameplay Tab Button
+    CreateButton(
+        reg, gameWorld, "Gameplay", tab_start_x + tab_spacing * 3, tab_y,
+        [this, &reg]() { SwitchToTab(reg, SettingsTab::Gameplay); }, 2.0f);
+
     // Audio Tab Button
     CreateButton(
-        reg, gameWorld, "Audio", tab_start_x + tab_spacing * 3, tab_y,
+        reg, gameWorld, "Audio", tab_start_x + tab_spacing * 4, tab_y,
         [this, &reg]() { SwitchToTab(reg, SettingsTab::Audio); }, 2.0f);
 }
 
@@ -768,6 +777,216 @@ void SettingsScene::InitGraphicsTab(
     }
 }
 
+void SettingsScene::InitGameplayTab(
+    Engine::registry &reg, GameWorld &gameWorld) {
+    const float content_start_y = 280.0f;
+    float current_y = content_start_y;
+
+    // --- Gameplay Title ---
+    auto title_entity = CreateEntityInScene(reg);
+    reg.AddComponent<Component::Transform>(
+        title_entity, Component::Transform{960.0f, current_y, 0.0f, 2.5f,
+                          Component::Transform::CENTER});
+    reg.AddComponent<Component::Text>(title_entity,
+        Component::Text("dogica.ttf", "Gameplay Settings", 14, LAYER_UI + 2,
+            WHITE_BLUE, Engine::Graphics::Vector2f(0.0f, 0.0f)));
+    gameplay_tab_entities_.push_back(title_entity);
+
+    current_y += 80.0f;
+
+    // --- Game Speed Label ---
+    auto speed_label_entity = CreateEntityInScene(reg);
+    reg.AddComponent<Component::Transform>(
+        speed_label_entity, Component::Transform{800.0f, current_y, 0.0f, 2.f,
+                                Component::Transform::RIGHT_CENTER});
+    reg.AddComponent<Component::Text>(speed_label_entity,
+        Component::Text("dogica.ttf", "Game Speed:", 14, LAYER_UI + 2,
+            WHITE_BLUE, Engine::Graphics::Vector2f(0.0f, 0.0f)));
+    gameplay_tab_entities_.push_back(speed_label_entity);
+
+    // --- Game Speed Slider ---
+    size_t entities_before_speed = scene_entities_.size();
+    CreateSlider(
+        reg, gameWorld, 1060.0f, current_y, 150.0f, 0.25f, 2.0f,
+        gameWorld.gameplay_settings_.game_speed,
+        [&gameWorld](float value) {
+            gameWorld.gameplay_settings_.game_speed = value;
+            std::cout << "[Settings] Game speed set to: " << value << "x"
+                      << std::endl;
+        },
+        3.0f);
+    for (size_t i = entities_before_speed; i < scene_entities_.size(); ++i) {
+        gameplay_tab_entities_.push_back(scene_entities_[i]);
+    }
+
+    current_y += 80.0f;
+
+    // --- Auto-Fire Toggle ---
+    auto af_label = CreateEntityInScene(reg);
+    reg.AddComponent<Component::Transform>(
+        af_label, Component::Transform{700.0f, current_y, 0.0f, 1.8f,
+                      Component::Transform::RIGHT_CENTER});
+    reg.AddComponent<Component::Text>(
+        af_label, Component::Text("dogica.ttf", "Auto-Fire:", 12, LAYER_UI + 2,
+                      WHITE_BLUE, Engine::Graphics::Vector2f(0.0f, 0.0f)));
+    gameplay_tab_entities_.push_back(af_label);
+
+    static std::optional<Engine::entity> auto_fire_btn_entity;
+    auto af_btn = CreateButton(
+        reg, gameWorld,
+        gameWorld.gameplay_settings_.auto_fire_enabled ? "ON" : "OFF", 1050.0f,
+        current_y,
+        [this, &gameWorld, &reg]() {
+            gameWorld.gameplay_settings_.auto_fire_enabled =
+                !gameWorld.gameplay_settings_.auto_fire_enabled;
+            std::cout << "[Settings] Auto-Fire: "
+                      << (gameWorld.gameplay_settings_.auto_fire_enabled
+                                 ? "ON (Accessibility: Hold to fire)"
+                                 : "OFF (Original behavior)")
+                      << std::endl;
+            // Update button text
+            if (auto_fire_btn_entity.has_value()) {
+                try {
+                    auto &text = reg.GetComponent<Component::Text>(
+                        auto_fire_btn_entity.value());
+                    text.content =
+                        gameWorld.gameplay_settings_.auto_fire_enabled ? "ON"
+                                                                       : "OFF";
+                } catch (...) {}
+            }
+        },
+        2.0f);
+    auto_fire_btn_entity = af_btn;
+    gameplay_tab_entities_.push_back(af_btn);
+
+    // Auto-Fire description
+    auto af_desc = CreateEntityInScene(reg);
+    reg.AddComponent<Component::Transform>(
+        af_desc, Component::Transform{960.0f, current_y + 35.0f, 0.0f, 1.2f,
+                     Component::Transform::CENTER});
+    reg.AddComponent<Component::Text>(af_desc,
+        Component::Text("dogica.ttf", "Hold shoot key to fire continuously", 9,
+            LAYER_UI + 2, Engine::Graphics::Color(200, 200, 200),
+            Engine::Graphics::Vector2f(0.0f, 0.0f)));
+    gameplay_tab_entities_.push_back(af_desc);
+
+    current_y += 80.0f;
+
+    // --- Killable Enemy Projectiles Toggle ---
+    auto kep_label = CreateEntityInScene(reg);
+    reg.AddComponent<Component::Transform>(
+        kep_label, Component::Transform{700.0f, current_y, 0.0f, 1.8f,
+                       Component::Transform::RIGHT_CENTER});
+    reg.AddComponent<Component::Text>(kep_label,
+        Component::Text("dogica.ttf", "Killable Enemy Proj.:", 12,
+            LAYER_UI + 2, WHITE_BLUE, Engine::Graphics::Vector2f(0.0f, 0.0f)));
+    gameplay_tab_entities_.push_back(kep_label);
+
+    static std::optional<Engine::entity> kep_btn_entity;
+    auto kep_btn = CreateButton(
+        reg, gameWorld,
+        gameWorld.gameplay_settings_.killable_enemy_projectiles ? "ON" : "OFF",
+        1050.0f, current_y,
+        [this, &gameWorld, &reg]() {
+            gameWorld.gameplay_settings_.killable_enemy_projectiles =
+                !gameWorld.gameplay_settings_.killable_enemy_projectiles;
+            std::cout
+                << "[Settings] Killable Enemy Projectiles: "
+                << (gameWorld.gameplay_settings_.killable_enemy_projectiles
+                           ? "ON (Your projectiles destroy enemy fire)"
+                           : "OFF (Standard behavior)")
+                << std::endl;
+            // Update button text
+            if (kep_btn_entity.has_value()) {
+                try {
+                    auto &text = reg.GetComponent<Component::Text>(
+                        kep_btn_entity.value());
+                    text.content =
+                        gameWorld.gameplay_settings_.killable_enemy_projectiles
+                            ? "ON"
+                            : "OFF";
+                } catch (...) {}
+            }
+        },
+        2.0f);
+    kep_btn_entity = kep_btn;
+    gameplay_tab_entities_.push_back(kep_btn);
+
+    // KEP description
+    auto kep_desc = CreateEntityInScene(reg);
+    reg.AddComponent<Component::Transform>(
+        kep_desc, Component::Transform{960.0f, current_y + 35.0f, 0.0f, 1.2f,
+                      Component::Transform::CENTER});
+    reg.AddComponent<Component::Text>(
+        kep_desc, Component::Text("dogica.ttf",
+                      "Player projectiles can destroy enemy fire", 9,
+                      LAYER_UI + 2, Engine::Graphics::Color(200, 200, 200),
+                      Engine::Graphics::Vector2f(0.0f, 0.0f)));
+    gameplay_tab_entities_.push_back(kep_desc);
+
+    current_y += 80.0f;
+
+    // --- Difficulty Dropdown ---
+    auto diff_label = CreateEntityInScene(reg);
+    reg.AddComponent<Component::Transform>(
+        diff_label, Component::Transform{700.0f, current_y, 0.0f, 1.8f,
+                        Component::Transform::RIGHT_CENTER});
+    reg.AddComponent<Component::Text>(diff_label,
+        Component::Text("dogica.ttf", "Difficulty:", 12, LAYER_UI + 2,
+            WHITE_BLUE, Engine::Graphics::Vector2f(0.0f, 0.0f)));
+    gameplay_tab_entities_.push_back(diff_label);
+
+    std::vector<std::pair<std::string, DifficultyLevel>> difficulty_levels = {
+        {"Easy", DifficultyLevel::Easy}, {"Normal", DifficultyLevel::Normal},
+        {"Hard", DifficultyLevel::Hard}};
+
+    float diff_btn_x = 950.0f;
+    for (const auto &[diff_label_text, diff_level] : difficulty_levels) {
+        auto diff_btn = CreateButton(
+            reg, gameWorld, diff_label_text, diff_btn_x, current_y,
+            [this, &gameWorld, diff_level]() {
+                gameWorld.gameplay_settings_.difficulty = diff_level;
+                std::string desc;
+                switch (diff_level) {
+                    case DifficultyLevel::Easy:
+                        desc = "Easy (25% damage reduction, slower enemies)";
+                        break;
+                    case DifficultyLevel::Normal:
+                        desc = "Normal";
+                        break;
+                    case DifficultyLevel::Hard:
+                        desc = "Hard (10% damage increase, faster enemies)";
+                        break;
+                }
+                std::cout << "[Settings] Difficulty set to: " << desc
+                          << std::endl;
+            },
+            1.8f);
+        gameplay_tab_entities_.push_back(diff_btn);
+        diff_btn_x += 180.0f;
+    }
+
+    // Difficulty description
+    auto diff_desc = CreateEntityInScene(reg);
+    reg.AddComponent<Component::Transform>(
+        diff_desc, Component::Transform{960.0f, current_y + 35.0f, 0.0f, 1.2f,
+                       Component::Transform::CENTER});
+    reg.AddComponent<Component::Text>(
+        diff_desc, Component::Text("dogica.ttf",
+                       "Easy: reduced damage  |  Hard: faster enemy fire", 9,
+                       LAYER_UI + 2, Engine::Graphics::Color(200, 200, 200),
+                       Engine::Graphics::Vector2f(0.0f, 0.0f)));
+    gameplay_tab_entities_.push_back(diff_desc);
+
+    // Store original Y positions for all gameplay tab entities
+    for (auto &entity : gameplay_tab_entities_) {
+        try {
+            auto &transform = reg.GetComponent<Component::Transform>(entity);
+            entity_original_y_[entity.GetId()] = transform.y;
+        } catch (...) {}
+    }
+}
+
 void SettingsScene::InitAudioTab(Engine::registry &reg, GameWorld &gameWorld) {
     const float content_start_y = 280.0f;
 
@@ -875,6 +1094,7 @@ void SettingsScene::SwitchToTab(Engine::registry &reg, SettingsTab tab) {
     set_visibility(inputs_tab_entities_, false);
     set_visibility(accessibility_tab_entities_, false);
     set_visibility(graphics_tab_entities_, false);
+    set_visibility(gameplay_tab_entities_, false);
     set_visibility(audio_tab_entities_, false);
 
     // Show active tab
@@ -887,6 +1107,9 @@ void SettingsScene::SwitchToTab(Engine::registry &reg, SettingsTab tab) {
             break;
         case SettingsTab::Graphics:
             set_visibility(graphics_tab_entities_, true);
+            break;
+        case SettingsTab::Gameplay:
+            set_visibility(gameplay_tab_entities_, true);
             break;
         case SettingsTab::Audio:
             set_visibility(audio_tab_entities_, true);
