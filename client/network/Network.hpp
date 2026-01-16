@@ -7,8 +7,10 @@
 #include <array>
 #include <atomic>
 #include <cstdint>
+#include <functional>
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <boost/asio.hpp>
@@ -94,6 +96,14 @@ class ServerConnection {
      * @param speed Game speed multiplier (0.25x to 2.0x).
      */
     void SendGameSpeed(float speed);
+
+    /**
+     * @brief Set callback for when game speed is changed by another player.
+     * @param callback Function to call with the new speed value.
+     */
+    void SetOnGameSpeedChanged(std::function<void(float)> callback) {
+        on_game_speed_changed_ = std::move(callback);
+    }
 
     /**
      * @brief Pop a world snapshot if available.
@@ -241,6 +251,10 @@ class ServerConnection {
     void HandleNotifyDisconnect(const std::vector<uint8_t> &data);
     void HandleNotifyConnect(const std::vector<uint8_t> &data);
     void HandleNotifyReady(const std::vector<uint8_t> &data);
+    void HandleNotifyGameSpeed(const std::vector<uint8_t> &data);
+
+    // Callback for game speed change notifications
+    std::function<void(float)> on_game_speed_changed_;
 
     // ASIO components
     boost::asio::io_context &io_context_;
