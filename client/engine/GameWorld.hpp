@@ -24,6 +24,7 @@
 #include "game/GameInputBindings.hpp"
 #include "graphics/IRenderContext.hpp"
 #include "include/AccessibilitySettings.hpp"
+#include "include/GraphicsSettings.hpp"
 #include "include/WindowConst.hpp"
 #include "include/registry.hpp"
 #include "input/SFMLInputBackend.hpp"
@@ -93,6 +94,10 @@ struct GameWorld {
 
     // Accessibility settings (applies to UI only)
     AccessibilitySettings accessibility_settings_;
+
+    // Graphics settings (resolution, window mode, VSync, frame rate,
+    // anti-aliasing)
+    GraphicsSettings graphics_settings_;
 
     // Graphics backend (owned by GameWorld as of PR 1.9)
     std::unique_ptr<Engine::Graphics::IRenderContext> render_context_;
