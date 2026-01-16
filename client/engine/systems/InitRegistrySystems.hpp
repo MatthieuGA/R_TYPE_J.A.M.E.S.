@@ -60,6 +60,8 @@ void InitializeDrawableStaticSystem(Eng::registry &reg,
 void InputSystem(Eng::registry &reg, GameInputManager &input_manager,
     Eng::sparse_array<Com::Inputs> &inputs);
 
+void InputRebindSystem(GameWorld &game_world);
+
 void MovementSystem(Eng::registry &reg, const float dt,
     Eng::sparse_array<Com::Transform> &transforms,
     Eng::sparse_array<Com::Velocity> &velocities);
