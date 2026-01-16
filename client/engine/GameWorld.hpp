@@ -71,6 +71,11 @@ struct GameWorld {
                             // rebinding)
     bool waiting_for_rebind_key_ =
         false;  // True when waiting for next key press
+    std::optional<Engine::entity>
+        rebinding_button_entity_;  // Button entity to highlight during rebind
+
+    // Callback for when a key binding is added (for real-time UI refresh)
+    std::function<void(Game::Action)> on_binding_added_;
 
     // Input abstraction layer (templated on Game::Action)
     std::unique_ptr<GameInputManager> input_manager_;
