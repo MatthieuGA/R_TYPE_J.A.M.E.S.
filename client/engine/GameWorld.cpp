@@ -56,6 +56,26 @@ GameWorld::GameWorld(std::unique_ptr<Engine::Graphics::IWindow> window,
             on_external_game_speed_change_(speed);
         }
     });
+
+    // Set up callback to sync difficulty when another player changes it
+    server_connection_->SetOnDifficultyChanged([this](uint8_t difficulty) {
+        gameplay_settings_.difficulty =
+            static_cast<DifficultyLevel>(difficulty);
+        // Fire event so UI can update button highlighting
+        if (on_external_difficulty_change_) {
+            on_external_difficulty_change_(difficulty);
+        }
+    });
+
+    // Set up callback to sync killable projectiles when another player changes
+    // it
+    server_connection_->SetOnKillableProjectilesChanged([this](bool enabled) {
+        gameplay_settings_.killable_enemy_projectiles = enabled;
+        // Fire event so UI can update button text
+        if (on_external_killable_projectiles_change_) {
+            on_external_killable_projectiles_change_(enabled);
+        }
+    });
 }
 
 sf::RenderWindow &GameWorld::GetNativeWindow() {
