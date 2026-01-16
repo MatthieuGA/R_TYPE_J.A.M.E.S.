@@ -325,74 +325,6 @@ void SettingsScene::InitAccessibilityTab(
             LAYER_UI + 2, WHITE_BLUE, Engine::Graphics::Vector2f(0.0f, 0.0f)));
     accessibility_tab_entities_.push_back(title_entity);
 
-    // --- Game Speed Label ---
-    auto speed_label_entity = CreateEntityInScene(reg);
-    reg.AddComponent<Component::Transform>(speed_label_entity,
-        Component::Transform{800.0f, content_start_y + 80.0f, 0.0f, 2.f,
-            Component::Transform::RIGHT_CENTER});
-    reg.AddComponent<Component::Text>(speed_label_entity,
-        Component::Text("dogica.ttf", "Game Speed:", 14, LAYER_UI + 2,
-            WHITE_BLUE, Engine::Graphics::Vector2f(0.0f, 0.0f)));
-    accessibility_tab_entities_.push_back(speed_label_entity);
-
-    // --- Game Speed Slider ---
-    // Store slider parameters for external position updates
-    speed_slider_x_ = 1060.0f;
-    speed_slider_width_ = 150.0f;
-    speed_slider_scale_ = 3.0f;
-    speed_slider_min_ = 0.25f;
-    speed_slider_max_ = 2.0f;
-
-    // Note: CreateSlider creates track + knob entities internally
-    // We track the current scene_entities_ size to capture both
-    size_t entities_before = scene_entities_.size();
-    auto knob_entity = CreateSlider(
-        reg, gameWorld, speed_slider_x_, content_start_y + 80.0f,
-        speed_slider_width_, speed_slider_min_, speed_slider_max_,
-        gameWorld.game_speed_,
-        [&gameWorld](float value) {
-            std::cout << "[Settings] Game speed slider changed to: " << value
-                      << std::endl;
-            gameWorld.game_speed_ = value;
-            if (gameWorld.server_connection_) {
-                gameWorld.server_connection_->SendGameSpeed(value);
-            } else {
-                std::cout << "[Settings] No server connection, speed change "
-                             "only local"
-                          << std::endl;
-            }
-        },
-        speed_slider_scale_);
-    speed_slider_knob_ = knob_entity;
-
-    // Add slider entities (track and knob) to tab
-    for (size_t i = entities_before; i < scene_entities_.size(); ++i) {
-        accessibility_tab_entities_.push_back(scene_entities_[i]);
-    }
-
-    // Register callback to update slider position when speed changes
-    // externally
-    gameWorld.on_external_game_speed_change_ = [this, &reg](float speed) {
-        if (!speed_slider_knob_.has_value()) {
-            return;
-        }
-        try {
-            auto &transform =
-                reg.GetComponent<Component::Transform>(*speed_slider_knob_);
-            // Calculate new knob position from speed value
-            float value_range = speed_slider_max_ - speed_slider_min_;
-            float normalized_value = (speed - speed_slider_min_) / value_range;
-            float knob_offset = (normalized_value - 0.5f) *
-                                speed_slider_width_ * speed_slider_scale_;
-            transform.x = speed_slider_x_ + knob_offset;
-            std::cout << "[Settings] Speed slider updated externally to: "
-                      << speed << " (x=" << transform.x << ")" << std::endl;
-        } catch (const std::exception &e) {
-            std::cerr << "[Settings] Failed to update speed slider: "
-                      << e.what() << std::endl;
-        }
-    };
-
     // --- High Contrast Toggle ---
     float toggle_y = content_start_y + 180.0f;
 
@@ -805,19 +737,61 @@ void SettingsScene::InitGameplayTab(
     gameplay_tab_entities_.push_back(speed_label_entity);
 
     // --- Game Speed Slider ---
+    // Store slider parameters for external position updates
+    speed_slider_x_ = 1060.0f;
+    speed_slider_width_ = 150.0f;
+    speed_slider_scale_ = 3.0f;
+    speed_slider_min_ = 0.25f;
+    speed_slider_max_ = 2.0f;
+
+    // Note: CreateSlider creates track + knob entities internally
+    // We track the current scene_entities_ size to capture both
     size_t entities_before_speed = scene_entities_.size();
-    CreateSlider(
-        reg, gameWorld, 1060.0f, current_y, 150.0f, 0.25f, 2.0f,
-        gameWorld.gameplay_settings_.game_speed,
+    auto knob_entity = CreateSlider(
+        reg, gameWorld, speed_slider_x_, current_y, speed_slider_width_,
+        speed_slider_min_, speed_slider_max_, gameWorld.game_speed_,
         [&gameWorld](float value) {
-            gameWorld.gameplay_settings_.game_speed = value;
-            std::cout << "[Settings] Game speed set to: " << value << "x"
+            std::cout << "[Settings] Game speed slider changed to: " << value
                       << std::endl;
+            gameWorld.game_speed_ = value;
+            if (gameWorld.server_connection_) {
+                gameWorld.server_connection_->SendGameSpeed(value);
+            } else {
+                std::cout << "[Settings] No server connection, speed change "
+                             "only local"
+                          << std::endl;
+            }
         },
-        3.0f);
+        speed_slider_scale_);
+    speed_slider_knob_ = knob_entity;
+
+    // Add slider entities (track and knob) to tab
     for (size_t i = entities_before_speed; i < scene_entities_.size(); ++i) {
         gameplay_tab_entities_.push_back(scene_entities_[i]);
     }
+
+    // Register callback to update slider position when speed changes
+    // externally
+    gameWorld.on_external_game_speed_change_ = [this, &reg](float speed) {
+        if (!speed_slider_knob_.has_value()) {
+            return;
+        }
+        try {
+            auto &transform =
+                reg.GetComponent<Component::Transform>(*speed_slider_knob_);
+            // Calculate new knob position from speed value
+            float value_range = speed_slider_max_ - speed_slider_min_;
+            float normalized_value = (speed - speed_slider_min_) / value_range;
+            float knob_offset = (normalized_value - 0.5f) *
+                                speed_slider_width_ * speed_slider_scale_;
+            transform.x = speed_slider_x_ + knob_offset;
+            std::cout << "[Settings] Speed slider updated externally to: "
+                      << speed << " (x=" << transform.x << ")" << std::endl;
+        } catch (const std::exception &e) {
+            std::cerr << "[Settings] Failed to update speed slider: "
+                      << e.what() << std::endl;
+        }
+    };
 
     current_y += 80.0f;
 
