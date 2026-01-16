@@ -447,7 +447,7 @@ void SettingsScene::InitAccessibilityTab(
     accessibility_tab_entities_.push_back(ts_small_btn);
 
     auto ts_normal_btn = CreateButton(
-        reg, gameWorld, "Normal", 980.0f, toggle_y,
+        reg, gameWorld, "Normal", 1100.0f, toggle_y,
         [this, &gameWorld]() {
             gameWorld.accessibility_settings_.text_scale =
                 TextSizeScale::Normal;
@@ -457,7 +457,7 @@ void SettingsScene::InitAccessibilityTab(
     accessibility_tab_entities_.push_back(ts_normal_btn);
 
     auto ts_large_btn = CreateButton(
-        reg, gameWorld, "Large", 1110.0f, toggle_y,
+        reg, gameWorld, "Large", 1350.0f, toggle_y,
         [this, &gameWorld]() {
             gameWorld.accessibility_settings_.text_scale =
                 TextSizeScale::Large;
