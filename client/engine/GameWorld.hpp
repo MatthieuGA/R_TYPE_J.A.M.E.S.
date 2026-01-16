@@ -72,27 +72,32 @@ struct GameWorld {
     boost::asio::io_context io_context_;
     std::unique_ptr<client::ServerConnection> server_connection_;
 
-    // Graphics abstraction (Phase 4 integration)
-    Engine::Graphics::IRenderContext *render_context_ = nullptr;
+    // Graphics backend (owned by GameWorld as of PR 1.9)
+    std::unique_ptr<Engine::Graphics::IRenderContext> render_context_;
 
-    void SetRenderContext(Engine::Graphics::IRenderContext *ctx) {
-        render_context_ = ctx;
-    }
-
+    /**
+     * @brief Get render context pointer (guaranteed non-null).
+     *
+     * @return Pointer to the owned render context
+     */
     Engine::Graphics::IRenderContext *GetRenderContext() {
-        return render_context_;
+        return render_context_.get();
     }
 
     /**
-     * @brief Construct game world with injected window.
+     * @brief Construct game world with injected window and backend selection.
      *
      * @param window Window interface (ownership transferred)
+     * @param backend_name Name of registered graphics backend (e.g., "sfml")
      * @param server_ip Server IP address
      * @param tcp_port TCP port for control messages
      * @param udp_port UDP port for game data
+     *
+     * @throws std::runtime_error if backend_name is not registered
      */
     GameWorld(std::unique_ptr<Engine::Graphics::IWindow> window,
-        const std::string &server_ip, uint16_t tcp_port, uint16_t udp_port);
+        const std::string &backend_name, const std::string &server_ip,
+        uint16_t tcp_port, uint16_t udp_port);
 
     /**
      * @brief Get native SFML window reference (TEMPORARY - PR 1.7 SCOPE).
@@ -102,7 +107,7 @@ struct GameWorld {
      *
      * @return Reference to the underlying sf::RenderWindow
      *
-     * TODO(PR 1.8/1.9): Remove this once rendering systems use GraphicsBackend
+     * TODO(PR 2.0): Remove this once all rendering systems use IRenderContext
      */
     sf::RenderWindow &GetNativeWindow();
 };

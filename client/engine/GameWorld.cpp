@@ -11,12 +11,14 @@
 
 #include <SFML/Graphics.hpp>
 
+#include "graphics/GraphicsBackendFactory.hpp"
 #include "platform/SFMLWindow.hpp"
 
 namespace Rtype::Client {
 
 GameWorld::GameWorld(std::unique_ptr<Engine::Graphics::IWindow> window,
-    const std::string &server_ip, uint16_t tcp_port, uint16_t udp_port)
+    const std::string &backend_name, const std::string &server_ip,
+    uint16_t tcp_port, uint16_t udp_port)
     : window_(std::move(window)) {
     registry_ = Engine::registry();
     delta_time_clock_ = Engine::Time::Clock();
@@ -25,6 +27,14 @@ GameWorld::GameWorld(std::unique_ptr<Engine::Graphics::IWindow> window,
     auto size = window_->GetSize();
     window_size_ = Engine::Graphics::Vector2f(
         static_cast<float>(size.x), static_cast<float>(size.y));
+
+    // Create graphics backend using factory
+    render_context_ = Graphics::GraphicsBackendFactory::Create(
+        backend_name, GetNativeWindow());
+    if (!render_context_) {
+        throw std::runtime_error(
+            "Failed to create graphics backend: " + backend_name);
+    }
 
     // Note: input_manager_ and event_source_ will be injected from main.cpp
     // to keep SFML dependencies out of this header

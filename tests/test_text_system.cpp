@@ -5,6 +5,7 @@
 #include <string>
 #include <utility>
 
+#include "TestGraphicsSetup.hpp"  // NOLINT(build/include_subdir)
 #include "engine/GameWorld.hpp"
 #include "engine/systems/InitRegistrySystems.hpp"
 #include "include/components/CoreComponents.hpp"
@@ -38,6 +39,8 @@ TEST(TextComponent, Defaults) {
 }
 
 TEST(TextRenderSystem, LoadsAndAppliesTransform) {
+    TestHelper::RegisterTestBackend();
+
     Eng::registry reg;
     Eng::sparse_array<Com::Transform> transforms;
     Eng::sparse_array<Com::Text> texts;
@@ -54,7 +57,7 @@ TEST(TextRenderSystem, LoadsAndAppliesTransform) {
     auto window = std::make_unique<Rtype::Client::Platform::SFMLWindow>(
         10, 10, "text-test");
     Rtype::Client::GameWorld game_world(
-        std::move(window), "127.0.0.1", 50000, 50000);
+        std::move(window), "test", "127.0.0.1", 50000, 50000);
 
     DrawTextRenderSystem(reg, game_world, transforms, texts);
 
