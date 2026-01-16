@@ -23,6 +23,7 @@ void Server::RegisterComponents() {
     registry_.RegisterComponent<Component::FrameEvents>();
     registry_.RegisterComponent<Component::EnemyShootTag>();
     registry_.RegisterComponent<Component::Projectile>();
+    registry_.RegisterComponent<Component::DeflectedProjectiles>();
     registry_.RegisterComponent<Component::Health>();
     registry_.RegisterComponent<Component::StatsGame>();
     registry_.RegisterComponent<Component::ParrallaxLayer>();

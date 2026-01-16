@@ -56,6 +56,8 @@ void SettingsScene::DestroyScene(Engine::registry &reg) {
     // Clear external callbacks to prevent them from referencing dead entities
     if (game_world_) {
         game_world_->on_external_game_speed_change_ = nullptr;
+        game_world_->on_external_difficulty_change_ = nullptr;
+        game_world_->on_external_killable_projectiles_change_ = nullptr;
         game_world_->on_binding_added_ = nullptr;
     }
 
@@ -793,6 +795,51 @@ void SettingsScene::InitGameplayTab(
         }
     };
 
+    // Register callback to update difficulty button colors when difficulty
+    // changes externally
+    gameWorld.on_external_difficulty_change_ = [this, &reg](
+                                                   uint8_t difficulty) {
+        DifficultyLevel level = static_cast<DifficultyLevel>(difficulty);
+        std::cout << "[Settings] Difficulty updated externally to: "
+                  << static_cast<int>(difficulty) << std::endl;
+
+        // Update button colors (yellow for selected, white for others)
+        for (const auto &[btn_level, entity] : difficulty_btn_entities_) {
+            try {
+                auto &text = reg.GetComponent<Component::Text>(entity);
+                text.color = (btn_level == level)
+                                 ? Engine::Graphics::Color(
+                                       255, 255, 0)  // Yellow for selected
+                                 : Engine::Graphics::Color(
+                                       255, 255, 255);  // White for others
+            } catch (const std::exception &e) {
+                std::cerr
+                    << "[Settings] Failed to update difficulty button color: "
+                    << e.what() << std::endl;
+            }
+        }
+    };
+
+    // Register callback to update killable projectiles button when setting
+    // changes externally
+    gameWorld.on_external_killable_projectiles_change_ = [this, &reg](
+                                                             bool enabled) {
+        std::cout << "[Settings] Killable projectiles updated externally to: "
+                  << (enabled ? "ON" : "OFF") << std::endl;
+
+        if (kep_btn_entity_.has_value()) {
+            try {
+                auto &text =
+                    reg.GetComponent<Component::Text>(kep_btn_entity_.value());
+                text.content = enabled ? "ON" : "OFF";
+            } catch (const std::exception &e) {
+                std::cerr << "[Settings] Failed to update killable "
+                             "projectiles button: "
+                          << e.what() << std::endl;
+            }
+        }
+    };
+
     current_y += 80.0f;
 
     // --- Auto-Fire Toggle ---
@@ -856,7 +903,6 @@ void SettingsScene::InitGameplayTab(
             LAYER_UI + 2, WHITE_BLUE, Engine::Graphics::Vector2f(0.0f, 0.0f)));
     gameplay_tab_entities_.push_back(kep_label);
 
-    static std::optional<Engine::entity> kep_btn_entity;
     auto kep_btn = CreateButton(
         reg, gameWorld,
         gameWorld.gameplay_settings_.killable_enemy_projectiles ? "ON" : "OFF",
@@ -880,10 +926,10 @@ void SettingsScene::InitGameplayTab(
                           << std::endl;
             }
             // Update button text
-            if (kep_btn_entity.has_value()) {
+            if (kep_btn_entity_.has_value()) {
                 try {
                     auto &text = reg.GetComponent<Component::Text>(
-                        kep_btn_entity.value());
+                        kep_btn_entity_.value());
                     text.content =
                         gameWorld.gameplay_settings_.killable_enemy_projectiles
                             ? "ON"
@@ -892,7 +938,7 @@ void SettingsScene::InitGameplayTab(
             }
         },
         2.0f);
-    kep_btn_entity = kep_btn;
+    kep_btn_entity_ = kep_btn;
     gameplay_tab_entities_.push_back(kep_btn);
 
     // KEP description
@@ -927,7 +973,7 @@ void SettingsScene::InitGameplayTab(
     for (const auto &[diff_label_text, diff_level] : difficulty_levels) {
         auto diff_btn = CreateButton(
             reg, gameWorld, diff_label_text, diff_btn_x, current_y,
-            [this, &gameWorld, diff_level]() {
+            [this, &gameWorld, &reg, diff_level]() {
                 gameWorld.gameplay_settings_.difficulty = diff_level;
                 std::string desc;
                 switch (diff_level) {
@@ -953,8 +999,34 @@ void SettingsScene::InitGameplayTab(
                            "only local"
                         << std::endl;
                 }
+                // Update button colors (yellow for selected, white for others)
+                for (const auto &[level, entity] : difficulty_btn_entities_) {
+                    try {
+                        auto &text = reg.GetComponent<Component::Text>(entity);
+                        text.color = (level == diff_level)
+                                         ? Engine::Graphics::Color(255, 255,
+                                               0)  // Yellow for selected
+                                         : Engine::Graphics::Color(255, 255,
+                                               255);  // White for others
+                    } catch (...) {}
+                }
             },
             1.8f);
+
+        // Store the button entity for later color updates
+        difficulty_btn_entities_.insert({diff_level, diff_btn});
+
+        // Set initial color (yellow if current difficulty, white otherwise)
+        try {
+            auto &text = reg.GetComponent<Component::Text>(diff_btn);
+            text.color =
+                (diff_level == gameWorld.gameplay_settings_.difficulty)
+                    ? Engine::Graphics::Color(
+                          255, 255, 0)  // Yellow for selected
+                    : Engine::Graphics::Color(
+                          255, 255, 255);  // White for others
+        } catch (...) {}
+
         gameplay_tab_entities_.push_back(diff_btn);
         diff_btn_x += 180.0f;
     }

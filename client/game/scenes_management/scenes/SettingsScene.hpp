@@ -107,6 +107,12 @@ class SettingsScene : public Scene_A {
     std::optional<Engine::entity> hc_toggle_btn_entity_;  // High contrast
     std::optional<Engine::entity> rv_toggle_btn_entity_;  // Reduced visuals
 
+    // Gameplay settings button entities (for external sync)
+    std::optional<Engine::entity>
+        kep_btn_entity_;  // Killable enemy projectiles
+    std::map<DifficultyLevel, Engine::entity>
+        difficulty_btn_entities_;  // Difficulty buttons
+
     // Tab state
     SettingsTab active_tab_ = SettingsTab::Inputs;
     std::vector<Engine::entity> inputs_tab_entities_;

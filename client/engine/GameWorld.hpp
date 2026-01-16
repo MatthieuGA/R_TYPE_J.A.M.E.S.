@@ -93,10 +93,10 @@ struct GameWorld {
     // Callback for when game speed is changed by another player (for UI sync)
     std::function<void(float)> on_external_game_speed_change_;
 
-    // TODO(server-sync): Add callbacks for external difficulty and killable
-    // projectiles changes when implementing server synchronization
-    // std::function<void(uint8_t)> on_external_difficulty_change_;
-    // std::function<void(bool)> on_external_killable_projectiles_change_;
+    // Callbacks for when difficulty/killable projectiles changed by another
+    // player
+    std::function<void(uint8_t)> on_external_difficulty_change_;
+    std::function<void(bool)> on_external_killable_projectiles_change_;
 
     // Accessibility settings (applies to UI only)
     AccessibilitySettings accessibility_settings_;

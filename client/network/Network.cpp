@@ -24,6 +24,8 @@ constexpr uint8_t kOpSetGameSpeed = 0x0A;
 constexpr uint8_t kOpNotifyGameSpeed = 0x0B;
 constexpr uint8_t kOpSetDifficulty = 0x0C;
 constexpr uint8_t kOpSetKillableProjectiles = 0x0D;
+constexpr uint8_t kOpNotifyDifficulty = 0x0E;
+constexpr uint8_t kOpNotifyKillableProjectiles = 0x0F;
 constexpr uint8_t kOpPlayerInput = 0x10;
 constexpr uint8_t kOpWorldSnapshot = 0x20;
 
@@ -235,6 +237,10 @@ void ServerConnection::AsyncReceiveTCP() {
                         HandleNotifyReady(data);
                     } else if (opcode == kOpNotifyGameSpeed) {
                         HandleNotifyGameSpeed(data);
+                    } else if (opcode == kOpNotifyDifficulty) {
+                        HandleNotifyDifficulty(data);
+                    } else if (opcode == kOpNotifyKillableProjectiles) {
+                        HandleNotifyKillableProjectiles(data);
                     } else {
                         std::cout << "[Network] Unhandled TCP opcode: 0x"
                                   << std::hex << static_cast<int>(opcode)
@@ -474,6 +480,44 @@ void ServerConnection::HandleNotifyGameSpeed(
     // Invoke callback if registered
     if (on_game_speed_changed_) {
         on_game_speed_changed_(speed);
+    }
+}
+
+void ServerConnection::HandleNotifyDifficulty(
+    const std::vector<uint8_t> &data) {
+    // Payload: 1 byte (difficulty level)
+    if (data.size() < 1) {
+        std::cerr << "[Network] NOTIFY_DIFFICULTY malformed (size="
+                  << data.size() << ", expected 1)" << std::endl;
+        return;
+    }
+
+    uint8_t difficulty = data[0];
+    std::cout << "[Network] NOTIFY_DIFFICULTY: New difficulty = "
+              << static_cast<int>(difficulty) << std::endl;
+
+    // Invoke callback if registered
+    if (on_difficulty_changed_) {
+        on_difficulty_changed_(difficulty);
+    }
+}
+
+void ServerConnection::HandleNotifyKillableProjectiles(
+    const std::vector<uint8_t> &data) {
+    // Payload: 1 byte (0 = disabled, 1 = enabled)
+    if (data.size() < 1) {
+        std::cerr << "[Network] NOTIFY_KILLABLE_PROJECTILES malformed (size="
+                  << data.size() << ", expected 1)" << std::endl;
+        return;
+    }
+
+    bool enabled = (data[0] != 0);
+    std::cout << "[Network] NOTIFY_KILLABLE_PROJECTILES: "
+              << (enabled ? "ON" : "OFF") << std::endl;
+
+    // Invoke callback if registered
+    if (on_killable_projectiles_changed_) {
+        on_killable_projectiles_changed_(enabled);
     }
 }
 

@@ -47,7 +47,9 @@ void Server::RegisterSystems() {
         Engine::sparse_array<Component::AnimatedSprite>,
         Engine::sparse_array<Component::HitBox>,
         Engine::sparse_array<Component::Transform>,
-        Engine::sparse_array<Component::Projectile>>(HealthDeductionSystem);
+        Engine::sparse_array<Component::Projectile>,
+        Engine::sparse_array<Component::DeflectedProjectiles>>(
+        HealthDeductionSystem);
 
     // Obstacle collision system - handles player vs obstacle collisions
     // Must run after movement systems to ensure positions are up to date

@@ -117,7 +117,9 @@ void HealthDeductionSystem(Engine::registry &reg,
     Engine::sparse_array<Component::AnimatedSprite> &animated_sprites,
     Engine::sparse_array<Component::HitBox> const &hitBoxes,
     Engine::sparse_array<Component::Transform> const &transforms,
-    Engine::sparse_array<Component::Projectile> const &projectiles) {
+    Engine::sparse_array<Component::Projectile> const &projectiles,
+    Engine::sparse_array<Component::DeflectedProjectiles>
+        &deflected_projectiles) {
     for (auto &&[i, health, hitBox, transform] :
         make_indexed_zipper(healths, hitBoxes, transforms)) {
         Engine::entity entity = reg.EntityFromIndex(i);
@@ -155,7 +157,8 @@ void HealthDeductionSystem(Engine::registry &reg,
     extern bool g_killable_enemy_projectiles;
     if (g_killable_enemy_projectiles) {
         // Check for projectile-to-projectile collisions
-        // Player projectiles can destroy enemy projectiles
+        // Player projectiles can destroy enemy projectiles without losing
+        // damage
         for (auto &&[i, projectile1, hitBox1, transform1] :
             make_indexed_zipper(projectiles, hitBoxes, transforms)) {
             // Skip if not a player projectile
@@ -163,6 +166,12 @@ void HealthDeductionSystem(Engine::registry &reg,
                 continue;
 
             Engine::entity playerProj = reg.EntityFromIndex(i);
+
+            // Ensure player projectile has DeflectedProjectiles tracking
+            if (!deflected_projectiles.has(i)) {
+                reg.AddComponent<Component::DeflectedProjectiles>(
+                    playerProj, Component::DeflectedProjectiles{});
+            }
 
             for (auto &&[j, projectile2, hitBox2, transform2] :
                 make_indexed_zipper(projectiles, hitBoxes, transforms)) {
@@ -172,24 +181,24 @@ void HealthDeductionSystem(Engine::registry &reg,
 
                 Engine::entity enemyProj = reg.EntityFromIndex(j);
 
+                // Check if this enemy projectile has already been deflected
+                if (deflected_projectiles.has(i) &&
+                    deflected_projectiles[i].value().IsDeflected(j)) {
+                    continue;
+                }
+
                 // Check collision between player projectile and enemy
                 // projectile
                 if (IsColliding(transform1, hitBox1, transform2, hitBox2)) {
-                    // Destroy both projectiles
-                    reg.RemoveComponent<Component::Projectile>(playerProj);
-                    reg.RemoveComponent<Component::Projectile>(enemyProj);
-
-                    // Trigger death animations if available
-                    if (animated_sprites.has(i)) {
-                        auto &animSprite1 = animated_sprites[i];
-                        animSprite1->SetCurrentAnimation("Death", false);
-                        animSprite1->animated = true;
-                        reg.AddComponent<Component::AnimationDeath>(
-                            playerProj, Component::AnimationDeath{true});
-                    } else {
-                        reg.KillEntity(playerProj);
+                    // Track this deflection by index
+                    if (deflected_projectiles.has(i)) {
+                        deflected_projectiles[i].value().AddDeflected(j);
                     }
 
+                    // Destroy only the enemy projectile
+                    reg.RemoveComponent<Component::Projectile>(enemyProj);
+
+                    // Trigger death animation for enemy projectile
                     if (animated_sprites.has(j)) {
                         auto &animSprite2 = animated_sprites[j];
                         animSprite2->SetCurrentAnimation("Death", false);
@@ -200,8 +209,8 @@ void HealthDeductionSystem(Engine::registry &reg,
                         reg.KillEntity(enemyProj);
                     }
 
-                    // Break inner loop since player projectile is destroyed
-                    break;
+                    // NOTE: Player projectile keeps its Projectile component
+                    // and can continue dealing damage
                 }
             }
         }
