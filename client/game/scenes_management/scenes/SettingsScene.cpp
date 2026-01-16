@@ -518,46 +518,223 @@ void SettingsScene::InitAccessibilityTab(
 void SettingsScene::InitGraphicsTab(
     Engine::registry &reg, GameWorld &gameWorld) {
     const float content_start_y = 280.0f;
+    float current_y = content_start_y;
 
     // --- Graphics Title ---
     auto title_entity = CreateEntityInScene(reg);
     reg.AddComponent<Component::Transform>(
-        title_entity, Component::Transform{960.0f, content_start_y, 0.0f, 2.5f,
+        title_entity, Component::Transform{960.0f, current_y, 0.0f, 2.5f,
                           Component::Transform::CENTER});
     reg.AddComponent<Component::Text>(title_entity,
         Component::Text("dogica.ttf", "Graphics Settings", 14, LAYER_UI + 2,
             WHITE_BLUE, Engine::Graphics::Vector2f(0.0f, 0.0f)));
     graphics_tab_entities_.push_back(title_entity);
 
-    // --- Resolution Label (placeholder) ---
-    auto res_label_entity = CreateEntityInScene(reg);
-    reg.AddComponent<Component::Transform>(
-        res_label_entity, Component::Transform{960.0f, content_start_y + 80.0f,
-                              0.0f, 1.8f, Component::Transform::CENTER});
-    reg.AddComponent<Component::Text>(res_label_entity,
-        Component::Text("dogica.ttf", "Resolution: 1920x1080", 12,
-            LAYER_UI + 2, WHITE_BLUE, Engine::Graphics::Vector2f(0.0f, 0.0f)));
-    graphics_tab_entities_.push_back(res_label_entity);
+    current_y += 80.0f;
 
-    // --- Fullscreen Label (placeholder) ---
-    auto fs_label_entity = CreateEntityInScene(reg);
+    // --- Resolution Dropdown ---
+    auto res_label = CreateEntityInScene(reg);
     reg.AddComponent<Component::Transform>(
-        fs_label_entity, Component::Transform{960.0f, content_start_y + 140.0f,
-                             0.0f, 1.8f, Component::Transform::CENTER});
-    reg.AddComponent<Component::Text>(fs_label_entity,
-        Component::Text("dogica.ttf", "Fullscreen: Windowed", 12, LAYER_UI + 2,
+        res_label, Component::Transform{700.0f, current_y, 0.0f, 1.8f,
+                       Component::Transform::RIGHT_CENTER});
+    reg.AddComponent<Component::Text>(res_label,
+        Component::Text("dogica.ttf", "Resolution:", 12, LAYER_UI + 2,
             WHITE_BLUE, Engine::Graphics::Vector2f(0.0f, 0.0f)));
-    graphics_tab_entities_.push_back(fs_label_entity);
+    graphics_tab_entities_.push_back(res_label);
 
-    // --- Placeholder text ---
-    auto placeholder_entity = CreateEntityInScene(reg);
-    reg.AddComponent<Component::Transform>(placeholder_entity,
-        Component::Transform{960.0f, content_start_y + 220.0f, 0.0f, 1.5f,
-            Component::Transform::CENTER});
-    reg.AddComponent<Component::Text>(placeholder_entity,
-        Component::Text("dogica.ttf", "Graphics options coming soon...", 10,
-            LAYER_UI + 2, WHITE_BLUE, Engine::Graphics::Vector2f(0.0f, 0.0f)));
-    graphics_tab_entities_.push_back(placeholder_entity);
+    // Resolution buttons (common resolutions)
+    std::vector<std::pair<std::string, std::pair<int, int>>> resolutions = {
+        {"1280x720", {1280, 720}}, {"1600x900", {1600, 900}},
+        {"1920x1080", {1920, 1080}}, {"2560x1440", {2560, 1440}}};
+
+    float res_btn_x = 950.0f;
+    for (const auto &[res_label_text, res_dims] : resolutions) {
+        auto res_btn = CreateButton(
+            reg, gameWorld, res_label_text, res_btn_x, current_y,
+            [this, &gameWorld, res_dims]() {
+                gameWorld.graphics_settings_.pending_resolution_width =
+                    res_dims.first;
+                gameWorld.graphics_settings_.pending_resolution_height =
+                    res_dims.second;
+                std::cout << "[Settings] Pending resolution change to "
+                          << res_dims.first << "x" << res_dims.second
+                          << std::endl;
+            },
+            1.5f);
+        graphics_tab_entities_.push_back(res_btn);
+        res_btn_x += 130.0f;
+    }
+
+    current_y += 80.0f;
+
+    // --- Window Mode Dropdown ---
+    auto wm_label = CreateEntityInScene(reg);
+    reg.AddComponent<Component::Transform>(
+        wm_label, Component::Transform{700.0f, current_y, 0.0f, 1.8f,
+                      Component::Transform::RIGHT_CENTER});
+    reg.AddComponent<Component::Text>(wm_label,
+        Component::Text("dogica.ttf", "Window Mode:", 12, LAYER_UI + 2,
+            WHITE_BLUE, Engine::Graphics::Vector2f(0.0f, 0.0f)));
+    graphics_tab_entities_.push_back(wm_label);
+
+    std::vector<std::pair<std::string, WindowMode>> window_modes = {
+        {"Windowed", WindowMode::Windowed},
+        {"Fullscreen", WindowMode::Fullscreen},
+        {"Borderless", WindowMode::Borderless}};
+
+    float wm_btn_x = 950.0f;
+    for (const auto &[wm_label_text, wm_mode] : window_modes) {
+        auto wm_btn = CreateButton(
+            reg, gameWorld, wm_label_text, wm_btn_x, current_y,
+            [this, &gameWorld, wm_mode]() {
+                gameWorld.graphics_settings_.pending_window_mode = wm_mode;
+                std::cout << "[Settings] Pending window mode change to: "
+                          << static_cast<int>(wm_mode) << std::endl;
+            },
+            1.5f);
+        graphics_tab_entities_.push_back(wm_btn);
+        wm_btn_x += 130.0f;
+    }
+
+    current_y += 80.0f;
+
+    // --- VSync Toggle ---
+    auto vsync_label = CreateEntityInScene(reg);
+    reg.AddComponent<Component::Transform>(
+        vsync_label, Component::Transform{700.0f, current_y, 0.0f, 1.8f,
+                         Component::Transform::RIGHT_CENTER});
+    reg.AddComponent<Component::Text>(
+        vsync_label, Component::Text("dogica.ttf", "VSync:", 12, LAYER_UI + 2,
+                         WHITE_BLUE, Engine::Graphics::Vector2f(0.0f, 0.0f)));
+    graphics_tab_entities_.push_back(vsync_label);
+
+    static std::optional<Engine::entity> vsync_btn_entity;
+    auto vsync_btn = CreateButton(
+        reg, gameWorld,
+        gameWorld.graphics_settings_.vsync_enabled ? "ON" : "OFF", 1050.0f,
+        current_y,
+        [this, &gameWorld, &reg]() {
+            gameWorld.graphics_settings_.vsync_enabled =
+                !gameWorld.graphics_settings_.vsync_enabled;
+            std::cout << "[Settings] VSync: "
+                      << (gameWorld.graphics_settings_.vsync_enabled ? "ON"
+                                                                     : "OFF")
+                      << std::endl;
+            // Update button text
+            if (vsync_btn_entity.has_value()) {
+                try {
+                    auto &text = reg.GetComponent<Component::Text>(
+                        vsync_btn_entity.value());
+                    text.content = gameWorld.graphics_settings_.vsync_enabled
+                                       ? "ON"
+                                       : "OFF";
+                } catch (...) {}
+            }
+        },
+        2.0f);
+    vsync_btn_entity = vsync_btn;
+    graphics_tab_entities_.push_back(vsync_btn);
+
+    current_y += 80.0f;
+
+    // --- Frame Rate Limit Dropdown ---
+    auto fps_label = CreateEntityInScene(reg);
+    reg.AddComponent<Component::Transform>(
+        fps_label, Component::Transform{700.0f, current_y, 0.0f, 1.8f,
+                       Component::Transform::RIGHT_CENTER});
+    reg.AddComponent<Component::Text>(fps_label,
+        Component::Text("dogica.ttf", "Frame Rate Limit:", 12, LAYER_UI + 2,
+            WHITE_BLUE, Engine::Graphics::Vector2f(0.0f, 0.0f)));
+    graphics_tab_entities_.push_back(fps_label);
+
+    std::vector<std::pair<std::string, unsigned int>> frame_rates = {
+        {"30 FPS", 30}, {"60 FPS", 60}, {"120 FPS", 120}, {"Unlimited", 0}
+        // 0 means no limit
+    };
+
+    float fps_btn_x = 950.0f;
+    for (const auto &[fps_label_text, fps_limit] : frame_rates) {
+        auto fps_btn = CreateButton(
+            reg, gameWorld, fps_label_text, fps_btn_x, current_y,
+            [this, &gameWorld, fps_limit]() {
+                gameWorld.graphics_settings_.frame_rate_limit = fps_limit;
+                std::cout << "[Settings] Frame rate limit set to: "
+                          << (fps_limit == 0
+                                     ? "Unlimited"
+                                     : std::to_string(fps_limit) + " FPS")
+                          << std::endl;
+            },
+            1.5f);
+        graphics_tab_entities_.push_back(fps_btn);
+        fps_btn_x += 130.0f;
+    }
+
+    current_y += 80.0f;
+
+    // --- Anti-Aliasing Dropdown ---
+    auto aa_label = CreateEntityInScene(reg);
+    reg.AddComponent<Component::Transform>(
+        aa_label, Component::Transform{700.0f, current_y, 0.0f, 1.8f,
+                      Component::Transform::RIGHT_CENTER});
+    reg.AddComponent<Component::Text>(aa_label,
+        Component::Text("dogica.ttf", "Anti-Aliasing:", 12, LAYER_UI + 2,
+            WHITE_BLUE, Engine::Graphics::Vector2f(0.0f, 0.0f)));
+    graphics_tab_entities_.push_back(aa_label);
+
+    std::vector<std::pair<std::string, AntiAliasingLevel>> aa_levels = {
+        {"Off", AntiAliasingLevel::Off}, {"2x MSAA", AntiAliasingLevel::AA2x},
+        {"4x MSAA", AntiAliasingLevel::AA4x},
+        {"8x MSAA", AntiAliasingLevel::AA8x}};
+
+    float aa_btn_x = 950.0f;
+    for (const auto &[aa_label_text, aa_level] : aa_levels) {
+        auto aa_btn =
+            CreateButton(
+                reg, gameWorld, aa_label_text, aa_btn_x, current_y,
+                [this, &gameWorld, aa_level]() {
+                    gameWorld.graphics_settings_.pending_anti_aliasing =
+                        aa_level;
+                    std::cout
+                        << "[Settings] Pending anti-aliasing level change to: "
+                        << static_cast<int>(aa_level) << std::endl;
+                },
+                1.5f);
+        graphics_tab_entities_.push_back(aa_btn);
+        aa_btn_x += 130.0f;
+    }
+
+    current_y += 80.0f;
+
+    // --- Warning text for pending settings ---
+    auto warning_entity = CreateEntityInScene(reg);
+    reg.AddComponent<Component::Transform>(
+        warning_entity, Component::Transform{960.0f, current_y, 0.0f, 1.5f,
+                            Component::Transform::CENTER});
+    reg.AddComponent<Component::Text>(warning_entity,
+        Component::Text("dogica.ttf",
+            "Resolution/Window Mode/Anti-Aliasing require window restart", 10,
+            LAYER_UI + 2, Engine::Graphics::Color(255, 200, 100),
+            Engine::Graphics::Vector2f(0.0f, 0.0f)));
+    graphics_tab_entities_.push_back(warning_entity);
+
+    current_y += 60.0f;
+
+    // --- Apply Button ---
+    auto apply_btn = CreateButton(
+        reg, gameWorld, "Apply Changes", 960.0f, current_y,
+        [this, &gameWorld]() {
+            if (gameWorld.graphics_settings_.HasPendingChanges()) {
+                std::cout << "[Settings] Applying pending graphics changes..."
+                          << std::endl;
+                gameWorld.graphics_settings_.ApplyPendingSettings();
+                std::cout << "[Settings] Pending changes applied" << std::endl;
+            } else {
+                std::cout << "[Settings] No pending graphics changes to apply"
+                          << std::endl;
+            }
+        },
+        2.0f);
+    graphics_tab_entities_.push_back(apply_btn);
 
     // Store original Y positions for all graphics tab entities
     for (auto &entity : graphics_tab_entities_) {
