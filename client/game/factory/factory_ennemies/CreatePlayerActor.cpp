@@ -23,6 +23,10 @@ void FactoryActors::CreatePlayerActor(Engine::entity &entity,
 
     // Add basic enemy components
     Component::AnimatedSprite animated_sprite(34, 18, 2);
+    // Default animation with normal player sprite
+    animated_sprite.AddAnimation("Default", "original_rtype/players.png", 34,
+        18, 5, 0.1f, true,
+        Engine::Graphics::Vector2f(0.0f, id_player_ * 18.0f));
     animated_sprite.AddAnimation("Hit", "original_rtype/players_hit.png", 34,
         18, 2, 0.25f, false,
         Engine::Graphics::Vector2f(0.0f, id_player_ * 18.0f));
@@ -30,6 +34,7 @@ void FactoryActors::CreatePlayerActor(Engine::entity &entity,
         36, 35, 6, 0.05f, false,
         Engine::Graphics::Vector2f(0.0f, id_player_ * 18.0f),
         Engine::Graphics::Vector2f(0.0f, -10.0f));
+    animated_sprite.SetCurrentAnimation("Default", true);
     reg.AddComponent<Component::AnimatedSprite>(
         entity, std::move(animated_sprite));
 
