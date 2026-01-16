@@ -13,6 +13,8 @@
 #include "engine/systems/InitRegistrySystems.hpp"
 #include "game/GameAction.hpp"
 #include "game/InputRebindHelper.hpp"
+#include "include/ColorsConst.hpp"
+#include "include/components/RenderComponent.hpp"
 #include "input/IInputBackend.hpp"
 #include "input/Key.hpp"
 
@@ -57,34 +59,67 @@ void InputRebindSystem(GameWorld &game_world) {
         Engine::Input::Key::LShift, Engine::Input::Key::RShift,
         Engine::Input::Key::Backspace, Engine::Input::Key::Tab};
 
-    for (Engine::Input::Key key : keys_to_check) {
-        if (backend->IsKeyPressed(key) &&
-            key != Engine::Input::Key::Escape) {  // Allow Escape to cancel
-            // Found a pressed key! Rebind this action to it
-            Game::Action action = game_world.rebinding_action_.value();
-
-            // Clear old bindings for this action
-            game_world.input_manager_->ClearBindings(action);
-
-            // Add new binding
-            game_world.input_manager_->BindKey(action, key);
-
-            std::cout << "[InputRebind] Rebound "
-                      << Game::GetActionName(action) << " to "
-                      << Game::GetKeyName(key) << std::endl;
-
-            // Exit rebind mode
-            game_world.rebinding_action_ = std::nullopt;
-            game_world.waiting_for_rebind_key_ = false;
-            break;
-        }
-    }
-
-    // Allow Escape to cancel rebinding
+    // Check for Escape first - this exits rebind mode
     if (backend->IsKeyPressed(Engine::Input::Key::Escape)) {
-        std::cout << "[InputRebind] Rebinding cancelled" << std::endl;
+        std::cout << "[InputRebind] Rebinding finished (Escape pressed)"
+                  << std::endl;
+        // Reset button color to white
+        if (game_world.rebinding_button_entity_.has_value()) {
+            try {
+                auto &text =
+                    game_world.registry_.GetComponent<Component::Text>(
+                        game_world.rebinding_button_entity_.value());
+                text.color = WHITE_BLUE;
+            } catch (...) {}
+        }
         game_world.rebinding_action_ = std::nullopt;
         game_world.waiting_for_rebind_key_ = false;
+        game_world.rebinding_button_entity_ = std::nullopt;
+        return;
+    }
+
+    for (Engine::Input::Key key : keys_to_check) {
+        if (backend->IsKeyPressed(key) && key != Engine::Input::Key::Escape) {
+            // Found a pressed key! Add this binding to the action
+            Game::Action action = game_world.rebinding_action_.value();
+
+            // Check if this key is already bound to this action
+            const auto &existing_bindings =
+                game_world.input_manager_->GetBindings(action);
+            bool already_bound = false;
+            for (const auto &binding : existing_bindings) {
+                if (binding.type == Engine::Input::InputBinding::Type::Key &&
+                    binding.key == key) {
+                    already_bound = true;
+                    break;
+                }
+            }
+
+            if (already_bound) {
+                std::cout << "[InputRebind] Key " << Game::GetKeyName(key)
+                          << " already bound to "
+                          << Game::GetActionName(action) << ", skipping"
+                          << std::endl;
+                break;  // Don't add duplicate
+            }
+
+            // Add new binding (don't clear existing ones)
+            game_world.input_manager_->BindKey(action, key);
+
+            std::cout << "[InputRebind] Added binding for "
+                      << Game::GetActionName(action) << ": "
+                      << Game::GetKeyName(key) << " (press Escape to finish)"
+                      << std::endl;
+
+            // Call callback to refresh UI icons
+            if (game_world.on_binding_added_) {
+                game_world.on_binding_added_(action);
+            }
+
+            // Don't exit rebind mode - wait for Escape
+            // Small delay to prevent repeated binding of same key
+            break;
+        }
     }
 }
 
