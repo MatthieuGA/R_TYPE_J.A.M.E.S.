@@ -5,7 +5,6 @@ void InitRegistryComponents(Engine::registry &reg) {
     // Register core components
     reg.RegisterComponent<Rtype::Client::Component::Transform>();
     reg.RegisterComponent<Rtype::Client::Component::Drawable>();
-    reg.RegisterComponent<Rtype::Client::Component::RectangleDrawable>();
     reg.RegisterComponent<Rtype::Client::Component::Velocity>();
     reg.RegisterComponent<Rtype::Client::Component::Controllable>();
     reg.RegisterComponent<Rtype::Client::Component::InputState>();

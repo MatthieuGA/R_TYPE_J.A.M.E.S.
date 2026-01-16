@@ -6,6 +6,12 @@
 // an opaque integer handle type instead. Concrete HANDLE usage is
 // confined to the implementation file.
 #include <cstdint>
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+/* Forward-declare HANDLE to avoid pulling full Windows headers into the public
+   header. The implementation file includes <windows.h> where needed. */
+typedef void *HANDLE;
 #else
 #include <sys/types.h>
 #endif
