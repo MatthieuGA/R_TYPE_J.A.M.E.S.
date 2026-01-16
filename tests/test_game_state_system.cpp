@@ -3,9 +3,12 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <utility>
 
+#include "TestGraphicsSetup.hpp"  // NOLINT(build/include_subdir)
 #include "engine/systems/InitRegistrySystems.hpp"
 #include "include/components/ScenesComponents.hpp"
+#include "platform/SFMLWindow.hpp"
 
 namespace Com = Rtype::Client::Component;
 namespace Eng = Engine;
@@ -27,8 +30,13 @@ class TestScene : public Scene_A {
 };
 
 TEST(GameStateSystem, NoTransitionWhenNextEmpty) {
+    TestHelper::RegisterTestBackend();
+
     Eng::registry reg;
-    GameWorld game_world("127.0.0.1", 50000, 50000);
+    auto window = std::make_unique<Rtype::Client::Platform::SFMLWindow>(
+        800, 600, "test");
+
+    GameWorld game_world(std::move(window), "test", "127.0.0.1", 50000, 50000);
     Eng::sparse_array<Com::SceneManagement> scene_managements;
 
     auto menu_scene = std::make_shared<TestScene>();
@@ -49,8 +57,13 @@ TEST(GameStateSystem, NoTransitionWhenNextEmpty) {
 }
 
 TEST(GameStateSystem, NoTransitionWhenNextEqualsCurrent) {
+    TestHelper::RegisterTestBackend();
+
     Eng::registry reg;
-    GameWorld game_world("127.0.0.1", 50000, 50000);
+    auto window = std::make_unique<Rtype::Client::Platform::SFMLWindow>(
+        800, 600, "test");
+
+    GameWorld game_world(std::move(window), "test", "127.0.0.1", 50000, 50000);
     Eng::sparse_array<Com::SceneManagement> scene_managements;
 
     auto menu_scene = std::make_shared<TestScene>();
@@ -71,9 +84,14 @@ TEST(GameStateSystem, NoTransitionWhenNextEqualsCurrent) {
 }
 
 TEST(GameStateSystem, TransitionInvokesDestroyAndInit) {
+    TestHelper::RegisterTestBackend();
+
     Eng::registry reg;
     Eng::sparse_array<Com::SceneManagement> scene_managements;
-    GameWorld game_world("127.0.0.1", 50000, 50000);
+    auto window = std::make_unique<Rtype::Client::Platform::SFMLWindow>(
+        800, 600, "test");
+
+    GameWorld game_world(std::move(window), "test", "127.0.0.1", 50000, 50000);
 
     auto menu_scene = std::make_shared<TestScene>();
     auto game_scene = std::make_shared<TestScene>();
@@ -96,9 +114,14 @@ TEST(GameStateSystem, TransitionInvokesDestroyAndInit) {
 }
 
 TEST(GameStateSystem, TransitionHandlesMissingCurrentScene) {
+    TestHelper::RegisterTestBackend();
+
     Eng::registry reg;
     Eng::sparse_array<Com::SceneManagement> scene_managements;
-    GameWorld game_world("127.0.0.1", 50000, 50000);
+    auto window = std::make_unique<Rtype::Client::Platform::SFMLWindow>(
+        800, 600, "test");
+
+    GameWorld game_world(std::move(window), "test", "127.0.0.1", 50000, 50000);
 
     auto game_scene = std::make_shared<TestScene>();
 
@@ -118,9 +141,14 @@ TEST(GameStateSystem, TransitionHandlesMissingCurrentScene) {
 }
 
 TEST(GameStateSystem, TransitionHandlesMissingNextScene) {
+    TestHelper::RegisterTestBackend();
+
     Eng::registry reg;
     Eng::sparse_array<Com::SceneManagement> scene_managements;
-    GameWorld game_world("127.0.0.1", 50000, 50000);
+    auto window = std::make_unique<Rtype::Client::Platform::SFMLWindow>(
+        800, 600, "test");
+
+    GameWorld game_world(std::move(window), "test", "127.0.0.1", 50000, 50000);
 
     auto menu_scene = std::make_shared<TestScene>();
 
@@ -140,9 +168,14 @@ TEST(GameStateSystem, TransitionHandlesMissingNextScene) {
 }
 
 TEST(GameStateSystem, ProcessesMultipleSceneEntries) {
+    TestHelper::RegisterTestBackend();
+
     Eng::registry reg;
     Eng::sparse_array<Com::SceneManagement> scene_managements;
-    GameWorld game_world("127.0.0.1", 50000, 50000);
+    auto window = std::make_unique<Rtype::Client::Platform::SFMLWindow>(
+        800, 600, "test");
+
+    GameWorld game_world(std::move(window), "test", "127.0.0.1", 50000, 50000);
 
     auto menu_scene = std::make_shared<TestScene>();
     auto game_scene = std::make_shared<TestScene>();

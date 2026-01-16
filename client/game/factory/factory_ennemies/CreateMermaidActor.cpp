@@ -11,7 +11,7 @@ void FactoryActors::CreateMermaidActor(
     Engine::entity &entity, Engine::registry &reg, EnnemyInfo info) {
     // Add drawable and animated sprite components
     Component::AnimatedSprite animated_sprite(
-        48, 48, 0.2f, true, sf::Vector2f(0.0f, 0.0f), 4);
+        48, 48, 0.2f, true, Engine::Graphics::Vector2f(0.0f, 0.0f), 4);
     animated_sprite.AddAnimation(
         "Hit", "ennemies/4/Hurt.png", 48, 48, 2, 0.1f, false);
     animated_sprite.AddAnimation(

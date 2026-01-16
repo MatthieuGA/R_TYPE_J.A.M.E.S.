@@ -29,86 +29,85 @@ namespace Rtype::Client {
 static void UpdatePlayerEntity(GameWorld &game_world, size_t entity_index,
     const ClientApplication::ParsedEntity &entity_data) {
     // Update existing entity's transform
-    if (!game_world.registry_.GetComponents<Component::Transform>().has(
-            entity_index))
+    auto &transforms =
+        game_world.registry_.GetComponents<Component::Transform>();
+    if (!transforms.has(entity_index))
         return;
-    auto &transform = game_world.registry_
-                          .GetComponents<Component::Transform>()[entity_index];
+    auto &transform = transforms[entity_index];
     if (transform.has_value()) {
         transform->x = static_cast<float>(entity_data.pos_x);
         transform->y = static_cast<float>(entity_data.pos_y);
         transform->rotationDegrees =
             static_cast<float>(entity_data.angle / 10.0f);
     }
-    try {
-        auto &velocity =
-            game_world.registry_
-                .GetComponents<Component::Velocity>()[entity_index];
+
+    // Update velocity if component exists
+    auto &velocities =
+        game_world.registry_.GetComponents<Component::Velocity>();
+    if (velocities.has(entity_index)) {
+        auto &velocity = velocities[entity_index];
         if (velocity.has_value()) {
-            // Decode velocity from bias encoding: [0, 65535] -> [-32768,
-            // 32767]
+            // Decode velocity: [0, 65535] -> [-32768, 32767]
             velocity->vx = static_cast<float>(
                 static_cast<int32_t>(entity_data.velocity_x) - 32768);
             velocity->vy = static_cast<float>(
                 static_cast<int32_t>(entity_data.velocity_y) - 32768);
         }
-    } catch (const std::exception &e) {
-        // Velocity component might not exist; ignore if so
     }
-    try {
-        auto &health = game_world.registry_
-                           .GetComponents<Component::Health>()[entity_index];
+
+    // Update health if component exists
+    auto &healths = game_world.registry_.GetComponents<Component::Health>();
+    if (healths.has(entity_index)) {
+        auto &health = healths[entity_index];
         if (health.has_value()) {
             health->currentHealth = static_cast<int>(entity_data.health);
         }
-    } catch (const std::exception &e) {
-        // Health component might not exist; ignore if so
     }
 }
 
 static void UpdateEnemyEntity(GameWorld &game_world, size_t entity_index,
     const ClientApplication::ParsedEntity &entity_data) {
     // Update existing entity's transform
-    if (!game_world.registry_.GetComponents<Component::Transform>().has(
-            entity_index))
+    auto &transforms =
+        game_world.registry_.GetComponents<Component::Transform>();
+    if (!transforms.has(entity_index))
         return;
-    auto &transform = game_world.registry_
-                          .GetComponents<Component::Transform>()[entity_index];
+    auto &transform = transforms[entity_index];
     if (transform.has_value()) {
         transform->x = static_cast<float>(entity_data.pos_x);
         transform->y = static_cast<float>(entity_data.pos_y);
         transform->rotationDegrees =
             static_cast<float>(entity_data.angle / 10.0f);
     }
-    try {
-        auto &velocity =
-            game_world.registry_
-                .GetComponents<Component::Velocity>()[entity_index];
+
+    // Update velocity if component exists
+    auto &velocities =
+        game_world.registry_.GetComponents<Component::Velocity>();
+    if (velocities.has(entity_index)) {
+        auto &velocity = velocities[entity_index];
         if (velocity.has_value()) {
-            // Decode velocity from bias encoding: [0, 65535] -> [-32768,
-            // 32767]
+            // Decode velocity: [0, 65535] -> [-32768, 32767]
             velocity->vx = static_cast<float>(
                 static_cast<int32_t>(entity_data.velocity_x) - 32768);
             velocity->vy = static_cast<float>(
                 static_cast<int32_t>(entity_data.velocity_y) - 32768);
         }
-    } catch (const std::exception &e) {
-        // Velocity component might not exist; ignore if so
     }
-    try {
-        auto &health = game_world.registry_
-                           .GetComponents<Component::Health>()[entity_index];
+
+    // Update health if component exists
+    auto &healths = game_world.registry_.GetComponents<Component::Health>();
+    if (healths.has(entity_index)) {
+        auto &health = healths[entity_index];
         if (health.has_value()) {
             health->currentHealth = static_cast<int>(entity_data.health);
         }
-    } catch (const std::exception &e) {
-        // Health component might not exist; ignore if so
     }
 
-    try {
-        auto &animated_sprite =
-            game_world.registry_
-                .GetComponents<Component::AnimatedSprite>()[entity_index];
+    // Update animation if component exists
+    auto &animated_sprites =
+        game_world.registry_.GetComponents<Component::AnimatedSprite>();
+    if (animated_sprites.has(entity_index)) {
+        auto &animated_sprite = animated_sprites[entity_index];
         if (animated_sprite.has_value()) {
             const auto names = animated_sprite->GetAnimationNames();
             std::string chosen = "Default";
@@ -130,41 +129,38 @@ static void UpdateEnemyEntity(GameWorld &game_world, size_t entity_index,
                 it->second.current_frame = frame;
             }
         }
-    } catch (const std::exception &e) {
-        // AnimatedSprite component might not exist; ignore if so
     }
 }
 
 static void UpdateProjectileEntity(GameWorld &game_world, size_t entity_index,
     const ClientApplication::ParsedEntity &entity_data) {
     // Update existing entity's transform
-    if (!game_world.registry_.GetComponents<Component::Transform>().has(
-            entity_index)) {
+    auto &transforms =
+        game_world.registry_.GetComponents<Component::Transform>();
+    if (!transforms.has(entity_index)) {
         return;
     }
-    auto &transform = game_world.registry_
-                          .GetComponents<Component::Transform>()[entity_index];
+    auto &transform = transforms[entity_index];
     if (transform.has_value()) {
         transform->x = static_cast<float>(entity_data.pos_x);
         transform->y = static_cast<float>(entity_data.pos_y);
         transform->rotationDegrees =
             static_cast<float>(entity_data.angle / 10.0f);
     }
-    // Decode and update velocity
-    try {
+
+    // Decode and update velocity if component exists
+    auto &velocities =
+        game_world.registry_.GetComponents<Component::Velocity>();
+    if (velocities.has(entity_index)) {
         int16_t decoded_vx =
             static_cast<int16_t>(entity_data.velocity_x) - 32768;
         int16_t decoded_vy =
             static_cast<int16_t>(entity_data.velocity_y) - 32768;
-        auto &velocity =
-            game_world.registry_
-                .GetComponents<Component::Velocity>()[entity_index];
+        auto &velocity = velocities[entity_index];
         if (velocity.has_value()) {
             velocity->vx = static_cast<float>(decoded_vx);
             velocity->vy = static_cast<float>(decoded_vy);
         }
-    } catch (const std::exception &e) {
-        // Velocity component might not exist; ignore if so
     }
 }
 

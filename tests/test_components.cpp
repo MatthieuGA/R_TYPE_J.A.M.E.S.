@@ -24,9 +24,9 @@ TEST(ComponentsCore, TransformAndVelocity) {
 
 TEST(ComponentsCore, DrawableBasics) {
     Com::Drawable d("Logo.png", 5);
-    EXPECT_EQ(d.spritePath, std::string("assets/images/Logo.png"));
+    EXPECT_EQ(d.texture_path, std::string("assets/images/Logo.png"));
     EXPECT_EQ(d.z_index, 5);
-    EXPECT_FALSE(d.isLoaded);
+    EXPECT_FALSE(d.is_loaded);
 }
 
 TEST(ComponentsCore, ControllableAndInput) {
@@ -65,7 +65,8 @@ TEST(ComponentsGameplay, TagsAndProjectile) {
 
     Com::EnemyTag e{};
 
-    Com::Projectile proj{12, {0.0f, -1.0f}, 250.0f, 1, true};
+    Com::Projectile proj{
+        12, Engine::Graphics::Vector2f(0.0f, -1.0f), 250.0f, 1, true};
     EXPECT_EQ(proj.damage, 12);
     EXPECT_FLOAT_EQ(proj.speed, 250.0f);
     EXPECT_EQ(proj.ownerId, 1);
