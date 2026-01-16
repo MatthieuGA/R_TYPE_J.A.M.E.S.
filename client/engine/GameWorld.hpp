@@ -24,6 +24,7 @@
 #include "game/GameInputBindings.hpp"
 #include "graphics/IRenderContext.hpp"
 #include "include/AccessibilitySettings.hpp"
+#include "include/GameplaySettings.hpp"
 #include "include/GraphicsSettings.hpp"
 #include "include/WindowConst.hpp"
 #include "include/registry.hpp"
@@ -98,6 +99,9 @@ struct GameWorld {
     // Graphics settings (resolution, window mode, VSync, frame rate,
     // anti-aliasing)
     GraphicsSettings graphics_settings_;
+
+    // Gameplay settings (auto-fire, difficulty, killable projectiles, etc)
+    GameplaySettings gameplay_settings_;
 
     // Graphics backend (owned by GameWorld as of PR 1.9)
     std::unique_ptr<Engine::Graphics::IRenderContext> render_context_;

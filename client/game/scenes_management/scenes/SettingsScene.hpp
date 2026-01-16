@@ -18,6 +18,7 @@ enum class SettingsTab {
     Inputs,
     Accessibility,
     Graphics,
+    Gameplay,
     Audio
 };
 
@@ -67,6 +68,7 @@ class SettingsScene : public Scene_A {
     void InitInputsTab(registry &reg, GameWorld &gameWorld);
     void InitAccessibilityTab(registry &reg, GameWorld &gameWorld);
     void InitGraphicsTab(registry &reg, GameWorld &gameWorld);
+    void InitGameplayTab(registry &reg, GameWorld &gameWorld);
     void InitAudioTab(registry &reg, GameWorld &gameWorld);
 
     // Tab switching
@@ -110,6 +112,7 @@ class SettingsScene : public Scene_A {
     std::vector<Engine::entity> inputs_tab_entities_;
     std::vector<Engine::entity> accessibility_tab_entities_;
     std::vector<Engine::entity> graphics_tab_entities_;
+    std::vector<Engine::entity> gameplay_tab_entities_;
     std::vector<Engine::entity> audio_tab_entities_;
 
     // Store original Y positions for visibility toggling (entity id -> y)
