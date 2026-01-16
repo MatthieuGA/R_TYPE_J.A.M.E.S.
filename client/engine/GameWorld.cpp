@@ -42,6 +42,15 @@ GameWorld::GameWorld(std::unique_ptr<Engine::Graphics::IWindow> window,
     // Initialize network connection with provided parameters
     server_connection_ = std::make_unique<client::ServerConnection>(
         io_context_, server_ip, tcp_port, udp_port);
+
+    // Set up callback to sync game_speed_ when another player changes it
+    server_connection_->SetOnGameSpeedChanged([this](float speed) {
+        game_speed_ = speed;
+        // Fire event so UI can update slider position
+        if (on_external_game_speed_change_) {
+            on_external_game_speed_change_(speed);
+        }
+    });
 }
 
 sf::RenderWindow &GameWorld::GetNativeWindow() {

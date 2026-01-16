@@ -344,6 +344,9 @@ void PacketHandler::HandleSetGameSpeed(
     std::cout << "Game speed set to " << speed << "x by player "
               << static_cast<int>(client.player_id_) << " ('"
               << client.username_ << "')" << std::endl;
+
+    // Broadcast to all clients so their UI can update
+    packet_sender_.SendNotifyGameSpeed(speed);
 }
 
 std::string PacketHandler::Trim(

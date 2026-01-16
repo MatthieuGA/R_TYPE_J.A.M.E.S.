@@ -8,6 +8,7 @@
  */
 
 #pragma once
+#include <functional>
 #include <memory>
 #include <string>
 #include <utility>
@@ -72,6 +73,9 @@ struct GameWorld {
     // Network components
     boost::asio::io_context io_context_;
     std::unique_ptr<client::ServerConnection> server_connection_;
+
+    // Callback for when game speed is changed by another player (for UI sync)
+    std::function<void(float)> on_external_game_speed_change_;
 
     // Graphics backend (owned by GameWorld as of PR 1.9)
     std::unique_ptr<Engine::Graphics::IRenderContext> render_context_;
