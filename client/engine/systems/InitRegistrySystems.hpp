@@ -27,7 +27,7 @@ void GameStateSystem(Eng::registry &reg, GameWorld &gameWorld,
 void DrawableSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> const &transforms,
     Eng::sparse_array<Com::Drawable> &drawables,
-    Eng::sparse_array<Com::Shader> &shaders,
+    Eng::sparse_array<Com::Shader> const &shaders,
     Eng::sparse_array<Com::AnimatedSprite> const &animated_sprites,
     Eng::sparse_array<Com::ParticleEmitter> &emitters);
 
@@ -35,7 +35,7 @@ void DrawTextRenderSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> const &transforms,
     Eng::sparse_array<Com::Text> &texts);
 
-void AnimationSystem(Eng::registry &reg, const float dt,
+void AnimationSystem(Eng::registry &reg, GameWorld &game_world, const float dt,
     Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
     Eng::sparse_array<Com::Drawable> &drawables);
 
@@ -46,6 +46,11 @@ void InitializeShaderSystem(
     Eng::registry &reg, Eng::sparse_array<Com::Shader> &shaders);
 
 void InitializeDrawableAnimatedSystem(Eng::registry &reg,
+    Eng::sparse_array<Com::Transform> const &transforms,
+    Eng::sparse_array<Com::Drawable> &drawables,
+    Eng::sparse_array<Com::AnimatedSprite> const &animated_sprites);
+
+void InitializeDrawableStaticSystem(Eng::registry &reg,
     Eng::sparse_array<Com::Transform> const &transforms,
     Eng::sparse_array<Com::Drawable> &drawables,
     Eng::sparse_array<Com::AnimatedSprite> const &animated_sprites);
@@ -71,7 +76,8 @@ void PlayfieldLimitSystem(Eng::registry &reg, const GameWorld &game_world,
 void CollisionDetectionSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> &transforms,
     Eng::sparse_array<Com::HitBox> const &hit_boxes,
-    Eng::sparse_array<Com::Solid> const &solids);
+    Eng::sparse_array<Com::Solid> const &solids,
+    Eng::sparse_array<Com::Controllable> const &controllables);
 
 void ControllablePlayerSystem(Eng::registry &reg,
     Eng::sparse_array<Com::Inputs> &inputs,

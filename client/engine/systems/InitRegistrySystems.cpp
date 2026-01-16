@@ -22,7 +22,13 @@ void InitRenderSystems(Rtype::Client::GameWorld &game_world) {
         Eng::sparse_array<Com::AnimatedSprite>>(
         InitializeDrawableAnimatedSystem);
 
-    // Shader initialization system - ensure window OpenGL context is active
+    // Initialize static (non-animated) drawables
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
+        Eng::sparse_array<Com::Drawable>,
+        Eng::sparse_array<Com::AnimatedSprite>>(
+        InitializeDrawableStaticSystem);
+
+    // Shader initialization system
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Shader>>(
         [&game_world](
             Eng::registry &r, Eng::sparse_array<Com::Shader> &shaders) {
@@ -38,8 +44,8 @@ void InitRenderSystems(Rtype::Client::GameWorld &game_world) {
         [&game_world](Eng::registry &r,
             Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
             Eng::sparse_array<Com::Drawable> &drawables) {
-            AnimationSystem(
-                r, game_world.last_delta_, animated_sprites, drawables);
+            AnimationSystem(r, game_world, game_world.last_delta_,
+                animated_sprites, drawables);
         });
 
     // Death animation system
@@ -149,14 +155,18 @@ void InitMovementSystem(Rtype::Client::GameWorld &game_world) {
         });
 
     // Collision detection system
+    // Note: Only resolves collisions for controllable (local) entities
+    // to maintain server authority over non-local entity positions
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
-        Eng::sparse_array<Com::HitBox>, Eng::sparse_array<Com::Solid>>(
+        Eng::sparse_array<Com::HitBox>, Eng::sparse_array<Com::Solid>,
+        Eng::sparse_array<Com::Controllable>>(
         [&game_world](Eng::registry &r,
             Eng::sparse_array<Com::Transform> &transforms,
             Eng::sparse_array<Com::HitBox> const &hitbox,
-            Eng::sparse_array<Com::Solid> const &solids) {
+            Eng::sparse_array<Com::Solid> const &solids,
+            Eng::sparse_array<Com::Controllable> const &controllables) {
             CollisionDetectionSystem(
-                r, game_world, transforms, hitbox, solids);
+                r, game_world, transforms, hitbox, solids, controllables);
         });
 }
 

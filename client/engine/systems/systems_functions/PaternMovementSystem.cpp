@@ -213,7 +213,7 @@ bool WaypointsMovementFunction(Eng::registry &reg, std::size_t entityId,
         return false;
     if (patternMovement.currentWaypoint >= patternMovement.waypoints.size())
         patternMovement.currentWaypoint = 0;
-    sf::Vector2f targetWaypoint =
+    auto targetWaypoint =
         patternMovement.waypoints[patternMovement.currentWaypoint];
     sf::Vector2f direction = {
         targetWaypoint.x - transform.x, targetWaypoint.y - transform.y};

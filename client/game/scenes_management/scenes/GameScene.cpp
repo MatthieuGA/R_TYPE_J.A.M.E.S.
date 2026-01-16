@@ -82,9 +82,9 @@ void GameScene::InitPlayerLevel(Engine::registry &reg) {
     reg.AddComponent<Component::Drawable>(player_charging_entity,
         Component::Drawable{
             "original_rtype/r-typesheet1.gif", LAYER_ACTORS - 1, 0.0f});
-    reg.AddComponent<Component::AnimatedSprite>(
-        player_charging_entity, Component::AnimatedSprite(33, 33, 0.1f, true,
-                                    sf::Vector2f(0.0f, 50.0f), 8));
+    reg.AddComponent<Component::AnimatedSprite>(player_charging_entity,
+        Component::AnimatedSprite(
+            33, 33, 0.1f, true, Engine::Graphics::Vector2f(0.0f, 50.0f), 8));
 
     // Add the charging entity to the player's children list
     try {

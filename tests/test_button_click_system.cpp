@@ -3,6 +3,7 @@
 #include <memory>
 #include <utility>
 
+#include "TestGraphicsSetup.hpp"  // NOLINT(build/include_subdir)
 #include "engine/GameWorld.hpp"
 #include "engine/systems/InitRegistrySystems.hpp"
 #include "include/components/CoreComponents.hpp"
@@ -14,10 +15,14 @@ namespace Eng = Engine;
 
 class ButtonClickSystemTest : public ::testing::Test {
  protected:
+    static void SetUpTestSuite() {
+        TestHelper::RegisterTestBackend();
+    }
+
     ButtonClickSystemTest()
         : game_world(std::make_unique<Rtype::Client::Platform::SFMLWindow>(
                          800, 600, "test"),
-              "127.0.0.1", 50000, 50000) {}
+              "test", "127.0.0.1", 50000, 50000) {}
 
     Rtype::Client::GameWorld game_world;
     Eng::registry reg;
