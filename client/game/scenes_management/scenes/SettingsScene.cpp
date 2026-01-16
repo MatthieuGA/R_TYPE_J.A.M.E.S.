@@ -870,6 +870,15 @@ void SettingsScene::InitGameplayTab(
                            ? "ON (Your projectiles destroy enemy fire)"
                            : "OFF (Standard behavior)")
                 << std::endl;
+            // Send to server
+            if (gameWorld.server_connection_) {
+                gameWorld.server_connection_->SendKillableEnemyProjectiles(
+                    gameWorld.gameplay_settings_.killable_enemy_projectiles);
+            } else {
+                std::cout << "[Settings] No server connection, setting change "
+                             "only local"
+                          << std::endl;
+            }
             // Update button text
             if (kep_btn_entity.has_value()) {
                 try {
@@ -934,6 +943,16 @@ void SettingsScene::InitGameplayTab(
                 }
                 std::cout << "[Settings] Difficulty set to: " << desc
                           << std::endl;
+                // Send to server
+                if (gameWorld.server_connection_) {
+                    gameWorld.server_connection_->SendDifficulty(
+                        static_cast<uint8_t>(diff_level));
+                } else {
+                    std::cout
+                        << "[Settings] No server connection, setting change "
+                           "only local"
+                        << std::endl;
+                }
             },
             1.8f);
         gameplay_tab_entities_.push_back(diff_btn);

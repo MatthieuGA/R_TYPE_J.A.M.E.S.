@@ -98,6 +98,23 @@ class ServerConnection {
     void SendGameSpeed(float speed);
 
     /**
+     * @brief Send killable enemy projectiles setting to server via TCP.
+     * @param enabled Whether player projectiles can destroy enemy fire.
+     * @todo(server-logic): Verify server logic applies this setting to game
+     * mechanics. Check projectile collision detection system on server.
+     */
+    void SendKillableEnemyProjectiles(bool enabled);
+
+    /**
+     * @brief Send difficulty setting to server via TCP.
+     * @param difficulty The difficulty level (Easy/Normal/Hard).
+     * @todo(server-logic): Verify server logic applies damage multipliers
+     * (0.75x for Easy, 1.0x for Normal, 1.1x for Hard) and enemy fire rate
+     * multipliers (0.9x for Easy, 1.0x for Normal, 1.15x for Hard).
+     */
+    void SendDifficulty(uint8_t difficulty);
+
+    /**
      * @brief Set callback for when game speed is changed by another player.
      * @param callback Function to call with the new speed value.
      */
