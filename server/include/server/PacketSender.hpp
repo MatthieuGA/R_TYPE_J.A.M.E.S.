@@ -96,6 +96,16 @@ class PacketSender {
      */
     void SendNotifyDisconnect(uint8_t player_id);
 
+    /**
+     * @brief Send NOTIFY_GAME_SPEED packet to all authenticated players
+     *
+     * Broadcasts when a player changes the game speed.
+     * Updates game speed on all clients.
+     *
+     * @param speed The new game speed multiplier
+     */
+    void SendNotifyGameSpeed(float speed);
+
     void SendSnapshot(network::EntityState entity_state, int tick);
 
  private:

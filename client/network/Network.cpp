@@ -20,6 +20,8 @@ constexpr uint8_t kOpGameEnd = 0x06;
 constexpr uint8_t kOpReadyStatus = 0x07;
 constexpr uint8_t kOpNotifyConnect = 0x08;
 constexpr uint8_t kOpNotifyReady = 0x09;
+constexpr uint8_t kOpSetGameSpeed = 0x0A;
+constexpr uint8_t kOpNotifyGameSpeed = 0x0B;
 constexpr uint8_t kOpPlayerInput = 0x10;
 constexpr uint8_t kOpWorldSnapshot = 0x20;
 
@@ -229,6 +231,8 @@ void ServerConnection::AsyncReceiveTCP() {
                         HandleNotifyConnect(data);
                     } else if (opcode == kOpNotifyReady) {
                         HandleNotifyReady(data);
+                    } else if (opcode == kOpNotifyGameSpeed) {
+                        HandleNotifyGameSpeed(data);
                     } else {
                         std::cout << "[Network] Unhandled TCP opcode: 0x"
                                   << std::hex << static_cast<int>(opcode)
@@ -442,6 +446,32 @@ void ServerConnection::HandleNotifyReady(const std::vector<uint8_t> &data) {
         lobby_ready_count_.fetch_add(1, std::memory_order_relaxed);
     } else {
         lobby_ready_count_.fetch_sub(1, std::memory_order_relaxed);
+    }
+}
+
+void ServerConnection::HandleNotifyGameSpeed(
+    const std::vector<uint8_t> &data) {
+    // Payload: 4 bytes (float as little-endian IEEE 754)
+    if (data.size() < 4) {
+        std::cerr << "[Network] NOTIFY_GAME_SPEED malformed (size="
+                  << data.size() << ", expected 4)" << std::endl;
+        return;
+    }
+
+    // Read float from little-endian bytes
+    uint32_t speed_bits = static_cast<uint32_t>(data[0]) |
+                          (static_cast<uint32_t>(data[1]) << 8) |
+                          (static_cast<uint32_t>(data[2]) << 16) |
+                          (static_cast<uint32_t>(data[3]) << 24);
+    float speed;
+    std::memcpy(&speed, &speed_bits, sizeof(float));
+
+    std::cout << "[Network] NOTIFY_GAME_SPEED: New speed = " << speed << "x"
+              << std::endl;
+
+    // Invoke callback if registered
+    if (on_game_speed_changed_) {
+        on_game_speed_changed_(speed);
     }
 }
 
