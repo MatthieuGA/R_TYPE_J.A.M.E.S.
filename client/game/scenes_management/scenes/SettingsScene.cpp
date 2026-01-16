@@ -5,6 +5,8 @@
 #include <vector>
 
 #include "engine/audio/AudioManager.hpp"
+#include "game/GameAction.hpp"
+#include "game/InputRebindHelper.hpp"
 #include "include/ColorsConst.hpp"
 #include "include/LayersConst.hpp"
 #include "include/components/CoreComponents.hpp"
@@ -12,6 +14,7 @@
 #include "include/components/ScenesComponents.hpp"
 #include "include/indexed_zipper.hpp"
 #include "include/registry.hpp"
+#include "input/Key.hpp"
 
 namespace Rtype::Client {
 
@@ -126,6 +129,50 @@ void SettingsScene::InitUI(Engine::registry &reg, GameWorld &gameWorld) {
             }
         },
         3.0f);
+
+    // --- Input Bindings Section ---
+    // Title for input bindings
+    auto input_title_entity = CreateEntityInScene(reg);
+    reg.AddComponent<Component::Transform>(
+        input_title_entity, Component::Transform{960.0f, 570.0f, 0.0f, 2.5f,
+                                Component::Transform::CENTER});
+    reg.AddComponent<Component::Text>(input_title_entity,
+        Component::Text("dogica.ttf", "Input Bindings", 14, LAYER_UI + 2,
+            WHITE_BLUE, Engine::Graphics::Vector2f(0.0f, 0.0f)));
+
+    // Create rebind buttons for movement and shoot actions
+    std::vector<std::pair<Game::Action, std::string>> rebind_actions = {
+        {Game::Action::MoveUp, "Move Up"},
+        {Game::Action::MoveDown, "Move Down"},
+        {Game::Action::MoveLeft, "Move Left"},
+        {Game::Action::MoveRight, "Move Right"},
+        {Game::Action::Shoot, "Shoot"}};
+
+    float rebind_y = 610.0f;
+    for (const auto &[action, label] : rebind_actions) {
+        // Action label
+        auto label_entity = CreateEntityInScene(reg);
+        reg.AddComponent<Component::Transform>(
+            label_entity, Component::Transform{650.0f, rebind_y, 0.0f, 1.8f,
+                              Component::Transform::RIGHT_CENTER});
+        reg.AddComponent<Component::Text>(label_entity,
+            Component::Text("dogica.ttf", label + ":", 12, LAYER_UI + 2,
+                WHITE_BLUE, Engine::Graphics::Vector2f(0.0f, 0.0f)));
+
+        // Rebind button
+        CreateButton(
+            reg, gameWorld, "Rebind", 800.0f, rebind_y,
+            [&gameWorld, action]() {
+                gameWorld.rebinding_action_ = action;
+                gameWorld.waiting_for_rebind_key_ = true;
+
+                std::cout << "[Settings] Waiting for key rebind for "
+                          << Game::GetActionName(action) << std::endl;
+            },
+            2.0f);
+
+        rebind_y += 40.0f;
+    }
 
     // --- Back Button ---
     CreateButton(reg, gameWorld, "Back", 960.0f, 700.0f, [&gameWorld]() {
