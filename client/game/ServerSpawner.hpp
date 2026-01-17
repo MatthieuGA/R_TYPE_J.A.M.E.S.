@@ -3,7 +3,12 @@
 #include <string>
 
 #ifdef _WIN32
-#include <windows.h>
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+/* Forward-declare HANDLE to avoid pulling full Windows headers into the public
+   header. The implementation file includes <windows.h> where needed. */
+typedef void *HANDLE;
 #else
 #include <sys/types.h>
 #endif

@@ -326,9 +326,9 @@ bool WorldGenManager::AdvanceFrame() {
 
     // Generate events for this frame
     float frame_start_x = current_frame_end_x_;
-    std::cout << "[WorldGen] Generating frame: '" << wgf->name << "' with "
-              << wgf->obstacles.size() << " obstacles and "
-              << wgf->enemies.size() << " enemies" << std::endl;
+    // std::cout << "[WorldGen] Generating frame: '" << wgf->name << "' with "
+    //           << wgf->obstacles.size() << " obstacles and "
+    //           << wgf->enemies.size() << " enemies" << std::endl;
     GenerateFrameEvents(*wgf, frame_start_x);
 
     // Update tracking

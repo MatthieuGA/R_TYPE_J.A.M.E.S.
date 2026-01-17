@@ -7,6 +7,9 @@ namespace Rtype::Client {
 /**
  * @brief Check AABB collision using precomputed offsets and scaled hitboxes.
  *
+ * This function uses std::abs() for scale values to match server-side
+ * collision detection behavior exactly.
+ *
  * @param trans_a Transform of entity A
  * @param hb_a HitBox of entity A
  * @param trans_b Transform of entity B
@@ -19,6 +22,7 @@ bool IsCollidingFromOffset(const Com::Transform &trans_a,
     const Com::HitBox &hb_a, const Com::Transform &trans_b,
     const Com::HitBox &hb_b, Engine::Graphics::Vector2f off_a,
     Engine::Graphics::Vector2f off_b) {
+    // Use absolute value for scale to match server behavior
     const float scale_x_a =
         hb_a.scaleWithTransform ? std::abs(trans_a.scale.x) : 1.0f;
     const float scale_y_a =

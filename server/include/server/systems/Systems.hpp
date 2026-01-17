@@ -82,4 +82,11 @@ void ObstacleCollisionSystem(Engine::registry &reg,
     Engine::sparse_array<Component::ObstacleTag> const &obstacle_tags,
     Engine::sparse_array<Component::AnimatedSprite> &animated_sprites);
 
+void ObstacleCollisionSystem(Engine::registry &reg,
+    Engine::sparse_array<Component::Transform> &transforms,
+    Engine::sparse_array<Component::HitBox> const &hitboxes,
+    Engine::sparse_array<Component::PlayerTag> const &player_tags,
+    Engine::sparse_array<Component::ObstacleTag> const &obstacle_tags,
+    Engine::sparse_array<Component::AnimatedSprite> &animated_sprites);
+
 }  // namespace server

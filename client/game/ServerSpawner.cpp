@@ -13,6 +13,10 @@
 
 #ifdef _WIN32
 #include <winsock2.h>
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <windows.h>
 #include <ws2tcpip.h>
 #pragma comment(lib, "ws2_32.lib")
 #else
@@ -304,8 +308,9 @@ uint16_t ServerSpawner::GetServerPort() {
 
 namespace {
 
+#ifndef _WIN32
 /**
- * @brief Signal handler callback for graceful shutdown.
+ * @brief Signal handler callback for graceful shutdown (POSIX).
  *
  * This handler only performs async-signal-safe operations.
  * It writes a static message to standard error and then
@@ -335,6 +340,7 @@ void SignalHandlerCallback(int signal) {
     ::write(STDERR_FILENO, kMsgOther, sizeof(kMsgOther) - 1);
     ::_Exit(EXIT_FAILURE);
 }
+#endif
 
 }  // namespace
 

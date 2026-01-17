@@ -54,9 +54,9 @@ void InitHealthBar(Com::HealthBar &health_bar) {
  * @param game_world The GameWorld providing the render window.
  */
 void DrawHealthBar(Com::HealthBar &health_bar, GameWorld &game_world) {
-    game_world.window_.draw(health_bar.yellow_bar);
-    game_world.window_.draw(health_bar.green_bar);
-    game_world.window_.draw(health_bar.foreground_bar);
+    game_world.GetNativeWindow().draw(health_bar.yellow_bar);
+    game_world.GetNativeWindow().draw(health_bar.green_bar);
+    game_world.GetNativeWindow().draw(health_bar.foreground_bar);
 }
 
 /**

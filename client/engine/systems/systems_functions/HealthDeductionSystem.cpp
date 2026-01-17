@@ -48,19 +48,11 @@ void ProcessCollision(Eng::registry &reg, GameWorld &game_world,
         bar->timer_damage = 0.0f;
     }
 
-    // if (animated_sprites.has(i)) {
-    //     auto &animSprite = animated_sprites[i];
-    //     bool hasAnimationHit = false;
-
-    //     for (const std::string &anim : animSprite->GetAnimationNames()) {
-    //         if (anim == "Hit")
-    //             hasAnimationHit = true;
-    //     }
-    //     if (hasAnimationHit) {
-    //         animSprite->SetCurrentAnimation("Hit", true);
-    //         animSprite->GetCurrentAnimation()->current_frame = 1;
-    //     }
-    // }
+    if (animated_sprites.has(i)) {
+        auto &anim_sprite = animated_sprites[i];
+        anim_sprite->SetCurrentAnimation("Hit", true);
+        anim_sprite->GetCurrentAnimation()->current_frame = 1;
+    }
 
     // Remove the projectile component after collision
     reg.RemoveComponent<Component::Projectile>(proj_entity);

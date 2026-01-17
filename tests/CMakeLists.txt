@@ -52,6 +52,8 @@ file(GLOB_RECURSE CLIENT_ENGINE_SOURCES CONFIGURE_DEPENDS
     "${CMAKE_SOURCE_DIR}/client/game/*.cpp"
     "${CMAKE_SOURCE_DIR}/client/include/*.cpp"
     "${CMAKE_SOURCE_DIR}/client/input/*.cpp"
+    "${CMAKE_SOURCE_DIR}/client/platform/*.cpp"
+    "${CMAKE_SOURCE_DIR}/client/graphics/*.cpp"
 )
 
 if (CLIENT_ENGINE_SOURCES)

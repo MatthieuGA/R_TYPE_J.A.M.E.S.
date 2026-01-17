@@ -115,10 +115,10 @@ void CreateGolemLaser(Engine::registry &reg,
         Component::Drawable("ennemies/golem/LaserShot.png", LAYER_PROJECTILE));
     reg.AddComponent<Component::AnimatedSprite>(
         new_entity, Component::AnimatedSprite(
-                        1000, 24, 0.1f, false, sf::Vector2f(0.0f, 0.0f), 14));
+                        1000, 24, 0.1f, false, Engine::Graphics::Vector2f(0.0f, 0.0f), 14));
     reg.AddComponent<Component::Projectile>(new_entity,
         Component::Projectile{static_cast<int>(BASIC_PROJECTILE_DAMAGE),
-            sf::Vector2f(decoded_vx, decoded_vy), BASIC_PROJECTILE_SPEED, -1,
+            Engine::Graphics::Vector2f(decoded_vx, decoded_vy), BASIC_PROJECTILE_SPEED, -1,
             true});
     reg.AddComponent<Component::HitBox>(
         new_entity, Component::HitBox{1920, 16.0f});
@@ -143,7 +143,7 @@ void CreateGolemProjectile(Engine::registry &reg,
         Component::Drawable("ennemies/4/Projectile.png", LAYER_PROJECTILE));
     reg.AddComponent<Component::Projectile>(new_entity,
         Component::Projectile{static_cast<int>(BASIC_PROJECTILE_DAMAGE),
-            sf::Vector2f(decoded_vx, decoded_vy), BASIC_PROJECTILE_SPEED, -1,
+            Engine::Graphics::Vector2f(decoded_vx, decoded_vy), BASIC_PROJECTILE_SPEED, -1,
             true});
     reg.AddComponent<Component::HitBox>(
         new_entity, Component::HitBox{8.0f, 8.0f});
@@ -152,7 +152,7 @@ void CreateGolemProjectile(Engine::registry &reg,
                         static_cast<float>(decoded_vy)});
     reg.AddComponent<Component::ParticleEmitter>(new_entity,
         Component::ParticleEmitter(50, 50, RED_HIT, RED_HIT,
-            sf::Vector2f(0.f, 0.f), true, 0.3f, 4.f, sf::Vector2f(-1.f, 0.f),
+            Engine::Graphics::Vector2f(0.f, 0.f), true, 0.3f, 4.f, Engine::Graphics::Vector2f(-1.f, 0.f),
             45.f, 0, 8, 3.0f, 2.0f, -1.0f, LAYER_PARTICLE));
 }
 
@@ -171,18 +171,19 @@ void CreateMermaidProjectile(Engine::registry &reg,
     reg.AddComponent<Component::Drawable>(new_entity,
         Component::Drawable("ennemies/4/Projectile.png", LAYER_PROJECTILE));
     reg.AddComponent<Component::Projectile>(new_entity,
-        Component::Projectile{static_cast<int>(BASIC_PROJECTILE_DAMAGE),
-            sf::Vector2f(decoded_vx, decoded_vy), BASIC_PROJECTILE_SPEED, -1,
-            true});
+        Component::Projectile{static_cast<int>(MERMAID_PROJECTILE_DAMAGE),
+            Engine::Graphics::Vector2f(decoded_vx, decoded_vy),
+            MERMAID_PROJECTILE_SPEED, -1, true});
     reg.AddComponent<Component::HitBox>(
         new_entity, Component::HitBox{8.0f, 8.0f});
     reg.AddComponent<Component::Velocity>(
         new_entity, Component::Velocity{static_cast<float>(decoded_vx),
                         static_cast<float>(decoded_vy)});
-    reg.AddComponent<Component::ParticleEmitter>(new_entity,
-        Component::ParticleEmitter(50, 50, RED_HIT, RED_HIT,
-            sf::Vector2f(0.f, 0.f), true, 0.3f, 4.f, sf::Vector2f(-1.f, 0.f),
-            45.f, 0, 8, 3.0f, 2.0f, -1.0f, LAYER_PARTICLE));
+    reg.AddComponent<Component::ParticleEmitter>(
+        new_entity, Component::ParticleEmitter(50, 50, RED_HIT, RED_HIT,
+                        Engine::Graphics::Vector2f(0.f, 0.f), true, 0.3f, 4.f,
+                        Engine::Graphics::Vector2f(-1.f, 0.f), 45.f, 0, 8,
+                        3.0f, 2.0f, -1.0f, LAYER_PARTICLE));
 }
 
 void CreateDaemonProjectile(Engine::registry &reg,
@@ -202,7 +203,7 @@ void CreateDaemonProjectile(Engine::registry &reg,
                         "ennemies/Daemon/Projectile.png", LAYER_PROJECTILE));
     reg.AddComponent<Component::Projectile>(
         new_entity, Component::Projectile{static_cast<int>(10),
-                        sf::Vector2f(decoded_vx, decoded_vy), 200, -1, true});
+                        Engine::Graphics::Vector2f(decoded_vx, decoded_vy), 200, -1, true});
     reg.AddComponent<Component::HitBox>(
         new_entity, Component::HitBox{8.0f, 8.0f});
     reg.AddComponent<Component::Velocity>(
@@ -210,8 +211,9 @@ void CreateDaemonProjectile(Engine::registry &reg,
                         static_cast<float>(decoded_vy)});
     reg.AddComponent<Component::ParticleEmitter>(new_entity,
         Component::ParticleEmitter(50, 50, ORANGE_HIT, ORANGE_HIT,
-            sf::Vector2f(0.f, 0.f), true, 0.3f, 4.f, sf::Vector2f(-1.f, 0.f),
-            45.f, 0, 8, 3.0f, 2.0f, -1.0f, LAYER_PARTICLE));
+            Engine::Graphics::Vector2f(0.f, 0.f), true, 0.3f, 4.f,
+            Engine::Graphics::Vector2f(-1.f, 0.f), 45.f, 0, 8, 3.0f,
+            2.0f, -1.0f, LAYER_PARTICLE));
 }
 
 static void CreateProjectileEntity(GameWorld &game_world,
@@ -262,14 +264,14 @@ static void CreateProjectileEntity(GameWorld &game_world,
 }
 
 /**
- * @brief Creates a visual obstacle entity on the client side.
+ * @brief Creates an obstacle entity with sprite-based rendering.
  *
  * Obstacles are solid world objects that move with the world scroll.
  * They block player movement and can crush players against the screen edge.
  *
- * @param game_world The game world containing the registry
- * @param new_entity The newly spawned entity
- * @param entity_data Network data for the entity
+ * @param game_world The game world containing the registry.
+ * @param new_entity The entity to populate with components.
+ * @param entity_data Parsed entity data from the network snapshot.
  */
 static void CreateObstacleEntity(GameWorld &game_world,
     Engine::registry::entity_t new_entity,
@@ -278,29 +280,19 @@ static void CreateObstacleEntity(GameWorld &game_world,
     int16_t decoded_vx = static_cast<int16_t>(entity_data.velocity_x) - 32768;
     int16_t decoded_vy = static_cast<int16_t>(entity_data.velocity_y) - 32768;
 
-    // Obstacle size - using a reasonable default since size isn't in packet
-    // Server can spawn 48x48, 64x64, or 128x128 obstacles
-    // Using 48x48 as default for better visual balance with player
-    constexpr float kObstacleWidth = 48.0f;
-    constexpr float kObstacleHeight = 48.0f;
+    // Obstacle size - must match server default (32x32)
+    constexpr float kObstacleWidth = 32.0f;
+    constexpr float kObstacleHeight = 32.0f;
 
-    // Add Transform component
-    // Scale 1.0 - hitbox will define the collision size
+    // Add Transform component with CENTER origin
     game_world.registry_.AddComponent<Component::Transform>(
         new_entity, Component::Transform{static_cast<float>(entity_data.pos_x),
                         static_cast<float>(entity_data.pos_y), 0.0f, 1.0f,
                         Component::Transform::CENTER});
 
-    // Add RectangleDrawable - simple red box for obstacles
-    // Render behind players (LAYER_ACTORS - 1)
-    game_world.registry_.AddComponent<Component::RectangleDrawable>(new_entity,
-        Component::RectangleDrawable{
-            kObstacleWidth, kObstacleHeight,
-            Engine::Graphics::Color(180, 40, 40, 255),  // Dark red fill
-            Engine::Graphics::Color(255, 80, 80, 255),  // Lighter red outline
-            2.0f,                                       // Outline thickness
-            LAYER_ACTORS - 1  // z_index (behind players)
-        });
+    // Add Drawable using red obstacle sprite (render behind players)
+    game_world.registry_.AddComponent<Component::Drawable>(new_entity,
+        Component::Drawable("obstacles/obstacle_red.png", LAYER_ACTORS - 1));
 
     // Add Velocity for interpolation
     game_world.registry_.AddComponent<Component::Velocity>(

@@ -11,7 +11,7 @@ void FactoryActors::CreateMermaidActor(
     Engine::entity &entity, Engine::registry &reg, EnnemyInfo info) {
     // Add drawable and animated sprite components
     Component::AnimatedSprite animated_sprite(
-        48, 48, 0.2f, true, sf::Vector2f(0.0f, 0.0f), 4);
+        48, 48, 0.2f, true, Engine::Graphics::Vector2f(0.0f, 0.0f), 4);
     animated_sprite.AddAnimation(
         "Hit", "ennemies/4/Hurt.png", 48, 48, 2, 0.1f, false);
     animated_sprite.AddAnimation(
@@ -26,12 +26,12 @@ void FactoryActors::CreateMermaidActor(
     reg.AddComponent<Component::PatternMovement>(
         entity, Component::PatternMovement(
                     Component::PatternMovement::PatternType::SineHorizontal,
-                    sf::Vector2f(0.f, 50.f), sf::Vector2f(0.f, 1.f),
-                    sf::Vector2f(0.f, 0.f), info.speed));
+                    Engine::Graphics::Vector2f(0.f, 50.f), Engine::Graphics::Vector2f(0.f, 1.f),
+                    Engine::Graphics::Vector2f(0.f, 0.f), info.speed));
 
     // Add enemy shooting component
     Component::EnemyShootTag enemy_shoot_tag(info.speed,
-        Rtype::Client::BASIC_PROJECTILE_DAMAGE, sf::Vector2f(-3.0f, -15.0f));
+        Rtype::Client::BASIC_PROJECTILE_DAMAGE, Engine::Graphics::Vector2f(-3.0f, -15.0f));
 
     // Add frame event with custom action
     reg.AddComponent<Component::FrameEvents>(entity,
@@ -43,7 +43,7 @@ void FactoryActors::CreateMermaidActor(
                 auto &enemy_shoot = reg.GetComponent<Component::EnemyShootTag>(
                     reg.EntityFromIndex(entity_id));
 
-                sf::Vector2f shoot_direction = sf::Vector2f(-1.0f, 0.0f);
+                Engine::Graphics::Vector2f shoot_direction = Engine::Graphics::Vector2f(-1.0f, 0.0f);
                 // CreateMermaidProjectile(
                 //     reg, shoot_direction, enemy_shoot, entity_id,
                 //     transform);

@@ -176,7 +176,7 @@ void HealthDeductionSystem(Engine::registry &reg,
     // Update tick timers for projectiles (decrement by tick rate seconds)
     for (auto &&[j, proj] : make_indexed_zipper(projectiles)) {
         if (proj.tick_timer > 0.0f) {
-            proj.tick_timer -= TICK_RATE_SECONDS;
+            proj.tick_timer -= 0.016f;  // 16ms tick rate
             if (proj.tick_timer < 0.0f)
                 proj.tick_timer = 0.0f;
         }

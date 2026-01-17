@@ -29,11 +29,9 @@ void registry::RunSystems() {
     for (size_t i = 0; i < systems_.size(); ++i) {
         auto &s = systems_[i];
         if (s) {
-            std::cerr << "S" << i << " " << std::flush;
             s(*this);
         }
     }
-    std::cerr << "OK" << std::endl;
 }
 
 void registry::ClearAllEntities() {

@@ -19,6 +19,13 @@
       "health": 100
     }
   ],
+  "enemies": [
+    {
+      "tag": "golem",
+      "position": { "x": 500, "y": 400 },
+      "spawn_delay": 0.0
+    }
+  ],
   "background": {
     "layers": [
       {

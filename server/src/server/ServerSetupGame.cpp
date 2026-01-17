@@ -20,7 +20,7 @@ namespace server {
 void SpawnEnemyFromRight(Engine::registry &reg) {
     auto enemy_entity = reg.spawn_entity();
     // Random Y position between 100 and 980 (leaving margin from edges)
-    // float random_y = 100.0f + static_cast<float>(std::rand() % 780);
+    float random_y = 100.0f + static_cast<float>(std::rand() % 780);
     // Spawn just off-screen to the right (x = 2000 since screen is 1920 wide)
 
     int r = std::rand() % 100;
