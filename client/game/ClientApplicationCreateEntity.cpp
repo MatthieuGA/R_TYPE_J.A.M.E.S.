@@ -56,6 +56,9 @@ static void CreateEnemyEntity(GameWorld &game_world,
                ClientApplication::ParsedEntity::kMermaidEnemy) {
         enemy_type_str = "mermaid";
     } else if (entity_data.enemy_type ==
+               ClientApplication::ParsedEntity::kGolemEnemy) {
+        enemy_type_str = "golem";
+    } else if (entity_data.enemy_type ==
                ClientApplication::ParsedEntity::kDaemonEnemy) {
         enemy_type_str = "daemon";
     } else if (entity_data.enemy_type ==
@@ -105,6 +108,65 @@ static void CreateEnemyEntity(GameWorld &game_world,
     }
 }
 
+void CreateGolemLaser(Engine::registry &reg,
+    const ClientApplication::ParsedEntity &entity_data,
+    Engine::registry::entity_t new_entity) {
+    // Decode velocity from encoded format (encoded = actual + 32768)
+    int16_t decoded_vx = static_cast<int16_t>(entity_data.velocity_x) - 32768;
+    int16_t decoded_vy = static_cast<int16_t>(entity_data.velocity_y) - 32768;
+
+    // Add components to projectile entity
+    reg.AddComponent<Component::Transform>(
+        new_entity, Component::Transform{static_cast<float>(entity_data.pos_x),
+                        static_cast<float>(entity_data.pos_y), 0.0f, 2.f,
+                        Component::Transform::RIGHT_CENTER});
+    reg.AddComponent<Component::Drawable>(new_entity,
+        Component::Drawable("ennemies/golem/LaserShot.png", LAYER_PROJECTILE));
+    reg.AddComponent<Component::AnimatedSprite>(
+        new_entity, Component::AnimatedSprite(
+                        1000, 24, 0.1f, false,
+                        Engine::Graphics::Vector2f(0.0f, 0.0f), 14));
+    reg.AddComponent<Component::Projectile>(new_entity,
+        Component::Projectile{static_cast<int>(BASIC_PROJECTILE_DAMAGE),
+            Engine::Graphics::Vector2f(decoded_vx, decoded_vy),
+            BASIC_PROJECTILE_SPEED, -1, true});
+    reg.AddComponent<Component::HitBox>(
+        new_entity, Component::HitBox{1920, 16.0f});
+    reg.AddComponent<Component::Velocity>(
+        new_entity, Component::Velocity{static_cast<float>(decoded_vx),
+                        static_cast<float>(decoded_vy)});
+}
+
+void CreateGolemProjectile(Engine::registry &reg,
+    const ClientApplication::ParsedEntity &entity_data,
+    Engine::registry::entity_t new_entity) {
+    // Decode velocity from encoded format (encoded = actual + 32768)
+    int16_t decoded_vx = static_cast<int16_t>(entity_data.velocity_x) - 32768;
+    int16_t decoded_vy = static_cast<int16_t>(entity_data.velocity_y) - 32768;
+
+    // Add components to projectile entity
+    reg.AddComponent<Component::Transform>(
+        new_entity, Component::Transform{static_cast<float>(entity_data.pos_x),
+                        static_cast<float>(entity_data.pos_y), 0.0f, 2.f,
+                        Component::Transform::CENTER});
+    reg.AddComponent<Component::Drawable>(new_entity,
+        Component::Drawable("ennemies/4/Projectile.png", LAYER_PROJECTILE));
+    reg.AddComponent<Component::Projectile>(new_entity,
+        Component::Projectile{static_cast<int>(BASIC_PROJECTILE_DAMAGE),
+            Engine::Graphics::Vector2f(decoded_vx, decoded_vy),
+            BASIC_PROJECTILE_SPEED, -1, true});
+    reg.AddComponent<Component::HitBox>(
+        new_entity, Component::HitBox{8.0f, 8.0f});
+    reg.AddComponent<Component::Velocity>(
+        new_entity, Component::Velocity{static_cast<float>(decoded_vx),
+                        static_cast<float>(decoded_vy)});
+    reg.AddComponent<Component::ParticleEmitter>(new_entity,
+        Component::ParticleEmitter(50, 50, RED_HIT, RED_HIT,
+            Engine::Graphics::Vector2f(0.f, 0.f), true, 0.3f, 4.f,
+            Engine::Graphics::Vector2f(-1.f, 0.f),
+            45.f, 0, 8, 3.0f, 2.0f, -1.0f, LAYER_PARTICLE));
+}
+
 void CreateMermaidProjectile(Engine::registry &reg,
     const ClientApplication::ParsedEntity &entity_data,
     Engine::registry::entity_t new_entity) {
@@ -150,10 +212,10 @@ void CreateDaemonProjectile(Engine::registry &reg,
     reg.AddComponent<Component::Drawable>(
         new_entity, Component::Drawable(
                         "ennemies/Daemon/Projectile.png", LAYER_PROJECTILE));
-    reg.AddComponent<Component::Projectile>(new_entity,
-        Component::Projectile{static_cast<int>(MERMAID_PROJECTILE_DAMAGE),
-            Engine::Graphics::Vector2f(decoded_vx, decoded_vy),
-            MERMAID_PROJECTILE_SPEED, -1, true});
+    reg.AddComponent<Component::Projectile>(
+        new_entity, Component::Projectile{static_cast<int>(10),
+                        Engine::Graphics::Vector2f(decoded_vx, decoded_vy),
+                        200, -1, true});
     reg.AddComponent<Component::HitBox>(
         new_entity, Component::HitBox{8.0f, 8.0f});
     reg.AddComponent<Component::Velocity>(
@@ -205,6 +267,14 @@ static void CreateProjectileEntity(GameWorld &game_world,
         }
         CreateMermaidProjectile(game_world.registry_, entity_data, new_entity);
     } else if (entity_data.projectile_type ==
+               ClientApplication::ParsedEntity::kGolemProjectile) {
+        // Golem projectile
+        CreateGolemProjectile(game_world.registry_, entity_data, new_entity);
+    } else if (entity_data.projectile_type ==
+               ClientApplication::ParsedEntity::kGolemLaser) {
+        // Golem projectile
+        CreateGolemLaser(game_world.registry_, entity_data, new_entity);
+    } else if (entity_data.projectile_type ==
                ClientApplication::ParsedEntity::kDaemonProjectile) {
         // Mermaid projectile
         CreateDaemonProjectile(game_world.registry_, entity_data, new_entity);
@@ -216,6 +286,9 @@ static void CreateProjectileEntity(GameWorld &game_world,
 
 /**
  * @brief Creates an obstacle entity with sprite-based rendering.
+ *
+ * Obstacles are solid world objects that move with the world scroll.
+ * They block player movement and can crush players against the screen edge.
  *
  * @param game_world The game world containing the registry.
  * @param new_entity The entity to populate with components.
@@ -253,7 +326,7 @@ static void CreateObstacleEntity(GameWorld &game_world,
 
     // Add Solid component - obstacles are solid and locked (cannot be pushed)
     game_world.registry_.AddComponent<Component::Solid>(new_entity,
-        Component::Solid{true, true});
+        Component::Solid{true, true});  // isSolid=true, isLocked=true
 }
 
 void ClientApplication::CreateNewEntity(GameWorld &game_world, uint32_t tick,
@@ -275,7 +348,7 @@ void ClientApplication::CreateNewEntity(GameWorld &game_world, uint32_t tick,
         CreateProjectileEntity(game_world, new_entity, entity_data);
     } else if (entity_data.entity_type ==
                ClientApplication::ParsedEntity::kObstacleEntity) {
-        // Obstacle entity with sprite-based rendering
+        // Obstacle entity (asteroids, walls, etc.)
         CreateObstacleEntity(game_world, new_entity, entity_data);
     } else {
         printf("[Snapshot] Unknown entity type 0x%02X for entity ID %u\n",

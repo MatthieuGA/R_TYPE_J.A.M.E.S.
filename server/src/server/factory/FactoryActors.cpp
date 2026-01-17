@@ -33,6 +33,8 @@ void FactoryActors::CreateActor(Engine::entity &entity, Engine::registry &reg,
         CreateMermaidActor(entity, reg, info);
     else if (info.tag == "kamifish")
         CreateKamiFishActor(entity, reg, info);
+    else if (info.tag == "golem")
+        CreateGolemActor(entity, reg, info);
     else if (info.tag == "daemon")
         CreateDaemonActor(entity, reg, info);
     else if (info.tag == "invinsibility")
@@ -65,6 +67,8 @@ void FactoryActors::CreateBasicEnnemy(
         subtype = 1;
     else if (info.tag == "mermaid")
         subtype = 0;
+    else if (info.tag == "golem")
+        subtype = 3;
     else if (info.tag == "daemon")
         subtype = 2;
     else if (info.tag == "invinsibility")
@@ -93,7 +97,7 @@ void FactoryActors::CreatePlayerActor(Engine::entity &entity,
     Engine::registry &reg, EnnemyInfo info, bool is_local) {
     // Add player-specific components
     reg.AddComponent<Component::PlayerTag>(
-        entity, Component::PlayerTag{400.0f});
+        entity, Component::PlayerTag{800.0f});
     reg.AddComponent<Component::Controllable>(
         entity, Component::Controllable{});
 }

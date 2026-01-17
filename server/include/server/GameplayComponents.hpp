@@ -40,6 +40,7 @@ struct EnemyTag {
 };
 
 struct PowerUp {};
+
 /**
  * @brief Tag component for obstacle entities (asteroids, walls, etc.)
  *
@@ -68,8 +69,8 @@ struct TimedEvents {
      *
      * @param action Action callback function to execute (receives entity_id)
      */
-    void AddCooldownAction(
-        std::function<void(int)> action, float cooldown_max);
+    void AddCooldownAction(std::function<void(int)> action, float cooldown_max,
+        float delay = 0.0f);
 };
 
 struct FrameEvents {
@@ -132,13 +133,30 @@ struct Projectile {
         Charged = 1,
         Enemy_Mermaid = 2,
         Enemy_Daemon = 3,
-        Gatling = 5
+        Enemy_Golem = 4,
+        Enemy_Golem_Laser = 5,
+        Gatling = 6
     } type = ProjectileType::Normal;
     int damage;
     vector2f direction;
     float speed;
     int ownerId;  // ID of the entity that fired the projectile
     bool isEnemyProjectile = false;
+    float lifetime = -1.0f;  // Lifetime in seconds (-1 = infinite)
+    /**
+     * @brief How the projectile applies damage on contact.
+     * - OnImpact: deals damage once and is removed on hit.
+     * - DamageOverTime: deals damage every `tick_interval` seconds while
+     *   overlapping and is not removed on hit.
+     */
+    enum class DamageMode {
+        OnImpact = 0,
+        DamageOverTime = 1
+    } damage_mode = DamageMode::OnImpact;
+    /** Interval between damage ticks for DamageOverTime (seconds). */
+    float tick_interval = 0.1f;
+    /** Internal timer counting down to next tick. */
+    float tick_timer = 0.0f;
 };
 
 struct Health {

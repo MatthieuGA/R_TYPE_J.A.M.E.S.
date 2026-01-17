@@ -22,9 +22,9 @@ class FactoryActors {
         int health;
         float speed;
         std::string spritePath;
-        sf::Vector2f hitbox;
-        sf::Vector2f offset_healthbar;
-        sf::Vector2f scale;
+        Engine::Graphics::Vector2f hitbox;
+        Engine::Graphics::Vector2f offset_healthbar;
+        Engine::Graphics::Vector2f scale;
     };
 
     static FactoryActors &GetInstance() {
@@ -58,6 +58,8 @@ class FactoryActors {
     void CreateMermaidActor(
         Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
     void CreateKamiFishActor(
+        Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
+    void CreateGolemActor(
         Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
     void CreateDaemonActor(
         Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);

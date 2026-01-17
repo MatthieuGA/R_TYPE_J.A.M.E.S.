@@ -137,24 +137,27 @@ struct Projectile {
     float speed;
     int ownerId;  // ID of the entity that fired the projectile
     bool isEnemyProjectile = false;
+    float lifetime = -1.0f;  // Lifetime in seconds (-1 = infinite)
 
     // Constructors accepting Engine direction type
     Projectile(int damage, Engine::Graphics::Vector2f dir, float speed,
-        int ownerId, bool isEnemyProjectile = false)
+        int ownerId, bool isEnemyProjectile = false, float lifetime = -1.0f)
         : damage(damage),
           direction(dir),
           speed(speed),
           ownerId(ownerId),
-          isEnemyProjectile(isEnemyProjectile) {}
+          isEnemyProjectile(isEnemyProjectile),
+          lifetime(lifetime) {}
 
     // Legacy constructor: accept SFML direction
     Projectile(int damage, sf::Vector2f dir, float speed, int ownerId,
-        bool isEnemyProjectile = false)
+        bool isEnemyProjectile = false, float lifetime = -1.0f)
         : damage(damage),
           direction(dir.x, dir.y),
           speed(speed),
           ownerId(ownerId),
-          isEnemyProjectile(isEnemyProjectile) {}
+          isEnemyProjectile(isEnemyProjectile),
+          lifetime(lifetime) {}
 };
 
 struct Health {
@@ -365,8 +368,9 @@ struct HealthBar {
     sf::Texture foreground_texture;
     bool is_loaded = false;
 
-    // Compatibility constructor: accept SFML offset
+    // Compatibility constructors
     explicit HealthBar(sf::Vector2f offset) : offset(offset.x, offset.y) {}
+    explicit HealthBar(Engine::Graphics::Vector2f offset) : offset(offset) {}
 };
 
 }  // namespace Rtype::Client::Component

@@ -33,6 +33,8 @@ void FactoryActors::CreateActor(Engine::entity &entity, Engine::registry &reg,
         CreateMermaidActor(entity, reg, info);
     else if (info.tag == "kamifish")
         CreateKamiFishActor(entity, reg, info);
+    else if (info.tag == "golem")
+        CreateGolemActor(entity, reg, info);
     else if (info.tag == "daemon")
         CreateDaemonActor(entity, reg, info);
     else if (info.tag == "invinsibility")
@@ -54,7 +56,8 @@ void FactoryActors::CreateBasicActor(
         entity, Component::Health(info.health));
     reg.AddComponent<Component::HealthBar>(entity,
         Component::HealthBar{
-            sf::Vector2f(info.offset_healthbar.x, info.offset_healthbar.y)});
+            Engine::Graphics::Vector2f(info.offset_healthbar.x,
+                                       info.offset_healthbar.y)});
     reg.AddComponent<Component::HitBox>(
         entity, Component::HitBox{info.hitbox.x, info.hitbox.y});
     reg.AddComponent<Component::Velocity>(entity, Component::Velocity{});

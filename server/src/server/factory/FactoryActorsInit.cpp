@@ -59,7 +59,6 @@ void FactoryActors::InitializeEnemyInfoMap(const std::string &jsonFolderPath) {
         if (!entry.is_regular_file())
             continue;  // Skip regular files
         std::string name = entry.path().filename().stem().string();
-        printf("Loading enemy config: %s\n", name.c_str());
         loadConfigEnemy(entry.path().string(), name);
     }
 }

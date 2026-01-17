@@ -17,7 +17,8 @@ class FactoryActors {
  public:
     enum class EnnemyType {
         MERMAID,
-        KAMI_FISH
+        KAMI_FISH,
+        GOLEM
     };
 
     struct EnnemyInfo {
@@ -51,6 +52,8 @@ class FactoryActors {
     void CreateMermaidActor(
         Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
     void CreateKamiFishActor(
+        Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
+    void CreateGolemActor(
         Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
     void CreateDaemonActor(
         Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
