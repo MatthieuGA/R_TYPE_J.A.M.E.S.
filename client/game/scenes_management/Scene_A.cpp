@@ -49,10 +49,9 @@ Engine::entity Scene_A::CreateButton(Engine::registry &reg,
             on_click();
         }});
 
-    reg.AddComponent<Component::Text>(
-        button_entity, Component::Text("dogica.ttf", label, 13,
-                           LAYER_UI + 1, WHITE_BLUE,
-                           Engine::Graphics::Vector2f(0.0f, -5.0f)));
+    reg.AddComponent<Component::Text>(button_entity,
+        Component::Text("dogica.ttf", label, 13, LAYER_UI + 1, WHITE_BLUE,
+            Engine::Graphics::Vector2f(0.0f, -5.0f)));
 
     return button_entity;
 }

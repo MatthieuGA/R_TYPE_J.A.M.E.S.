@@ -35,6 +35,11 @@
       "tag": "kamifish",
       "position": { "x": 550, "y": 400 },
       "spawn_delay": 0.0
+    },
+    {
+      "tag": "health",
+      "position": { "x": 700, "y": 300 },
+      "spawn_delay": 1.0
     }
   ],
   "background": {

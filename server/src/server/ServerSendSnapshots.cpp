@@ -84,6 +84,20 @@ void SendServerSnapshotPlayer(network::EntityState &entity_state,
     } catch (const std::exception &e) {
         entity_state.health = 0;
     }
+    // Set invincibility time if applicable
+    try {
+        auto &invincibility = registry_.GetComponent<Component::Health>(
+            registry_.EntityFromIndex(i));
+        if (invincibility.invincibilityDuration > 0.0f) {
+            entity_state.invincibility_time = static_cast<uint16_t>(std::clamp(
+                static_cast<int>(invincibility.invincibilityDuration), 0,
+                65535));
+        } else {
+            entity_state.invincibility_time = 0;
+        }
+    } catch (const std::exception &e) {
+        entity_state.invincibility_time = 0;
+    }
 }
 
 void SendServerSnapshotEnemy(network::EntityState &entity_state,

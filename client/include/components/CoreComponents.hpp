@@ -94,6 +94,8 @@ struct Controllable {
     bool isControllable = true;
 };
 
+struct PowerUp {};
+
 struct InputState {
     bool up;
     bool down;

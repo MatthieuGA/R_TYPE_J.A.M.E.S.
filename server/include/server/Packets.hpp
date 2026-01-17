@@ -404,34 +404,39 @@ struct EntityState {
     enum class EnemyType : uint8_t {
         Mermaid = 0x00,
         KamiFish = 0x01,
-        Daemon = 0x02
+        Daemon = 0x02,
+        Invinsibility = 0x04,
+        Health = 0x05,
+        Gatling = 0x06
     };
 
-    EntityId entity_id;         // 4 bytes
-    uint8_t entity_type;        // 1 byte (sprite/prefab ID)
-    uint8_t reserved;           // 1 byte padding
-    uint16_t pos_x;             // 2 bytes (normalized 0..65535)
-    uint16_t pos_y;             // 2 bytes (normalized 0..38864)
-    uint16_t angle;             // 2 bytes (degrees 0..360)
-    uint16_t velocity_x;        // 2 bytes (normalized -32768..32767)
-    uint16_t velocity_y;        // 2 bytes (normalized -32768..32767)
-    uint8_t projectile_type;    // 1 byte (for projectiles)
-    uint8_t enemy_type;         // 1 byte (for enemies)
-    uint8_t current_animation;  // 1 byte (for animated entities)
-    uint8_t current_frame;      // 1 byte (for animated entities)
-    uint16_t health;            // 2 bytes (health or hit points)
+    EntityId entity_id;           // 4 bytes
+    uint8_t entity_type;          // 1 byte (sprite/prefab ID)
+    uint8_t reserved;             // 1 byte padding
+    uint16_t pos_x;               // 2 bytes (normalized 0..65535)
+    uint16_t pos_y;               // 2 bytes (normalized 0..38864)
+    uint16_t angle;               // 2 bytes (degrees 0..360)
+    uint16_t velocity_x;          // 2 bytes (normalized -32768..32767)
+    uint16_t velocity_y;          // 2 bytes (normalized -32768..32767)
+    uint8_t projectile_type;      // 1 byte (for projectiles)
+    uint8_t enemy_type;           // 1 byte (for enemies)
+    uint8_t current_animation;    // 1 byte (for animated entities)
+    uint8_t current_frame;        // 1 byte (for animated entities)
+    uint16_t health;              // 2 bytes (health or hit points)
+    uint16_t invincibility_time;  // 2 bytes (invincibility time in ms)
 
     void Serialize(PacketBuffer &buffer, EntityType type) const {
         buffer.WriteUint32(entity_id.value);  // 4 bytes
         buffer.WriteUint8(entity_type);       // 1 byte
         buffer.WriteUint8(reserved);          // 1 byte
         if (type == EntityType::Player) {
-            buffer.WriteUint16(pos_x);       // 2 bytes
-            buffer.WriteUint16(pos_y);       // 2 bytes
-            buffer.WriteUint16(angle);       // 2 bytes
-            buffer.WriteUint16(velocity_x);  // 2 bytes
-            buffer.WriteUint16(velocity_y);  // 2 bytes
-            buffer.WriteUint16(health);      // 2 byte
+            buffer.WriteUint16(pos_x);               // 2 bytes
+            buffer.WriteUint16(pos_y);               // 2 bytes
+            buffer.WriteUint16(angle);               // 2 bytes
+            buffer.WriteUint16(velocity_x);          // 2 bytes
+            buffer.WriteUint16(velocity_y);          // 2 bytes
+            buffer.WriteUint16(health);              // 2 byte
+            buffer.WriteUint16(invincibility_time);  // 2 byte
         } else if (type == EntityType::Enemy) {
             buffer.WriteUint16(pos_x);             // 2 bytes
             buffer.WriteUint16(pos_y);             // 2 bytes
@@ -465,6 +470,7 @@ struct EntityState {
             state.velocity_x = buffer.ReadUint16();
             state.velocity_y = buffer.ReadUint16();
             state.health = buffer.ReadUint16();
+            state.invincibility_time = buffer.ReadUint16();
         } else if (type == EntityType::Enemy) {
             state.pos_x = buffer.ReadUint16();
             state.pos_y = buffer.ReadUint16();

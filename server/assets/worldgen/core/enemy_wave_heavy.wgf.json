@@ -50,6 +50,11 @@
       "tag": "mermaid",
       "position": { "x": 600, "y": 300 },
       "spawn_delay": 0.0
+    },
+    {
+      "tag": "gatling",
+      "position": { "x": 900, "y": 300 },
+      "spawn_delay": 1.5
     }
   ],
   "background": {

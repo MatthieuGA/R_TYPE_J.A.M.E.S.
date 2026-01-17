@@ -35,6 +35,12 @@ void FactoryActors::CreateActor(Engine::entity &entity, Engine::registry &reg,
         CreateKamiFishActor(entity, reg, info);
     else if (info.tag == "daemon")
         CreateDaemonActor(entity, reg, info);
+    else if (info.tag == "invinsibility")
+        CreateInvActor(entity, reg, info);
+    else if (info.tag == "health")
+        CreateHealthActor(entity, reg, info);
+    else if (info.tag == "gatling")
+        CreateGatlingActor(entity, reg, info);
 }
 
 void FactoryActors::CreateBasicActor(

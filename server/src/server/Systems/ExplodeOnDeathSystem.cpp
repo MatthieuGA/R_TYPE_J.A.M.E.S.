@@ -58,6 +58,7 @@ void ExplodeOnDeathSystem(Engine::registry &reg,
         bool is_dead = false;
         // Check melee contact with any player
         bool melee_triggered = false;
+        int collided_player_id = -1;
         for (auto &&[pid, ptag] : make_indexed_zipper(player_tags)) {
             if (!transforms.has(pid) || !hitBoxes.has(pid))
                 continue;
@@ -68,6 +69,7 @@ void ExplodeOnDeathSystem(Engine::registry &reg,
             if (IsColliding(*t_a, *hitBoxes[eid], *t_b, *hitBoxes[pid])) {
                 is_dead = true;
                 melee_triggered = true;
+                collided_player_id = static_cast<int>(pid);
                 break;
             }
         }
@@ -87,18 +89,26 @@ void ExplodeOnDeathSystem(Engine::registry &reg,
         auto &t_self = transforms[eid];
         float r2 = expl.radius * expl.radius;
 
-        // Apply damage to all targets within radius (exclude self)
-        for (auto &ti : targets) {
-            if (ti.id == eid)
-                continue;
-            float d2 = DistanceSquared(t_self->x, t_self->y, ti.x, ti.y);
-            if (d2 <= r2) {
-                if (healths.has(ti.id)) {
-                    auto &target_health = healths[ti.id];
-                    target_health->currentHealth -= expl.damage;
-                    // Clamp
-                    if (target_health->currentHealth < 0)
-                        target_health->currentHealth = 0;
+        // If a custom onExplode handler is provided for this entity, call it.
+        if (expl.onExplode) {
+            expl.onExplode(reg, static_cast<int>(eid), collided_player_id);
+        } else {
+            // Apply damage to all targets within radius (exclude self)
+            for (auto &ti : targets) {
+                if (ti.id == eid)
+                    continue;
+                float d2 = DistanceSquared(t_self->x, t_self->y, ti.x, ti.y);
+                if (d2 <= r2) {
+                    if (healths.has(ti.id)) {
+                        auto &target_health = healths[ti.id];
+                        if (target_health->invincibilityDuration > 0.0f)
+                            continue;
+
+                        target_health->currentHealth -= expl.damage;
+                        // Clamp
+                        if (target_health->currentHealth < 0)
+                            target_health->currentHealth = 0;
+                    }
                 }
             }
         }
@@ -128,6 +138,9 @@ void ExplodeOnDeathSystem(Engine::registry &reg,
                     reg.EntityFromIndex(eid));
             if (reg.GetComponents<Component::EnemyTag>().has(eid))
                 reg.RemoveComponent<Component::EnemyTag>(
+                    reg.EntityFromIndex(eid));
+            if (reg.GetComponents<Component::PowerUp>().has(eid))
+                reg.RemoveComponent<Component::PowerUp>(
                     reg.EntityFromIndex(eid));
             // ensure AnimationDeath marker exists so it will be removed later
             reg.AddComponent<Component::AnimationDeath>(

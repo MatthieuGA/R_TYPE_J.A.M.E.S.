@@ -1,0 +1,20 @@
+{
+    "tag": "invinsibility",
+    "health": 10,
+    "speed": 50.0,
+    "spritePath": "ennemies/powerups/PowerUp_Inv.png",
+    "hitbox": {
+        "x": 5.0,
+        "y": 5.0
+    },
+    "offset_healthbar": {
+        "x": 0.0,
+        "y": 7.0
+    },
+    "transform" : {
+        "scale": {
+            "x": -3.0,
+            "y": 3.0
+        }
+    }
+}

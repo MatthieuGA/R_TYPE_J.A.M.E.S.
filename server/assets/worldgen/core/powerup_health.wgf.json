@@ -1,0 +1,23 @@
+{
+  "uuid": "a1b2c3d4-e5f6-4a7b-8c9d-111111111111",
+  "name": "Health PowerUp Drop",
+  "description": "A health powerup floats through space. Collect it to restore health.",
+  "difficulty": 1.0,
+  "tags": ["powerup", "health", "easy", "reward"],
+  "width": 400,
+  "spawn_rules": {
+    "min_distance_from_last": 0,
+    "max_frequency": 0.3
+  },
+  "obstacles": [],
+  "enemies": [
+    {
+      "tag": "health",
+      "position": { "x": 300, "y": 300 },
+      "spawn_delay": 0.0
+    }
+  ],
+  "background": {
+    "layers": []
+  }
+}
