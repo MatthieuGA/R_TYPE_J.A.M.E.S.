@@ -34,6 +34,7 @@ void InitRegistryComponents(Engine::registry &reg) {
     reg.RegisterComponent<Rtype::Client::Component::AnimationDeath>();
     reg.RegisterComponent<Rtype::Client::Component::Draggable>();
     reg.RegisterComponent<Rtype::Client::Component::HealthBar>();
+    reg.RegisterComponent<Rtype::Client::Component::HealthBarBoss>();
     // Register networking components
     reg.RegisterComponent<Rtype::Client::Component::NetworkId>();
     reg.RegisterComponent<Rtype::Client::Component::InterpolatedPosition>();

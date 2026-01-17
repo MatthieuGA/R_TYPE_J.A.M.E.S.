@@ -167,6 +167,12 @@ void HealthBarSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> const &transforms,
     Eng::sparse_array<Com::HealthBar> &health_bars,
     Eng::sparse_array<Com::Health> const &healths);
+
+void HealthBarBossSystem(Eng::registry &reg, GameWorld &game_world,
+    Eng::sparse_array<Com::Transform> const &transforms,
+    Eng::sparse_array<Com::HealthBarBoss> &health_bars_boss,
+    Eng::sparse_array<Com::Health> const &healths);
+
 void NetworkInputSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Inputs> const &inputs,
     Eng::sparse_array<Com::PlayerTag> const &player_tags);

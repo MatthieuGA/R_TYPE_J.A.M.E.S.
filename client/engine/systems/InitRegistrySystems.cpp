@@ -85,6 +85,17 @@ void InitRenderSystems(Rtype::Client::GameWorld &game_world) {
             Eng::sparse_array<Com::Health> const &healths) {
             HealthBarSystem(r, game_world, transforms, health_bars, healths);
         });
+
+    // Health bar boss system
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
+        Eng::sparse_array<Com::HealthBarBoss>, Eng::sparse_array<Com::Health>>(
+        [&game_world](Eng::registry &r,
+            Eng::sparse_array<Com::Transform> const &transforms,
+            Eng::sparse_array<Com::HealthBarBoss> &health_bars_boss,
+            Eng::sparse_array<Com::Health> const &healths) {
+            HealthBarBossSystem(
+                r, game_world, transforms, health_bars_boss, healths);
+        });
 }
 
 /**
