@@ -6,7 +6,7 @@
   "tags": ["powerup", "invincibility", "easy", "reward"],
   "width": 400,
   "spawn_rules": {
-    "min_distance_from_last": 8,
+    "min_distance_from_last": 0,
     "max_frequency": 0.2
   },
   "obstacles": [],

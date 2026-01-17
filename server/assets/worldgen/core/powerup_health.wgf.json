@@ -6,7 +6,7 @@
   "tags": ["powerup", "health", "easy", "reward"],
   "width": 400,
   "spawn_rules": {
-    "min_distance_from_last": 5,
+    "min_distance_from_last": 0,
     "max_frequency": 0.3
   },
   "obstacles": [],
