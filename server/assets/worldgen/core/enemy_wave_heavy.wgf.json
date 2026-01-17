@@ -1,9 +1,9 @@
 {
   "uuid": "e3f4a5b6-c7d8-49e0-8f2a-3b4c5d6e7f8a",
   "name": "Enemy Wave - Heavy",
-  "description": "A challenging wave with many fast enemies.",
+  "description": "A challenging wave with many fast enemies spread across the entire screen.",
   "difficulty": 7.5,
-  "tags": ["enemies", "hard", "swarm"],
+  "tags": ["enemies", "hard", "swarm", "mixed"],
   "width": 1200,
   "spawn_rules": {
     "min_distance_from_last": 2,
@@ -18,37 +18,57 @@
     },
     {
       "tag": "kamifish",
-      "position": { "x": 50, "y": 200 },
+      "position": { "x": 50, "y": 400 },
       "spawn_delay": 0.0
     },
     {
       "tag": "kamifish",
-      "position": { "x": 50, "y": 300 },
-      "spawn_delay": 0.0
-    },
-    {
-      "tag": "mermaid",
-      "position": { "x": 200, "y": 150 },
-      "spawn_delay": 0.0
-    },
-    {
-      "tag": "mermaid",
-      "position": { "x": 200, "y": 450 },
+      "position": { "x": 50, "y": 700 },
       "spawn_delay": 0.0
     },
     {
       "tag": "kamifish",
-      "position": { "x": 400, "y": 250 },
+      "position": { "x": 50, "y": 950 },
       "spawn_delay": 0.0
     },
     {
-      "tag": "kamifish",
-      "position": { "x": 400, "y": 350 },
+      "tag": "daemon",
+      "position": { "x": 200, "y": 250 },
+      "spawn_delay": 0.0
+    },
+    {
+      "tag": "daemon",
+      "position": { "x": 200, "y": 750 },
       "spawn_delay": 0.0
     },
     {
       "tag": "mermaid",
+      "position": { "x": 400, "y": 150 },
+      "spawn_delay": 0.0
+    },
+    {
+      "tag": "mermaid",
+      "position": { "x": 400, "y": 500 },
+      "spawn_delay": 0.0
+    },
+    {
+      "tag": "mermaid",
+      "position": { "x": 400, "y": 850 },
+      "spawn_delay": 0.0
+    },
+    {
+      "tag": "kamifish",
       "position": { "x": 600, "y": 300 },
+      "spawn_delay": 0.0
+    },
+    {
+      "tag": "kamifish",
+      "position": { "x": 600, "y": 600 },
+      "spawn_delay": 0.0
+    },
+    {
+      "tag": "kamifish",
+      "position": { "x": 600, "y": 900 },
       "spawn_delay": 0.0
     }
   ],

@@ -1,7 +1,7 @@
 {
   "uuid": "d2e3f4a5-b6c7-4d89-8e1f-2a3b4c5d6e7f",
   "name": "Enemy Wave - Medium",
-  "description": "A medium difficulty wave with mixed enemy types.",
+  "description": "A medium difficulty wave with all enemy types spread across the screen.",
   "difficulty": 5.0,
   "tags": ["enemies", "medium", "mixed"],
   "width": 1000,
@@ -17,23 +17,43 @@
       "spawn_delay": 0.0
     },
     {
-      "tag": "mermaid",
-      "position": { "x": 150, "y": 300 },
+      "tag": "kamifish",
+      "position": { "x": 50, "y": 500 },
       "spawn_delay": 0.0
     },
     {
       "tag": "kamifish",
-      "position": { "x": 250, "y": 500 },
+      "position": { "x": 50, "y": 900 },
       "spawn_delay": 0.0
     },
     {
       "tag": "mermaid",
+      "position": { "x": 200, "y": 300 },
+      "spawn_delay": 0.0
+    },
+    {
+      "tag": "mermaid",
+      "position": { "x": 200, "y": 700 },
+      "spawn_delay": 0.0
+    },
+    {
+      "tag": "daemon",
       "position": { "x": 400, "y": 200 },
+      "spawn_delay": 0.0
+    },
+    {
+      "tag": "daemon",
+      "position": { "x": 400, "y": 600 },
       "spawn_delay": 0.0
     },
     {
       "tag": "kamifish",
       "position": { "x": 550, "y": 400 },
+      "spawn_delay": 0.0
+    },
+    {
+      "tag": "kamifish",
+      "position": { "x": 550, "y": 800 },
       "spawn_delay": 0.0
     }
   ],

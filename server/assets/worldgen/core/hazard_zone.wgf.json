@@ -1,9 +1,9 @@
 {
   "uuid": "e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8a9b",
   "name": "Hazard Zone",
-  "description": "Area filled with energy hazards that damage on contact.",
+  "description": "Area filled with energy hazards across the entire screen.",
   "difficulty": 5.0,
-  "tags": ["hazard", "energy", "dangerous"],
+  "tags": ["hazard", "energy", "dangerous", "mixed"],
   "width": 800,
   "spawn_rules": {
     "min_distance_from_last": 4,
@@ -13,7 +13,7 @@
     {
       "type": "hazard",
       "sprite": "images/obstacles/energy_field_horizontal.png",
-      "position": { "x": 150, "y": 150 },
+      "position": { "x": 150, "y": 200 },
       "size": { "width": 200, "height": 32 },
       "collision": { "enabled": true, "damage": 30 },
       "health": 0
@@ -21,15 +21,15 @@
     {
       "type": "hazard",
       "sprite": "images/obstacles/energy_field_vertical.png",
-      "position": { "x": 400, "y": 200 },
-      "size": { "width": 32, "height": 200 },
+      "position": { "x": 400, "y": 350 },
+      "size": { "width": 32, "height": 300 },
       "collision": { "enabled": true, "damage": 30 },
       "health": 0
     },
     {
       "type": "hazard",
       "sprite": "images/obstacles/energy_field_horizontal.png",
-      "position": { "x": 500, "y": 450 },
+      "position": { "x": 500, "y": 800 },
       "size": { "width": 200, "height": 32 },
       "collision": { "enabled": true, "damage": 30 },
       "health": 0
@@ -37,10 +37,32 @@
     {
       "type": "decoration",
       "sprite": "images/decorations/warning_sign.png",
-      "position": { "x": 50, "y": 300 },
+      "position": { "x": 50, "y": 500 },
       "size": { "width": 32, "height": 32 },
       "collision": { "enabled": false, "damage": 0 },
       "health": 0
+    }
+  ],
+  "enemies": [
+    {
+      "tag": "kamifish",
+      "position": { "x": 200, "y": 100 },
+      "spawn_delay": 0.0
+    },
+    {
+      "tag": "kamifish",
+      "position": { "x": 200, "y": 600 },
+      "spawn_delay": 0.0
+    },
+    {
+      "tag": "mermaid",
+      "position": { "x": 500, "y": 450 },
+      "spawn_delay": 0.3
+    },
+    {
+      "tag": "daemon",
+      "position": { "x": 600, "y": 900 },
+      "spawn_delay": 0.5
     }
   ],
   "background": {
