@@ -1,7 +1,7 @@
 {
     "tag": "kamifish",
     "health": 10,
-    "speed": 400.0,
+    "speed": 200.0,
     "spritePath": "ennemies/6/Idle.png",
     "hitbox": {
         "x": 15.0,
