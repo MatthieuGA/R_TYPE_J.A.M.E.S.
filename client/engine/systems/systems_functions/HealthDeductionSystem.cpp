@@ -32,6 +32,7 @@ void ProcessCollision(Eng::registry &reg, GameWorld &game_world,
     const CollisionInfo &collision) {
     auto &health_bars = reg.GetComponents<Component::HealthBar>();
     auto &animated_sprites = reg.GetComponents<Component::AnimatedSprite>();
+    auto &healths = reg.GetComponents<Component::Health>();
 
     std::size_t i = collision.entity_index;
     Engine::entity proj_entity = collision.proj_entity;
@@ -48,10 +49,13 @@ void ProcessCollision(Eng::registry &reg, GameWorld &game_world,
         bar->timer_damage = 0.0f;
     }
 
-    if (animated_sprites.has(i)) {
+    if (animated_sprites.has(i) && healths.has(i)) {
+        auto &health = healths[i];
         auto &anim_sprite = animated_sprites[i];
-        anim_sprite->SetCurrentAnimation("Hit", true);
-        anim_sprite->GetCurrentAnimation()->current_frame = 1;
+        if (health->invincibilityDuration <= 0.0f) {
+            anim_sprite->SetCurrentAnimation("Hit", true);
+            anim_sprite->GetCurrentAnimation()->current_frame = 1;
+        }
     }
 
     // Remove the projectile component after collision
