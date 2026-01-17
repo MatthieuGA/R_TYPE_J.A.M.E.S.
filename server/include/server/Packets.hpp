@@ -405,7 +405,7 @@ struct EntityState {
         Mermaid = 0x00,
         KamiFish = 0x01,
         Daemon = 0x02,
-        Golem = 0x03
+        Golem = 0x03,
         Invinsibility = 0x04,
         Health = 0x05,
         Gatling = 0x06

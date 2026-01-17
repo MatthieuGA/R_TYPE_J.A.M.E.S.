@@ -40,6 +40,7 @@ struct EnemyTag {
 };
 
 struct PowerUp {};
+
 /**
  * @brief Tag component for obstacle entities (asteroids, walls, etc.)
  *
@@ -133,7 +134,7 @@ struct Projectile {
         Enemy_Mermaid = 2,
         Enemy_Daemon = 3,
         Enemy_Golem = 4,
-        Enemy_Golem_Laser = 5
+        Enemy_Golem_Laser = 5,
         Gatling = 6
     } type = ProjectileType::Normal;
     int damage;

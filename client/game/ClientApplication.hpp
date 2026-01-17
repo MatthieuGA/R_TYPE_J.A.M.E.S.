@@ -25,7 +25,7 @@ class ClientApplication {
             kMermaidProjectile = 0x02,
             kDaemonProjectile = 0x03,
             kGolemProjectile = 0x04,
-            kGolemLaser = 0x05
+            kGolemLaser = 0x05,
             kPlayerGatlingProjectile = 0x06
         };
 
@@ -40,7 +40,7 @@ class ClientApplication {
             kMermaidEnemy = 0x00,
             kKamiFishEnemy = 0x01,
             kDaemonEnemy = 0x02,
-            kGolemEnemy = 0x03
+            kGolemEnemy = 0x03,
             kInvinsibilityPU = 0x04,
             kHealthPU = 0x05,
             kGatlingPU = 0x06
