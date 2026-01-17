@@ -277,8 +277,8 @@ void WorldGenSystem::ProcessSpawnEvent(
 
         case worldgen::SpawnEvent::EventType::kFrameStart:
             // Log frame transition (compact message)
-            std::cout << "[WorldGen] Frame " << event.frame_number
-                      << " started" << std::endl;
+            // std::cout << "[WorldGen] Frame " << event.frame_number
+            //           << " started" << std::endl;
             break;
 
         case worldgen::SpawnEvent::EventType::kFrameEnd:
@@ -286,7 +286,7 @@ void WorldGenSystem::ProcessSpawnEvent(
             break;
 
         case worldgen::SpawnEvent::EventType::kLevelEnd:
-            std::cout << "[WorldGen] Level complete!" << std::endl;
+            // std::cout << "[WorldGen] Level complete!" << std::endl;
             // Could trigger victory screen or next level transition
             break;
     }
@@ -339,9 +339,9 @@ void WorldGenSystem::SpawnObstacle(
     }
 
     // Brief log message (reduced verbosity)
-    std::cout << "[WorldGen] Obstacle spawned at (" << spawn_x << ", "
-              << spawn_y << ") size=" << event.size.width << "x"
-              << event.size.height << std::endl;
+    // std::cout << "[WorldGen] Obstacle spawned at (" << spawn_x << ", "
+    //           << spawn_y << ") size=" << event.size.width << "x"
+    //           << event.size.height << std::endl;
 }
 
 void WorldGenSystem::SpawnEnemy(
@@ -357,8 +357,8 @@ void WorldGenSystem::SpawnEnemy(
     FactoryActors::GetInstance().CreateActor(
         entity, registry, event.enemy_tag, {spawn_x, spawn_y}, false);
 
-    std::cout << "[WorldGen] Spawned enemy '" << event.enemy_tag << "' at ("
-              << spawn_x << ", " << spawn_y << ")" << std::endl;
+    // std::cout << "[WorldGen] Spawned enemy '" << event.enemy_tag << "' at ("
+    //           << spawn_x << ", " << spawn_y << ")" << std::endl;
 }
 
 }  // namespace server

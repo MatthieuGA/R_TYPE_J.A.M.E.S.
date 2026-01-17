@@ -17,11 +17,11 @@ TimedEvents::TimedEvents(std::function<void(int)> action, float cooldown_max) {
 }
 
 void TimedEvents::AddCooldownAction(
-    std::function<void(int)> action, float cooldown_max) {
+    std::function<void(int)> action, float cooldown_max, float delay) {
     CooldownAction cd_action;
     cd_action.action = std::move(action);
     cd_action.cooldown_max = cooldown_max;
-    cd_action.cooldown = 0.0f;
+    cd_action.cooldown = delay;
     cooldown_actions.push_back(std::move(cd_action));
 }
 

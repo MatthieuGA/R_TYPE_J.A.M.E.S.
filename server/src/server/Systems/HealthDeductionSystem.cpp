@@ -42,6 +42,8 @@ void DeathHandling(Engine::registry &reg,
         reg.RemoveComponent<Component::PlayerTag>(entity);
     if (reg.GetComponents<Component::EnemyTag>().has(i))
         reg.RemoveComponent<Component::EnemyTag>(entity);
+    if (reg.GetComponents<Component::PowerUp>().has(i))
+        reg.RemoveComponent<Component::PowerUp>(entity);
     reg.RemoveComponent<Component::TimedEvents>(entity);
     reg.RemoveComponent<Component::FrameEvents>(entity);
     reg.RemoveComponent<Component::PatternMovement>(entity);
@@ -76,15 +78,17 @@ void HandleCollision(Engine::registry &reg, Component::Health &health,
     Engine::sparse_array<Component::AnimatedSprite> &animated_sprites,
     std::size_t i, Engine::entity projEntity, std::size_t j,
     const Component::Projectile &projectile) {
-    health.currentHealth -= projectile.damage;
+    if (health.invincibilityDuration <= 0.0f) {
+        health.currentHealth -= projectile.damage;
 
-    if (animated_sprites.has(i)) {
-        auto &animSprite = animated_sprites[i];
-        animSprite->SetCurrentAnimation("Hit", true);
-        animSprite->GetCurrentAnimation()->current_frame = 1;
+        if (animated_sprites.has(i)) {
+            auto &animSprite = animated_sprites[i];
+            animSprite->SetCurrentAnimation("Hit", true);
+            animSprite->GetCurrentAnimation()->current_frame = 1;
+        }
     }
-
     reg.RemoveComponent<Component::Projectile>(projEntity);
+
     if (animated_sprites.has(j)) {
         auto &projAnimSprite = animated_sprites[j];
         projAnimSprite->SetCurrentAnimation("Death", false);
@@ -117,7 +121,16 @@ void HealthDeductionSystem(Engine::registry &reg,
     Engine::sparse_array<Component::AnimatedSprite> &animated_sprites,
     Engine::sparse_array<Component::HitBox> const &hitBoxes,
     Engine::sparse_array<Component::Transform> const &transforms,
-    Engine::sparse_array<Component::Projectile> const &projectiles) {
+    Engine::sparse_array<Component::Projectile> &projectiles) {
+    for (auto &&[i, health] : make_indexed_zipper(healths)) {
+        if (health.invincibilityDuration > 0.0f) {
+            // Decrease invincibility duration
+            health.invincibilityDuration -= g_frame_delta_seconds;
+            if (health.invincibilityDuration < 0.0f)
+                health.invincibilityDuration = 0.0f;
+        }
+    }
+
     for (auto &&[i, health, hitBox, transform] :
         make_indexed_zipper(healths, hitBoxes, transforms)) {
         Engine::entity entity = reg.EntityFromIndex(i);
@@ -131,6 +144,8 @@ void HealthDeductionSystem(Engine::registry &reg,
             if (i == j)
                 continue;
             try {
+                if (reg.GetComponents<Component::PowerUp>().has(i))
+                    continue;  // Player projectiles don't hit players
                 if (projectile.isEnemyProjectile &&
                     reg.GetComponents<Component::EnemyTag>().has(i))
                     continue;  // Enemy projectiles don't hit enemies
@@ -141,14 +156,45 @@ void HealthDeductionSystem(Engine::registry &reg,
 
             // Simple AABB collision detection
             if (IsColliding(transform, hitBox, projTransform, projHitBox)) {
-                // Collision detected, deduct health
-                HandleCollision(reg, health, animated_sprites, i, projEntity,
-                    j, projectile);
+                // Collision detected
+                if (projectile.damage_mode ==
+                    Component::Projectile::DamageMode::OnImpact) {
+                    // Deduct once and remove projectile
+                    HandleCollision(reg, health, animated_sprites, i,
+                        projEntity, j, projectile);
+                } else {
+                    // DamageOverTime: apply damage each tick interval while
+                    // overlapping, do not remove projectile on hit
+                    if (projectile.tick_timer <= 0.0f) {
+                        health.currentHealth -= projectile.damage;
+
+                        // if (animated_sprites.has(i)) {
+                        //     auto &animSprite = animated_sprites[i];
+                        //     animSprite->SetCurrentAnimation("Hit", true);
+                        //     animSprite->GetCurrentAnimation()->current_frame
+                        //     = 1;
+                        // }
+
+                        // reset projectile tick timer
+                        // Note: projectile is mutable here (projectiles
+                        // non-const)
+                        projectile.tick_timer = projectile.tick_interval;
+                    }
+                }
             }
         }
 
         if (health.currentHealth <= 0)
             DeathHandling(reg, animated_sprites, entity, i);
+    }
+
+    // Update tick timers for projectiles (decrement by tick rate seconds)
+    for (auto &&[j, proj] : make_indexed_zipper(projectiles)) {
+        if (proj.tick_timer > 0.0f) {
+            proj.tick_timer -= 0.016f;  // 16ms tick rate
+            if (proj.tick_timer < 0.0f)
+                proj.tick_timer = 0.0f;
+        }
     }
 }
 

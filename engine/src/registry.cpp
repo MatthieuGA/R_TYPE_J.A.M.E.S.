@@ -1,5 +1,7 @@
 #include "../include/registry.hpp"
 
+#include <iostream>
+
 namespace Engine {
 // Entity management
 registry::entity_t registry::SpawnEntity() {
@@ -24,9 +26,11 @@ void registry::KillEntity(entity const &e) {
 }
 
 void registry::RunSystems() {
-    for (auto &s : systems_) {
-        if (s)
+    for (size_t i = 0; i < systems_.size(); ++i) {
+        auto &s = systems_[i];
+        if (s) {
             s(*this);
+        }
     }
 }
 

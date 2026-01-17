@@ -115,6 +115,8 @@ void CreateProjectile(Eng::registry &reg, float x, float y, int ownerId,
     Eng::registry::entity_t projectile_entity);
 void createChargedProjectile(Eng::registry &reg, float x, float y, int ownerId,
     Eng::registry::entity_t projectile_entity);
+void createGatlingProjectile(Eng::registry &reg, float x, float y, int ownerId,
+    Eng::registry::entity_t projectile_entity);
 
 void ProjectileSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> &transforms,
@@ -135,6 +137,7 @@ void HealthDeductionSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Health> &healths,
     Eng::sparse_array<Com::HealthBar> &health_bars,
     Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
+    Eng::sparse_array<Com::Drawable> &drawables,
     Eng::sparse_array<Com::HitBox> const &hitBoxes,
     Eng::sparse_array<Com::Transform> const &transforms,
     Eng::sparse_array<Com::Projectile> const &projectiles);

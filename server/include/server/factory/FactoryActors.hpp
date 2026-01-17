@@ -17,7 +17,8 @@ class FactoryActors {
  public:
     enum class EnnemyType {
         MERMAID,
-        KAMI_FISH
+        KAMI_FISH,
+        GOLEM
     };
 
     struct EnnemyInfo {
@@ -52,7 +53,15 @@ class FactoryActors {
         Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
     void CreateKamiFishActor(
         Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
+    void CreateGolemActor(
+        Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
     void CreateDaemonActor(
+        Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
+    void CreateInvinsibilityActor(
+        Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
+    void CreateHealthActor(
+        Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
+    void CreateGatlingActor(
         Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
 
     std::map<std::string, EnnemyInfo> enemy_info_map_ = {};

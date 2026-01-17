@@ -33,8 +33,16 @@ void FactoryActors::CreateActor(Engine::entity &entity, Engine::registry &reg,
         CreateMermaidActor(entity, reg, info);
     else if (info.tag == "kamifish")
         CreateKamiFishActor(entity, reg, info);
+    else if (info.tag == "golem")
+        CreateGolemActor(entity, reg, info);
     else if (info.tag == "daemon")
         CreateDaemonActor(entity, reg, info);
+    else if (info.tag == "invinsibility")
+        CreateInvinsibilityActor(entity, reg, info);
+    else if (info.tag == "health")
+        CreateHealthActor(entity, reg, info);
+    else if (info.tag == "gatling")
+        CreateGatlingActor(entity, reg, info);
 }
 
 void FactoryActors::CreateBasicActor(vector2f pos, Engine::entity &entity,
@@ -59,8 +67,16 @@ void FactoryActors::CreateBasicEnnemy(
         subtype = 1;
     else if (info.tag == "mermaid")
         subtype = 0;
+    else if (info.tag == "golem")
+        subtype = 3;
     else if (info.tag == "daemon")
         subtype = 2;
+    else if (info.tag == "invinsibility")
+        subtype = 4;
+    else if (info.tag == "health")
+        subtype = 5;
+    else if (info.tag == "gatling")
+        subtype = 6;
 
     // Add basic enemy components with subtype
     reg.AddComponent<Component::EnemyTag>(
@@ -81,7 +97,7 @@ void FactoryActors::CreatePlayerActor(Engine::entity &entity,
     Engine::registry &reg, EnnemyInfo info, bool is_local) {
     // Add player-specific components
     reg.AddComponent<Component::PlayerTag>(
-        entity, Component::PlayerTag{400.0f});
+        entity, Component::PlayerTag{800.0f});
     reg.AddComponent<Component::Controllable>(
         entity, Component::Controllable{});
 }

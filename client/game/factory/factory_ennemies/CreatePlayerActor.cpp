@@ -1,3 +1,4 @@
+#include <iostream>
 #include <utility>
 
 #include "game/factory/factory_ennemies/FactoryActors.hpp"
@@ -55,6 +56,15 @@ void FactoryActors::CreatePlayerActor(Engine::entity &entity,
         -1.0f, LAYER_ACTORS - 2);
     reg.AddComponent<Component::ParticleEmitter>(
         entity, std::move(emit_reactor));
+
+    // Create shield child entity
+    Engine::entity shield_entity = reg.SpawnEntity();
+    reg.AddComponent<Component::Transform>(shield_entity,
+        Component::Transform{0.f, 0.f, 0.f, {1.2f, 1.2f},
+            Component::Transform::CENTER, {0.f, 0.f}, entity.GetId()});
+    reg.AddComponent<Component::Drawable>(
+        shield_entity, Component::Drawable{"ennemies/powerups/shield.png",
+                           LAYER_ACTORS + 1, 1.f});
 
     id_player_ += 1;
 }

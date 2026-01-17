@@ -1,6 +1,7 @@
 #include <string>
 
 #include "engine/systems/InitRegistrySystems.hpp"
+#include "graphics/utils/SFMLGraphicsUtils.hpp"
 #include "include/ColorsConst.hpp"
 
 namespace Rtype::Client {

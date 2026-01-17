@@ -32,6 +32,7 @@ void ProcessCollision(Eng::registry &reg, GameWorld &game_world,
     const CollisionInfo &collision) {
     auto &health_bars = reg.GetComponents<Component::HealthBar>();
     auto &animated_sprites = reg.GetComponents<Component::AnimatedSprite>();
+    auto &healths = reg.GetComponents<Component::Health>();
 
     std::size_t i = collision.entity_index;
     Engine::entity proj_entity = collision.proj_entity;
@@ -48,10 +49,13 @@ void ProcessCollision(Eng::registry &reg, GameWorld &game_world,
         bar->timer_damage = 0.0f;
     }
 
-    if (animated_sprites.has(i)) {
+    if (animated_sprites.has(i) && healths.has(i)) {
+        auto &health = healths[i];
         auto &anim_sprite = animated_sprites[i];
-        anim_sprite->SetCurrentAnimation("Hit", true);
-        anim_sprite->GetCurrentAnimation()->current_frame = 1;
+        if (health->invincibilityDuration <= 0.0f) {
+            anim_sprite->SetCurrentAnimation("Hit", true);
+            anim_sprite->GetCurrentAnimation()->current_frame = 1;
+        }
     }
 
     // Remove the projectile component after collision
@@ -89,9 +93,28 @@ void HealthDeductionSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Component::Health> &healths,
     Eng::sparse_array<Component::HealthBar> &health_bars,
     Eng::sparse_array<Component::AnimatedSprite> &animated_sprites,
+    Eng::sparse_array<Component::Drawable> &drawables,
     Eng::sparse_array<Component::HitBox> const &hitBoxes,
     Eng::sparse_array<Component::Transform> const &transforms,
     Eng::sparse_array<Component::Projectile> const &projectiles) {
+    for (auto &&[i, transform, drawable] :
+        make_indexed_zipper(transforms, drawables)) {
+        if (!transform.parent_entity.has_value())
+            continue;  // Skip if not a child entity
+        auto parentEntity = transform.parent_entity.value();
+        try {
+            if (!reg.GetComponents<Component::PlayerTag>().has(parentEntity))
+                continue;  // Skip if parent is not a player
+            auto &health = reg.GetComponent<Component::Health>(
+                reg.EntityFromIndex(parentEntity));
+            if (health.invincibilityDuration > 0.0f)
+                drawable.opacity = 1.f;
+            else
+                drawable.opacity = 0.0f;
+        } catch (...) {
+            continue;  // Parent entity might not have PlayerTag or Health
+        }
+    }
     // Collect all collisions first to avoid modifying sparse arrays during
     // iteration
     std::vector<CollisionInfo> collisions;
@@ -102,6 +125,8 @@ void HealthDeductionSystem(Eng::registry &reg, GameWorld &game_world,
         for (auto &&[j, projectile, projHitBox, projTransform] :
             make_indexed_zipper(projectiles, hitBoxes, transforms)) {
             try {
+                if (reg.GetComponents<Component::PowerUp>().has(i))
+                    continue;  // Player projectiles don't hit players
                 if (projectile.isEnemyProjectile &&
                     reg.GetComponents<Component::EnemyTag>().has(i))
                     continue;  // Enemy projectiles don't hit enemies
