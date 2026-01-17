@@ -165,6 +165,25 @@ class ServerConnection {
     void ResetGameEnded() {
         game_ended_.store(false);
         is_local_player_ready_.store(false);
+        winning_player_id_.store(0);
+    }
+
+    /**
+     * @brief Get the winning player ID from GAME_END packet.
+     *
+     * @return 0 = game over (all dead), 255 = victory (level complete),
+     *         1-254 = specific player won
+     */
+    uint8_t GetWinningPlayerId() const {
+        return winning_player_id_.load();
+    }
+
+    /**
+     * @brief Check if the game ended in victory (level complete).
+     * @return true if winning_player_id is 255 (level complete).
+     */
+    bool IsVictory() const {
+        return game_ended_.load() && winning_player_id_.load() == 255;
     }
 
     /**
@@ -228,6 +247,7 @@ class ServerConnection {
     std::atomic<uint8_t> player_id_;
     std::atomic<bool> game_started_;
     std::atomic<bool> game_ended_{false};
+    std::atomic<uint8_t> winning_player_id_{0};  ///< 0=gameover, 255=victory
     std::atomic<bool> was_connected_once_{
         false};  // Track if we ever connected
     uint32_t current_tick_;
