@@ -37,6 +37,12 @@ void FactoryActors::CreateActor(Engine::entity &entity, Engine::registry &reg,
         CreateGolemActor(entity, reg, info);
     else if (info.tag == "daemon")
         CreateDaemonActor(entity, reg, info);
+    else if (info.tag == "invinsibility")
+        CreateInvinsibilityActor(entity, reg, info);
+    else if (info.tag == "health")
+        CreateHealthActor(entity, reg, info);
+    else if (info.tag == "gatling")
+        CreateGatlingActor(entity, reg, info);
 }
 
 void FactoryActors::CreateBasicActor(vector2f pos, Engine::entity &entity,
@@ -65,6 +71,12 @@ void FactoryActors::CreateBasicEnnemy(
         subtype = 3;
     else if (info.tag == "daemon")
         subtype = 2;
+    else if (info.tag == "invinsibility")
+        subtype = 4;
+    else if (info.tag == "health")
+        subtype = 5;
+    else if (info.tag == "gatling")
+        subtype = 6;
 
     // Add basic enemy components with subtype
     reg.AddComponent<Component::EnemyTag>(

@@ -1,7 +1,9 @@
 #include <cstdlib>
 #include <iostream>
+#include <string>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "server/CoreComponents.hpp"
 #include "server/GameplayComponents.hpp"
@@ -23,17 +25,23 @@ void SpawnEnemyFromRight(Engine::registry &reg) {
     float random_y = 100.0f + static_cast<float>(std::rand() % 780);
     // Spawn just off-screen to the right (x = 2000 since screen is 1920 wide)
 
-    int r = std::rand() % 100;
+    std::vector<std::pair<std::string, int>> enemy_types = {{"health", 15},
+        {"invinsibility", 15}, {"gatling", 15}, {"mermaid", 40},
+        {"kami_fish", 40}, {"daemon", 15}};
+    int tt = 0;
+    for (const auto &et : enemy_types)
+        tt += et.second;
 
-    if (r < 47)
-        FactoryActors::GetInstance().CreateActor(
-            enemy_entity, reg, "kamifish", vector2f{2000.f, random_y}, false);
-    else if (r < 94)
-        FactoryActors::GetInstance().CreateActor(
-            enemy_entity, reg, "mermaid", vector2f{2000.f, random_y}, false);
-    else
-        FactoryActors::GetInstance().CreateActor(
-            enemy_entity, reg, "daemon", vector2f{2000.f, random_y}, false);
+    int r = std::rand() % tt;
+    int v = 0;
+    for (const auto &et : enemy_types) {
+        v += et.second;
+        if (r < v) {
+            FactoryActors::GetInstance().CreateActor(enemy_entity, reg,
+                et.first, vector2f{2000.f, random_y}, false);
+            return;
+        }
+    }
 }
 
 void Server::SetupEntitiesGame() {
@@ -43,7 +51,7 @@ void Server::SetupEntitiesGame() {
     // Setup factory enemy info map
     FactoryActors::GetInstance().InitializeEnemyInfoMap("data/");
 
-    // Reset player tracking
+    // Reset player trackingd q
     total_players_ = 0;
     alive_players_ = 0;
 

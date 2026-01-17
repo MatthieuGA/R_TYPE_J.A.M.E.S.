@@ -61,6 +61,15 @@ static void CreateEnemyEntity(GameWorld &game_world,
     } else if (entity_data.enemy_type ==
                ClientApplication::ParsedEntity::kDaemonEnemy) {
         enemy_type_str = "daemon";
+    } else if (entity_data.enemy_type ==
+               ClientApplication::ParsedEntity::kInvinsibilityPU) {
+        enemy_type_str = "invinsibility";
+    } else if (entity_data.enemy_type ==
+               ClientApplication::ParsedEntity::kHealthPU) {
+        enemy_type_str = "health";
+    } else if (entity_data.enemy_type ==
+               ClientApplication::ParsedEntity::kGatlingPU) {
+        enemy_type_str = "gatling";
     }
     FactoryActors::GetInstance().CreateActor(
         new_entity, game_world.registry_, enemy_type_str, false);
@@ -212,11 +221,11 @@ void CreateDaemonProjectile(Engine::registry &reg,
     reg.AddComponent<Component::Velocity>(
         new_entity, Component::Velocity{static_cast<float>(decoded_vx),
                         static_cast<float>(decoded_vy)});
-    reg.AddComponent<Component::ParticleEmitter>(new_entity,
-        Component::ParticleEmitter(50, 50, ORANGE_HIT, ORANGE_HIT,
-            Engine::Graphics::Vector2f(0.f, 0.f), true, 0.3f, 4.f,
-            Engine::Graphics::Vector2f(-1.f, 0.f), 45.f, 0, 8, 3.0f,
-            2.0f, -1.0f, LAYER_PARTICLE));
+    reg.AddComponent<Component::ParticleEmitter>(
+        new_entity, Component::ParticleEmitter(50, 50, ORANGE_HIT, ORANGE_HIT,
+                        Engine::Graphics::Vector2f(0.f, 0.f), true, 0.3f, 4.f,
+                        Engine::Graphics::Vector2f(-1.f, 0.f), 45.f, 0, 8,
+                        3.0f, 2.0f, -1.0f, LAYER_PARTICLE));
 }
 
 static void CreateProjectileEntity(GameWorld &game_world,
@@ -239,6 +248,15 @@ static void CreateProjectileEntity(GameWorld &game_world,
             game_world.audio_manager_->PlaySound("charged_shot");
         }
         createChargedProjectile(game_world.registry_,
+            static_cast<float>(entity_data.pos_x),
+            static_cast<float>(entity_data.pos_y), /*ownerId=*/-1, new_entity);
+    } else if (entity_data.projectile_type ==
+               ClientApplication::ParsedEntity::kPlayerGatlingProjectile) {
+        // Gatling projectile
+        if (game_world.audio_manager_) {
+            game_world.audio_manager_->PlaySound("player_shot");
+        }
+        createGatlingProjectile(game_world.registry_,
             static_cast<float>(entity_data.pos_x),
             static_cast<float>(entity_data.pos_y), /*ownerId=*/-1, new_entity);
     } else if (entity_data.projectile_type ==

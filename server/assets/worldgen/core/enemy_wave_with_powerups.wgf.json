@@ -1,0 +1,48 @@
+{
+  "uuid": "d4e5f6a7-b8c9-4d0e-8f2a-444444444444",
+  "name": "Enemy Wave with PowerUps",
+  "description": "A wave of enemies with powerup drops as rewards. Defeat enemies to reach the powerups.",
+  "difficulty": 3.0,
+  "tags": ["enemies", "powerup", "medium", "reward"],
+  "width": 1000,
+  "spawn_rules": {
+    "min_distance_from_last": 3,
+    "max_frequency": 0.6
+  },
+  "obstacles": [],
+  "enemies": [
+    {
+      "tag": "mermaid",
+      "position": { "x": 100, "y": 150 },
+      "spawn_delay": 0.0
+    },
+    {
+      "tag": "mermaid",
+      "position": { "x": 150, "y": 350 },
+      "spawn_delay": 0.0
+    },
+    {
+      "tag": "kamifish",
+      "position": { "x": 200, "y": 250 },
+      "spawn_delay": 0.5
+    },
+    {
+      "tag": "health",
+      "position": { "x": 500, "y": 200 },
+      "spawn_delay": 1.0
+    },
+    {
+      "tag": "mermaid",
+      "position": { "x": 600, "y": 400 },
+      "spawn_delay": 1.5
+    },
+    {
+      "tag": "invinsibility",
+      "position": { "x": 800, "y": 300 },
+      "spawn_delay": 2.0
+    }
+  ],
+  "background": {
+    "layers": []
+  }
+}

@@ -64,6 +64,13 @@ class FactoryActors {
     void CreateDaemonActor(
         Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
 
+    void CreateInvActor(
+        Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
+    void CreateHealthActor(
+        Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
+    void CreateGatlingActor(
+        Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
+
     std::map<std::string, EnnemyInfo> enemy_info_map_ = {};
     int id_player_ = 0;
 };

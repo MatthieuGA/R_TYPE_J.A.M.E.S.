@@ -13,4 +13,9 @@ constexpr const int PLAYER_DAMAGE_PROJECTILE = 10;
 constexpr const float PLAYER_SPEED_CHARGED_PROJECTILE = 500.0f;
 constexpr const int PLAYER_DAMAGE_CHARGED_PROJECTILE = 50;
 
+constexpr const float PLAYER_GATLING_DURATION = 5.0f;
+constexpr const float PLAYER_GATLING_SHOOT_INTERVAL = 0.1f;
+constexpr const int PLAYER_GATLING_DAMAGE = 5;
+constexpr const float PLAYER_GATLING_PROJECTILE_SPEED = 1500.0f;
+
 }  // namespace Rtype::Client

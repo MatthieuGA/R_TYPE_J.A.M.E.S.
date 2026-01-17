@@ -211,6 +211,10 @@ void ClientApplication::RunGameLoop(GameWorld &game_world) {
         game_world.last_delta_ =
             game_world.delta_time_clock_.Restart().AsSeconds();
 
+        // Ensure the SFML OpenGL context is active on this thread before
+        // running systems that may load textures/shaders.
+        game_world.GetNativeWindow().setActive(true);
+
         // Clear, update, and render
         game_world.GetNativeWindow().clear(sf::Color::Black);
         game_world.registry_.RunSystems();

@@ -34,6 +34,10 @@ void PlayerLimitPlayfield(Engine::registry &reg,
     Engine::sparse_array<Component::Transform> &transforms,
     Engine::sparse_array<Component::PlayerTag> const &player_tags);
 
+void PlayerGatlingSystem(Engine::registry &reg,
+    Engine::sparse_array<Component::Transform> const &transforms,
+    Engine::sparse_array<Component::PlayerTag> &player_tags);
+
 void ShootPlayerSystem(Engine::registry &reg,
     Engine::sparse_array<Component::Transform> &transforms,
     Engine::sparse_array<Component::Inputs> &inputs,

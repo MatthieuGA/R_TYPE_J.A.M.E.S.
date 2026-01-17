@@ -73,9 +73,9 @@ int main(int argc, char *argv[]) {
             std::make_unique<RC::Input::SFMLInputBackend>(
                 sfml_window->GetNativeWindow());
 
-        // Create event source
-        auto event_source = std::make_unique<RC::Platform::SFMLEventSource>(
-            sfml_window->GetNativeWindow());
+        // We'll create the event source after moving the window into
+        // GameWorld; keep a pointer to the native SFML window and create
+        // SFMLEventSource from it later.
 
         // Register graphics backends (must happen before GameWorld creation)
         RC::Graphics::GraphicsBackendFactory::Register(
@@ -89,10 +89,14 @@ int main(int argc, char *argv[]) {
             config.tcp_port, config.udp_port);
 
         // Inject dependencies
-        game_world.event_source_ = std::move(event_source);
         game_world.input_manager_ = std::make_unique<RC::GameInputManager>(
             std::move(sfml_input_backend));
         Game::SetupDefaultBindings(*game_world.input_manager_);
+
+        // Initialize platform event source (SFML backend)
+        game_world.event_source_ =
+            std::make_unique<RC::Platform::SFMLEventSource>(
+                game_world.GetNativeWindow());
 
         // Initialize audio subsystem with proper lifetime
         // AudioManager must outlive the game loop to prevent dangling pointer

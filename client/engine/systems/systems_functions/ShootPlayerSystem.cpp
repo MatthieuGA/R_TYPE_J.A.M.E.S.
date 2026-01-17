@@ -80,6 +80,30 @@ void createChargedProjectile(Eng::registry &reg, float x, float y, int ownerId,
 }
 
 /**
+ * @brief Creates a charged projectile entity.
+ *
+ * @param reg The registry to add the projectile to.
+ * @param x The x position of the projectile.
+ * @param y The y position of the projectile.
+ * @param ownerId The ID of the entity that fired the projectile.
+ */
+void createGatlingProjectile(Eng::registry &reg, float x, float y, int ownerId,
+    Engine::registry::entity_t projectile_entity) {
+    // Add components to projectile entity
+    reg.AddComponent<Component::Transform>(projectile_entity,
+        Component::Transform{x, y, 0.0f, 3.0f, Com::Transform::CENTER});
+    reg.AddComponent<Component::Drawable>(projectile_entity,
+        Component::Drawable(
+            "original_rtype/Ammo_Gatling.png", LAYER_PROJECTILE));
+    reg.AddComponent<Component::Projectile>(
+        projectile_entity, Component::Projectile{PLAYER_GATLING_DAMAGE,
+                               Engine::Graphics::Vector2f(1.0f, 0.0f),
+                               PLAYER_GATLING_PROJECTILE_SPEED, ownerId});
+    reg.AddComponent<Component::HitBox>(
+        projectile_entity, Component::HitBox{16.0f, 8.0f});
+}
+
+/**
  * @brief System to handle player shooting mechanics.
  *
  * This system processes player inputs to manage shooting normal and charged
