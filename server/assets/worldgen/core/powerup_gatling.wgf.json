@@ -1,0 +1,23 @@
+{
+  "uuid": "p0w3r-up03-g4t1-1ng0-000000000003",
+  "name": "Gatling PowerUp Drop",
+  "description": "A gatling powerup floats through space. Collect it for rapid fire mode.",
+  "difficulty": 2.0,
+  "tags": ["powerup", "gatling", "medium", "reward"],
+  "width": 400,
+  "spawn_rules": {
+    "min_distance_from_last": 10,
+    "max_frequency": 0.15
+  },
+  "obstacles": [],
+  "enemies": [
+    {
+      "tag": "gatling",
+      "position": { "x": 400, "y": 350 },
+      "spawn_delay": 0.0
+    }
+  ],
+  "background": {
+    "layers": []
+  }
+}

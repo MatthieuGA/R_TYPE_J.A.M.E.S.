@@ -214,10 +214,13 @@ static void CreateProjectileEntity(GameWorld &game_world,
     }
 }
 
-// TODO(copilot): Re-implement obstacle rendering with new component
-// The RectangleDrawable component was removed in the decoupling refactor
-// This function needs to be adapted to use the Drawable component instead
-/*
+/**
+ * @brief Creates an obstacle entity with sprite-based rendering.
+ *
+ * @param game_world The game world containing the registry.
+ * @param new_entity The entity to populate with components.
+ * @param entity_data Parsed entity data from the network snapshot.
+ */
 static void CreateObstacleEntity(GameWorld &game_world,
     Engine::registry::entity_t new_entity,
     const ClientApplication::ParsedEntity &entity_data) {
@@ -226,38 +229,18 @@ static void CreateObstacleEntity(GameWorld &game_world,
     int16_t decoded_vy = static_cast<int16_t>(entity_data.velocity_y) - 32768;
 
     // Obstacle size - must match server default (32x32)
-    // Server's WorldGenConfigLoader defaults to 32x32 when not specified in
-WGF
-    // This ensures collision detection works consistently
     constexpr float kObstacleWidth = 32.0f;
     constexpr float kObstacleHeight = 32.0f;
 
-    // Visual offset to align the debug rectangle with the collision hitbox
-    // The player sprite (34x18 @ 4x scale) has its visual center slightly
-    // offset from its hitbox center (30x10 @ 4x scale), so we add a small
-    // offset to the obstacle visual to match better
-    constexpr float kVisualOffsetX = 0.0f;
-    constexpr float kVisualOffsetY = 0.0f;
-
-    // Add Transform component
-    // Scale 1.0 - hitbox will define the collision size
+    // Add Transform component with CENTER origin
     game_world.registry_.AddComponent<Component::Transform>(
         new_entity, Component::Transform{static_cast<float>(entity_data.pos_x),
                         static_cast<float>(entity_data.pos_y), 0.0f, 1.0f,
                         Component::Transform::CENTER});
 
-    // Add RectangleDrawable - simple red box for obstacles
-    // Render behind players (LAYER_ACTORS - 1)
-    game_world.registry_.AddComponent<Component::RectangleDrawable>(new_entity,
-        Component::RectangleDrawable{
-            kObstacleWidth, kObstacleHeight,
-            Engine::Graphics::Color(180, 40, 40, 255),  // Dark red fill
-            Engine::Graphics::Color(255, 80, 80, 255),  // Lighter red outline
-            2.0f,                                       // Outline thickness
-            LAYER_ACTORS - 1,                           // z_index (behind
-players) kVisualOffsetX,                             // Visual X offset
-            kVisualOffsetY                              // Visual Y offset
-        });
+    // Add Drawable using red obstacle sprite (render behind players)
+    game_world.registry_.AddComponent<Component::Drawable>(new_entity,
+        Component::Drawable("obstacles/obstacle_red.png", LAYER_ACTORS - 1));
 
     // Add Velocity for interpolation
     game_world.registry_.AddComponent<Component::Velocity>(
@@ -270,9 +253,8 @@ players) kVisualOffsetX,                             // Visual X offset
 
     // Add Solid component - obstacles are solid and locked (cannot be pushed)
     game_world.registry_.AddComponent<Component::Solid>(new_entity,
-        Component::Solid{true, true});  // isSolid=true, isLocked=true
+        Component::Solid{true, true});
 }
-*/
 
 void ClientApplication::CreateNewEntity(GameWorld &game_world, uint32_t tick,
     const ClientApplication::ParsedEntity &entity_data,
@@ -293,12 +275,8 @@ void ClientApplication::CreateNewEntity(GameWorld &game_world, uint32_t tick,
         CreateProjectileEntity(game_world, new_entity, entity_data);
     } else if (entity_data.entity_type ==
                ClientApplication::ParsedEntity::kObstacleEntity) {
-        // TODO(copilot): Implement obstacle rendering with decoupled
-        // component structure. Previously used RectangleDrawable which
-        // was removed in component refactor. Obstacles need to be
-        // re-implemented using the Drawable component.
-        // CreateObstacleEntity(game_world, new_entity, entity_data);
-        return;
+        // Obstacle entity with sprite-based rendering
+        CreateObstacleEntity(game_world, new_entity, entity_data);
     } else {
         printf("[Snapshot] Unknown entity type 0x%02X for entity ID %u\n",
             entity_data.entity_type, entity_data.entity_id);

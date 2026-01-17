@@ -75,8 +75,7 @@ void ComputeCollision(Eng::sparse_array<Com::Solid> const &solids, int i,
         Engine::Graphics::Vector2f(off_b.x * std::abs(trans_b.scale.x),
             off_b.y * std::abs(trans_b.scale.y));
 
-    // Calculate AABB bounds (width_a/height_a already scale, don't scale
-    // again)
+    // Calculate AABB bounds (already scaled, don't scale again)
     float a_min_x = trans_a.x + scal_off_a.x;
     float a_max_x = a_min_x + width_a;
     float a_min_y = trans_a.y + scal_off_a.y;

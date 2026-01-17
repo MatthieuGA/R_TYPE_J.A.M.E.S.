@@ -281,8 +281,7 @@ TEST(Systems, PlayerSystemSetsFrameBasedOnVelocity) {
 }
 
 // Test that InputSystem resets input values when no keys are pressed
-// DISABLED: This test passes locally but aborts in CI (possibly flaky
-// environment)
+// DISABLED: Test passes locally but aborts in CI (flaky environment)
 TEST(Systems, DISABLED_InputSystemResetsInputsWhenNoKeys) {
     // Create mock backend with no keys pressed
     auto *mock_backend_ptr = new SystemTestMockInputBackend();

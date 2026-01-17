@@ -1,0 +1,23 @@
+{
+  "uuid": "p0w3r-up02-1nv1-nc1b-000000000002",
+  "name": "Invincibility PowerUp Drop",
+  "description": "An invincibility powerup floats through space. Collect it for temporary invulnerability.",
+  "difficulty": 1.5,
+  "tags": ["powerup", "invincibility", "easy", "reward"],
+  "width": 400,
+  "spawn_rules": {
+    "min_distance_from_last": 8,
+    "max_frequency": 0.2
+  },
+  "obstacles": [],
+  "enemies": [
+    {
+      "tag": "invinsibility",
+      "position": { "x": 350, "y": 250 },
+      "spawn_delay": 0.0
+    }
+  ],
+  "background": {
+    "layers": []
+  }
+}
