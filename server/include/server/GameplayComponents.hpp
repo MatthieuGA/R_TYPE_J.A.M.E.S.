@@ -26,6 +26,7 @@ struct PlayerTag {
     float gatling_duration = 0.0f;
     float clock_shoot_gatling = 0.0f;
     float delta_shoot_gatling = 0.1f;
+    int score = 0;
 };
 
 struct AnimationEnterPlayer {

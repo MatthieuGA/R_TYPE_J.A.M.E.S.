@@ -425,6 +425,7 @@ struct EntityState {
     uint8_t current_frame;        // 1 byte (for animated entities)
     uint16_t health;              // 2 bytes (health or hit points)
     uint16_t invincibility_time;  // 2 bytes (invincibility time in ms)
+    uint16_t score;               // 2 bytes (player score)
 
     void Serialize(PacketBuffer &buffer, EntityType type) const {
         buffer.WriteUint32(entity_id.value);  // 4 bytes
@@ -438,6 +439,7 @@ struct EntityState {
             buffer.WriteUint16(velocity_y);          // 2 bytes
             buffer.WriteUint16(health);              // 2 byte
             buffer.WriteUint16(invincibility_time);  // 2 byte
+            buffer.WriteUint16(score);               // 2 byte
         } else if (type == EntityType::Enemy) {
             buffer.WriteUint16(pos_x);             // 2 bytes
             buffer.WriteUint16(pos_y);             // 2 bytes
@@ -472,6 +474,7 @@ struct EntityState {
             state.velocity_y = buffer.ReadUint16();
             state.health = buffer.ReadUint16();
             state.invincibility_time = buffer.ReadUint16();
+            state.score = buffer.ReadUint16();
         } else if (type == EntityType::Enemy) {
             state.pos_x = buffer.ReadUint16();
             state.pos_y = buffer.ReadUint16();

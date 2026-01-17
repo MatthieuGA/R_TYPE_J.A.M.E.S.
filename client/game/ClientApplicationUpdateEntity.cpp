@@ -81,6 +81,17 @@ static void UpdatePlayerEntity(GameWorld &game_world, size_t entity_index,
     } catch (const std::exception &e) {
         // Invincibility component might not exist; ignore if so
     }
+    // Update score if PlayerTag component exists
+    try {
+        auto &player_tag =
+            game_world.registry_
+                .GetComponents<Component::PlayerTag>()[entity_index];
+        if (player_tag.has_value()) {
+            player_tag->score = static_cast<int>(entity_data.score);
+        }
+    } catch (const std::exception &e) {
+        // PlayerTag component might not exist; ignore if so
+    }
 }
 
 static void UpdateEnemyEntity(GameWorld &game_world, size_t entity_index,
@@ -113,8 +124,7 @@ static void UpdateEnemyEntity(GameWorld &game_world, size_t entity_index,
     }
 
     // Update health if component exists
-    auto &healths =
-        game_world.registry_.GetComponents<Component::Health>();
+    auto &healths = game_world.registry_.GetComponents<Component::Health>();
     if (healths.has(entity_index)) {
         auto &health = healths[entity_index];
         if (health.has_value()) {

@@ -53,11 +53,12 @@ static uint8_t Get1ByteAsUint8(
 // - velocity_y (u16, 2 bytes)
 // - health (u16, 2 bytes)
 // - invincibility_time (u16, 2 bytes)
+// - score (u16, 2 bytes)
 void ParseSnapshotPlayer(
     std::vector<ClientApplication::ParsedEntity> &entities,
     const client::SnapshotPacket &snapshot) {
     const size_t kEntityStateSize =
-        20;  // 20 bytes per EntityState (with health)
+        22;  // 20 bytes per EntityState (with health)
 
     // Check if payload contains WorldSnapshotPacket format (header + entities)
     // or just a single EntityState (current server implementation)
@@ -83,6 +84,7 @@ void ParseSnapshotPlayer(
             static_cast<uint16_t>(static_cast<int32_t>(decoded_vy) + 32768);
         entity.health = Get2BytesAsUint16(snapshot.payload, 16);
         entity.invincibility_time = Get2BytesAsUint16(snapshot.payload, 18);
+        entity.score = Get2BytesAsUint16(snapshot.payload, 20);
 
         entities.push_back(entity);
     } else if (snapshot.payload_size >= 4) {
@@ -110,6 +112,7 @@ void ParseSnapshotPlayer(
             entity.health = Get2BytesAsUint16(snapshot.payload, offset + 16);
             entity.invincibility_time =
                 Get2BytesAsUint16(snapshot.payload, offset + 18);
+            entity.score = Get2BytesAsUint16(snapshot.payload, offset + 20);
 
             entities.push_back(entity);
             offset += kEntityStateSize;

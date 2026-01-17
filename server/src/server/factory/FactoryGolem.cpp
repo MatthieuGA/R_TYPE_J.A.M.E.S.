@@ -139,7 +139,7 @@ void FactoryActors::CreateGolemActor(
         int k = j * 3;
         frame_events.AddFrameEvent("Smash", 1 + k, [k, &reg](int entity_id) {
             try {
-                for (int i = (k * 50); i < 1920; i += 300) {
+                for (int i = (k * 50); i < 1920; i += 400) {
                     auto &transform = reg.GetComponent<Component::Transform>(
                         reg.EntityFromIndex(entity_id));
                     auto &enemy_shoot =
