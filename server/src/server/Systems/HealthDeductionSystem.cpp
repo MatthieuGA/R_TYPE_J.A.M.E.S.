@@ -10,6 +10,9 @@
 #include "include/indexed_zipper.tpp"
 
 namespace server {
+// Score awarded to a player for killing an entity with a projectile
+static constexpr int kKillScoreReward = 100;
+
 /**
  * @brief Handle the death of an entity.
  *
@@ -27,6 +30,8 @@ void DeathHandling(Engine::registry &reg,
     if (reg.GetComponents<Component::PlayerTag>().has(i)) {
         std::cout << "[DeathHandling] Player at index " << i << " died!"
                   << std::endl;
+        auto &playerTag = reg.GetComponents<Component::PlayerTag>()[i].value();
+        playerTag.score -= 250;  // Penalize score on death
         if (Server::GetInstance()) {
             Server::GetInstance()->NotifyPlayerDeath();
         }
@@ -87,6 +92,35 @@ void HandleCollision(Engine::registry &reg, Component::Health &health,
             animSprite->GetCurrentAnimation()->current_frame = 1;
         }
     }
+    // If this hit killed the entity, award score to the projectile owner
+    if (health.currentHealth <= 0) {
+        try {
+            // Determine reward from target's EnemyShootTag (if present)
+            int reward = kKillScoreReward;
+            try {
+                auto &enemy_components =
+                    reg.GetComponents<Component::EnemyShootTag>();
+                if (enemy_components.has(i)) {
+                    reward = enemy_components[i].value().score_value;
+                }
+            } catch (...) {}
+
+            int owner_index = projectile.ownerId;
+            if (owner_index >= 0) {
+                try {
+                    auto &player_components =
+                        reg.GetComponents<Component::PlayerTag>();
+                    if (player_components.has(
+                            static_cast<std::size_t>(owner_index))) {
+                        player_components[static_cast<std::size_t>(
+                                              owner_index)]
+                            .value()
+                            .score += reward;
+                    }
+                } catch (...) {}
+            }
+        } catch (...) {}
+    }
     reg.RemoveComponent<Component::Projectile>(projEntity);
 
     if (animated_sprites.has(j)) {
@@ -98,6 +132,35 @@ void HandleCollision(Engine::registry &reg, Component::Health &health,
     } else {
         reg.KillEntity(projEntity);
     }
+}
+
+void killEntityTick(Engine::registry &reg,
+    const Component::Projectile &projectile, std::size_t i) {
+    try {
+        // Compute reward from target's EnemyShootTag (if present)
+        int reward = kKillScoreReward;
+        try {
+            auto &enemy_components =
+                reg.GetComponents<Component::EnemyShootTag>();
+            if (enemy_components.has(i)) {
+                reward = enemy_components[i].value().score_value;
+            }
+        } catch (...) {}
+
+        int owner_index = projectile.ownerId;
+        if (owner_index >= 0) {
+            try {
+                auto &player_components =
+                    reg.GetComponents<Component::PlayerTag>();
+                if (player_components.has(
+                        static_cast<std::size_t>(owner_index))) {
+                    player_components[static_cast<std::size_t>(owner_index)]
+                        .value()
+                        .score += reward;
+                }
+            } catch (...) {}
+        }
+    } catch (...) {}
 }
 
 /**
@@ -168,16 +231,9 @@ void HealthDeductionSystem(Engine::registry &reg,
                     if (projectile.tick_timer <= 0.0f) {
                         health.currentHealth -= projectile.damage;
 
-                        // if (animated_sprites.has(i)) {
-                        //     auto &animSprite = animated_sprites[i];
-                        //     animSprite->SetCurrentAnimation("Hit", true);
-                        //     animSprite->GetCurrentAnimation()->current_frame
-                        //     = 1;
-                        // }
+                        if (health.currentHealth <= 0)
+                            killEntityTick(reg, projectile, i);
 
-                        // reset projectile tick timer
-                        // Note: projectile is mutable here (projectiles
-                        // non-const)
                         projectile.tick_timer = projectile.tick_interval;
                     }
                 }

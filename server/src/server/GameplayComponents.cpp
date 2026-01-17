@@ -49,10 +49,12 @@ FrameEvents::FrameEvents(std::vector<FrameEvent> events)
 
 // ------------------------------ EnemyShootTag -----------------------------
 
-EnemyShootTag::EnemyShootTag(float speed, int damage, vector2f offset)
+EnemyShootTag::EnemyShootTag(
+    float speed, int damage, vector2f offset, int score)
     : speed_projectile(speed),
       damage_projectile(damage),
-      offset_shoot_position(offset) {}
+      offset_shoot_position(offset),
+      score_value(score) {}
 
 // ------------------------------ AnimatedSprite -----------------------------
 
