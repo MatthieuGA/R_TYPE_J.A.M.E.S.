@@ -30,12 +30,14 @@ void FactoryActors::CreateGolemActor(
     reg.AddComponent<Component::PatternMovement>(
         entity, Component::PatternMovement(
                     Component::PatternMovement::PatternType::SineHorizontal,
-                    Engine::Graphics::Vector2f(0.f, 50.f), Engine::Graphics::Vector2f(0.f, 1.f),
+                    Engine::Graphics::Vector2f(0.f, 50.f),
+                    Engine::Graphics::Vector2f(0.f, 1.f),
                     Engine::Graphics::Vector2f(0.f, 0.f), info.speed));
 
     // Add enemy shooting component
     Component::EnemyShootTag enemy_shoot_tag(info.speed,
-        Rtype::Client::BASIC_PROJECTILE_DAMAGE, Engine::Graphics::Vector2f(-3.0f, -15.0f));
+        Rtype::Client::BASIC_PROJECTILE_DAMAGE,
+        Engine::Graphics::Vector2f(-3.0f, -15.0f));
     reg.AddComponent<Component::EnemyShootTag>(
         entity, std::move(enemy_shoot_tag));
 }

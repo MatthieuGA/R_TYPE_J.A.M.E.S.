@@ -36,7 +36,8 @@ float GetFloatFromJson(
 
 Engine::Graphics::Vector2f GetVector2fFromJson(const nlohmann::json &j,
     const std::string &key,
-    const Engine::Graphics::Vector2f &defaultValue = Engine::Graphics::Vector2f(0.f, 0.f)) {
+    const Engine::Graphics::Vector2f &defaultValue =
+        Engine::Graphics::Vector2f(0.f, 0.f)) {
     if (j.contains(key) && j[key].is_object()) {
         float x = defaultValue.x;
         float y = defaultValue.y;
@@ -94,7 +95,8 @@ void FactoryActors::loadConfigEnemy(
     try {
         nlohmann::json transform = GetSubJsonFromJson(parsed, "transform");
         info.scale =
-            GetVector2fFromJson(transform, "scale", Engine::Graphics::Vector2f(1.f, 1.f));
+            GetVector2fFromJson(transform, "scale",
+                                Engine::Graphics::Vector2f(1.f, 1.f));
     } catch (...) {
         info.scale = Engine::Graphics::Vector2f(1.f, 1.f);
     }

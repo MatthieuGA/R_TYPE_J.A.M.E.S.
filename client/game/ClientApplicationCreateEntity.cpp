@@ -115,11 +115,12 @@ void CreateGolemLaser(Engine::registry &reg,
         Component::Drawable("ennemies/golem/LaserShot.png", LAYER_PROJECTILE));
     reg.AddComponent<Component::AnimatedSprite>(
         new_entity, Component::AnimatedSprite(
-                        1000, 24, 0.1f, false, Engine::Graphics::Vector2f(0.0f, 0.0f), 14));
+                        1000, 24, 0.1f, false,
+                        Engine::Graphics::Vector2f(0.0f, 0.0f), 14));
     reg.AddComponent<Component::Projectile>(new_entity,
         Component::Projectile{static_cast<int>(BASIC_PROJECTILE_DAMAGE),
-            Engine::Graphics::Vector2f(decoded_vx, decoded_vy), BASIC_PROJECTILE_SPEED, -1,
-            true});
+            Engine::Graphics::Vector2f(decoded_vx, decoded_vy),
+            BASIC_PROJECTILE_SPEED, -1, true});
     reg.AddComponent<Component::HitBox>(
         new_entity, Component::HitBox{1920, 16.0f});
     reg.AddComponent<Component::Velocity>(
@@ -143,8 +144,8 @@ void CreateGolemProjectile(Engine::registry &reg,
         Component::Drawable("ennemies/4/Projectile.png", LAYER_PROJECTILE));
     reg.AddComponent<Component::Projectile>(new_entity,
         Component::Projectile{static_cast<int>(BASIC_PROJECTILE_DAMAGE),
-            Engine::Graphics::Vector2f(decoded_vx, decoded_vy), BASIC_PROJECTILE_SPEED, -1,
-            true});
+            Engine::Graphics::Vector2f(decoded_vx, decoded_vy),
+            BASIC_PROJECTILE_SPEED, -1, true});
     reg.AddComponent<Component::HitBox>(
         new_entity, Component::HitBox{8.0f, 8.0f});
     reg.AddComponent<Component::Velocity>(
@@ -152,7 +153,8 @@ void CreateGolemProjectile(Engine::registry &reg,
                         static_cast<float>(decoded_vy)});
     reg.AddComponent<Component::ParticleEmitter>(new_entity,
         Component::ParticleEmitter(50, 50, RED_HIT, RED_HIT,
-            Engine::Graphics::Vector2f(0.f, 0.f), true, 0.3f, 4.f, Engine::Graphics::Vector2f(-1.f, 0.f),
+            Engine::Graphics::Vector2f(0.f, 0.f), true, 0.3f, 4.f,
+            Engine::Graphics::Vector2f(-1.f, 0.f),
             45.f, 0, 8, 3.0f, 2.0f, -1.0f, LAYER_PARTICLE));
 }
 
@@ -203,7 +205,8 @@ void CreateDaemonProjectile(Engine::registry &reg,
                         "ennemies/Daemon/Projectile.png", LAYER_PROJECTILE));
     reg.AddComponent<Component::Projectile>(
         new_entity, Component::Projectile{static_cast<int>(10),
-                        Engine::Graphics::Vector2f(decoded_vx, decoded_vy), 200, -1, true});
+                        Engine::Graphics::Vector2f(decoded_vx, decoded_vy),
+                        200, -1, true});
     reg.AddComponent<Component::HitBox>(
         new_entity, Component::HitBox{8.0f, 8.0f});
     reg.AddComponent<Component::Velocity>(
