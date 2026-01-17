@@ -24,7 +24,7 @@ void FactoryActors::CreateInvActor(
 
     // Add basic enemy components
     reg.AddComponent<Component::PatternMovement>(
-        entity, Component::PatternMovement());
+        entity, Component::PatternMovement(info.speed));
     reg.AddComponent<Component::PowerUp>(entity, Component::PowerUp{});
 }
 }  // namespace Rtype::Client
