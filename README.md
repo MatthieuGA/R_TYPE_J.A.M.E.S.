@@ -53,31 +53,91 @@ This repository contains both the engine and the game powered by it.
 
 ## 📋 Prerequisites
 
-* **C++ Compiler** (GCC 7+ / MSVC 2019+ / Clang 11+)
+* **C++ Compiler** (GCC 12+ / MSVC 2022+ / Clang 15+)
 * **CMake** 3.23 or higher
-* **vcpkg** (configured with `VCPKG_ROOT` environment variable)
+* **Package Manager** (one of the following):
+  * **vcpkg** (recommended) - configured with `VCPKG_ROOT` environment variable
+  * **Conan** 2.x - installed via pip (`pip install conan`)
 
 ## 🚀 Build & Run
+
+### Using Build Scripts (Recommended)
+
+The build scripts automatically detect and use vcpkg or Conan:
+
+**Linux:**
+
+```bash
+./scripts/build.sh
+```
+
+**Windows:**
+
+```cmd
+scripts\build.bat
+```
+
+### Force a Specific Package Manager
+
+You can force a specific package manager using environment variables:
+
+**Linux:**
+
+```bash
+# Force vcpkg
+FORCE_PACKAGE_MANAGER=vcpkg ./scripts/build.sh
+
+# Force Conan
+FORCE_PACKAGE_MANAGER=conan ./scripts/build.sh
+```
+
+**Windows:**
+
+```cmd
+REM Force vcpkg
+set FORCE_PACKAGE_MANAGER=vcpkg
+scripts\build.bat
+
+REM Force Conan
+set FORCE_PACKAGE_MANAGER=conan
+scripts\build.bat
+```
+
+### Manual Build with vcpkg
 
 ```bash
 rm -rf build && mkdir build && cd build && cmake .. -DCMAKE_TOOLCHAIN_FILE="../vcpkg/scripts/buildsystems/vcpkg.cmake" -DCMAKE_BUILD_TYPE=Release && cmake --build . --config Release && cd ..
 ```
 
+### Manual Build with Conan
+
+```bash
+# Install dependencies
+conan install . --output-folder=build --build=missing -s build_type=Release
+
+# Configure and build
+cd build
+cmake .. -DCMAKE_TOOLCHAIN_FILE="conan_toolchain.cmake" -DCMAKE_BUILD_TYPE=Release
+cmake --build . --config Release
+```
+
 Then run:
 
 ```bash
-./r-type_client
+./build/client/r-type_client
 ```
 
 ## 📦 Dependencies
 
-Dependencies are automatically installed via vcpkg during CMake configuration:
+Dependencies are automatically installed via vcpkg or Conan during CMake configuration:
 
-* **SFML 2.6.2** - Graphics, window, network, audio, system
+* **SFML 2.6.x** - Graphics, window, network, audio, system
 * **Boost.Asio** - Asynchronous I/O and networking
 * **Boost.System** - System error codes for Boost libraries
 * **Boost.Lockfree** - Lock-free data structures for high-performance concurrent operations
-* **GoogleTest** - Unit testing framework (fetched automatically)
+* **nlohmann_json** - JSON parsing library
+* **fmt** - Modern formatting library
+* **GoogleTest** - Unit testing framework (fetched automatically via CMake)
 
 ---
 
@@ -86,13 +146,13 @@ Dependencies are automatically installed via vcpkg during CMake configuration:
 **Linux:**
 
 ```bash
-./build.sh
+./scripts/build.sh
 ```
 
 **Windows:**
 
 ```cmd
-build.bat
+scripts\build.bat
 ```
 
 ---
@@ -292,6 +352,8 @@ See `CONTRIBUTING.md` for details.
 
 ## ℹ️ Additional Information
 
-* **vcpkg setup**: If you don't have vcpkg, see [vcpkg.io](https://vcpkg.io/)
+* **Package Manager Setup**:
+  * **vcpkg**: See [vcpkg.io](https://vcpkg.io/) for installation
+  * **Conan**: Install via `pip install conan`, then run `conan profile detect`
 * **Cross-platform**: Works on Linux and Windows
 * **Authors**: J.A.M.E.S. Development Team

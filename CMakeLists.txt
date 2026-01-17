@@ -3,6 +3,26 @@ cmake_minimum_required(VERSION 3.23)
 project(RTypeProject LANGUAGES CXX)
 
 # ===========================
+# Package Manager Detection
+# ===========================
+# Detect which package manager is being used (vcpkg or Conan)
+# Conan generates conan_toolchain.cmake and sets CONAN_TOOLCHAIN
+# vcpkg uses CMAKE_TOOLCHAIN_FILE pointing to vcpkg.cmake
+
+set(USING_CONAN OFF)
+set(USING_VCPKG OFF)
+
+if(DEFINED CONAN_TOOLCHAIN OR EXISTS "${CMAKE_BINARY_DIR}/conan_toolchain.cmake")
+    set(USING_CONAN ON)
+    message(STATUS "Package Manager: Conan detected")
+elseif(DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg")
+    set(USING_VCPKG ON)
+    message(STATUS "Package Manager: vcpkg detected")
+else()
+    message(STATUS "Package Manager: None detected (using system packages)")
+endif()
+
+# ===========================
 # Options de coverage
 # ===========================
 option(ENABLE_COVERAGE "Enable code coverage" OFF)
@@ -28,22 +48,37 @@ if (ENABLE_COVERAGE AND NOT MSVC)
     add_link_options(--coverage)
 endif()
 
-# Find required packages (vcpkg integration)
-# SFML 2.6.2 uses lowercase component names
+# ===========================
+# Find Required Packages
+# ===========================
+# Both vcpkg and Conan provide packages via find_package()
+# SFML 2.6.x uses lowercase component names
 find_package(SFML COMPONENTS system window graphics network audio CONFIG REQUIRED)
 
 # Boost components for networking and lock-free data structures
-# Use CONFIG mode with vcpkg (CMP0167 compliance)
+# Conan and vcpkg both support CONFIG mode
 find_package(Boost REQUIRED COMPONENTS system CONFIG)
 find_package(Threads REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 
-# Explanation: vcpkg's OpenAL-soft has a missing dependency on fmt
+# nlohmann_json for configuration parsing
+find_package(nlohmann_json CONFIG REQUIRED)
+
+# Explanation: OpenAL-soft has a dependency on fmt
 # Add fmt as an INTERFACE dependency to SFML::Audio so it's linked in correct order
 if (TARGET SFML::Audio)
     target_link_libraries(SFML::Audio INTERFACE fmt::fmt)
 elseif (TARGET sfml-audio)
     target_link_libraries(sfml-audio INTERFACE fmt::fmt)
+endif()
+
+# Create compatibility aliases for different package managers
+# Conan uses lowercase targets (sfml::sfml, boost::boost, nlohmann_json::nlohmann_json)
+# vcpkg uses mixed case targets (SFML::Window, Boost::system, nlohmann_json::nlohmann_json)
+if (NOT TARGET nlohmann_json::nlohmann_json)
+    if (TARGET nlohmann_json)
+        add_library(nlohmann_json::nlohmann_json ALIAS nlohmann_json)
+    endif()
 endif()
 
 # Provide compatibility aliases so code using SFML::Name targets works with
@@ -131,6 +166,13 @@ message(STATUS "==============================================")
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 message(STATUS "C++ Compiler: ${CMAKE_CXX_COMPILER}")
 message(STATUS "C++ Standard: ${CMAKE_CXX_STANDARD}")
+if(USING_CONAN)
+    message(STATUS "Package Manager: Conan")
+elseif(USING_VCPKG)
+    message(STATUS "Package Manager: vcpkg")
+else()
+    message(STATUS "Package Manager: System")
+endif()
 message(STATUS "SFML Found: ${SFML_FOUND}")
 message(STATUS "Boost Found: ${Boost_FOUND}")
 if(Boost_FOUND)

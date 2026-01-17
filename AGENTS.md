@@ -39,7 +39,9 @@
 - **Prerequisites:**
   - C++ Compiler (GCC 12+, MSVC 2022 (17.0+), or Clang 15+)
   - CMake 3.23+
-  - vcpkg (Set `VCPKG_ROOT` env var or use the submodule)
+  - Package Manager (one of the following):
+    - vcpkg (Set `VCPKG_ROOT` env var or use the submodule)
+    - Conan 2.x (Install via `pip install conan`)
   - Node.js & npm (for hooks and docs)
 
 - **Install Dependencies (Hooks & Docs):**
@@ -54,19 +56,55 @@
   ./vcpkg/bootstrap-vcpkg.sh
   ```
 
+- **Setup Conan (if using Conan instead of vcpkg):**
+
+  ```bash
+  pip install conan
+  conan profile detect
+  ```
+
 ## Development Workflow
 
 ### Build
 
 **Using Scripts (Recommended):**
 
-- **Linux:** `./build.sh`
-- **Windows:** `build.bat`
+The build scripts automatically detect and use vcpkg or Conan:
 
-**Manual CMake Build:**
+- **Linux:** `./scripts/build.sh`
+- **Windows:** `scripts\build.bat`
+
+**Force a specific package manager:**
+
+```bash
+# Linux - Force vcpkg
+FORCE_PACKAGE_MANAGER=vcpkg ./scripts/build.sh
+
+# Linux - Force Conan
+FORCE_PACKAGE_MANAGER=conan ./scripts/build.sh
+
+# Windows - Force vcpkg
+set FORCE_PACKAGE_MANAGER=vcpkg && scripts\build.bat
+
+# Windows - Force Conan
+set FORCE_PACKAGE_MANAGER=conan && scripts\build.bat
+```
+
+**Manual CMake Build with vcpkg:**
 
 ```bash
 cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE="[path/to/vcpkg]/scripts/buildsystems/vcpkg.cmake" -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j
+```
+
+**Manual CMake Build with Conan:**
+
+```bash
+# Install dependencies
+conan install . --output-folder=build --build=missing -s build_type=Release
+
+# Configure and build
+cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE="build/conan_toolchain.cmake" -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j
 ```
 

@@ -86,12 +86,13 @@ target_include_directories(server_tests
         ${CMAKE_SOURCE_DIR}/external
 )
 
-# Link with Google Test, engine, and Boost
+# Link with Google Test, engine, Boost, and nlohmann_json
 target_link_libraries(server_tests
     PRIVATE
         GTest::gtest_main
         r-type_engine
         Boost::system
+        nlohmann_json::nlohmann_json
 )
 
 # Discover server tests for CTest
