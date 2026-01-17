@@ -1,6 +1,8 @@
 #include "server/Server.hpp"
 
+#include <filesystem>
 #include <iostream>
+#include <limits>
 #include <memory>
 #include <string>
 #include <utility>
@@ -114,6 +116,107 @@ void Server::Initialize() {
         });
 
     std::cout << "Server initialized successfully" << std::endl;
+}
+
+void Server::PromptLevelSelection() {
+    if (!worldgen_manager_) {
+        std::cout << "[WARNING] WorldGen not available, using fallback "
+                     "spawning.\n";
+        return;
+    }
+
+    // Load levels from the levels directory
+    std::string levels_path = "assets/worldgen/levels";
+    int level_count = 0;
+    try {
+        for (const auto &entry :
+            std::filesystem::directory_iterator(levels_path)) {
+            if (entry.is_regular_file()) {
+                const auto &path = entry.path();
+                if (path.string().ends_with(".level.json")) {
+                    if (worldgen_manager_->LoadLevelFromFile(path.string())) {
+                        level_count++;
+                    }
+                }
+            }
+        }
+    } catch (const std::filesystem::filesystem_error &e) {
+        std::cerr << "[WARNING] Could not scan levels directory: " << e.what()
+                  << std::endl;
+    }
+
+    const auto &levels = worldgen_manager_->GetAllLevels();
+
+    std::cout << "\n";
+    std::cout << "========================================\n";
+    std::cout << "        R-TYPE J.A.M.E.S. SERVER\n";
+    std::cout << "========================================\n";
+    std::cout << "\n";
+    std::cout << "Available Game Modes:\n";
+    std::cout << "----------------------------------------\n";
+    std::cout << "  0. Endless Mode (Infinite)\n";
+
+    for (size_t i = 0; i < levels.size(); ++i) {
+        const auto &level = levels[i];
+        std::string mode_type = level.is_endless ? "Infinite" : "Finite";
+        std::cout << "  " << (i + 1) << ". " << level.name << " (" << mode_type
+                  << ")\n";
+    }
+
+    std::cout << "----------------------------------------\n";
+    std::cout << "\n";
+    std::cout << "Enter your choice [0-" << levels.size() << "]: ";
+    std::cout.flush();
+
+    int choice = -1;
+    while (true) {
+        std::cin >> choice;
+
+        if (std::cin.fail()) {
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cout << "Invalid input. Please enter a number [0-"
+                      << levels.size() << "]: ";
+            std::cout.flush();
+            continue;
+        }
+
+        if (choice < 0 || choice > static_cast<int>(levels.size())) {
+            std::cout << "Invalid choice. Please enter a number [0-"
+                      << levels.size() << "]: ";
+            std::cout.flush();
+            continue;
+        }
+
+        break;
+    }
+
+    if (choice == 0) {
+        selected_level_uuid_.clear();
+        std::cout << "\n[Server] Selected: Endless Mode\n";
+    } else {
+        const auto &selected = levels[choice - 1];
+        selected_level_uuid_ = selected.uuid;
+        std::string mode_type = selected.is_endless ? "Infinite" : "Finite";
+        std::cout << "\n[Server] Selected: " << selected.name << " ("
+                  << mode_type << ")\n";
+    }
+
+    std::cout << "\nWaiting for players to connect...\n\n";
+}
+
+void Server::SetSelectedLevel(const std::string &level_uuid) {
+    selected_level_uuid_ = level_uuid;
+}
+
+std::vector<std::pair<std::string, bool>> Server::GetAvailableLevels() const {
+    std::vector<std::pair<std::string, bool>> result;
+    if (worldgen_manager_) {
+        for (const auto &level : worldgen_manager_->GetAllLevels()) {
+            result.emplace_back(level.name, level.is_endless);
+        }
+    }
+    return result;
 }
 
 void Server::Start() {
@@ -263,6 +366,36 @@ void Server::Update() {
     // scroll_speed should match enemy/background movement (~200 pixels/second)
     if (worldgen_system_) {
         worldgen_system_->Update(1.0f / 60.0f, 200.0f, registry_);
+    }
+
+    // Check for level completion (victory condition for finite levels)
+    if (worldgen_manager_ && worldgen_manager_->IsLevelComplete() &&
+        !worldgen_manager_->IsEndlessMode()) {
+        if (!victory_pending_) {
+            std::cout << "[Server] Level complete! Starting victory delay..."
+                      << std::endl;
+            victory_pending_ = true;
+            victory_timer_ = 0.0f;
+        } else {
+            // Accumulate time
+            victory_timer_ += g_frame_delta_ms / 1000.0f;
+
+            if (victory_timer_ >= VICTORY_DELAY_SEC) {
+                std::cout << "[Server] Victory delay complete. Sending "
+                             "GAME_END (VICTORY) packet."
+                          << std::endl;
+
+                // Send GAME_END packet with 255 = level complete / victory
+                // Only survivors get the victory screen
+                packet_sender_.SendGameEnd(255);
+
+                // Reset server to lobby state
+                ResetToLobby();
+                victory_pending_ = false;
+                victory_timer_ = 0.0f;
+                return;
+            }
+        }
     }
 
     // Check for game over condition (all players dead)
