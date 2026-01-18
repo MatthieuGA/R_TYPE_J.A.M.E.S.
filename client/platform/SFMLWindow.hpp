@@ -71,6 +71,13 @@ class SFMLWindow : public Engine::Graphics::IWindow {
 
  private:
     sf::RenderWindow window_;
+    unsigned int game_width_;   // Desired game resolution width
+    unsigned int game_height_;  // Desired game resolution height
+
+    /**
+     * @brief Apply the game view to scale content to window size.
+     */
+    void ApplyGameView();
 };
 
 }  // namespace Rtype::Client::Platform

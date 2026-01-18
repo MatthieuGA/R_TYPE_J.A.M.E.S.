@@ -14,7 +14,12 @@ namespace Rtype::Client::Platform {
 
 SFMLWindow::SFMLWindow(
     unsigned int width, unsigned int height, const std::string &title)
-    : window_(sf::VideoMode({width, height}), title) {}
+    : window_(sf::VideoMode({width, height}), title),
+      game_width_(width),
+      game_height_(height) {
+    // Set initial view
+    ApplyGameView();
+}
 
 bool SFMLWindow::IsOpen() const {
     return window_.isOpen();
@@ -38,10 +43,18 @@ void SFMLWindow::Recreate(unsigned int width, unsigned int height,
 
     try {
         if (fullscreen) {
-            // Try fullscreen first
-            window_.create(mode, title, sf::Style::Fullscreen, settings);
+            // For fullscreen, SFML works best with the desktop resolution
+            // Get the desktop video mode
+            sf::VideoMode desktop_mode = sf::VideoMode::getDesktopMode();
+            std::cout << "[SFMLWindow] Desktop resolution: "
+                      << desktop_mode.width << "x" << desktop_mode.height
+                      << std::endl;
 
-            // Verify window was created successfully
+            // Create window at desktop resolution in fullscreen
+            window_.create(
+                desktop_mode, title, sf::Style::Fullscreen, settings);
+
+            // If successful, verify it opened
             if (!window_.isOpen()) {
                 std::cerr
                     << "[SFMLWindow] Failed to create fullscreen window, "
@@ -66,6 +79,23 @@ void SFMLWindow::Recreate(unsigned int width, unsigned int height,
         window_.close();
         window_.create(mode, title, sf::Style::Default, settings);
     }
+
+    // Store the game resolution and apply the view
+    if (window_.isOpen()) {
+        game_width_ = width;
+        game_height_ = height;
+        ApplyGameView();
+
+        // Debug output
+        auto window_size = window_.getSize();
+        auto view = window_.getView();
+        std::cout << "[SFMLWindow] Window size: " << window_size.x << "x"
+                  << window_size.y << std::endl;
+        std::cout << "[SFMLWindow] Game resolution (view): "
+                  << view.getSize().x << "x" << view.getSize().y << std::endl;
+        std::cout << "[SFMLWindow] This creates automatic letterboxing/scaling"
+                  << std::endl;
+    }
 }
 
 Engine::Graphics::Vector2i SFMLWindow::GetSize() const {
@@ -79,6 +109,8 @@ void SFMLWindow::SetTitle(const std::string &title) {
 }
 
 void SFMLWindow::Display() {
+    // Ensure view is applied before display (in case something reset it)
+    ApplyGameView();
     window_.display();
 }
 
@@ -95,6 +127,18 @@ Engine::Graphics::Vector2f SFMLWindow::MapPixelToCoords(
 
 sf::RenderWindow &SFMLWindow::GetNativeWindow() {
     return window_;
+}
+
+void SFMLWindow::ApplyGameView() {
+    // Create view that shows the game resolution but scales to window size
+    sf::View game_view(sf::FloatRect(
+        0.0f, 0.0f, static_cast<float>(1920), static_cast<float>(1080)));
+
+    // Set viewport to use entire window (default is (0,0,1,1) but let's be
+    // explicit)
+    game_view.setViewport(sf::FloatRect(0.0f, 0.0f, 1.0f, 1.0f));
+
+    window_.setView(game_view);
 }
 
 }  // namespace Rtype::Client::Platform
