@@ -380,7 +380,8 @@ void PacketHandler::HandleSetDifficulty(
 
     const char *difficulty_names[] = {"Easy", "Normal", "Hard"};
     std::cout << "Difficulty set to " << difficulty_names[difficulty]
-              << " by player " << static_cast<int>(client.player_id_) << " ('"
+              << " by player "
+              << static_cast<int>(client.player_id_) << " ('"
               << client.username_ << "')" << std::endl;
 
     // Broadcast to all clients
@@ -397,8 +398,8 @@ void PacketHandler::HandleSetKillableProjectiles(ClientConnection &client,
 
     std::cout << "Killable projectiles set to "
               << (enabled ? "ENABLED" : "DISABLED") << " by player "
-              << static_cast<int>(client.player_id_) << " ('" << client.username_
-              << "')" << std::endl;
+              << static_cast<int>(client.player_id_) << " ('"
+              << client.username_ << "')" << std::endl;
 
     // Broadcast to all clients
     packet_sender_.SendNotifyKillableProjectiles(enabled);

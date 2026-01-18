@@ -353,7 +353,8 @@ void PacketSender::SendNotifyKillableProjectiles(bool enabled) {
     (*pkt)[3] = 0;
     (*pkt)[4] = 0;
     (*pkt)[5] = 0;
-    (*pkt)[6] = 0x0D;  // OpCode: SET_KILLABLE_PROJECTILES (reused for notification)
+    (*pkt)[6] = 0x0D;  // OpCode: SET_KILLABLE_PROJECTILES (reused for
+                       // notification)
     (*pkt)[7] = 0;     // Reserved
     (*pkt)[8] = kPayloadSize & 0xFF;
     (*pkt)[9] = (kPayloadSize >> 8) & 0xFF;
