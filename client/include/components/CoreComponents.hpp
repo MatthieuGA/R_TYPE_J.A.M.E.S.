@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <functional>
+#include <limits>
 #include <map>
 #include <memory>
 #include <optional>
@@ -9,6 +10,7 @@
 #include <vector>
 
 #include <SFML/Graphics.hpp>
+#include <graphics/Types.hpp>
 
 namespace Rtype::Client::Component {
 /**
@@ -21,7 +23,7 @@ struct Transform {
     float x;
     float y;
     float rotationDegrees;
-    sf::Vector2f scale;
+    Engine::Graphics::Vector2f scale;
 
     enum OriginPoint {
         TOP_LEFT,
@@ -35,7 +37,7 @@ struct Transform {
         BOTTOM_RIGHT
     } origin = CENTER;
 
-    sf::Vector2f customOrigin = sf::Vector2f(0.0f, 0.0f);
+    Engine::Graphics::Vector2f customOrigin{0.0f, 0.0f};
 
     // Parent entity ID (std::nullopt if no parent)
     std::optional<std::size_t> parent_entity = std::nullopt;
@@ -45,9 +47,10 @@ struct Transform {
 
     Transform() = default;
 
-    Transform(float x, float y, float rotationDegrees, sf::Vector2f scale,
-        OriginPoint origin = CENTER,
-        sf::Vector2f customOrigin = sf::Vector2f(0.0f, 0.0f),
+    Transform(float x, float y, float rotationDegrees,
+        Engine::Graphics::Vector2f scale, OriginPoint origin = CENTER,
+        Engine::Graphics::Vector2f customOrigin = Engine::Graphics::Vector2f(
+            0.0f, 0.0f),
         std::optional<std::size_t> parent_entity = std::nullopt)
         : x(x),
           y(y),
@@ -60,7 +63,8 @@ struct Transform {
 
     Transform(float x, float y, float rotationDegrees, float scale,
         OriginPoint origin = CENTER,
-        sf::Vector2f customOrigin = sf::Vector2f(0.0f, 0.0f),
+        Engine::Graphics::Vector2f customOrigin = Engine::Graphics::Vector2f(
+            0.0f, 0.0f),
         std::optional<std::size_t> parent_entity = std::nullopt)
         : x(x),
           y(y),
@@ -89,6 +93,8 @@ struct Velocity {
 struct Controllable {
     bool isControllable = true;
 };
+
+struct PowerUp {};
 
 struct InputState {
     bool up;
@@ -123,11 +129,54 @@ struct Inputs {
 struct Clickable {
     std::function<void()> onClick;
 
-    sf::Color idleColor = sf::Color::White;
-    sf::Color hoverColor = sf::Color(200, 200, 200);
-    sf::Color clickColor = sf::Color(150, 150, 150);
+    Engine::Graphics::Color idleColor = Engine::Graphics::Color::White;
+    Engine::Graphics::Color hoverColor =
+        Engine::Graphics::Color(200, 200, 200);
+    Engine::Graphics::Color clickColor =
+        Engine::Graphics::Color(150, 150, 150);
     bool isHovered = false;
     bool isClicked = false;
+};
+
+/**
+ * @brief Component for draggable UI elements like sliders.
+ *
+ * Allows entities to be dragged with mouse input. Tracks drag state,
+ * constraints, and provides callbacks for drag events.
+ */
+struct Draggable {
+    bool is_dragging =
+        false; /**< Whether element is currently being dragged */
+    Engine::Graphics::Vector2f drag_offset{
+        0.0f, 0.0f}; /**< Offset from drag start position */
+
+    // Drag constraints
+    bool constrain_horizontal =
+        false; /**< Restrict dragging to horizontal axis */
+    bool constrain_vertical = false; /**< Restrict dragging to vertical axis */
+    float min_x = -std::numeric_limits<float>::infinity();
+    float max_x = std::numeric_limits<float>::infinity();
+    float min_y = -std::numeric_limits<float>::infinity();
+    float max_y = std::numeric_limits<float>::infinity();
+
+    // Callbacks
+    std::function<void(float, float)> on_drag;
+    std::function<void(float, float)> on_drag_start;
+    std::function<void(float, float)> on_drag_end;
+
+    /**
+     * @brief Constructor with horizontal constraint and range.
+     *
+     * @param min_x_pos Minimum X position for dragging.
+     * @param max_x_pos Maximum X position for dragging.
+     */
+    Draggable(float min_x_pos, float max_x_pos)
+        : constrain_horizontal(false),
+          constrain_vertical(true),
+          min_x(min_x_pos),
+          max_x(max_x_pos) {}
+
+    Draggable() = default;
 };
 
 struct SoundRequest {

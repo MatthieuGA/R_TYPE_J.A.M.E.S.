@@ -6,7 +6,9 @@
     "sfml",
     "boost-asio",
     "boost-lockfree",
-    "boost-system"
+    "boost-system",
+    "nlohmann-json",
+    "fmt"
   ],
   "overrides": [
     {

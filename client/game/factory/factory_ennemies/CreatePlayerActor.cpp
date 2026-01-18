@@ -1,3 +1,4 @@
+#include <iostream>
 #include <utility>
 
 #include "game/factory/factory_ennemies/FactoryActors.hpp"
@@ -10,31 +11,61 @@ namespace Rtype::Client {
 
 void FactoryActors::CreatePlayerActor(Engine::entity &entity,
     Engine::registry &reg, EnnemyInfo info, bool is_local) {
+    // Add Solid component for collision resolution with obstacles
+    // Players are solid but NOT locked (can be pushed by obstacles)
+    reg.AddComponent<Component::Solid>(entity,
+        Component::Solid{true, false});  // isSolid=true, isLocked=false
+
+    // Add Controllable component for local player
+    if (is_local) {
+        reg.AddComponent<Component::Controllable>(
+            entity, Component::Controllable{true});
+    }
+
     // Add basic enemy components
     Component::AnimatedSprite animated_sprite(34, 18, 2);
+    // Default animation with normal player sprite
+    animated_sprite.AddAnimation("Default", "original_rtype/players.png", 34,
+        18, 5, 0.1f, true,
+        Engine::Graphics::Vector2f(0.0f, id_player_ * 18.0f));
     animated_sprite.AddAnimation("Hit", "original_rtype/players_hit.png", 34,
-        18, 2, 0.25f, false, sf::Vector2f(0.0f, id_player_ * 18.0f));
+        18, 2, 0.25f, false,
+        Engine::Graphics::Vector2f(0.0f, id_player_ * 18.0f));
     animated_sprite.AddAnimation("Death", "original_rtype/players_death.png",
-        36, 35, 6, 0.05f, false, sf::Vector2f(0.0f, id_player_ * 18.0f),
-        sf::Vector2f(0.0f, -10.0f));
+        36, 35, 6, 0.05f, false,
+        Engine::Graphics::Vector2f(0.0f, id_player_ * 18.0f),
+        Engine::Graphics::Vector2f(0.0f, -10.0f));
+    animated_sprite.SetCurrentAnimation("Default", true);
     reg.AddComponent<Component::AnimatedSprite>(
         entity, std::move(animated_sprite));
+
     // Add Inputs component only for the local player entity
     if (is_local) {
         reg.AddComponent<Component::Inputs>(entity, Component::Inputs{});
     }
+
     reg.AddComponent<Component::PlayerTag>(entity,
         Component::PlayerTag{info.speed, Rtype::Client::PLAYER_SHOOT_COOLDOWN,
             Rtype::Client::PLAYER_CHARGE_TIME, false, id_player_});
     // reg.AddComponent<Component::AnimationEnterPlayer>(
     //     entity, Component::AnimationEnterPlayer{true});
     // Reactor particle emitter
-    Component::ParticleEmitter emit_reactor(100, 200, sf::Color::Yellow,
-        RED_HIT, sf::Vector2f(-15.f, 3.f), true, 0.25f, 40.f,
-        sf::Vector2f(-1.f, -0.1f), 30.f, 5.f, 10.0f, 4.0f, 3.f, -1.0f,
-        LAYER_ACTORS - 2);
+    Component::ParticleEmitter emit_reactor(100, 200,
+        Engine::Graphics::Color::Yellow, RED_HIT,
+        Engine::Graphics::Vector2f(-15.f, 3.f), true, 0.25f, 40.f,
+        Engine::Graphics::Vector2f(-1.f, -0.1f), 30.f, 5.f, 10.0f, 4.0f, 3.f,
+        -1.0f, LAYER_ACTORS - 2);
     reg.AddComponent<Component::ParticleEmitter>(
         entity, std::move(emit_reactor));
+
+    // Create shield child entity
+    Engine::entity shield_entity = reg.SpawnEntity();
+    reg.AddComponent<Component::Transform>(shield_entity,
+        Component::Transform{0.f, 0.f, 0.f, {1.2f, 1.2f},
+            Component::Transform::CENTER, {0.f, 0.f}, entity.GetId()});
+    reg.AddComponent<Component::Drawable>(
+        shield_entity, Component::Drawable{"ennemies/powerups/shield.png",
+                           LAYER_ACTORS + 1, 1.f});
 
     id_player_ += 1;
 }

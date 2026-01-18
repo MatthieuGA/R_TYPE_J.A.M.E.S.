@@ -7,7 +7,20 @@
 
 #include <SFML/Graphics.hpp>
 
+#include "graphics/Types.hpp"
+
 namespace Rtype::Client::Component {
+
+// Helper to convert SFML waypoints to engine vectors
+static inline std::vector<Engine::Graphics::Vector2f> ToEngineWaypoints(
+    std::vector<sf::Vector2f> wp) {
+    std::vector<Engine::Graphics::Vector2f> out;
+    out.reserve(wp.size());
+    for (const auto &p : wp)
+        out.emplace_back(p.x, p.y);
+    return out;
+}
+
 struct PlayerTag {
     float speed_max = 300.0f;
     float shoot_cooldown_max = 0.3f;
@@ -16,6 +29,7 @@ struct PlayerTag {
     int id_player = 0;
     float shoot_cooldown = 0.0f;
     float charge_time = 0.0f;
+    int score = 0;
 };
 
 struct AnimationEnterPlayer {
@@ -24,6 +38,18 @@ struct AnimationEnterPlayer {
 
 struct EnemyTag {
     float speed = 100.0f;
+};
+
+/**
+ * @brief Component to identify the type of enemy.
+ *
+ * Used to trigger enemy-specific behaviors like death sounds.
+ */
+struct EnemyType {
+    std::string type; /**< Type identifier (e.g., "mermaid", "kamifish") */
+
+    explicit EnemyType(std::string enemy_type = "unknown")
+        : type(std::move(enemy_type)) {}
 };
 
 struct TimedEvents {
@@ -87,7 +113,8 @@ struct FrameEvents {
 struct EnemyShootTag {
     float speed_projectile = 200.0f;
     int damage_projectile = 10;
-    sf::Vector2f offset_shoot_position = sf::Vector2f(0.0f, 0.0f);
+    Engine::Graphics::Vector2f offset_shoot_position =
+        Engine::Graphics::Vector2f(0.0f, 0.0f);
 
     /**
      * @brief Constructor for EnemyShootTag.
@@ -98,15 +125,40 @@ struct EnemyShootTag {
      * @param offset Offset position for shooting
      */
     EnemyShootTag(float speed = 200.0f, int damage = 10,
-        sf::Vector2f offset = sf::Vector2f(0.0f, 0.0f));
+        Engine::Graphics::Vector2f offset = Engine::Graphics::Vector2f(
+            0.0f, 0.0f));
+
+    // Compatibility overload: accept SFML vector and forward
+    EnemyShootTag(float speed, int damage, sf::Vector2f offset);
 };
 
 struct Projectile {
     int damage;
-    sf::Vector2f direction;
+    Engine::Graphics::Vector2f direction;
     float speed;
     int ownerId;  // ID of the entity that fired the projectile
     bool isEnemyProjectile = false;
+    float lifetime = -1.0f;  // Lifetime in seconds (-1 = infinite)
+
+    // Constructors accepting Engine direction type
+    Projectile(int damage, Engine::Graphics::Vector2f dir, float speed,
+        int ownerId, bool isEnemyProjectile = false, float lifetime = -1.0f)
+        : damage(damage),
+          direction(dir),
+          speed(speed),
+          ownerId(ownerId),
+          isEnemyProjectile(isEnemyProjectile),
+          lifetime(lifetime) {}
+
+    // Legacy constructor: accept SFML direction
+    Projectile(int damage, sf::Vector2f dir, float speed, int ownerId,
+        bool isEnemyProjectile = false, float lifetime = -1.0f)
+        : damage(damage),
+          direction(dir.x, dir.y),
+          speed(speed),
+          ownerId(ownerId),
+          isEnemyProjectile(isEnemyProjectile),
+          lifetime(lifetime) {}
 };
 
 struct Health {
@@ -115,6 +167,7 @@ struct Health {
     bool invincible;
     float invincibilityDuration = 1.0f;
     float invincibilityTimer = 0.0f;
+    int previousHealth = 0;
 
     explicit Health(int maxHealth = 100)
         : currentHealth(maxHealth),
@@ -178,9 +231,9 @@ struct PatternMovement {
           targetEntityId(0) {}
 
     // Constructor for Sine / Wave movement
-    PatternMovement(PatternType type, sf::Vector2f amplitude,
-        sf::Vector2f frequency, sf::Vector2f baseDir, float baseSpeed,
-        bool loop = true)
+    PatternMovement(PatternType type, Engine::Graphics::Vector2f amplitude,
+        Engine::Graphics::Vector2f frequency,
+        Engine::Graphics::Vector2f baseDir, float baseSpeed, bool loop = true)
         : currentWaypoint(0),
           type(type),
           elapsed(0.f),
@@ -194,9 +247,20 @@ struct PatternMovement {
           waypointThreshold(4.f),
           targetEntityId(0) {}
 
+    // Compatibility constructor: accept SFML vectors
+    PatternMovement(PatternType type, sf::Vector2f amplitude,
+        sf::Vector2f frequency, sf::Vector2f baseDir, float baseSpeed,
+        bool loop = true)
+        : PatternMovement(type,
+              Engine::Graphics::Vector2f(amplitude.x, amplitude.y),
+              Engine::Graphics::Vector2f(frequency.x, frequency.y),
+              Engine::Graphics::Vector2f(baseDir.x, baseDir.y), baseSpeed,
+              loop) {}
+
     // Constructor for Waypoints movement
-    PatternMovement(std::vector<sf::Vector2f> waypoints, sf::Vector2f baseDir,
-        float baseSpeed, std::size_t currentWaypoint = 0, bool loop = true)
+    PatternMovement(std::vector<Engine::Graphics::Vector2f> waypoints,
+        Engine::Graphics::Vector2f baseDir, float baseSpeed,
+        std::size_t currentWaypoint = 0, bool loop = true)
         : type(PatternType::Waypoints),
           elapsed(0.f),
           spawnPos({0.f, 0.f}),
@@ -208,6 +272,13 @@ struct PatternMovement {
           currentWaypoint(currentWaypoint),
           waypointThreshold(4.f),
           targetEntityId(0) {}
+
+    // Compatibility constructor: accept SFML waypoints and baseDir
+    PatternMovement(std::vector<sf::Vector2f> waypoints, sf::Vector2f baseDir,
+        float baseSpeed, std::size_t currentWaypoint = 0, bool loop = true)
+        : PatternMovement(ToEngineWaypoints(std::move(waypoints)),
+              Engine::Graphics::Vector2f(baseDir.x, baseDir.y), baseSpeed,
+              currentWaypoint, loop) {}
 
     // Constructor for Follow Player movement
     explicit PatternMovement(float baseSpeed)
@@ -224,7 +295,8 @@ struct PatternMovement {
           waypointThreshold(4.f) {}
 
     // Constructor for Circular movement
-    PatternMovement(float baseSpeed, float radius, sf::Vector2f centerPos)
+    PatternMovement(
+        float baseSpeed, float radius, Engine::Graphics::Vector2f centerPos)
         : currentWaypoint(0),
           type(PatternType::Circular),
           elapsed(0.f),
@@ -240,22 +312,28 @@ struct PatternMovement {
           waypointThreshold(4.f),
           targetEntityId(0) {}
 
+    // Compatibility constructor: accept SFML centerPos
+    PatternMovement(float baseSpeed, float radius, sf::Vector2f centerPos)
+        : PatternMovement(baseSpeed, radius,
+              Engine::Graphics::Vector2f(centerPos.x, centerPos.y)) {}
+
     PatternType type;
 
     // Time
     float elapsed = 0.f;  // Times since pattern started
 
     // Base movement
-    sf::Vector2f spawnPos;  // Spawn position of the entity
-    sf::Vector2f baseDir;   // Base movement direction (normalized)
+    Engine::Graphics::Vector2f spawnPos;  // Spawn position of the entity
+    Engine::Graphics::Vector2f
+        baseDir;            // Base movement direction (normalized)
     float baseSpeed = 0.f;  // Base movement speed
 
     // Sine / Wave parameters
-    sf::Vector2f amplitude;  // Amplitude of the sine wave
-    sf::Vector2f frequency;  // Frequency of the sine wave
+    Engine::Graphics::Vector2f amplitude;  // Amplitude of the sine wave
+    Engine::Graphics::Vector2f frequency;  // Frequency of the sine wave
 
     // Waypoints
-    std::vector<sf::Vector2f> waypoints;
+    std::vector<Engine::Graphics::Vector2f> waypoints;
     std::size_t currentWaypoint = 0;
     float waypointSpeed = 0.f;
     float waypointThreshold = 4.f;  // Distance to consider waypoint reached
@@ -269,10 +347,17 @@ struct PatternMovement {
 };
 
 struct HealthBar {
-    sf::Vector2f offset = {0.f, -10.f};
+    Engine::Graphics::Vector2f offset = {0.f, -10.f};
     float percent = 100.f;
     float percent_delay = 100.f;
     bool is_taking_damage = false;
+
+    std::string green_bar_path = "assets/images/ui/health_bar/green_bar.png";
+    std::string yellow_bar_path = "assets/images/ui/health_bar/yellow_bar.png";
+    std::string foreground_bar_path =
+        "assets/images/ui/health_bar/foreground_bar.png";
+    float rotation_degrees = 0.0f;
+    Engine::Graphics::Color tint_color = Engine::Graphics::Color::White;
 
     float timer_damage = 0.f;
 
@@ -283,6 +368,41 @@ struct HealthBar {
     sf::Texture yellow_texture;
     sf::Texture foreground_texture;
     bool is_loaded = false;
+
+    // Compatibility constructors
+    explicit HealthBar(sf::Vector2f offset) : offset(offset.x, offset.y) {}
+
+    explicit HealthBar(Engine::Graphics::Vector2f offset) : offset(offset) {}
+};
+
+struct HealthBarBoss {
+    Engine::Graphics::Vector2f offset = {0.f, -10.f};
+    float percent = 100.f;
+    float percent_delay = 100.f;
+    bool is_taking_damage = false;
+
+    std::string green_bar_path = "assets/images/ui/health_bar/green_bar.png";
+    std::string yellow_bar_path = "assets/images/ui/health_bar/yellow_bar.png";
+    std::string foreground_bar_path =
+        "assets/images/ui/health_bar/foreground_bar.png";
+    float rotation_degrees = 0.0f;
+    Engine::Graphics::Color tint_color = Engine::Graphics::Color::White;
+
+    float timer_damage = 0.f;
+
+    sf::Sprite green_bar;
+    sf::Sprite yellow_bar;
+    sf::Sprite foreground_bar;
+    sf::Texture green_texture;
+    sf::Texture yellow_texture;
+    sf::Texture foreground_texture;
+    bool is_loaded = false;
+
+    // Compatibility constructors
+    explicit HealthBarBoss(sf::Vector2f offset) : offset(offset.x, offset.y) {}
+
+    explicit HealthBarBoss(Engine::Graphics::Vector2f offset)
+        : offset(offset) {}
 };
 
 }  // namespace Rtype::Client::Component

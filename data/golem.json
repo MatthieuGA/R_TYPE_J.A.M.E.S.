@@ -1,0 +1,20 @@
+{
+    "tag": "golem",
+    "health": 600,
+    "speed": 50.0,
+    "spritePath": "ennemies/golem/golem_Boss.png",
+    "hitbox": {
+        "x": 50.0,
+        "y": 50.0
+    },
+    "offset_healthbar": {
+        "x": 7.0,
+        "y": 25.0
+    },
+    "transform" : {
+        "scale": {
+            "x": -6.0,
+            "y": 6.0
+        }
+    }
+}

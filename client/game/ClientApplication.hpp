@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 #include <vector>
 
 #include "engine/GameWorld.hpp"
@@ -21,13 +22,28 @@ class ClientApplication {
         enum ProjectileType : uint8_t {
             kPlayerProjectile = 0x00,
             kPlayerChargedProjectile = 0x01,
-            kMermaidProjectile = 0x02
+            kMermaidProjectile = 0x02,
+            kDaemonProjectile = 0x03,
+            kGolemProjectile = 0x04,
+            kGolemLaser = 0x05,
+            kPlayerGatlingProjectile = 0x06
         };
 
         enum EntityType : uint8_t {
             kPlayerEntity = 0x00,
             kEnemyEntity = 0x01,
-            kProjectileEntity = 0x02
+            kProjectileEntity = 0x02,
+            kObstacleEntity = 0x03
+        };
+
+        enum EnemyType : uint8_t {
+            kMermaidEnemy = 0x00,
+            kKamiFishEnemy = 0x01,
+            kDaemonEnemy = 0x02,
+            kGolemEnemy = 0x03,
+            kInvinsibilityPU = 0x04,
+            kHealthPU = 0x05,
+            kGatlingPU = 0x06
         };
 
         uint32_t entity_id;
@@ -39,9 +55,12 @@ class ClientApplication {
         uint16_t velocity_x;
         uint16_t velocity_y;
         uint16_t health;
+        uint16_t invincibility_time;
+        uint16_t score;
         // Projectiles :
         uint8_t projectile_type;
         // Enemies :
+        uint8_t enemy_type;
         uint8_t current_animation;
         uint8_t current_frame;
     };
@@ -87,7 +106,7 @@ class ClientApplication {
 
     static void ApplySnapshotToRegistry(
         GameWorld &game_world, const client::SnapshotPacket &snapshot);
-    static void CreateNewEntity(GameWorld &game_world, int tick,
+    static void CreateNewEntity(GameWorld &game_world, uint32_t tick,
         const ParsedEntity &entity_data, std::optional<size_t> &entity_index);
     static void UpdateExistingEntity(GameWorld &game_world,
         size_t entity_index, const ParsedEntity &entity_data);

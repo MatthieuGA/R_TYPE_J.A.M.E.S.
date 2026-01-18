@@ -3,75 +3,84 @@
 #include "engine/systems/InitRegistrySystems.hpp"
 
 namespace Rtype::Client {
+
 /**
- * @brief Load and apply the texture from the animation to the drawable.
+ * @brief Apply animation texture path to drawable metadata.
  *
- * If the animation has its own texture loaded, it will be applied to the
- * drawable. Otherwise, the drawable's original texture is used.
- *
- * @param animation Animation containing the texture
- * @param drawable Drawable component to update
- * @return true if the animation texture was loaded and applied, false
- * otherwise
+ * Backend will load/cache the texture when drawing.
  */
 bool ApplyAnimationTexture(
     Com::AnimatedSprite::Animation &animation, Com::Drawable &drawable) {
-    // If animation has no path, use the drawable's original texture
-    if (animation.path.empty()) {
-        drawable.sprite.setTexture(drawable.texture, true);
+    if (animation.texture_path.empty()) {
         return true;
     }
-
-    // If animation has a path but isn't loaded, load it
-    if (!animation.isLoaded) {
-        if (!animation.texture.loadFromFile(animation.path)) {
-            std::cerr << "ERROR: Failed to load animation texture from "
-                      << animation.path << "\n";
-            return false;
-        }
-        animation.sprite.setTexture(animation.texture, true);
-        animation.isLoaded = true;
-    }
-
-    // Apply the animation's texture to the drawable if it's loaded
-    if (animation.isLoaded) {
-        drawable.sprite.setTexture(animation.texture, true);
-        return true;
-    }
-
-    return false;
+    drawable.texture_path = animation.texture_path;
+    animation.is_loaded = true;
+    return true;
 }
 
 /**
- * @brief Sets the texture rectangle on the drawable according to the
- * current frame stored in the Animation.
+ * @brief Update the current rectangle according to the current frame.
  *
- * @param animation Animation state (current_frame, frameWidth/Height)
- * @param drawable Drawable component containing the texture and sprite
+ * Computes the texture rect for the current frame. Supports both:
+ * - Horizontal strip: frames laid out in a single row
+ * - Grid layout: frames wrap across multiple rows based on sheet width
+ *
+ * If first_frame_position is (0,0), assumes grid layout.
+ * Otherwise, uses first_frame_position as the starting point for a strip.
+ *
+ * @param animation Animation containing frame metadata and sheet_width
+ * @param drawable Drawable to update with calculated rectangle
+ * @param game_world GameWorld for querying texture dimensions (if needed)
  */
-void SetFrame(
-    Com::AnimatedSprite::Animation &animation, Com::Drawable &drawable) {
-    // Determine which texture to use for calculating columns
-    sf::Vector2u textureSize;
-    if (animation.isLoaded) {
-        textureSize = animation.texture.getSize();
+void SetFrame(Com::AnimatedSprite::Animation &animation,
+    Com::Drawable &drawable, GameWorld &game_world) {
+    if (animation.frameWidth <= 0 || animation.frameHeight <= 0)
+        return;
+
+    int left, top;
+
+    // Grid layout detection: if first_frame is at origin, use grid math
+    if (animation.first_frame_position.x == 0.0f &&
+        animation.first_frame_position.y == 0.0f) {
+        // Grid layout: determine sheet width
+        int sheet_width = animation.sheet_width;
+
+        // Auto-detect sheet width from texture if not set
+        if (sheet_width <= 0 && game_world.GetRenderContext()) {
+            // Use animation texture path, or fallback to drawable's texture
+            const char *query_path = !animation.texture_path.empty()
+                                         ? animation.texture_path.c_str()
+                                         : drawable.texture_path.c_str();
+
+            if (query_path && query_path[0] != '\0') {
+                auto tex_size =
+                    game_world.GetRenderContext()->GetTextureSize(query_path);
+                sheet_width = static_cast<int>(tex_size.x);
+            }
+        }
+
+        if (sheet_width <= 0) {
+            // Fallback: can't determine sheet width, use horizontal strip
+            left = animation.current_frame * animation.frameWidth;
+            top = 0;
+        } else {
+            const int frames_per_row = sheet_width / animation.frameWidth;
+            const int row = animation.current_frame / frames_per_row;
+            const int col = animation.current_frame % frames_per_row;
+            left = col * animation.frameWidth;
+            top = row * animation.frameHeight;
+        }
     } else {
-        textureSize = drawable.texture.getSize();
+        // Horizontal strip layout: offset from first_frame_position
+        left = static_cast<int>(animation.first_frame_position.x) +
+               animation.current_frame * animation.frameWidth;
+        top = static_cast<int>(animation.first_frame_position.y);
     }
 
-    if (textureSize.x == 0 || animation.frameWidth == 0)
-        return;
-    const int columns = textureSize.x / animation.frameWidth;
-    if (columns == 0)
-        return;
-    const int left =
-        animation.first_frame_position.x +
-        (animation.current_frame % columns) * animation.frameWidth;
-    const int top =
-        animation.first_frame_position.y +
-        (animation.current_frame / columns) * animation.frameHeight;
-    drawable.sprite.setTextureRect(
-        sf::IntRect(left, top, animation.frameWidth, animation.frameHeight));
+    Engine::Graphics::IntRect rect(
+        left, top, animation.frameWidth, animation.frameHeight);
+    drawable.current_rect = rect;
 }
 
 /**
@@ -80,9 +89,10 @@ void SetFrame(
  *
  * @param animation Animation state to advance
  * @param drawable Drawable component to update
+ * @param game_world GameWorld for querying texture dimensions
  */
-void NextFrame(
-    Com::AnimatedSprite::Animation &animation, Com::Drawable &drawable) {
+void NextFrame(Com::AnimatedSprite::Animation &animation,
+    Com::Drawable &drawable, GameWorld &game_world) {
     animation.current_frame++;
     if (animation.current_frame >= animation.totalFrames) {
         if (animation.loop)
@@ -90,7 +100,7 @@ void NextFrame(
         else
             animation.current_frame = animation.totalFrames - 1;
     }
-    SetFrame(animation, drawable);
+    SetFrame(animation, drawable, game_world);
 }
 
 /**
@@ -102,27 +112,24 @@ void NextFrame(
  * the active animation from the animations map.
  *
  * @param reg Engine registry (unused in current implementation)
+ * @param game_world GameWorld containing RenderContext for texture queries
  * @param dt Delta time (seconds) since last update
  * @param anim_sprites Sparse array of AnimatedSprite components
  * @param drawables Sparse array of Drawable components
  */
-void AnimationSystem(Eng::registry &reg, const float dt,
+void AnimationSystem(Eng::registry &reg, GameWorld &game_world, const float dt,
     Eng::sparse_array<Com::AnimatedSprite> &anim_sprites,
     Eng::sparse_array<Com::Drawable> &drawables) {
     for (auto &&[i, anim_sprite, drawable] :
         make_indexed_zipper(anim_sprites, drawables)) {
-        // Get the current animation using the helper method
         auto *animation = anim_sprite.GetCurrentAnimation();
         if (animation == nullptr)
             continue;
 
-        // Apply the animation's texture to the drawable
         ApplyAnimationTexture(*animation, drawable);
+        SetFrame(*animation, drawable, game_world);
 
-        // Always set the frame to ensure correct texture rect
-        SetFrame(*animation, drawable);
-
-        if (!drawable.isLoaded || !anim_sprite.animated)
+        if (!drawable.is_loaded || !anim_sprite.animated)
             continue;
 
         anim_sprite.elapsedTime += dt;
@@ -131,7 +138,6 @@ void AnimationSystem(Eng::registry &reg, const float dt,
                 anim_sprite.elapsedTime -= animation->frameDuration;
                 if (!animation->loop &&
                     animation->current_frame == animation->totalFrames - 1) {
-                    // Animation finished, switch back to default
                     if (anim_sprite.animationQueue.empty()) {
                         anim_sprite.SetCurrentAnimation("Default", true);
                     } else {
@@ -145,14 +151,13 @@ void AnimationSystem(Eng::registry &reg, const float dt,
                         if (newAnim != nullptr)
                             newAnim->current_frame = frame;
                     }
-                    // Re-apply the default animation texture
                     auto *defaultAnim = anim_sprite.GetCurrentAnimation();
                     if (defaultAnim != nullptr) {
                         ApplyAnimationTexture(*defaultAnim, drawable);
-                        SetFrame(*defaultAnim, drawable);
+                        SetFrame(*defaultAnim, drawable, game_world);
                     }
                 } else {
-                    NextFrame(*animation, drawable);
+                    NextFrame(*animation, drawable, game_world);
                 }
             }
         }

@@ -6,95 +6,113 @@
 #include "engine/HierarchyTools.hpp"
 #include "engine/OriginTool.hpp"
 #include "engine/systems/InitRegistrySystems.hpp"
+#include "graphics/IRenderContext.hpp"
+#include "graphics/SFMLRenderContext.hpp"
 
 namespace Rtype::Client {
 
 const int FONT_SIZE_SCALE = 10;
 
-/**
- * @brief Initialize a text component with font loading.
- *
- * Loads the font and sets up the sf::Text object with the content,
- * character size, and color from the Text component.
- *
- * @param text Text component to initialize
- * @param transform Transform for origin calculation
- */
 void InitializeText(Com::Text &text, const Com::Transform &transform) {
-    if (!text.font.loadFromFile(text.fontPath)) {
-        std::cerr << "ERROR: Failed to load font from " << text.fontPath
-                  << "\n";
-    } else {
-        text.text.setFont(text.font);
-        text.text.setString(text.content);
-        text.text.setCharacterSize(text.characterSize * FONT_SIZE_SCALE);
-        text.text.setFillColor(text.color);
-
-        // Set origin based on transform's origin point
-        sf::FloatRect bounds = text.text.getLocalBounds();
-        sf::Vector2f origin = GetOffsetFromTransform(
-            transform, sf::Vector2f(bounds.width, bounds.height));
-        text.text.setOrigin(-origin);
-    }
+    // Backend will load font via render context; mark as initialized
     text.is_loaded = true;
 }
 
-/**
- * @brief Render a single text entity with transform hierarchy support.
- *
- * @param transforms The sparse array of all transforms
- * @param texts The sparse array of all text components
- * @param game_world The game world containing the render window
- * @param i The entity index to render
- */
 void RenderOneTextEntity(Eng::sparse_array<Com::Transform> const &transforms,
     Eng::sparse_array<Com::Text> &texts, GameWorld &game_world, int i) {
     auto &transform = transforms[i];
     auto &text = texts[i];
 
-    // Calculate world position with hierarchical rotation
-    sf::Vector2f world_position =
+    Engine::Graphics::Vector2f world_position =
         CalculateWorldPositionWithHierarchy(transform.value(), transforms);
     world_position.x += text->offset.x;
     world_position.y += text->offset.y;
-    text->text.setPosition(world_position);
 
-    // Apply cumulative scale
-    sf::Vector2f world_scale =
+    Engine::Graphics::Vector2f world_scale =
         CalculateCumulativeScale(transform.value(), transforms);
+    // Scale back by FONT_SIZE_SCALE since character size is already multiplied
     world_scale.x /= FONT_SIZE_SCALE;
     world_scale.y /= FONT_SIZE_SCALE;
-    text->text.setScale(world_scale);
 
-    // Apply rotation
-    text->text.setRotation(transform->rotationDegrees);
+    // Apply text size scaling from accessibility settings
+    float text_scale_multiplier =
+        game_world.accessibility_settings_.GetTextScaleMultiplier();
+    world_scale.x *= text_scale_multiplier;
+    world_scale.y *= text_scale_multiplier;
 
-    // Apply color with opacity
-    sf::Color color = text->color;
-    color.a = static_cast<sf::Uint8>(text->opacity * 255);
-    text->text.setFillColor(color);
+    Engine::Graphics::Color engine_color = text->color;
 
-    // Draw text
-    game_world.window_.draw(text->text);
+    // Apply high-contrast mode: maximize color brightness for accessibility
+    if (game_world.accessibility_settings_.high_contrast) {
+        // Make text pure white or maximally bright for readability
+        // Preserve alpha but maximize RGB values
+        engine_color.r = 255;
+        engine_color.g = 255;
+        engine_color.b = 255;
+    }
+
+    engine_color.a = static_cast<uint8_t>(text->opacity * 255);
+
+    // Calculate text origin for centering (using GetOffsetFromTransform)
+    // Query backend for actual text bounding box
+    Engine::Graphics::Vector2f text_bounds(1.0f, 1.0f);
+    if (game_world.GetRenderContext()) {
+        text_bounds = game_world.GetRenderContext()->GetTextBounds(
+            text->font_path.c_str(), text->content.c_str(),
+            static_cast<unsigned int>(text->characterSize * FONT_SIZE_SCALE));
+    }
+
+    // GetOffsetFromTransform returns negative offsets; negate to get positive
+    // for SFML
+    Engine::Graphics::Vector2f text_origin =
+        GetOffsetFromTransform(transform.value(), text_bounds);
+    // Negate to convert from offset to origin (positive coordinates for SFML)
+    text_origin.x = -text_origin.x;
+    text_origin.y = -text_origin.y;
+
+    // If high contrast is enabled, draw black outline first
+    if (game_world.accessibility_settings_.high_contrast) {
+        Engine::Graphics::Color black_color{0, 0, 0, engine_color.a};
+        // Draw black outline at offset positions (4-way: top, bottom, left,
+        // right)
+        const float offset = 2.0f;  // Outline thickness in pixels
+        Engine::Graphics::Vector2f outline_offsets[] = {
+            {offset, 0.0f},   // right
+            {-offset, 0.0f},  // left
+            {0.0f, offset},   // bottom
+            {0.0f, -offset}   // top
+        };
+
+        for (auto &offset_vec : outline_offsets) {
+            Engine::Graphics::DrawableText outline_text{
+                text->font_path.c_str(), text->content.c_str(),
+                static_cast<unsigned int>(
+                    text->characterSize * FONT_SIZE_SCALE),
+                world_position + offset_vec, black_color, world_scale,
+                text_origin};
+            if (game_world.GetRenderContext()) {
+                game_world.GetRenderContext()->DrawText(outline_text);
+            }
+        }
+    }
+
+    Engine::Graphics::DrawableText drawable_text{text->font_path.c_str(),
+        text->content.c_str(),
+        static_cast<unsigned int>(text->characterSize * FONT_SIZE_SCALE),
+        world_position, engine_color, world_scale, text_origin};
+
+    if (game_world.GetRenderContext()) {
+        game_world.GetRenderContext()->DrawText(drawable_text);
+    } else {
+        std::cerr << "RenderContext not set; cannot draw text." << std::endl;
+    }
 }
 
-/**
- * @brief System for rendering text objects.
- *
- * Processes all entities with Transform and Text components,
- * loads fonts on first use, sorts by z_index, and renders them.
- *
- * @param reg The entity registry
- * @param game_world The game world context
- * @param transforms The sparse array of transform components
- * @param texts The sparse array of text components
- */
 void DrawTextRenderSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> const &transforms,
     Eng::sparse_array<Com::Text> &texts) {
     std::vector<int> draw_order;
 
-    // Collect entities with Transform and Text components
     for (auto &&[i, transform, text] :
         make_indexed_zipper(transforms, texts)) {
         if (!text.is_loaded)
@@ -102,12 +120,10 @@ void DrawTextRenderSystem(Eng::registry &reg, GameWorld &game_world,
         draw_order.push_back(i);
     }
 
-    // Sort by z_index
     std::sort(draw_order.begin(), draw_order.end(), [&texts](int a, int b) {
         return texts[a]->z_index < texts[b]->z_index;
     });
 
-    // Render all texts in sorted order
     for (auto i : draw_order) {
         RenderOneTextEntity(transforms, texts, game_world, i);
     }

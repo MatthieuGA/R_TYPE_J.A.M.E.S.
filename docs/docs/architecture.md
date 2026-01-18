@@ -13,10 +13,13 @@ sidebar_position: 2
 - [5. Network Protocol Integration](#5-network-protocol-integration)
 - [6. Client Components](#6-client-components)
 - [7. Client Systems](#7-client-systems)
+- [8. Platform Abstraction](#8-platform-abstraction)
 
 ## 1. Overview
 
 R-TYPE J.A.M.E.S. is built upon a **Client-Server** architecture using a custom **Entity Component System (ECS)** engine. The system is designed to be modular, performant, and network-efficient, adhering to the **Authoritative Server** model.
+
+The engine features backend-agnostic abstractions for input, graphics, and platform events, making it portable and suitable for reuse in other game projects.
 
 ### High-Level Architecture
 
@@ -203,7 +206,7 @@ Below is the complete list used by the client.
 | **Transform** | Position, rotation, scale, origin & custom origins |
 | **Drawable** | Sprite path, texture, z-index rendering order |
 | **AnimatedSprite** | Frame-based animation support (frame duration, looping) |
-| **ParallaxLayer** *(planned)* | Represents parallax scrolling layers |
+| **ParallaxLayer** | Represents parallax scrolling layers |
 
 ### 🎮 Movement & Control Components
 
@@ -219,8 +222,8 @@ Below is the complete list used by the client.
 |----------|---------|
 | **HitBox** | Collision rectangle for AABB collisions |
 | **Solid** | Indicates blocking entities or platforms |
-| **Lifetime** *(planned)* | Automatically despawns entities after X seconds |
-| **DespawnOnExit** *(planned)* | Removes offscreen entities (projectiles, enemies) |
+| **Lifetime** | Automatically despawns entities after X seconds |
+| **DespawnOnExit** | Removes offscreen entities (projectiles, enemies) |
 
 ### 🧩 Gameplay Components
 
@@ -231,9 +234,9 @@ Below is the complete list used by the client.
 | **Projectile** | Stores damage, speed, and shooter ID |
 | **Health** | HP, max HP, invincibility frames |
 | **StatsGame** | Player score & gameplay stats |
-| **Weapon** *(planned)* | Fire rate, projectile type, cooldown |
-| **PowerUp** *(planned)* | Temporary player boosts |
-| **StateMachine** *(planned)* | For enemy/boss AI behavior |
+| **Weapon** | Fire rate, projectile type, cooldown |
+| **PowerUp** | Temporary player boosts |
+| **StateMachine** | For enemy/boss AI behavior |
 
 ### 🌐 Networking Components
 
@@ -273,33 +276,41 @@ Prevents the player from leaving the visible screen area.
 
 Updates delta time each frame via the `GameWorld` timing utility.
 
-### ✔ AudioSystem *(planned)*
+### ✔ AudioSystem
 
 Plays sounds on events (shooting, impact, explosion).
 
-### ✔ LifetimeSystem *(planned)*
+### ✔ LifetimeSystem
 
 Destroys entities whose `Lifetime` counters reach zero.
 
-### ✔ DespawnOffscreenSystem *(planned)*
+### ✔ DespawnOffscreenSystem
 
 Removes projectiles and enemies that leave the playfield.
 
-### ✔ StateMachineSystem *(planned)*
+### ✔ StateMachineSystem
 
 Executes AI logic for enemies and boss patterns.
 
-### ✔ WeaponSystem *(planned)*
+### ✔ WeaponSystem
 
 Handles fire rate, cooldown, and projectile spawning.
 
-### ✔ ParallaxSystem *(planned)*
+### ✔ ParallaxSystem
 
 Scrolls background layers at different speeds for depth effect.
 
-### ✔ HealthSystem *(planned)*
+### ✔ HealthSystem
 
 Applies damage, handles enemy/player death events.
+
+### ✔ InputSystem
+
+Processes player input and updates controllable entities.
+
+### ✔ ProjectileSystem
+
+Manages projectile spawning, movement, and despawning logic.
 
 ---
 
@@ -326,5 +337,71 @@ This system is used for:
 - Player taking damage
 - Enemy death events
 - Projectile collisions
+
+---
+
+## 8. Platform Abstraction
+
+The engine provides backend-agnostic abstractions to decouple game logic from specific platform libraries (SFML, SDL, etc.).
+
+### OS Event System
+
+The **OS Event Abstraction Layer** handles window and input events without exposing the underlying backend:
+
+```cpp
+// Engine defines the interface and event types
+Engine::Platform::OSEvent event;
+while (game_world.event_source_->Poll(event)) {
+    if (event.type == Engine::Platform::OSEventType::Closed) {
+        game_world.window_.close();
+    }
+}
+```
+
+**Key Components:**
+- `Engine::Platform::OSEvent` - Backend-agnostic event structure
+- `IPlatformEventSource` - Abstract polling interface
+- `SFMLEventSource` - SFML concrete implementation
+
+**Benefits:**
+- Engine has zero SFML dependencies in core code
+- Future backends (SDL, GLFW) can be added via plugins
+- Improved testability with mock event sources
+
+For detailed information, see [OS Event Abstraction Layer](./design/OS_EVENT_ABSTRACTION.md).
+
+### Input Abstraction
+
+Game actions are decoupled from physical keys through an abstraction layer:
+
+```cpp
+// Engine provides generic input primitives
+Engine::Input::Key, Engine::Input::MouseButton
+
+// Game defines its own actions
+Game::Action::MoveUp, Game::Action::Shoot
+
+// Mappings configured at game layer
+input_manager.BindKey(Engine::Input::Key::W, Game::Action::MoveUp);
+```
+
+### Graphics Abstraction
+
+Engine graphics types are backend-independent:
+
+```cpp
+// Engine types (not SFML types)
+Engine::Graphics::Color
+Engine::Graphics::Vector2f
+
+// Adapters convert at the boundary
+sf::Color sfml_color = Adapters::ToSFMLColor(engine_color);
+```
+
+This architecture enables:
+- **Portability** - Engine can run on different platforms/backends
+- **Reusability** - Core engine can be used in other games
+- **Testability** - Mock implementations for unit testing
+- **Plugin Support** - Dynamic backend loading (future)
 - Power-up pickups
 - Boss AI triggers

@@ -7,6 +7,9 @@ namespace Rtype::Client {
 /**
  * @brief Check AABB collision using precomputed offsets and scaled hitboxes.
  *
+ * This function uses std::abs() for scale values to match server-side
+ * collision detection behavior exactly.
+ *
  * @param trans_a Transform of entity A
  * @param hb_a HitBox of entity A
  * @param trans_b Transform of entity B
@@ -17,7 +20,9 @@ namespace Rtype::Client {
  */
 bool IsCollidingFromOffset(const Com::Transform &trans_a,
     const Com::HitBox &hb_a, const Com::Transform &trans_b,
-    const Com::HitBox &hb_b, sf::Vector2f off_a, sf::Vector2f off_b) {
+    const Com::HitBox &hb_b, Engine::Graphics::Vector2f off_a,
+    Engine::Graphics::Vector2f off_b) {
+    // Use absolute value for scale to match server behavior
     const float scale_x_a =
         hb_a.scaleWithTransform ? std::abs(trans_a.scale.x) : 1.0f;
     const float scale_y_a =
@@ -27,14 +32,14 @@ bool IsCollidingFromOffset(const Com::Transform &trans_a,
     const float scale_y_b =
         hb_b.scaleWithTransform ? std::abs(trans_b.scale.y) : 1.0f;
 
-    sf::Vector2f scal_off_a =
-        sf::Vector2f(off_a.x * scale_x_a, off_a.y * scale_y_a);
-    sf::Vector2f scal_off_b =
-        sf::Vector2f(off_b.x * scale_x_b, off_b.y * scale_y_b);
-    sf::Vector2f scal_hb_a =
-        sf::Vector2f(hb_a.width * scale_x_a, hb_a.height * scale_y_a);
-    sf::Vector2f scal_hb_b =
-        sf::Vector2f(hb_b.width * scale_x_b, hb_b.height * scale_y_b);
+    Engine::Graphics::Vector2f scal_off_a =
+        Engine::Graphics::Vector2f(off_a.x * scale_x_a, off_a.y * scale_y_a);
+    Engine::Graphics::Vector2f scal_off_b =
+        Engine::Graphics::Vector2f(off_b.x * scale_x_b, off_b.y * scale_y_b);
+    Engine::Graphics::Vector2f scal_hb_a = Engine::Graphics::Vector2f(
+        hb_a.width * scale_x_a, hb_a.height * scale_y_a);
+    Engine::Graphics::Vector2f scal_hb_b = Engine::Graphics::Vector2f(
+        hb_b.width * scale_x_b, hb_b.height * scale_y_b);
 
     if (trans_a.x + scal_off_a.x < trans_b.x + scal_hb_b.x + scal_off_b.x &&
         trans_a.x + scal_hb_a.x + scal_off_a.x > trans_b.x + scal_off_b.x &&
@@ -59,9 +64,9 @@ bool IsCollidingFromOffset(const Com::Transform &trans_a,
  */
 bool IsColliding(const Com::Transform &trans_a, const Com::HitBox &hb_a,
     const Com::Transform &trans_b, const Com::HitBox &hb_b) {
-    sf::Vector2f off_a =
+    Engine::Graphics::Vector2f off_a =
         GetOffsetFromTransform(trans_a, {hb_a.width, hb_a.height});
-    sf::Vector2f off_b =
+    Engine::Graphics::Vector2f off_b =
         GetOffsetFromTransform(trans_b, {hb_b.width, hb_b.height});
 
     return IsCollidingFromOffset(trans_a, hb_a, trans_b, hb_b, off_a, off_b);

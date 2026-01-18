@@ -5,6 +5,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace client {
@@ -13,8 +14,19 @@ namespace {
 // Protocol constants
 constexpr uint8_t kOpConnectReq = 0x01;
 constexpr uint8_t kOpConnectAck = 0x02;
-constexpr uint8_t kOpGameStart = 0x05;
 constexpr uint8_t kOpDisconnectReq = 0x03;
+constexpr uint8_t kOpNotifyDisconnect = 0x04;
+constexpr uint8_t kOpGameStart = 0x05;
+constexpr uint8_t kOpGameEnd = 0x06;
+constexpr uint8_t kOpReadyStatus = 0x07;
+constexpr uint8_t kOpNotifyConnect = 0x08;
+constexpr uint8_t kOpNotifyReady = 0x09;
+constexpr uint8_t kOpSetGameSpeed = 0x0A;
+constexpr uint8_t kOpNotifyGameSpeed = 0x0B;
+constexpr uint8_t kOpSetDifficulty = 0x0C;
+constexpr uint8_t kOpSetKillableProjectiles = 0x0D;
+constexpr uint8_t kOpNotifyDifficulty = 0x0E;
+constexpr uint8_t kOpNotifyKillableProjectiles = 0x0F;
 constexpr uint8_t kOpPlayerInput = 0x10;
 constexpr uint8_t kOpWorldSnapshot = 0x20;
 
@@ -212,8 +224,24 @@ void ServerConnection::AsyncReceiveTCP() {
                         payload_size);
                     if (opcode == kOpConnectAck) {
                         HandleConnectAck(data);
-                    } else if (opcode == kOpGameStart) {  // kOpGameStart
+                    } else if (opcode == kOpGameStart) {
                         HandleGameStart(data);
+                    } else if (opcode == kOpGameEnd) {
+                        HandleGameEnd(data);
+                    } else if (opcode == kOpNotifyDisconnect) {
+                        HandleNotifyDisconnect(data);
+                    } else if (opcode == kOpNotifyDisconnect) {
+                        HandleNotifyDisconnect(data);
+                    } else if (opcode == kOpNotifyConnect) {
+                        HandleNotifyConnect(data);
+                    } else if (opcode == kOpNotifyReady) {
+                        HandleNotifyReady(data);
+                    } else if (opcode == kOpNotifyGameSpeed) {
+                        HandleNotifyGameSpeed(data);
+                    } else if (opcode == kOpNotifyDifficulty) {
+                        HandleNotifyDifficulty(data);
+                    } else if (opcode == kOpNotifyKillableProjectiles) {
+                        HandleNotifyKillableProjectiles(data);
                     } else {
                         std::cout << "[Network] Unhandled TCP opcode: 0x"
                                   << std::hex << static_cast<int>(opcode)
@@ -228,26 +256,37 @@ void ServerConnection::AsyncReceiveTCP() {
 void ServerConnection::HandleConnectAck(const std::vector<uint8_t> &data) {
     const int kDebugLogLimit = 4;
 
-    if (data.size() <
-        kDebugLogLimit) {  // Payload is 4 bytes: PlayerId+Status+UdpPort(u16)
-        std::cerr << "[Network] CONNECT_ACK malformed" << std::endl;
+    if (data.size() < kDebugLogLimit) {  // Payload is 8 bytes: PlayerId +
+                                         // Status + ConnectedPlayers +
+        // ReadyPlayers + MaxPlayers + MinPlayers + Reserved(u16)
+        std::cerr << "[Network] CONNECT_ACK malformed (expected 8 bytes, got "
+                  << data.size() << ")" << std::endl;
         return;
     }
-    uint8_t pid = data[0];     // PlayerId is first
-    uint8_t status = data[1];  // Status is second
-    uint16_t server_udp_port =
-        ReadLe16(data.data() + 2);  // Server's UDP port (little-endian)
+    uint8_t pid = data[0];                          // PlayerId
+    uint8_t status = data[1];                       // Status
+    uint8_t connected = data[2];                    // ConnectedPlayers
+    uint8_t ready = data[3];                        // ReadyPlayers
+    uint8_t max_players = data[4];                  // MaxPlayers
+    uint8_t min_players = data[5];                  // MinPlayers
+    uint16_t reserved = ReadLe16(data.data() + 6);  // Reserved
+    (void)min_players;                              // Unused for now
+    (void)reserved;                                 // Unused
 
     if (status == 0x00) {
         player_id_.store(pid);
         connected_.store(true);
+        was_connected_once_.store(true);  // Track that we connected
 
-        // Update server UDP endpoint with the port from CONNECT_ACK
-        server_udp_endpoint_ = boost::asio::ip::udp::endpoint(
-            boost::asio::ip::make_address(server_ip_), server_udp_port);
+        // Initialize lobby counters from CONNECT_ACK
+        lobby_connected_count_.store(connected);
+        lobby_ready_count_.store(ready);
+        lobby_max_players_.store(max_players);
 
         std::cout << "[Network] Connected. PlayerId=" << static_cast<int>(pid)
-                  << ", ServerUdpPort=" << server_udp_port << std::endl;
+                  << ", Server reports: " << static_cast<int>(connected) << "/"
+                  << static_cast<int>(max_players) << " players, "
+                  << static_cast<int>(ready) << " ready" << std::endl;
 
         // Get the local UDP port assigned by OS and send discovery packet
         try {
@@ -292,6 +331,7 @@ void ServerConnection::HandleConnectAck(const std::vector<uint8_t> &data) {
     } else {
         std::cerr << "[Network] CONNECT_ACK failed. Status="
                   << static_cast<int>(status) << std::endl;
+        last_rejection_status_.store(status);
         Disconnect();
     }
 }
@@ -314,6 +354,231 @@ void ServerConnection::HandleGameStart(const std::vector<uint8_t> &data) {
     // Store controlled entity id for local input mapping
     controlled_entity_id_ = controlled_entity_id;
     game_started_.store(true);
+    // Reset game_ended flag so a new game doesn't immediately end
+    game_ended_.store(false);
+}
+
+void ServerConnection::HandleGameEnd(const std::vector<uint8_t> &data) {
+    // New extended format: 8 bytes header + (player_count * 39 bytes)
+    // leaderboard
+    if (data.size() < 8) {
+        std::cerr << "[Network] GAME_END malformed (size=" << data.size()
+                  << ", expected at least 8)" << std::endl;
+        return;
+    }
+
+    uint8_t winning_player_id = data[0];
+    uint8_t game_mode = data[1];
+    uint8_t player_count = data[2];
+    // data[3-7] are reserved
+
+    std::string result_type;
+    if (winning_player_id == 0) {
+        result_type = "GAME OVER (All Lost)";
+    } else if (winning_player_id == 255) {
+        result_type = "VICTORY (Level Complete - All Win)";
+    } else if (winning_player_id == player_id_.load()) {
+        result_type = "VICTORY (You Won!)";
+    } else {
+        result_type =
+            "GAME OVER (Player " + std::to_string(winning_player_id) + " Won)";
+    }
+
+    std::cout << "[Network] GAME_END received! " << result_type
+              << " (mode=" << static_cast<int>(game_mode)
+              << ", players=" << static_cast<int>(player_count) << ")"
+              << std::endl;
+
+    // Parse leaderboard entries
+    std::vector<LeaderboardEntry> leaderboard;
+    size_t offset = 8;  // Start after header
+    for (uint8_t i = 0; i < player_count && offset + 39 <= data.size(); ++i) {
+        LeaderboardEntry entry;
+        entry.player_id = data[offset];
+
+        // Read 32-byte name
+        std::string name;
+        for (size_t j = 0; j < 32 && data[offset + 1 + j] != '\0'; ++j) {
+            name += static_cast<char>(data[offset + 1 + j]);
+        }
+        entry.name = name;
+
+        // Read score (little-endian u32)
+        entry.score = static_cast<uint32_t>(data[offset + 33]) |
+                      (static_cast<uint32_t>(data[offset + 34]) << 8) |
+                      (static_cast<uint32_t>(data[offset + 35]) << 16) |
+                      (static_cast<uint32_t>(data[offset + 36]) << 24);
+
+        entry.death_order = data[offset + 37];
+        entry.is_winner = data[offset + 38] != 0;
+
+        leaderboard.push_back(entry);
+        offset += 39;
+
+        std::cout << "[Network] Leaderboard #" << static_cast<int>(i + 1)
+                  << ": " << entry.name << " (score=" << entry.score
+                  << ", winner=" << entry.is_winner << ")" << std::endl;
+    }
+
+    // Store parsed data
+    winning_player_id_.store(winning_player_id);
+    game_mode_.store(game_mode);
+    game_ended_.store(true);
+    game_started_.store(false);
+    lobby_ready_count_.store(0);  // Reset ready count for lobby display
+    is_local_player_ready_.store(false);  // Reset local player's ready state
+
+    {
+        std::lock_guard<std::mutex> lock(leaderboard_mutex_);
+        leaderboard_ = std::move(leaderboard);
+    }
+}
+
+void ServerConnection::HandleNotifyDisconnect(
+    const std::vector<uint8_t> &data) {
+    // Payload: 4 bytes (PlayerId u8 + Reserved u8[3])
+    if (data.size() < 4) {
+        std::cerr << "[Network] NOTIFY_DISCONNECT malformed (size="
+                  << data.size() << ", expected 4)" << std::endl;
+        return;
+    }
+
+    uint8_t disconnected_player_id = data[0];
+
+    // Don't update counter if this notification is about ourselves
+    if (disconnected_player_id == player_id_.load()) {
+        std::cout << "[Network] Ignoring NOTIFY_DISCONNECT about self"
+                  << std::endl;
+        return;
+    }
+
+    std::cout << "[Network] NOTIFY_DISCONNECT: Player "
+              << static_cast<int>(disconnected_player_id) << " left the lobby"
+              << std::endl;
+
+    // Decrement connected player count
+    lobby_connected_count_.fetch_sub(1, std::memory_order_relaxed);
+}
+
+void ServerConnection::HandleNotifyConnect(const std::vector<uint8_t> &data) {
+    // Payload: 36 bytes (PlayerId u8 + Reserved u8[3] + Username char[32])
+    if (data.size() < 36) {
+        std::cerr << "[Network] NOTIFY_CONNECT malformed (size=" << data.size()
+                  << ", expected 36)" << std::endl;
+        return;
+    }
+
+    uint8_t new_player_id = data[0];
+    // Reserved bytes at data[1], data[2], data[3]
+
+    // Don't increment counter if this notification is about ourselves
+    if (new_player_id == player_id_.load()) {
+        std::cout << "[Network] Ignoring NOTIFY_CONNECT about self"
+                  << std::endl;
+        return;
+    }
+
+    // Extract username (null-terminated, max 32 bytes)
+    std::string username;
+    username.reserve(32);
+    for (size_t i = 4; i < 36 && data[i] != '\0'; ++i) {
+        username.push_back(static_cast<char>(data[i]));
+    }
+
+    std::cout << "[Network] NOTIFY_CONNECT: Player "
+              << static_cast<int>(new_player_id) << " ('" << username
+              << "') joined the lobby" << std::endl;
+
+    // Increment connected player count
+    lobby_connected_count_.fetch_add(1, std::memory_order_relaxed);
+}
+
+void ServerConnection::HandleNotifyReady(const std::vector<uint8_t> &data) {
+    // Payload: 4 bytes (PlayerId u8 + IsReady u8 + Reserved u8[2])
+    if (data.size() < 4) {
+        std::cerr << "[Network] NOTIFY_READY malformed (size=" << data.size()
+                  << ", expected 4)" << std::endl;
+        return;
+    }
+
+    uint8_t ready_player_id = data[0];
+    uint8_t is_ready = data[1];
+    // Reserved bytes at data[2], data[3]
+
+    std::cout << "[Network] NOTIFY_READY: Player "
+              << static_cast<int>(ready_player_id) << " is now "
+              << (is_ready ? "READY" : "NOT READY") << std::endl;
+
+    // Update ready count based on status change
+    if (is_ready) {
+        lobby_ready_count_.fetch_add(1, std::memory_order_relaxed);
+    } else {
+        lobby_ready_count_.fetch_sub(1, std::memory_order_relaxed);
+    }
+}
+
+void ServerConnection::HandleNotifyGameSpeed(
+    const std::vector<uint8_t> &data) {
+    // Payload: 4 bytes (float as little-endian IEEE 754)
+    if (data.size() < 4) {
+        std::cerr << "[Network] NOTIFY_GAME_SPEED malformed (size="
+                  << data.size() << ", expected 4)" << std::endl;
+        return;
+    }
+
+    // Read float from little-endian bytes
+    uint32_t speed_bits = static_cast<uint32_t>(data[0]) |
+                          (static_cast<uint32_t>(data[1]) << 8) |
+                          (static_cast<uint32_t>(data[2]) << 16) |
+                          (static_cast<uint32_t>(data[3]) << 24);
+    float speed;
+    std::memcpy(&speed, &speed_bits, sizeof(float));
+
+    std::cout << "[Network] NOTIFY_GAME_SPEED: New speed = " << speed << "x"
+              << std::endl;
+
+    // Invoke callback if registered
+    if (on_game_speed_changed_) {
+        on_game_speed_changed_(speed);
+    }
+}
+
+void ServerConnection::HandleNotifyDifficulty(
+    const std::vector<uint8_t> &data) {
+    // Payload: 1 byte (difficulty level)
+    if (data.size() < 1) {
+        std::cerr << "[Network] NOTIFY_DIFFICULTY malformed (size="
+                  << data.size() << ", expected 1)" << std::endl;
+        return;
+    }
+
+    uint8_t difficulty = data[0];
+    std::cout << "[Network] NOTIFY_DIFFICULTY: New difficulty = "
+              << static_cast<int>(difficulty) << std::endl;
+
+    // Invoke callback if registered
+    if (on_difficulty_changed_) {
+        on_difficulty_changed_(difficulty);
+    }
+}
+
+void ServerConnection::HandleNotifyKillableProjectiles(
+    const std::vector<uint8_t> &data) {
+    // Payload: 1 byte (0 = disabled, 1 = enabled)
+    if (data.size() < 1) {
+        std::cerr << "[Network] NOTIFY_KILLABLE_PROJECTILES malformed (size="
+                  << data.size() << ", expected 1)" << std::endl;
+        return;
+    }
+
+    bool enabled = (data[0] != 0);
+    std::cout << "[Network] NOTIFY_KILLABLE_PROJECTILES: "
+              << (enabled ? "ON" : "OFF") << std::endl;
+
+    // Invoke callback if registered
+    if (on_killable_projectiles_changed_) {
+        on_killable_projectiles_changed_(enabled);
+    }
 }
 
 void ServerConnection::SendInput(uint8_t input_flags) {
@@ -343,6 +608,9 @@ void ServerConnection::SendReadyStatus(bool is_ready) {
         return;
     }
 
+    // Track local ready state
+    is_local_player_ready_.store(is_ready);
+
     // READY_STATUS (0x07) payload: 4 bytes (IsReady + 3 reserved bytes)
     constexpr uint8_t kOpReadyStatus = 0x07;
     auto pkt = std::make_shared<std::vector<uint8_t>>(kHeaderSize + 4);
@@ -364,6 +632,108 @@ void ServerConnection::SendReadyStatus(bool is_ready) {
             } else {
                 std::cout << "[Network] READY_STATUS sent successfully ("
                           << bytes_sent << " bytes)" << std::endl;
+            }
+        });
+}
+
+void ServerConnection::SendGameSpeed(float speed) {
+    if (!connected_.load()) {
+        std::cerr << "[Network] Cannot send SET_GAME_SPEED: not connected"
+                  << std::endl;
+        return;
+    }
+
+    // SET_GAME_SPEED (0x0A) payload: 4 bytes (float)
+    constexpr uint8_t kOpSetGameSpeed = 0x0A;
+    auto pkt = std::make_shared<std::vector<uint8_t>>(kHeaderSize + 4);
+    WriteHeader(pkt->data(), kOpSetGameSpeed, 4, 0);  // TickId = 0 for TCP
+
+    // Write float as bytes (little-endian)
+    uint32_t speed_bits;
+    std::memcpy(&speed_bits, &speed, sizeof(float));
+    (*pkt)[kHeaderSize + 0] = (speed_bits >> 0) & 0xFF;
+    (*pkt)[kHeaderSize + 1] = (speed_bits >> 8) & 0xFF;
+    (*pkt)[kHeaderSize + 2] = (speed_bits >> 16) & 0xFF;
+    (*pkt)[kHeaderSize + 3] = (speed_bits >> 24) & 0xFF;
+
+    std::cout << "[Network] Sending SET_GAME_SPEED (" << speed << "x)"
+              << std::endl;
+
+    boost::asio::async_write(tcp_socket_, boost::asio::buffer(*pkt),
+        [pkt, speed](
+            const boost::system::error_code &ec, std::size_t bytes_sent) {
+            if (ec) {
+                std::cerr << "[Network] Failed to send SET_GAME_SPEED: "
+                          << ec.message() << std::endl;
+            } else {
+                std::cout << "[Network] SET_GAME_SPEED sent successfully ("
+                          << bytes_sent << " bytes)" << std::endl;
+            }
+        });
+}
+
+void ServerConnection::SendDifficulty(uint8_t difficulty) {
+    if (!connected_.load()) {
+        std::cerr << "[Network] Cannot send SET_DIFFICULTY: not connected"
+                  << std::endl;
+        return;
+    }
+
+    // SET_DIFFICULTY (0x0C) payload: 1 byte (difficulty level)
+    constexpr uint8_t kOpSetDifficulty = 0x0C;
+    auto pkt = std::make_shared<std::vector<uint8_t>>(kHeaderSize + 1);
+    WriteHeader(pkt->data(), kOpSetDifficulty, 1, 0);  // TickId = 0 for TCP
+
+    // Write difficulty (0=Easy, 1=Normal, 2=Hard)
+    (*pkt)[kHeaderSize] = difficulty;
+
+    std::cout << "[Network] Sending SET_DIFFICULTY (level: "
+              << static_cast<int>(difficulty) << ")" << std::endl;
+
+    boost::asio::async_write(tcp_socket_, boost::asio::buffer(*pkt),
+        [pkt, difficulty](
+            const boost::system::error_code &ec, std::size_t bytes_sent) {
+            if (ec) {
+                std::cerr << "[Network] Failed to send SET_DIFFICULTY: "
+                          << ec.message() << std::endl;
+            } else {
+                std::cout << "[Network] SET_DIFFICULTY sent successfully ("
+                          << bytes_sent << " bytes)" << std::endl;
+            }
+        });
+}
+
+void ServerConnection::SendKillableEnemyProjectiles(bool enabled) {
+    if (!connected_.load()) {
+        std::cerr
+            << "[Network] Cannot send SET_KILLABLE_PROJECTILES: not connected"
+            << std::endl;
+        return;
+    }
+
+    // SET_KILLABLE_PROJECTILES (0x0D) payload: 1 byte (bool)
+    constexpr uint8_t kOpSetKillableProjectiles = 0x0D;
+    auto pkt = std::make_shared<std::vector<uint8_t>>(kHeaderSize + 1);
+    WriteHeader(
+        pkt->data(), kOpSetKillableProjectiles, 1, 0);  // TickId = 0 for TCP
+
+    // Write boolean (0=false, 1=true)
+    (*pkt)[kHeaderSize] = enabled ? 1 : 0;
+
+    std::cout << "[Network] Sending SET_KILLABLE_PROJECTILES ("
+              << (enabled ? "ON" : "OFF") << ")" << std::endl;
+
+    boost::asio::async_write(tcp_socket_, boost::asio::buffer(*pkt),
+        [pkt, enabled](
+            const boost::system::error_code &ec, std::size_t bytes_sent) {
+            if (ec) {
+                std::cerr
+                    << "[Network] Failed to send SET_KILLABLE_PROJECTILES: "
+                    << ec.message() << std::endl;
+            } else {
+                std::cout
+                    << "[Network] SET_KILLABLE_PROJECTILES sent successfully ("
+                    << bytes_sent << " bytes)" << std::endl;
             }
         });
 }

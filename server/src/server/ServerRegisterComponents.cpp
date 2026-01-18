@@ -18,10 +18,14 @@ void Server::RegisterComponents() {
     registry_.RegisterComponent<Component::PlayerTag>();
     registry_.RegisterComponent<Component::AnimationEnterPlayer>();
     registry_.RegisterComponent<Component::EnemyTag>();
+    registry_.RegisterComponent<Component::BossTag>();
+    registry_.RegisterComponent<Component::PowerUp>();
+    registry_.RegisterComponent<Component::ObstacleTag>();
     registry_.RegisterComponent<Component::TimedEvents>();
     registry_.RegisterComponent<Component::FrameEvents>();
     registry_.RegisterComponent<Component::EnemyShootTag>();
     registry_.RegisterComponent<Component::Projectile>();
+    registry_.RegisterComponent<Component::DeflectedProjectiles>();
     registry_.RegisterComponent<Component::Health>();
     registry_.RegisterComponent<Component::StatsGame>();
     registry_.RegisterComponent<Component::ParrallaxLayer>();
@@ -29,6 +33,7 @@ void Server::RegisterComponents() {
     registry_.RegisterComponent<Component::NetworkId>();
     registry_.RegisterComponent<Component::PatternMovement>();
     registry_.RegisterComponent<Component::AnimatedSprite>();
+    registry_.RegisterComponent<Component::ExplodeOnDeath>();
 
     std::cout << "Registered all components" << std::endl;
 }

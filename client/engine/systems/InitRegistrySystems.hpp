@@ -27,7 +27,7 @@ void GameStateSystem(Eng::registry &reg, GameWorld &gameWorld,
 void DrawableSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> const &transforms,
     Eng::sparse_array<Com::Drawable> &drawables,
-    Eng::sparse_array<Com::Shader> &shaders,
+    Eng::sparse_array<Com::Shader> const &shaders,
     Eng::sparse_array<Com::AnimatedSprite> const &animated_sprites,
     Eng::sparse_array<Com::ParticleEmitter> &emitters);
 
@@ -35,7 +35,7 @@ void DrawTextRenderSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> const &transforms,
     Eng::sparse_array<Com::Text> &texts);
 
-void AnimationSystem(Eng::registry &reg, const float dt,
+void AnimationSystem(Eng::registry &reg, GameWorld &game_world, const float dt,
     Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
     Eng::sparse_array<Com::Drawable> &drawables);
 
@@ -50,10 +50,17 @@ void InitializeDrawableAnimatedSystem(Eng::registry &reg,
     Eng::sparse_array<Com::Drawable> &drawables,
     Eng::sparse_array<Com::AnimatedSprite> const &animated_sprites);
 
+void InitializeDrawableStaticSystem(Eng::registry &reg,
+    Eng::sparse_array<Com::Transform> const &transforms,
+    Eng::sparse_array<Com::Drawable> &drawables,
+    Eng::sparse_array<Com::AnimatedSprite> const &animated_sprites);
+
 // MOVEMENT SYSTEMS
 
-void InputSystem(Eng::registry &reg, bool has_focus,
+void InputSystem(Eng::registry &reg, GameInputManager &input_manager,
     Eng::sparse_array<Com::Inputs> &inputs);
+
+void InputRebindSystem(GameWorld &game_world);
 
 void MovementSystem(Eng::registry &reg, const float dt,
     Eng::sparse_array<Com::Transform> &transforms,
@@ -71,7 +78,8 @@ void PlayfieldLimitSystem(Eng::registry &reg, const GameWorld &game_world,
 void CollisionDetectionSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> &transforms,
     Eng::sparse_array<Com::HitBox> const &hit_boxes,
-    Eng::sparse_array<Com::Solid> const &solids);
+    Eng::sparse_array<Com::Solid> const &solids,
+    Eng::sparse_array<Com::Controllable> const &controllables);
 
 void ControllablePlayerSystem(Eng::registry &reg,
     Eng::sparse_array<Com::Inputs> &inputs,
@@ -109,6 +117,8 @@ void CreateProjectile(Eng::registry &reg, float x, float y, int ownerId,
     Eng::registry::entity_t projectile_entity);
 void createChargedProjectile(Eng::registry &reg, float x, float y, int ownerId,
     Eng::registry::entity_t projectile_entity);
+void createGatlingProjectile(Eng::registry &reg, float x, float y, int ownerId,
+    Eng::registry::entity_t projectile_entity);
 
 void ProjectileSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> &transforms,
@@ -120,10 +130,16 @@ void ButtonClickSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Drawable> &drawables,
     Eng::sparse_array<Com::Transform> &transforms);
 
-void HealthDeductionSystem(Eng::registry &reg,
+void DraggableSystem(Eng::registry &reg, GameWorld &game_world,
+    Eng::sparse_array<Com::HitBox> &hit_boxes,
+    Eng::sparse_array<Com::Draggable> &draggables,
+    Eng::sparse_array<Com::Transform> &transforms);
+
+void HealthDeductionSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Health> &healths,
     Eng::sparse_array<Com::HealthBar> &health_bars,
     Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
+    Eng::sparse_array<Com::Drawable> &drawables,
     Eng::sparse_array<Com::HitBox> const &hitBoxes,
     Eng::sparse_array<Com::Transform> const &transforms,
     Eng::sparse_array<Com::Projectile> const &projectiles);
@@ -153,8 +169,16 @@ void HealthBarSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> const &transforms,
     Eng::sparse_array<Com::HealthBar> &health_bars,
     Eng::sparse_array<Com::Health> const &healths);
+
+void HealthBarBossSystem(Eng::registry &reg, GameWorld &game_world,
+    Eng::sparse_array<Com::Transform> const &transforms,
+    Eng::sparse_array<Com::HealthBarBoss> &health_bars_boss,
+    Eng::sparse_array<Com::Health> const &healths);
+
 void NetworkInputSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Inputs> const &inputs,
+    Eng::sparse_array<Com::PlayerTag> const &player_tags);
+void ScoreSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::PlayerTag> const &player_tags);
 
 uint8_t InputToBitfield(const Com::Inputs &input);
@@ -163,8 +187,25 @@ uint8_t InputToBitfield(const Com::Inputs &input);
 void AudioSystem(Eng::registry &reg, Audio::AudioManager &audio_manager,
     Eng::sparse_array<Com::SoundRequest> &sound_requests);
 
-void KillEntitiesSystem(Eng::registry &reg,
+void KillEntitiesSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::NetworkId> &network_ids,
     Eng::sparse_array<Com::AnimationDeath> &animation_deaths);
+
+// LOBBY UI SYSTEM
+
+void LobbyUISystem(Eng::registry &reg, GameWorld &game_world,
+    Eng::sparse_array<Com::LobbyUI> &lobby_uis,
+    Eng::sparse_array<Com::Text> &texts,
+    Eng::sparse_array<Com::Drawable> &drawables);
+
+// GAME OVER SYSTEM
+
+void GameOverSystem(Eng::registry &reg, GameWorld &game_world,
+    Eng::sparse_array<Com::GameOverState> &states,
+    Eng::sparse_array<Com::GameOverText> &texts,
+    Eng::sparse_array<Com::FadeOverlay> &overlays,
+    Eng::sparse_array<Com::Text> &text_comps,
+    Eng::sparse_array<Com::Drawable> &drawables,
+    Eng::sparse_array<Com::SceneManagement> &scene_mgmt);
 
 }  // namespace Rtype::Client

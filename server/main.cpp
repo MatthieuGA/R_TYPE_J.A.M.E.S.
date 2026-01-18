@@ -24,6 +24,10 @@ int main(int argc, char *argv[]) {
             });
 
         game_server.Initialize();
+
+        // Prompt for level selection before starting
+        game_server.PromptLevelSelection();
+
         std::cout << "Server setup, running io_context..." << std::endl;
         std::cout << "Press Ctrl+C to stop the server" << std::endl;
         io.run();  // Blocks until io_context is stopped

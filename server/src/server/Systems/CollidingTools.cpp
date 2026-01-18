@@ -50,7 +50,8 @@ bool IsCollidingFromOffset(const Component::Transform &trans_a,
  * @brief Check AABB collision between two entities.
  *
  * This function computes the offsets based on the transforms and hitboxes,
- * then calls `IsCollidingFromOffset` to determine if a collision occurs.
+ * incorporating the HitBox's own offsetX/offsetY fields, then calls
+ * `IsCollidingFromOffset` to determine if a collision occurs.
  *
  * @param trans_a Transform of entity A
  * @param hb_a HitBox of entity A
@@ -65,6 +66,13 @@ bool IsColliding(const Component::Transform &trans_a,
         GetOffsetFromTransform(trans_a, {hb_a.width, hb_a.height});
     vector2f off_b =
         GetOffsetFromTransform(trans_b, {hb_b.width, hb_b.height});
+
+    // Apply HitBox-specific offsets (unscaled, will be scaled in
+    // IsCollidingFromOffset)
+    off_a.x += hb_a.offsetX;
+    off_a.y += hb_a.offsetY;
+    off_b.x += hb_b.offsetX;
+    off_b.y += hb_b.offsetY;
 
     return IsCollidingFromOffset(trans_a, hb_a, trans_b, hb_b, off_a, off_b);
 }

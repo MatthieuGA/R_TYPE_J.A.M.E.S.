@@ -26,7 +26,7 @@ std::string GetStringFromJson(const nlohmann::json &j, const std::string &key,
 
 float GetFloatFromJson(
     const nlohmann::json &j, const std::string &key, float defaultValue) {
-    if (j.contains(key) && j[key].is_number_float())
+    if (j.contains(key) && j[key].is_number())
         return j[key].get<float>();
     return defaultValue;
 }
@@ -36,9 +36,9 @@ vector2f GetVector2fFromJson(const nlohmann::json &j, const std::string &key,
     if (j.contains(key) && j[key].is_object()) {
         float x = defaultValue.x;
         float y = defaultValue.y;
-        if (j[key].contains("x") && j[key]["x"].is_number_float())
+        if (j[key].contains("x") && j[key]["x"].is_number())
             x = j[key]["x"].get<float>();
-        if (j[key].contains("y") && j[key]["y"].is_number_float())
+        if (j[key].contains("y") && j[key]["y"].is_number())
             y = j[key]["y"].get<float>();
         return vector2f(x, y);
     }
@@ -59,7 +59,6 @@ void FactoryActors::InitializeEnemyInfoMap(const std::string &jsonFolderPath) {
         if (!entry.is_regular_file())
             continue;  // Skip regular files
         std::string name = entry.path().filename().stem().string();
-        printf("Loading enemy config: %s\n", name.c_str());
         loadConfigEnemy(entry.path().string(), name);
     }
 }
@@ -83,6 +82,9 @@ void FactoryActors::loadConfigEnemy(
     info.health = GetIntFromJson(parsed, "health", 100);
     info.speed = GetFloatFromJson(parsed, "speed", 100.0f);
     info.hitbox = GetVector2fFromJson(parsed, "hitbox");
+
+    std::cout << "[FactoryActors] Loaded " << name << ": speed=" << info.speed
+              << std::endl;
 
     // Transform
     try {

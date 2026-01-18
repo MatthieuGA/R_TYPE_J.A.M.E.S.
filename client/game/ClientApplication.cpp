@@ -1,25 +1,20 @@
 #include "game/ClientApplication.hpp"
 
-#include <algorithm>
 #include <cstdio>
-#include <iomanip>
 #include <iostream>
-#include <vector>
 
 #include <SFML/Graphics.hpp>
 
 #include "engine/systems/InitRegistrySystems.hpp"
 #include "game/InitRegistry.hpp"
 #include "game/SnapshotTracker.hpp"
-#include "game/factory/factory_ennemies/FactoryActors.hpp"
 #include "game/scenes_management/InitScenes.hpp"
-#include "include/LayersConst.hpp"
-#include "include/components/CoreComponents.hpp"
 #include "include/components/NetworkingComponents.hpp"
-#include "include/components/RenderComponent.hpp"
 #include "include/components/ScenesComponents.hpp"
 #include "include/indexed_zipper.hpp"
 #include "network/Network.hpp"
+#include "platform/OSEvent.hpp"
+#include "platform/SFMLEventSource.hpp"
 
 namespace Rtype::Client {
 // Parse Player
@@ -50,11 +45,14 @@ void ClientApplication::ApplySnapshotToRegistry(
     GameWorld &game_world, const client::SnapshotPacket &snapshot) {
     auto entities = ParseSnapshotData(snapshot);
 
-    auto &net_ids = game_world.registry_.GetComponents<Component::NetworkId>();
-
     SnapshotTracker::GetInstance().UpdateLastProcessedTick(snapshot.tick);
 
     for (const auto &entity_data : entities) {
+        // Re-fetch net_ids each iteration because CreateNewEntity may resize
+        // the sparse array
+        auto &net_ids =
+            game_world.registry_.GetComponents<Component::NetworkId>();
+
         // Find entity with matching NetworkId
         std::optional<size_t> entity_index;
 
@@ -79,6 +77,20 @@ void ClientApplication::ApplySnapshotToRegistry(
     }
 }
 
+namespace {
+/**
+ * @brief Log game-in-progress rejection message.
+ *
+ * Helper function to avoid duplicating the rejection error message.
+ */
+void LogGameInProgressRejection() {
+    std::cerr << "[Network] Connection rejected: Game in progress."
+              << std::endl;
+    std::cerr << "[Network] Cannot join - please wait for the "
+              << "current game to finish." << std::endl;
+}
+}  // namespace
+
 bool ClientApplication::ConnectToServerWithRetry(
     GameWorld &game_world, const ClientConfig &config) {
     bool connected = false;
@@ -93,6 +105,9 @@ bool ClientApplication::ConnectToServerWithRetry(
                       << std::endl;
         }
 
+        // Reset rejection status before each attempt
+        game_world.server_connection_->ResetRejectionStatus();
+
         game_world.server_connection_->ConnectToServer(config.username);
 
         // Poll io_context to process connection attempt
@@ -101,11 +116,23 @@ bool ClientApplication::ConnectToServerWithRetry(
             ++i) {
             game_world.io_context_.poll();
             sf::sleep(sf::milliseconds(kPollDelayMs));
+
+            // Check if we got a permanent rejection (e.g., game in progress)
+            if (game_world.server_connection_->WasRejectedPermanently()) {
+                LogGameInProgressRejection();
+                return false;  // Don't retry
+            }
         }
 
         connected = game_world.server_connection_->is_connected();
 
         if (!connected && retry < kMaxRetries - 1) {
+            // Check again for permanent rejection before retrying
+            if (game_world.server_connection_->WasRejectedPermanently()) {
+                LogGameInProgressRejection();
+                return false;  // Don't retry
+            }
+
             std::cout << "[Network] Connection attempt " << (retry + 1)
                       << " failed. Retrying..." << std::endl;
             // Reset io_context for next attempt
@@ -127,25 +154,31 @@ bool ClientApplication::ConnectToServerWithRetry(
 }
 
 void ClientApplication::RunGameLoop(GameWorld &game_world) {
-    while (game_world.window_.isOpen()) {
-        // Handle window events
-        sf::Event event;
-        while (game_world.window_.pollEvent(event)) {
-            if (event.type == sf::Event::Closed) {
-                game_world.window_.close();
+    while (game_world.window_->IsOpen()) {
+        // Handle window events via platform event source
+        Engine::Platform::OSEvent os_event;
+        while (game_world.event_source_->Poll(os_event)) {
+            if (os_event.type == Engine::Platform::OSEventType::Closed) {
+                game_world.window_->Close();
             }
         }
 
         // Poll asio for network events
         game_world.io_context_.poll();
 
+        // Check for unexpected disconnection (server crashed/closed)
+        if (game_world.server_connection_ &&
+            game_world.server_connection_->WasDisconnectedUnexpectedly()) {
+            std::cerr << "[Client] Lost connection to server!" << std::endl;
+            std::cerr << "[Client] The server may have shut down."
+                      << std::endl;
+            game_world.window_->Close();
+            break;
+        }
+
         // Check if game has started (received GAME_START from server)
         if (game_world.server_connection_) {
             if (game_world.server_connection_->HasGameStarted()) {
-                std::cout
-                    << "[Client] Game started! Switching to GameLevel scene"
-                    << std::endl;
-                std::cout.flush();
                 // Reset the flag to avoid re-triggering
                 game_world.server_connection_->ResetGameStarted();
 
@@ -153,28 +186,10 @@ void ClientApplication::RunGameLoop(GameWorld &game_world) {
                 auto &scene_comps =
                     game_world.registry_
                         .GetComponents<Component::SceneManagement>();
-                std::cout << "[Client] SceneManagement components count: "
-                          << scene_comps.size() << std::endl;
-                std::cout.flush();
 
-                bool found = false;
                 for (auto &&[i, gs] : make_indexed_zipper(scene_comps)) {
-                    found = true;
-                    std::cout << "[Client] Found SceneManagement at index "
-                              << i << ", current=" << gs.current
-                              << ", next=" << gs.next << std::endl;
-                    std::cout.flush();
                     gs.next = "GameLevel";
-                    std::cout << "[Client] Set next to GameLevel" << std::endl;
-                    std::cout.flush();
                     break;  // Only need to set once
-                }
-
-                if (!found) {
-                    std::cerr << "[Client] ERROR: No SceneManagement "
-                                 "component found!"
-                              << std::endl;
-                    std::cerr.flush();
                 }
             }
         }
@@ -183,7 +198,6 @@ void ClientApplication::RunGameLoop(GameWorld &game_world) {
         // (outside game-start check, runs each frame)
         if (game_world.server_connection_) {
             // Process all queued snapshots each frame to avoid backlog
-            // static int packet_count = 0;
             while (true) {
                 auto snapshot = game_world.server_connection_->PollSnapshot();
                 if (!snapshot.has_value())
@@ -194,13 +208,17 @@ void ClientApplication::RunGameLoop(GameWorld &game_world) {
         }
 
         // Calculate delta time at the beginning of the frame
-        game_world.last_delta_ =
-            game_world.delta_time_clock_.restart().asSeconds();
+        float raw_delta = game_world.delta_time_clock_.Restart().AsSeconds();
+        game_world.last_delta_ = raw_delta * game_world.game_speed_;
+
+        // Ensure the SFML OpenGL context is active on this thread before
+        // running systems that may load textures/shaders.
+        game_world.GetNativeWindow().setActive(true);
 
         // Clear, update, and render
-        game_world.window_.clear(sf::Color::Black);
+        game_world.GetNativeWindow().clear(sf::Color::Black);
         game_world.registry_.RunSystems();
-        game_world.window_.display();
+        game_world.window_->Display();
     }
 }
 

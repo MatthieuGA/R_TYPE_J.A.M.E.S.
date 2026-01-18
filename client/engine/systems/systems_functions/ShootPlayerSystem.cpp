@@ -1,7 +1,5 @@
 #include <utility>
 
-#include <SFML/Graphics.hpp>
-
 #include "engine/systems/InitRegistrySystems.hpp"
 #include "include/LayersConst.hpp"
 #include "include/PlayerConst.hpp"
@@ -26,20 +24,23 @@ void CreateProjectile(Eng::registry &reg, float x, float y, int ownerId,
             "original_rtype/r-typesheet2.gif", LAYER_PROJECTILE));
     Component::AnimatedSprite animSprite(24, 32, 10);
     animSprite.AddAnimation("Death", "original_rtype/r-typesheet1.gif", 15, 15,
-        2, 0.08f, false, sf::Vector2f(288.0f, 86.0f),
-        sf::Vector2f(25.0f, 25.0f));
+        2, 0.08f, false, Engine::Graphics::Vector2f(288.0f, 86.0f),
+        Engine::Graphics::Vector2f(25.0f, 25.0f));
     reg.AddComponent<Component::AnimatedSprite>(
         projectile_entity, std::move(animSprite));
-    reg.AddComponent<Component::Projectile>(projectile_entity,
-        Component::Projectile{PLAYER_DAMAGE_PROJECTILE, {1.0f, 0},
-            PLAYER_SPEED_PROJECTILE, ownerId, false});
+    reg.AddComponent<Component::Projectile>(
+        projectile_entity, Component::Projectile{PLAYER_DAMAGE_PROJECTILE,
+                               Engine::Graphics::Vector2f(1.0f, 0),
+                               PLAYER_SPEED_PROJECTILE, ownerId, false});
     reg.AddComponent<Component::HitBox>(
         projectile_entity, Component::HitBox{24.0f, 12.0f});
     reg.AddComponent<Component::ParticleEmitter>(projectile_entity,
-        Component::ParticleEmitter(300, 500, sf::Color(0, 198, 255, 255),
-            sf::Color(0, 198, 255, 0), sf::Vector2f(0.f, 2.f), true, 0.3f,
-            50.f, sf::Vector2f(-1.f, 0.f), 45.f, 0.f, 12.0f, 4.0f, 1.5f, -1.0f,
-            LAYER_PARTICLE));
+        Component::ParticleEmitter(300, 500,
+            Engine::Graphics::Color(0, 198, 255, 255),
+            Engine::Graphics::Color(0, 198, 255, 0),
+            Engine::Graphics::Vector2f(0.f, 2.f), true, 0.3f, 50.f,
+            Engine::Graphics::Vector2f(-1.f, 0.f), 45.f, 0.f, 12.0f, 4.0f,
+            1.5f, -1.0f, LAYER_PARTICLE));
 }
 
 /**
@@ -60,19 +61,46 @@ void createChargedProjectile(Eng::registry &reg, float x, float y, int ownerId,
             "original_rtype/r-typesheet1.gif", LAYER_PROJECTILE));
     Component::AnimatedSprite animSprite(29, 22, 25);
     animSprite.AddAnimation("Death", "original_rtype/r-typesheet1.gif", 33, 31,
-        6, 0.03f, false, sf::Vector2f(68.0f, 342.0f));
+        6, 0.03f, false, Engine::Graphics::Vector2f(68.0f, 342.0f));
     reg.AddComponent<Component::AnimatedSprite>(
         projectile_entity, std::move(animSprite));
     reg.AddComponent<Component::Projectile>(projectile_entity,
-        Component::Projectile{PLAYER_DAMAGE_CHARGED_PROJECTILE, {1.0f, 0.0f},
+        Component::Projectile{PLAYER_DAMAGE_CHARGED_PROJECTILE,
+            Engine::Graphics::Vector2f(1.0f, 0.0f),
             PLAYER_SPEED_CHARGED_PROJECTILE, ownerId});
     reg.AddComponent<Component::HitBox>(
         projectile_entity, Component::HitBox{29.0f, 22.0f});
     reg.AddComponent<Component::ParticleEmitter>(projectile_entity,
-        Component::ParticleEmitter(300, 500, sf::Color(0, 198, 255, 255),
-            sf::Color(0, 198, 255, 0), sf::Vector2f(0.f, 2.f), true, 0.4f,
-            75.f, sf::Vector2f(-1.f, 0.f), 55.f, 0.f, 20.0f, 6.0f, 2.0f, -1.0f,
-            LAYER_PARTICLE));
+        Component::ParticleEmitter(300, 500,
+            Engine::Graphics::Color(0, 198, 255, 255),
+            Engine::Graphics::Color(0, 198, 255, 0),
+            Engine::Graphics::Vector2f(0.f, 2.f), true, 0.4f, 75.f,
+            Engine::Graphics::Vector2f(-1.f, 0.f), 55.f, 0.f, 20.0f, 6.0f,
+            2.0f, -1.0f, LAYER_PARTICLE));
+}
+
+/**
+ * @brief Creates a charged projectile entity.
+ *
+ * @param reg The registry to add the projectile to.
+ * @param x The x position of the projectile.
+ * @param y The y position of the projectile.
+ * @param ownerId The ID of the entity that fired the projectile.
+ */
+void createGatlingProjectile(Eng::registry &reg, float x, float y, int ownerId,
+    Engine::registry::entity_t projectile_entity) {
+    // Add components to projectile entity
+    reg.AddComponent<Component::Transform>(projectile_entity,
+        Component::Transform{x, y, 0.0f, 3.0f, Com::Transform::CENTER});
+    reg.AddComponent<Component::Drawable>(projectile_entity,
+        Component::Drawable(
+            "original_rtype/Ammo_Gatling.png", LAYER_PROJECTILE));
+    reg.AddComponent<Component::Projectile>(
+        projectile_entity, Component::Projectile{PLAYER_GATLING_DAMAGE,
+                               Engine::Graphics::Vector2f(1.0f, 0.0f),
+                               PLAYER_GATLING_PROJECTILE_SPEED, ownerId});
+    reg.AddComponent<Component::HitBox>(
+        projectile_entity, Component::HitBox{16.0f, 8.0f});
 }
 
 /**

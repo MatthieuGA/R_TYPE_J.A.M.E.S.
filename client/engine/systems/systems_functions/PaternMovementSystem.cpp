@@ -1,6 +1,7 @@
 #include <cmath>
 #include <limits>
 #include <map>
+#include <vector>
 
 #include "engine/systems/InitRegistrySystems.hpp"
 
@@ -14,8 +15,9 @@ namespace Rtype::Client {
  * @param velocity The Velocity component of the entity.
  * @param patternMovement The PatternMovement component of the entity.
  * @param dt Delta time (seconds).
+ * @return true if the entity should be killed, false otherwise.
  */
-void StraightMovementFunction(Eng::registry &reg, std::size_t entityId,
+bool StraightMovementFunction(Eng::registry &reg, std::size_t entityId,
     Com::Transform &transform, Com::Velocity &velocity,
     Com::PatternMovement &patternMovement, float dt) {
     // Straight movement logic
@@ -23,15 +25,16 @@ void StraightMovementFunction(Eng::registry &reg, std::size_t entityId,
     velocity.vy = patternMovement.baseDir.y * patternMovement.baseSpeed;
 
     if (velocity.vx < 0 && transform.x < -100.f) {
-        reg.KillEntity(reg.EntityFromIndex(entityId));
+        return true;
     } else if (velocity.vx > 0 && transform.x > 2000.f) {
-        reg.KillEntity(reg.EntityFromIndex(entityId));
+        return true;
     }
     if (velocity.vy < 0 && transform.y < -100.f) {
-        reg.KillEntity(reg.EntityFromIndex(entityId));
+        return true;
     } else if (velocity.vy > 0 && transform.y > 1200.f) {
-        reg.KillEntity(reg.EntityFromIndex(entityId));
+        return true;
     }
+    return false;
 }
 
 /**
@@ -43,8 +46,9 @@ void StraightMovementFunction(Eng::registry &reg, std::size_t entityId,
  * @param velocity The Velocity component of the entity.
  * @param patternMovement The PatternMovement component of the entity.
  * @param dt Delta time (seconds).
+ * @return true if the entity should be killed, false otherwise.
  */
-void SineHorizontalMovementFunction(Eng::registry &reg, std::size_t entityId,
+bool SineHorizontalMovementFunction(Eng::registry &reg, std::size_t entityId,
     Com::Transform &transform, Com::Velocity &velocity,
     Com::PatternMovement &patternMovement, float dt) {
     // Sine horizontal movement logic
@@ -55,10 +59,11 @@ void SineHorizontalMovementFunction(Eng::registry &reg, std::size_t entityId,
     velocity.vy = sineOffset;
 
     if (velocity.vx < 0 && transform.x < -100.f) {
-        reg.KillEntity(reg.EntityFromIndex(entityId));
+        return true;
     } else if (velocity.vx > 0 && transform.x > 2000.f) {
-        reg.KillEntity(reg.EntityFromIndex(entityId));
+        return true;
     }
+    return false;
 }
 
 /**
@@ -70,8 +75,9 @@ void SineHorizontalMovementFunction(Eng::registry &reg, std::size_t entityId,
  * @param velocity The Velocity component of the entity.
  * @param patternMovement The PatternMovement component of the entity.
  * @param dt Delta time (seconds).
+ * @return true if the entity should be killed, false otherwise.
  */
-void ZigZagHorizontalMovementFunction(Eng::registry &reg, std::size_t entityId,
+bool ZigZagHorizontalMovementFunction(Eng::registry &reg, std::size_t entityId,
     Com::Transform &transform, Com::Velocity &velocity,
     Com::PatternMovement &patternMovement, float dt) {
     // Zig-zag horizontal movement logic
@@ -83,10 +89,11 @@ void ZigZagHorizontalMovementFunction(Eng::registry &reg, std::size_t entityId,
                                  : -patternMovement.amplitude.y;
 
     if (velocity.vx < 0 && transform.x < -100.f) {
-        reg.KillEntity(reg.EntityFromIndex(entityId));
+        return true;
     } else if (velocity.vx > 0 && transform.x > 2000.f) {
-        reg.KillEntity(reg.EntityFromIndex(entityId));
+        return true;
     }
+    return false;
 }
 
 /**
@@ -98,8 +105,9 @@ void ZigZagHorizontalMovementFunction(Eng::registry &reg, std::size_t entityId,
  * @param velocity The Velocity component of the entity.
  * @param patternMovement The PatternMovement component of the entity.
  * @param dt Delta time (seconds).
+ * @return true if the entity should be killed, false otherwise.
  */
-void SineVerticalMovementFunction(Eng::registry &reg, std::size_t entityId,
+bool SineVerticalMovementFunction(Eng::registry &reg, std::size_t entityId,
     Com::Transform &transform, Com::Velocity &velocity,
     Com::PatternMovement &patternMovement, float dt) {
     // Sine vertical movement logic
@@ -110,10 +118,11 @@ void SineVerticalMovementFunction(Eng::registry &reg, std::size_t entityId,
     velocity.vy = patternMovement.baseDir.y * patternMovement.baseSpeed;
 
     if (velocity.vy < 0 && transform.y < -100.f) {
-        reg.KillEntity(reg.EntityFromIndex(entityId));
+        return true;
     } else if (velocity.vy > 0 && transform.y > 1200.f) {
-        reg.KillEntity(reg.EntityFromIndex(entityId));
+        return true;
     }
+    return false;
 }
 
 /**
@@ -125,8 +134,9 @@ void SineVerticalMovementFunction(Eng::registry &reg, std::size_t entityId,
  * @param velocity The Velocity component of the entity.
  * @param patternMovement The PatternMovement component of the entity.
  * @param dt Delta time (seconds).
+ * @return true if the entity should be killed, false otherwise.
  */
-void ZigZagVerticalMovementFunction(Eng::registry &reg, std::size_t entityId,
+bool ZigZagVerticalMovementFunction(Eng::registry &reg, std::size_t entityId,
     Com::Transform &transform, Com::Velocity &velocity,
     Com::PatternMovement &patternMovement, float dt) {
     // Zig-zag vertical movement logic
@@ -138,10 +148,11 @@ void ZigZagVerticalMovementFunction(Eng::registry &reg, std::size_t entityId,
     velocity.vy = patternMovement.baseDir.y * patternMovement.baseSpeed;
 
     if (velocity.vy < 0 && transform.y < -100.f) {
-        reg.KillEntity(reg.EntityFromIndex(entityId));
+        return true;
     } else if (velocity.vy > 0 && transform.y > 1200.f) {
-        reg.KillEntity(reg.EntityFromIndex(entityId));
+        return true;
     }
+    return false;
 }
 
 /**
@@ -153,8 +164,9 @@ void ZigZagVerticalMovementFunction(Eng::registry &reg, std::size_t entityId,
  * @param velocity The Velocity component of the entity.
  * @param patternMovement The PatternMovement component of the entity.
  * @param dt Delta time (seconds).
+ * @return true if the entity should be killed, false otherwise.
  */
-void WaveMovementFunction(Eng::registry &reg, std::size_t entityId,
+bool WaveMovementFunction(Eng::registry &reg, std::size_t entityId,
     Com::Transform &transform, Com::Velocity &velocity,
     Com::PatternMovement &patternMovement, float dt) {
     // Wave movement logic
@@ -170,15 +182,16 @@ void WaveMovementFunction(Eng::registry &reg, std::size_t entityId,
         patternMovement.baseDir.y * patternMovement.baseSpeed + sineOffsetY;
 
     if (velocity.vx < 0 && transform.x < -100.f) {
-        reg.KillEntity(reg.EntityFromIndex(entityId));
+        return true;
     } else if (velocity.vx > 0 && transform.x > 2000.f) {
-        reg.KillEntity(reg.EntityFromIndex(entityId));
+        return true;
     }
     if (velocity.vy < 0 && transform.y < -100.f) {
-        reg.KillEntity(reg.EntityFromIndex(entityId));
+        return true;
     } else if (velocity.vy > 0 && transform.y > 1200.f) {
-        reg.KillEntity(reg.EntityFromIndex(entityId));
+        return true;
     }
+    return false;
 }
 
 /**
@@ -190,16 +203,17 @@ void WaveMovementFunction(Eng::registry &reg, std::size_t entityId,
  * @param velocity The Velocity component of the entity.
  * @param patternMovement The PatternMovement component of the entity.
  * @param dt Delta time (seconds).
+ * @return true if the entity should be killed, false otherwise.
  */
-void WaypointsMovementFunction(Eng::registry &reg, std::size_t entityId,
+bool WaypointsMovementFunction(Eng::registry &reg, std::size_t entityId,
     Com::Transform &transform, Com::Velocity &velocity,
     Com::PatternMovement &patternMovement, float dt) {
     // Waypoints movement logic
     if (patternMovement.waypoints.empty())
-        return;
+        return false;
     if (patternMovement.currentWaypoint >= patternMovement.waypoints.size())
         patternMovement.currentWaypoint = 0;
-    sf::Vector2f targetWaypoint =
+    auto targetWaypoint =
         patternMovement.waypoints[patternMovement.currentWaypoint];
     sf::Vector2f direction = {
         targetWaypoint.x - transform.x, targetWaypoint.y - transform.y};
@@ -209,9 +223,8 @@ void WaypointsMovementFunction(Eng::registry &reg, std::size_t entityId,
         patternMovement.currentWaypoint =
             (patternMovement.currentWaypoint + 1) %
             patternMovement.waypoints.size();
-        WaypointsMovementFunction(
+        return WaypointsMovementFunction(
             reg, entityId, transform, velocity, patternMovement, dt);
-        return;
     }
     if (distance > 0.0f) {
         direction.x /= distance;
@@ -219,6 +232,7 @@ void WaypointsMovementFunction(Eng::registry &reg, std::size_t entityId,
         velocity.vx = direction.x * patternMovement.baseSpeed;
         velocity.vy = direction.y * patternMovement.baseSpeed;
     }
+    return false;
 }
 
 /**
@@ -230,8 +244,9 @@ void WaypointsMovementFunction(Eng::registry &reg, std::size_t entityId,
  * @param velocity The Velocity component of the entity.
  * @param patternMovement The PatternMovement component of the entity.
  * @param dt Delta time (seconds).
+ * @return true if the entity should be killed, false otherwise.
  */
-void FollowPlayerMovementFunction(Eng::registry &reg, std::size_t entityId,
+bool FollowPlayerMovementFunction(Eng::registry &reg, std::size_t entityId,
     Com::Transform &transform, Com::Velocity &velocity,
     Com::PatternMovement &patternMovement, float dt) {
     // Follow player movement logic
@@ -255,7 +270,7 @@ void FollowPlayerMovementFunction(Eng::registry &reg, std::size_t entityId,
                 }
             }
             if (id_min == -1)
-                return;
+                return false;
             // Set the target entity ID to the closest player
             patternMovement.targetEntityId = id_min;
         } else {
@@ -277,12 +292,13 @@ void FollowPlayerMovementFunction(Eng::registry &reg, std::size_t entityId,
             } catch (const std::exception &e) {
                 // Target entity not found, reset targetEntityId
                 patternMovement.targetEntityId = -1;
-                return;
+                return false;
             }
         }
     } catch (const std::exception &e) {
-        return;
+        return false;
     }
+    return false;
 }
 
 /**
@@ -294,8 +310,9 @@ void FollowPlayerMovementFunction(Eng::registry &reg, std::size_t entityId,
  * @param velocity The Velocity component of the entity.
  * @param patternMovement The PatternMovement component of the entity.
  * @param dt Delta time (seconds).
+ * @return true if the entity should be killed, false otherwise.
  */
-void CircularMovementFunction(Eng::registry &reg, std::size_t entityId,
+bool CircularMovementFunction(Eng::registry &reg, std::size_t entityId,
     Com::Transform &transform, Com::Velocity &velocity,
     Com::PatternMovement &patternMovement, float dt) {
     // Circular movement logic
@@ -308,6 +325,7 @@ void CircularMovementFunction(Eng::registry &reg, std::size_t entityId,
                   patternMovement.radius * std::cos(patternMovement.angle);
     transform.y = patternMovement.spawnPos.y +
                   patternMovement.radius * std::sin(patternMovement.angle);
+    return false;
 }
 
 /**
@@ -316,11 +334,11 @@ void CircularMovementFunction(Eng::registry &reg, std::size_t entityId,
  * @param type The PatternMovement type.
  * @return A function that applies the movement logic for the given type.
  */
-std::function<void(Eng::registry &, std::size_t, Com::Transform &,
+std::function<bool(Eng::registry &, std::size_t, Com::Transform &,
     Com::Velocity &, Com::PatternMovement &, float)>
 GetNextMovementFunction(Com::PatternMovement::PatternType type) {
     std::map<Com::PatternMovement::PatternType,
-        std::function<void(Eng::registry &, std::size_t, Com::Transform &,
+        std::function<bool(Eng::registry &, std::size_t, Com::Transform &,
             Com::Velocity &, Com::PatternMovement &, float)>>
         movementFunctionMap = {
             {Com::PatternMovement::PatternType::Straight,
@@ -362,16 +380,28 @@ void PaternMovementSystem(Eng::registry &reg, const float dt,
     Eng::sparse_array<Com::Transform> &transforms,
     Eng::sparse_array<Com::Velocity> &velocities,
     Eng::sparse_array<Com::PatternMovement> &patern_movements) {
+    // Collect entities to kill to avoid modifying sparse arrays during
+    // iteration
+    std::vector<Engine::entity> entities_to_kill;
+
     for (auto &&[i, transform, velocity, patern_movement] :
         make_indexed_zipper(transforms, velocities, patern_movements)) {
         patern_movement.elapsed += dt;
 
         try {
-            GetNextMovementFunction(patern_movement.type)(
+            bool should_kill = GetNextMovementFunction(patern_movement.type)(
                 reg, i, transform, velocity, patern_movement, dt);
+            if (should_kill) {
+                entities_to_kill.push_back(reg.EntityFromIndex(i));
+            }
         } catch (const std::exception &e) {
             continue;
         }
+    }
+
+    // Now kill entities after iteration is complete
+    for (Engine::entity entity : entities_to_kill) {
+        reg.KillEntity(entity);
     }
 }
 }  // namespace Rtype::Client

@@ -22,9 +22,21 @@ void InitRenderSystems(Rtype::Client::GameWorld &game_world) {
         Eng::sparse_array<Com::AnimatedSprite>>(
         InitializeDrawableAnimatedSystem);
 
+    // Initialize static (non-animated) drawables
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
+        Eng::sparse_array<Com::Drawable>,
+        Eng::sparse_array<Com::AnimatedSprite>>(
+        InitializeDrawableStaticSystem);
+
     // Shader initialization system
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Shader>>(
-        InitializeShaderSystem);
+        [&game_world](
+            Eng::registry &r, Eng::sparse_array<Com::Shader> &shaders) {
+            // Make sure the SFML window OpenGL context is active on this
+            // thread
+            game_world.GetNativeWindow().setActive(true);
+            InitializeShaderSystem(r, shaders);
+        });
 
     // Main render system
     game_world.registry_.AddSystem<Eng::sparse_array<Com::AnimatedSprite>,
@@ -32,8 +44,8 @@ void InitRenderSystems(Rtype::Client::GameWorld &game_world) {
         [&game_world](Eng::registry &r,
             Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
             Eng::sparse_array<Com::Drawable> &drawables) {
-            AnimationSystem(
-                r, game_world.last_delta_, animated_sprites, drawables);
+            AnimationSystem(r, game_world, game_world.last_delta_,
+                animated_sprites, drawables);
         });
 
     // Death animation system
@@ -72,6 +84,24 @@ void InitRenderSystems(Rtype::Client::GameWorld &game_world) {
             Eng::sparse_array<Com::HealthBar> &health_bars,
             Eng::sparse_array<Com::Health> const &healths) {
             HealthBarSystem(r, game_world, transforms, health_bars, healths);
+        });
+
+    // Health bar boss system
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
+        Eng::sparse_array<Com::HealthBarBoss>, Eng::sparse_array<Com::Health>>(
+        [&game_world](Eng::registry &r,
+            Eng::sparse_array<Com::Transform> const &transforms,
+            Eng::sparse_array<Com::HealthBarBoss> &health_bars_boss,
+            Eng::sparse_array<Com::Health> const &healths) {
+            HealthBarBossSystem(
+                r, game_world, transforms, health_bars_boss, healths);
+        });
+
+    // Score system
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::PlayerTag>>(
+        [&game_world](Eng::registry &r,
+            Eng::sparse_array<Com::PlayerTag> const &player_tags) {
+            ScoreSystem(r, game_world, player_tags);
         });
 }
 
@@ -142,14 +172,18 @@ void InitMovementSystem(Rtype::Client::GameWorld &game_world) {
         });
 
     // Collision detection system
+    // Note: Only resolves collisions for controllable (local) entities
+    // to maintain server authority over non-local entity positions
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Transform>,
-        Eng::sparse_array<Com::HitBox>, Eng::sparse_array<Com::Solid>>(
+        Eng::sparse_array<Com::HitBox>, Eng::sparse_array<Com::Solid>,
+        Eng::sparse_array<Com::Controllable>>(
         [&game_world](Eng::registry &r,
             Eng::sparse_array<Com::Transform> &transforms,
             Eng::sparse_array<Com::HitBox> const &hitbox,
-            Eng::sparse_array<Com::Solid> const &solids) {
+            Eng::sparse_array<Com::Solid> const &solids,
+            Eng::sparse_array<Com::Controllable> const &controllables) {
             CollisionDetectionSystem(
-                r, game_world, transforms, hitbox, solids);
+                r, game_world, transforms, hitbox, solids, controllables);
         });
 }
 
@@ -176,12 +210,26 @@ void InitControlsSystem(Rtype::Client::GameWorld &game_world) {
                 r, game_world, hit_boxes, clickables, drawables, transforms);
         });
 
+    // Draggable system
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::HitBox>,
+        Eng::sparse_array<Com::Draggable>, Eng::sparse_array<Com::Transform>>(
+        [&game_world](Eng::registry &r,
+            Eng::sparse_array<Com::HitBox> &hit_boxes,
+            Eng::sparse_array<Com::Draggable> &draggables,
+            Eng::sparse_array<Com::Transform> &transforms) {
+            DraggableSystem(r, game_world, hit_boxes, draggables, transforms);
+        });
+
     // Input control systems
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Inputs>>(
         [&game_world](
             Eng::registry &r, Eng::sparse_array<Com::Inputs> &inputs) {
-            InputSystem(r, game_world.window_.hasFocus(), inputs);
+            InputSystem(r, *game_world.input_manager_, inputs);
         });
+
+    // Input rebinding system (handles rebinding UI interactions)
+    game_world.registry_.AddSystem<>(
+        [&game_world](Eng::registry &) { InputRebindSystem(game_world); });
 
     // Timed events system
     game_world.registry_.AddSystem<Eng::sparse_array<Com::TimedEvents>>(
@@ -271,9 +319,21 @@ void InitGameplaySystems(Rtype::Client::GameWorld &game_world) {
     // Health deduction system
     game_world.registry_.AddSystem<Eng::sparse_array<Com::Health>,
         Eng::sparse_array<Com::HealthBar>,
-        Eng::sparse_array<Com::AnimatedSprite>, Eng::sparse_array<Com::HitBox>,
+        Eng::sparse_array<Com::AnimatedSprite>,
+        Eng::sparse_array<Com::Drawable>, Eng::sparse_array<Com::HitBox>,
         Eng::sparse_array<Com::Transform>, Eng::sparse_array<Com::Projectile>>(
-        HealthDeductionSystem);
+        [&game_world](Eng::registry &reg,
+            Eng::sparse_array<Com::Health> &healths,
+            Eng::sparse_array<Com::HealthBar> &health_bars,
+            Eng::sparse_array<Com::AnimatedSprite> &animated_sprites,
+            Eng::sparse_array<Com::Drawable> &drawables,
+            Eng::sparse_array<Com::HitBox> const &hitBoxes,
+            Eng::sparse_array<Com::Transform> const &transforms,
+            Eng::sparse_array<Com::Projectile> const &projectiles) {
+            HealthDeductionSystem(reg, game_world, healths, health_bars,
+                animated_sprites, drawables, hitBoxes, transforms,
+                projectiles);
+        });
 }
 
 /**
@@ -290,6 +350,33 @@ void InitSceneManagementSystem(Rtype::Client::GameWorld &game_world) {
         [&game_world](Eng::registry &r,
             Eng::sparse_array<Com::SceneManagement> &sceneManagements) {
             GameStateSystem(r, game_world, sceneManagements);
+        });
+
+    // Lobby UI system
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::LobbyUI>,
+        Eng::sparse_array<Com::Text>, Eng::sparse_array<Com::Drawable>>(
+        [&game_world](Eng::registry &r,
+            Eng::sparse_array<Com::LobbyUI> &lobby_uis,
+            Eng::sparse_array<Com::Text> &texts,
+            Eng::sparse_array<Com::Drawable> &drawables) {
+            LobbyUISystem(r, game_world, lobby_uis, texts, drawables);
+        });
+
+    // Game over system
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::GameOverState>,
+        Eng::sparse_array<Com::GameOverText>,
+        Eng::sparse_array<Com::FadeOverlay>, Eng::sparse_array<Com::Text>,
+        Eng::sparse_array<Com::Drawable>,
+        Eng::sparse_array<Com::SceneManagement>>(
+        [&game_world](Eng::registry &r,
+            Eng::sparse_array<Com::GameOverState> &states,
+            Eng::sparse_array<Com::GameOverText> &go_texts,
+            Eng::sparse_array<Com::FadeOverlay> &overlays,
+            Eng::sparse_array<Com::Text> &text_comps,
+            Eng::sparse_array<Com::Drawable> &drawables,
+            Eng::sparse_array<Com::SceneManagement> &scene_mgmt) {
+            GameOverSystem(r, game_world, states, go_texts, overlays,
+                text_comps, drawables, scene_mgmt);
         });
 }
 
@@ -312,8 +399,13 @@ void InitAudioSystem(
 }
 
 void InitKillEntitiesSystem(Rtype::Client::GameWorld &game_world) {
-    game_world.registry_.AddSystem<Com::NetworkId, Com::AnimationDeath>(
-        KillEntitiesSystem);
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::NetworkId>,
+        Eng::sparse_array<Com::AnimationDeath>>(
+        [&game_world](Eng::registry &reg,
+            Eng::sparse_array<Com::NetworkId> &network_ids,
+            Eng::sparse_array<Com::AnimationDeath> &animation_deaths) {
+            KillEntitiesSystem(reg, game_world, network_ids, animation_deaths);
+        });
 }
 
 /**

@@ -1,27 +1,30 @@
 #include <gtest/gtest.h>
 
+#include <memory>
 #include <utility>
 
+#include "TestGraphicsSetup.hpp"  // NOLINT(build/include_subdir)
 #include "engine/GameWorld.hpp"
 #include "engine/systems/InitRegistrySystems.hpp"
 #include "include/components/CoreComponents.hpp"
 #include "include/components/RenderComponent.hpp"
+#include "platform/SFMLWindow.hpp"
 
 namespace Com = Rtype::Client::Component;
 namespace Eng = Engine;
 
 class ButtonClickSystemTest : public ::testing::Test {
  protected:
-    void SetUp() override {
-        game_world.window_.create(
-            sf::VideoMode({800u, 600u}), "button-test", sf::Style::None);
+    static void SetUpTestSuite() {
+        TestHelper::RegisterTestBackend();
     }
 
-    void TearDown() override {
-        game_world.window_.close();
-    }
+    ButtonClickSystemTest()
+        : game_world(std::make_unique<Rtype::Client::Platform::SFMLWindow>(
+                         800, 600, "test"),
+              "test", "127.0.0.1", 50000, 50000) {}
 
-    Rtype::Client::GameWorld game_world{"127.0.0.1", 50000, 50000};
+    Rtype::Client::GameWorld game_world;
     Eng::registry reg;
     Eng::sparse_array<Com::HitBox> hit_boxes;
     Eng::sparse_array<Com::Clickable> clickables;
@@ -58,9 +61,9 @@ TEST_F(ButtonClickSystemTest, UpdatesColorBasedOnState) {
         200.0f, 150.0f, 0.0f, 1.0f, Com::Transform::TOP_LEFT};
     Com::HitBox hitbox{100.0f, 50.0f, true};
     Com::Clickable clickable;
-    clickable.idleColor = sf::Color::White;
-    clickable.hoverColor = sf::Color::Yellow;
-    clickable.clickColor = sf::Color::Red;
+    clickable.idleColor = Engine::Graphics::Color::White;
+    clickable.hoverColor = Engine::Graphics::Color::Yellow;
+    clickable.clickColor = Engine::Graphics::Color::Red;
 
     Com::Drawable drawable{"Logo.png", 0};
 

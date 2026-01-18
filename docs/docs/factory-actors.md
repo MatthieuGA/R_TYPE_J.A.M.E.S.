@@ -1,6 +1,6 @@
 # Factory Actors
 
-**Source files:** [client/game/factory/factory_ennemies/FactoryActors.hpp](https://github.com/MatthieuGA/R_TYPE_J.A.M.E.S./blob/main/client/game/factory/factory_ennemies/FactoryActors.hpp), [client/game/factory/factory_ennemies/FactoryActors.cpp](https://github.com/MatthieuGA/R_TYPE_J.A.M.E.S./blob/main/client/game/factory/factory_ennemies/FactoryActors.cpp), [client/game/factory/factory_ennemies/FactoryActorsInit.cpp](https://github.com/MatthieuGA/R_TYPE_J.A.M.E.S./blob/main/client/game/factory/factory_ennemies/FactoryActorsInit.cpp), [client/game/factory/factory_ennemies/CreateMermaidActor.cpp](https://github.com/MatthieuGA/R_TYPE_J.A.M.E.S./blob/main/client/game/factory/factory_ennemies/CreateMermaidActor.cpp), [client/game/factory/factory_ennemies/CreatePlayerActor.cpp](https://github.com/MatthieuGA/R_TYPE_J.A.M.E.S./blob/main/client/game/factory/factory_ennemies/CreatePlayerActor.cpp)
+**Source files:** [FactoryActors.hpp](https://github.com/MatthieuGA/R_TYPE_J.A.M.E.S./blob/main/client/game/factory/factory_ennemies/FactoryActors.hpp), [FactoryActors.cpp](https://github.com/MatthieuGA/R_TYPE_J.A.M.E.S./blob/main/client/game/factory/factory_ennemies/FactoryActors.cpp), [FactoryActorsInit.cpp](https://github.com/MatthieuGA/R_TYPE_J.A.M.E.S./blob/main/client/game/factory/factory_ennemies/FactoryActorsInit.cpp), [CreateMermaidActor.cpp](https://github.com/MatthieuGA/R_TYPE_J.A.M.E.S./blob/main/client/game/factory/factory_ennemies/CreateMermaidActor.cpp), [CreatePlayerActor.cpp](https://github.com/MatthieuGA/R_TYPE_J.A.M.E.S./blob/main/client/game/factory/factory_ennemies/CreatePlayerActor.cpp)
 
 **Purpose:** Centralized builder that instantiates actors (player and enemies) from JSON-driven definitions. It attaches the shared ECS components (transform, health, visuals, collision), then layers specialized logic per actor type (animations, AI patterns, shooting, VFX).
 
@@ -44,10 +44,10 @@ Adds enemy-specific components:
 - `AnimatedSprite`: default sheet with `Hit`, `Death`, and `Attack` animations; defaults to `currentAnimation = "Default"`.
 
 ## Mermaid specialization (CreateMermaidActor)
-- `PatternMovement`: sine horizontal pattern with configured offsets and `MERMAID_SPEED`.
+- `PatternMovement`: sine horizontal pattern with configured offsets and `BASIC_SPEED`.
 - `EnemyShootTag`: projectile speed/damage and spawn offset.
 - `FrameEvents`: triggers on frame 5 of the `Attack` animation to spawn a projectile via `CreateEnemyProjectile` (safe-guarded by `try/catch`).
-- `TimedEvents`: periodic callback (every `MERMAID_SHOOT_COOLDOWN`) that switches the animation to `Attack` if the enemy is still alive.
+- `TimedEvents`: periodic callback (every `BASIC_SHOOT_COOLDOWN`) that switches the animation to `Attack` if the enemy is still alive.
 - Adds `EnemyShootTag` to the entity after configuring callbacks.
 
 ## Projectile creation helper (CreateEnemyProjectile)

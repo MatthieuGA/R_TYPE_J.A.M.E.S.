@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <string>
 
 #include "game/scenes_management/Scene_A.hpp"
@@ -12,6 +13,30 @@ class MainMenuScene : public Scene_A {
  public:
     MainMenuScene() = default;
     void InitScene(registry &reg, GameWorld &gameWorld) override;
+
+    /**
+     * @brief Get the entity holding the player count text.
+     * @return Optional entity if created, nullopt otherwise.
+     */
+    std::optional<Engine::entity> GetPlayerCountEntity() const {
+        return player_count_entity_;
+    }
+
+    /**
+     * @brief Get the entity holding the ready count text.
+     * @return Optional entity if created, nullopt otherwise.
+     */
+    std::optional<Engine::entity> GetReadyCountEntity() const {
+        return ready_count_entity_;
+    }
+
+    /**
+     * @brief Get the entity holding the ready button.
+     * @return Optional entity if created, nullopt otherwise.
+     */
+    std::optional<Engine::entity> GetReadyButtonEntity() const {
+        return ready_button_entity_;
+    }
 
  private:
     struct BackgroundInfo {
@@ -28,5 +53,10 @@ class MainMenuScene : public Scene_A {
 
     void InitUI(registry &reg, GameWorld &gameWorld);
     void InitBackground(registry &reg);
+
+    // Entity references for dynamic updates
+    std::optional<Engine::entity> player_count_entity_;
+    std::optional<Engine::entity> ready_count_entity_;
+    std::optional<Engine::entity> ready_button_entity_;
 };
 }  // namespace Rtype::Client

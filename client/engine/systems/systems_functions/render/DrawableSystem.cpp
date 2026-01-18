@@ -7,38 +7,34 @@
 #include "engine/HierarchyTools.hpp"
 #include "engine/OriginTool.hpp"
 #include "engine/systems/InitRegistrySystems.hpp"
+#include "graphics/IRenderContext.hpp"
+#include "graphics/SFMLRenderContext.hpp"
 
 namespace Rtype::Client {
 
 /**
- * @brief Updates the particle emitter, emitting new particles and updating
- * existing ones.
- *
- * @param emitter The particle emitter to update.
- * @param transform The transform component of the parent entity.
- * @param dt Delta time since the last frame.
+ * @brief Update particle emitter: emit new particles and update existing.
  */
-void updateEmitter(
+void UpdateEmitter(
     Com::ParticleEmitter &emitter, const Com::Transform &transform, float dt) {
-    // Update emission accumulator
+    // Initialize random number generator once per function
+    static std::random_device rd;
+    static std::mt19937 rng(rd());
+
     emitter.emissionAccumulator += emitter.emissionRate * dt;
 
-    // Emit new particles
     while (emitter.emissionAccumulator >= 1.0f && emitter.emitting &&
            emitter.particles.size() < emitter.maxParticles) {
         emitter.emissionAccumulator -= 1.0f;
 
-        sf::Vector2f offset_computed =
-            sf::Vector2f(emitter.offset.x * transform.scale.x,
-                emitter.offset.y * transform.scale.y);
+        Engine::Graphics::Vector2f offset_computed(
+            emitter.offset.x * transform.scale.x,
+            emitter.offset.y * transform.scale.y);
 
-        Component::Particle newParticle;
-        newParticle.position = sf::Vector2f(
+        Component::Particle new_particle;
+        new_particle.position = Engine::Graphics::Vector2f(
             transform.x + offset_computed.x, transform.y + offset_computed.y);
 
-        // Calculate particle velocity with spread angle
-        std::random_device rd;
-        static std::mt19937 rng(rd());
         std::uniform_real_distribution<float> spread_dist(
             -emitter.spreadAngle, emitter.spreadAngle);
         std::uniform_real_distribution<float> radius_dist(
@@ -46,42 +42,35 @@ void updateEmitter(
         std::uniform_real_distribution<float> radius_angle_dist(
             0.0f, 2.0f * 3.14159f);
 
-        // Apply emission radius offset
         float radius_offset_angle = radius_angle_dist(rng);
         float radius_offset_dist = radius_dist(rng);
-        newParticle.position.x +=
+        new_particle.position.x +=
             std::cos(radius_offset_angle) * radius_offset_dist;
-        newParticle.position.y +=
+        new_particle.position.y +=
             std::sin(radius_offset_angle) * radius_offset_dist;
 
-        // Direction angle in radians
         float base_angle =
             std::atan2(emitter.direction.y, emitter.direction.x);
-        // Add random spread
-        // Convert degrees to radians
         float angle_variation = spread_dist(rng) * 3.14159f / 180.0f;
         float final_angle = base_angle + angle_variation;
 
-        // Calculate velocity based on final angle and speed
         float cos_angle = std::cos(final_angle);
         float sin_angle = std::sin(final_angle);
-        newParticle.velocity = sf::Vector2f(cos_angle * emitter.particleSpeed,
-            sin_angle * emitter.particleSpeed);
+        new_particle.velocity =
+            Engine::Graphics::Vector2f(cos_angle * emitter.particleSpeed,
+                sin_angle * emitter.particleSpeed);
 
-        newParticle.maxLifetime = emitter.particleLifetime;
-        newParticle.lifetime = emitter.particleLifetime;
-        emitter.particles.push_back(newParticle);
+        new_particle.maxLifetime = emitter.particleLifetime;
+        new_particle.lifetime = emitter.particleLifetime;
+        emitter.particles.push_back(new_particle);
     }
 
-    // Update existing particles
     for (auto it = emitter.particles.begin(); it != emitter.particles.end();) {
         it->lifetime -= dt;
         if (it->lifetime <= 0.0f) {
             it = emitter.particles.erase(it);
         } else {
-            // Apply velocity
             it->position += it->velocity * dt;
-            // Apply gravity
             it->velocity.y += emitter.gravity * dt;
             ++it;
         }
@@ -89,159 +78,76 @@ void updateEmitter(
 }
 
 /**
- * @brief Draws particles from the emitter to the vertex array.
- *
- * Updates the vertex array with the current particles, applying color
- * based on particle lifetime. Each particle is drawn as a small square size
- *
- * @param emitter The particle emitter to draw.
- * @param game_world The game world containing the render window.
+ * @brief Draw particles via render context.
  */
 void drawEmitter(Com::ParticleEmitter &emitter, GameWorld &game_world) {
-    emitter.vertices.clear();
-    emitter.vertices.setPrimitiveType(sf::Quads);
+    if (!game_world.GetRenderContext())
+        return;
+
+    std::vector<Engine::Graphics::VertexArray::Vertex> vertices;
 
     for (const auto &particle : emitter.particles) {
         float lifeRatio = particle.lifetime / particle.maxLifetime;
-        sf::Color color = sf::Color(
-            static_cast<sf::Uint8>(
+        Engine::Graphics::Color engine_color = Engine::Graphics::Color(
+            static_cast<uint8_t>(
                 emitter.endColor.r +
                 (emitter.startColor.r - emitter.endColor.r) * lifeRatio),
-            static_cast<sf::Uint8>(
+            static_cast<uint8_t>(
                 emitter.endColor.g +
                 (emitter.startColor.g - emitter.endColor.g) * lifeRatio),
-            static_cast<sf::Uint8>(
+            static_cast<uint8_t>(
                 emitter.endColor.b +
                 (emitter.startColor.b - emitter.endColor.b) * lifeRatio),
-            static_cast<sf::Uint8>(
+            static_cast<uint8_t>(
                 emitter.endColor.a +
                 (emitter.startColor.a - emitter.endColor.a) * lifeRatio));
 
-        // Lerp size from start to end
         float size = emitter.end_size +
                      (emitter.start_size - emitter.end_size) * lifeRatio;
         float half_size = size * 0.5f;
-        sf::Vector2f pos = particle.position;
 
-        // Top-left
-        sf::Vertex v1;
-        v1.position = sf::Vector2f(pos.x - half_size, pos.y - half_size);
-        v1.color = color;
-        emitter.vertices.append(v1);
-
-        // Top-right
-        sf::Vertex v2;
-        v2.position = sf::Vector2f(pos.x + half_size, pos.y - half_size);
-        v2.color = color;
-        emitter.vertices.append(v2);
-
-        // Bottom-right
-        sf::Vertex v3;
-        v3.position = sf::Vector2f(pos.x + half_size, pos.y + half_size);
-        v3.color = color;
-        emitter.vertices.append(v3);
-
-        // Bottom-left
-        sf::Vertex v4;
-        v4.position = sf::Vector2f(pos.x - half_size, pos.y + half_size);
-        v4.color = color;
-        emitter.vertices.append(v4);
+        vertices.push_back(
+            {Engine::Graphics::Vector2f(particle.position.x - half_size,
+                 particle.position.y - half_size),
+                engine_color});
+        vertices.push_back(
+            {Engine::Graphics::Vector2f(particle.position.x + half_size,
+                 particle.position.y - half_size),
+                engine_color});
+        vertices.push_back(
+            {Engine::Graphics::Vector2f(particle.position.x + half_size,
+                 particle.position.y + half_size),
+                engine_color});
+        vertices.push_back(
+            {Engine::Graphics::Vector2f(particle.position.x - half_size,
+                 particle.position.y + half_size),
+                engine_color});
     }
 
-    game_world.window_.draw(emitter.vertices);
-}
-
-/**
- * @brief Set the origin of a drawable based on its transform.
- *
- * Uses `GetOffsetFromTransform` to calculate the correct origin
- * based on the texture size and transform.
- *
- * @param drawable Drawable component to update
- * @param transform Transform used for offset calculation
- */
-void SetDrawableOrigin(
-    Com::Drawable &drawable, const Com::Transform &transform) {
-    sf::Vector2f origin = GetOffsetFromTransform(transform,
-        sf::Vector2f(static_cast<float>(drawable.texture.getSize().x),
-            static_cast<float>(drawable.texture.getSize().y)));
-    drawable.sprite.setOrigin(-origin);
-}
-
-/**
- * @brief Initialize a drawable that uses a static texture.
- *
- * Loads the texture, sets the origin based on the transform.
- *
- * @param drawable Drawable component to initialize
- * @param transform Transform for origin calculation
- */
-void InitializeDrawable(
-    Com::Drawable &drawable, const Com::Transform &transform) {
-    if (!drawable.texture.loadFromFile(drawable.spritePath))
-        std::cerr << "ERROR: Failed to load sprite from "
-                  << drawable.spritePath << "\n";
-    else
-        drawable.sprite.setTexture(drawable.texture, true);
-    SetDrawableOrigin(drawable, transform);
-    drawable.isLoaded = true;
-}
-
-/**
- * @brief Draw a sprite with optional shader.
- *
- * If a shader component is provided and loaded, it sets the "time"
- * uniform and draws the sprite with the shader. Otherwise, it draws
- * the sprite normally.
- *
- * @param game_world The game world containing the render window.
- * @param sprite The sprite to draw.
- * @param drawable The drawable component (for reference).
- * @param shaderCompOpt Optional shader component pointer.
- */
-void DrawSprite(GameWorld &game_world, sf::Sprite &sprite,
-    Com::Drawable *drawable, std::optional<Com::Shader *> shaderCompOpt) {
-    if (shaderCompOpt.has_value() && (*shaderCompOpt)->isLoaded) {
-        ((*shaderCompOpt)->shader)
-            ->setUniform("time",
-                game_world.total_time_clock_.getElapsedTime().asSeconds());
-        game_world.window_.draw(
-            sprite, sf::RenderStates((*shaderCompOpt)->shader.get()));
-    } else {
-        game_world.window_.draw(sprite);
+    if (!vertices.empty()) {
+        Engine::Graphics::VertexArray va{vertices.data(), vertices.size(),
+            Engine::Graphics::VertexArray::Quads};
+        game_world.GetRenderContext()->DrawVertexArray(va);
     }
 }
 
 /**
- * @brief Render a single entity with its drawable component.
- *
- * Applies transform properties and draws the sprite, considering
- * any associated shader.
- *
- * @param transforms Sparse array of Transform components.
- * @param drawables Sparse array of Drawable components.
- * @param shaders Sparse array of Shader components.
- * @param animated_sprites Sparse array of AnimatedSprite components.
- * @param game_world The game world containing the render window.
- * @param i The index of the entity to render.
+ * @brief Render a single drawable entity via IRenderContext.
  */
 void RenderOneEntity(Eng::sparse_array<Com::Transform> const &transforms,
     Eng::sparse_array<Com::Drawable> &drawables,
-    Eng::sparse_array<Com::Shader> &shaders,
     Eng::sparse_array<Com::AnimatedSprite> const &animated_sprites,
-    GameWorld &game_world, int i) {
+    Eng::sparse_array<Com::Shader> const &shaders, GameWorld &game_world,
+    int i) {
     auto &transform = transforms[i];
     auto &drawable = drawables[i];
 
-    std::optional<Com::Shader *> shaderCompOpt = std::nullopt;
-    if (shaders.has(i))
-        shaderCompOpt = &shaders[i].value();
+    if (!game_world.GetRenderContext())
+        return;
 
-    // Calculate world position with hierarchical rotation
-    sf::Vector2f world_position =
+    Engine::Graphics::Vector2f world_position =
         CalculateWorldPositionWithHierarchy(transform.value(), transforms);
 
-    // Apply animation offset if this entity has an AnimatedSprite component
     if (animated_sprites.has(i)) {
         auto *animation = animated_sprites[i]->GetCurrentAnimation();
         if (animation != nullptr) {
@@ -250,98 +156,120 @@ void RenderOneEntity(Eng::sparse_array<Com::Transform> const &transforms,
         }
     }
 
-    drawable->sprite.setPosition(world_position);
-    sf::Vector2f world_scale =
+    Engine::Graphics::Vector2f world_scale =
         CalculateCumulativeScale(transform.value(), transforms);
-    drawable->sprite.setScale(world_scale);
-    drawable->sprite.setRotation(transform->rotationDegrees);
-    // Child rotation only: apply the entity's own rotation
-    sf::Color color = drawable->color;
-    color.a = static_cast<sf::Uint8>(drawable->opacity * 255);
-    drawable->sprite.setColor(color);
-    DrawSprite(game_world, drawable->sprite, &drawable.value(), shaderCompOpt);
+
+    // Apply drawable's own scale (for sprites that need custom scaling)
+    world_scale.x *= drawable->scale.x;
+    world_scale.y *= drawable->scale.y;
+
+    Engine::Graphics::Color engine_color = drawable->color;
+    engine_color.a = static_cast<uint8_t>(drawable->opacity * 255);
+
+    // Calculate origin using OriginTool for proper sprite centering
+    // GetOffsetFromTransform returns negative offsets; negate to get positive
+    // for SFML
+    Engine::Graphics::Vector2f origin(0.0f, 0.0f);
+    Engine::Graphics::Vector2f texture_size(0.0f, 0.0f);
+
+    // Get texture size for origin calculation
+    if (drawable->current_rect.width > 0 &&
+        drawable->current_rect.height > 0) {
+        // Animation frame or cropped sprite - use rect size
+        texture_size = Engine::Graphics::Vector2f(
+            static_cast<float>(drawable->current_rect.width),
+            static_cast<float>(drawable->current_rect.height));
+    } else {
+        // Static sprite - query backend for full texture size
+        if (game_world.GetRenderContext()) {
+            texture_size = game_world.GetRenderContext()->GetTextureSize(
+                drawable->texture_path.c_str());
+        }
+    }
+
+    if (texture_size.x > 0.0f && texture_size.y > 0.0f) {
+        origin = GetOffsetFromTransform(transform.value(), texture_size);
+        // Negate to convert from offset to origin (positive coordinates for
+        // SFML)
+        origin.x = -origin.x;
+        origin.y = -origin.y;
+    }
+
+    Engine::Graphics::DrawableSprite sprite_data{
+        drawable->texture_path.c_str(), world_position, world_scale,
+        transform->rotationDegrees, engine_color, drawable->current_rect,
+        origin};
+
+    // Optional shader data (skip when reduced_visuals is enabled)
+    Engine::Graphics::DrawableShader shader_data;
+    const Engine::Graphics::DrawableShader *shader_ptr = nullptr;
+    if (!game_world.accessibility_settings_.reduced_visuals &&
+        shaders.has(i) && shaders[i]->is_loaded &&
+        !shaders[i]->shader_path.empty()) {
+        shader_data.shader_path = shaders[i]->shader_path.c_str();
+        shader_data.time_seconds =
+            game_world.total_time_clock_.GetElapsedTime().AsSeconds();
+        shader_data.float_uniforms.clear();
+        shader_data.float_uniforms.reserve(shaders[i]->uniforms_float.size());
+        for (const auto &[name, value] : shaders[i]->uniforms_float) {
+            shader_data.float_uniforms.push_back({name.c_str(), value});
+        }
+        shader_ptr = &shader_data;
+    }
+
+    game_world.GetRenderContext()->DrawSprite(sprite_data, shader_ptr);
 }
 
 /**
  * @brief System to render all drawable entities and particle emitters.
- *
- * Collects all drawable entities and active particle emitters,
- * sorts them by z-index, and renders them in order.
- *
- * @param reg Engine registry.
- * @param game_world The game world containing the render window.
- * @param transforms Sparse array of Transform components.
- * @param drawables Sparse array of Drawable components.
- * @param shaders Sparse array of Shader components.
- * @param animated_sprites Sparse array of AnimatedSprite components.
- * @param emitters Sparse array of ParticleEmitter components.
  */
 void DrawableSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> const &transforms,
     Eng::sparse_array<Com::Drawable> &drawables,
-    Eng::sparse_array<Com::Shader> &shaders,
+    Eng::sparse_array<Com::Shader> const &shaders,
     Eng::sparse_array<Com::AnimatedSprite> const &animated_sprites,
     Eng::sparse_array<Com::ParticleEmitter> &emitters) {
     struct RenderItem {
-        int index;
+        size_t index;
         int z_index;
         bool is_particle;
     };
 
     std::vector<RenderItem> render_order;
 
-    // Collect drawable entities
     for (auto &&[i, transform, drawable] :
         make_indexed_zipper(transforms, drawables)) {
-        if (!drawable.isLoaded)
-            InitializeDrawable(drawable, transform);
-        RenderItem item;
-        item.index = i;
-        item.z_index = drawable.z_index;
-        item.is_particle = false;
+        RenderItem item{i, drawable.z_index, false};
         render_order.push_back(item);
     }
 
-    // Collect particle emitters
-    for (auto &&[i, transform, emitter] :
-        make_indexed_zipper(transforms, emitters)) {
-        if (emitter.active) {
-            RenderItem item;
-            item.index = i;
-            item.z_index = emitter.z_index;
-            item.is_particle = true;
-            render_order.push_back(item);
+    // Skip particles when reduced_visuals is enabled
+    if (!game_world.accessibility_settings_.reduced_visuals) {
+        for (auto &&[i, transform, emitter] :
+            make_indexed_zipper(transforms, emitters)) {
+            if (emitter.active) {
+                UpdateEmitter(emitter, transform, game_world.last_delta_);
+                RenderItem item{i, emitter.z_index, true};
+                render_order.push_back(item);
+            }
         }
     }
 
-    // Sort by z_index (unified rendering order)
     std::sort(render_order.begin(), render_order.end(),
         [](const RenderItem &a, const RenderItem &b) {
             return a.z_index < b.z_index;
         });
 
-    // Render in sorted order
     for (const auto &item : render_order) {
         if (item.is_particle) {
-            auto &transform = transforms[item.index];
-            auto &emitter = emitters[item.index];
-
-            // Handle duration logic
-            if (emitter->duration_active != -1.0f) {
-                emitter->duration_past += game_world.last_delta_;
-                if (emitter->duration_past >= emitter->duration_active) {
-                    emitter->emitting = false;
-                    emitter->duration_past = 0.0f;
-                }
+            if (emitters.has(item.index)) {
+                drawEmitter(emitters[item.index].value(), game_world);
             }
-
-            updateEmitter(
-                emitter.value(), transform.value(), game_world.last_delta_);
-            drawEmitter(emitter.value(), game_world);
         } else {
-            RenderOneEntity(transforms, drawables, shaders, animated_sprites,
+            RenderOneEntity(transforms, drawables, animated_sprites, shaders,
                 game_world, item.index);
         }
     }
 }
+
 }  // namespace Rtype::Client

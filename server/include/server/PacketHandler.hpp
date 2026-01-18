@@ -50,6 +50,11 @@ class PacketHandler {
     using GameStartCallback = std::function<void()>;
 
     /**
+     * @brief Type alias for checking if game is running
+     */
+    using IsGameRunningCallback = std::function<bool()>;
+
+    /**
      * @brief Construct a new PacketHandler
      *
      * @param connection_manager Reference to the connection manager
@@ -72,6 +77,13 @@ class PacketHandler {
      * @param callback Function to call when game should start
      */
     void SetGameStartCallback(GameStartCallback callback);
+
+    /**
+     * @brief Set callback to check if game is running
+     *
+     * @param callback Function that returns true if game is in progress
+     */
+    void SetIsGameRunningCallback(IsGameRunningCallback callback);
 
     /**
      * @brief Start receiving messages from a client
@@ -145,6 +157,42 @@ class PacketHandler {
         ClientConnection &client, const network::DisconnectReqPacket &packet);
 
     /**
+     * @brief Handle SET_GAME_SPEED packet from client
+     *
+     * Client sets game speed multiplier (0.25x to 2.0x).
+     * Updates server's global game speed affecting all movement and timing.
+     *
+     * @param client Reference to client connection
+     * @param packet Parsed SET_GAME_SPEED packet
+     */
+    void HandleSetGameSpeed(
+        ClientConnection &client, const network::SetGameSpeedPacket &packet);
+
+    /**
+     * @brief Handle SET_DIFFICULTY packet
+     * @param client Reference to client connection
+     * @param packet Parsed SET_DIFFICULTY packet
+     */
+    void HandleSetDifficulty(
+        ClientConnection &client, const network::SetDifficultyPacket &packet);
+
+    /**
+     * @brief Handle SET_KILLABLE_PROJECTILES packet
+     * @param client Reference to client connection
+     * @param packet Parsed SET_KILLABLE_PROJECTILES packet
+     */
+    void HandleSetKillableProjectiles(ClientConnection &client,
+        const network::SetKillableProjectilesPacket &packet);
+
+    /**
+     * @brief Check if game should start after a player disconnect
+     *
+     * Called after removing a client to check if remaining players
+     * in lobby are all ready. If so, starts the game.
+     */
+    void TryStartGameAfterDisconnect();
+
+    /**
      * @brief Trim whitespace from string
      *
      * Helper function for username validation.
@@ -166,6 +214,9 @@ class PacketHandler {
 
     // Callback for game start
     GameStartCallback on_game_start_;
+
+    // Callback to check if game is running
+    IsGameRunningCallback is_game_running_;
 };
 
 }  // namespace server

@@ -54,9 +54,9 @@ void InitHealthBar(Com::HealthBar &health_bar) {
  * @param game_world The GameWorld providing the render window.
  */
 void DrawHealthBar(Com::HealthBar &health_bar, GameWorld &game_world) {
-    game_world.window_.draw(health_bar.yellow_bar);
-    game_world.window_.draw(health_bar.green_bar);
-    game_world.window_.draw(health_bar.foreground_bar);
+    game_world.GetNativeWindow().draw(health_bar.yellow_bar);
+    game_world.GetNativeWindow().draw(health_bar.green_bar);
+    game_world.GetNativeWindow().draw(health_bar.foreground_bar);
 }
 
 /**
@@ -92,6 +92,19 @@ void SetHealthsBarSprites(
     const Com::Transform &transform, Com::HealthBar &health_bar) {
     sf::Vector2f transform_s =
         sf::Vector2f(std::abs(transform.scale.x), std::abs(transform.scale.y));
+
+    // Rebind textures to sprites each frame. Components stored in sparse
+    // containers may be moved in memory, leaving sprites with stale texture
+    // pointers which causes white/glitched sprites. Re-setting the texture
+    // updates the internal pointer to the current texture address.
+    if (health_bar.foreground_bar.getTexture() !=
+        &health_bar.foreground_texture)
+        health_bar.foreground_bar.setTexture(
+            health_bar.foreground_texture, true);
+    if (health_bar.green_bar.getTexture() != &health_bar.green_texture)
+        health_bar.green_bar.setTexture(health_bar.green_texture, true);
+    if (health_bar.yellow_bar.getTexture() != &health_bar.yellow_texture)
+        health_bar.yellow_bar.setTexture(health_bar.yellow_texture, true);
 
     sf::Vector2f posBar =
         sf::Vector2f(transform.x + (health_bar.offset.x * transform_s.x),
@@ -130,7 +143,7 @@ void HealthBarSystem(Eng::registry &reg, GameWorld &game_world,
         if (!health_bar.is_loaded)
             InitHealthBar(health_bar);
         if (!health_bar.is_loaded)
-            return;
+            continue;
         // Update Percentages Bars
         UpdatePercentageHealthBar(health, health_bar, game_world);
         // Update health bar position

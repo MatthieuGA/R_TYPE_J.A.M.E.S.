@@ -1,0 +1,94 @@
+{
+  "uuid": "a1b2c3d4-e5f6-4789-abcd-ef0123456789",
+  "name": "Daemon Ambush",
+  "description": "Multiple daemons attack with destructible cover obstacles across full screen.",
+  "difficulty": 6.5,
+  "tags": ["enemies", "daemon", "ambush", "hard"],
+  "width": 1000,
+  "spawn_rules": {
+    "min_distance_from_last": 3,
+    "max_frequency": 0.6
+  },
+  "obstacles": [
+    {
+      "type": "destructible",
+      "sprite": "images/obstacles/asteroid_medium.png",
+      "position": { "x": 200, "y": 200 },
+      "size": { "width": 64, "height": 64 },
+      "collision": { "enabled": true, "damage": 15 },
+      "health": 40
+    },
+    {
+      "type": "destructible",
+      "sprite": "images/obstacles/asteroid_medium.png",
+      "position": { "x": 200, "y": 700 },
+      "size": { "width": 64, "height": 64 },
+      "collision": { "enabled": true, "damage": 15 },
+      "health": 40
+    },
+    {
+      "type": "destructible",
+      "sprite": "images/obstacles/asteroid_small.png",
+      "position": { "x": 450, "y": 450 },
+      "size": { "width": 48, "height": 48 },
+      "collision": { "enabled": true, "damage": 10 },
+      "health": 20
+    },
+    {
+      "type": "static",
+      "sprite": "images/obstacles/asteroid_large.png",
+      "position": { "x": 700, "y": 100 },
+      "size": { "width": 96, "height": 96 },
+      "collision": { "enabled": true, "damage": 30 },
+      "health": 0
+    },
+    {
+      "type": "static",
+      "sprite": "images/obstacles/asteroid_large.png",
+      "position": { "x": 700, "y": 850 },
+      "size": { "width": 96, "height": 96 },
+      "collision": { "enabled": true, "damage": 30 },
+      "health": 0
+    }
+  ],
+  "enemies": [
+    {
+      "tag": "daemon",
+      "position": { "x": 100, "y": 300 },
+      "spawn_delay": 0.0
+    },
+    {
+      "tag": "daemon",
+      "position": { "x": 100, "y": 600 },
+      "spawn_delay": 0.0
+    },
+    {
+      "tag": "kamifish",
+      "position": { "x": 300, "y": 150 },
+      "spawn_delay": 0.3
+    },
+    {
+      "tag": "kamifish",
+      "position": { "x": 300, "y": 850 },
+      "spawn_delay": 0.3
+    },
+    {
+      "tag": "daemon",
+      "position": { "x": 500, "y": 450 },
+      "spawn_delay": 0.5
+    },
+    {
+      "tag": "mermaid",
+      "position": { "x": 600, "y": 200 },
+      "spawn_delay": 0.6
+    },
+    {
+      "tag": "mermaid",
+      "position": { "x": 600, "y": 750 },
+      "spawn_delay": 0.6
+    }
+  ],
+  "background": {
+    "layers": []
+  }
+}

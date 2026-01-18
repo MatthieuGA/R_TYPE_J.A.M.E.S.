@@ -2,6 +2,7 @@
 
 #include "engine/OriginTool.hpp"
 #include "engine/systems/InitRegistrySystems.hpp"
+#include "input/MouseButton.hpp"
 
 namespace Rtype::Client {
 /**
@@ -11,6 +12,9 @@ namespace Rtype::Client {
  * Transform components, determines if the mouse is hovering over or clicking
  * them, updates their state accordingly, and triggers the onClick callback
  * when a click is detected.
+ *
+ * Uses the InputManager for mouse button queries to maintain backend
+ * abstraction.
  *
  * @param reg Engine registry.
  * @param game_world Reference to the game world, including the window.
@@ -24,13 +28,17 @@ void ButtonClickSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Clickable> &clickables,
     Eng::sparse_array<Com::Drawable> &drawables,
     Eng::sparse_array<Com::Transform> &transforms) {
-    if (!game_world.window_.hasFocus())
+    if (!game_world.input_manager_ || !game_world.input_manager_->HasFocus())
         return;
+
+    const bool is_left_pressed =
+        game_world.input_manager_->IsMouseButtonPressed(
+            Engine::Input::MouseButton::Left);
 
     for (auto &&[i, hit_box, clickable, drawable, transform] :
         make_indexed_zipper(hit_boxes, clickables, drawables, transforms)) {
-        sf::Vector2f mousePos = game_world.window_.mapPixelToCoords(
-            sf::Mouse::getPosition(game_world.window_));
+        sf::Vector2f mousePos = game_world.GetNativeWindow().mapPixelToCoords(
+            sf::Mouse::getPosition(game_world.GetNativeWindow()));
 
         const float width_computed =
             hit_box.width *
@@ -39,8 +47,9 @@ void ButtonClickSystem(Eng::registry &reg, GameWorld &game_world,
             hit_box.height *
             (hit_box.scaleWithTransform ? transform.scale.y : 1.0f);
 
-        const sf::Vector2f offsetOrigin = GetOffsetFromTransform(
-            transform, sf::Vector2f(width_computed, height_computed));
+        const Engine::Graphics::Vector2f offsetOrigin =
+            GetOffsetFromTransform(transform,
+                Engine::Graphics::Vector2f(width_computed, height_computed));
 
         const float left = transform.x + offsetOrigin.x;
         const float top = transform.y + offsetOrigin.y;
@@ -50,10 +59,9 @@ void ButtonClickSystem(Eng::registry &reg, GameWorld &game_world,
                                 mousePos.y >= top && mousePos.y <= bottom);
 
         clickable.isHovered = isHovered;
-        if (isHovered && sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+        if (isHovered && is_left_pressed) {
             clickable.isClicked = true;
-        } else if (!sf::Mouse::isButtonPressed(sf::Mouse::Left) &&
-                   clickable.isClicked) {
+        } else if (!is_left_pressed && clickable.isClicked) {
             // Mouse button released after being clicked
             clickable.isClicked = false;
             if (clickable.onClick)

@@ -4,6 +4,8 @@ target_sources(r-type_engine
   PRIVATE
     src/entity.cpp
     src/registry.cpp
+    src/graphics/Types.cpp
+    src/graphics/GraphicsManager.cpp
 
   PUBLIC
     FILE_SET myHeaders
@@ -18,7 +20,24 @@ target_sources(r-type_engine
       include/indexed_zipper.hpp
       include/indexed_zipper.tpp
       include/registry.tpp
+      include/graphics/Types.hpp
+      include/graphics/IWindow.hpp
+      include/graphics/IGraphicsBackend.hpp
+      include/graphics/GraphicsManager.hpp
+      include/graphics/IRenderContext.hpp
+      include/graphics/plugin_api.h
+      include/graphics/PluginBackendWrapper.hpp
+      include/time/Clock.hpp
+      include/input/Key.hpp
+      include/input/MouseButton.hpp
+      include/platform/OSEvent.hpp
+      include/platform/IPlatformEventSource.hpp
+      include/input/IInputBackend.hpp
+      include/input/InputManager.hpp
 )
 
 # Make sure the include directory is accessible
-target_include_directories(r-type_engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(r-type_engine PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+)

@@ -9,26 +9,16 @@ namespace Rtype::Client {
 /**
  * @brief Load and initialize a fragment shader for a Shader component.
  *
- * Loads the shader from disk, sets the `texture` uniform and applies any
- * preconfigured float uniforms.
+ * Marks the shader as loaded (backend will load via shader_path).
+ * Stores preconfigured float uniforms for backend rendering.
  *
  * @param shader_comp Shader component to initialize
  */
 void InitializeShader(Com::Shader &shader_comp) {
-    if (!shader_comp.shaderPath.empty()) {
-        shader_comp.shader = std::make_shared<sf::Shader>();
-        if (!shader_comp.shader->loadFromFile(
-                shader_comp.shaderPath, sf::Shader::Type::Fragment)) {
-            std::cerr << "ERROR: Failed to load shader from "
-                      << shader_comp.shaderPath << "\n";
-            shader_comp.shader = nullptr;
-        } else {
-            shader_comp.shader->setUniform(
-                "texture", sf::Shader::CurrentTexture);
-            for (auto &[name, value] : shader_comp.uniforms_float)
-                shader_comp.shader->setUniform(name, value);
-            shader_comp.isLoaded = true;
-        }
+    if (!shader_comp.shader_path.empty()) {
+        // Backend will load shader via shader_path
+        // Just mark as loaded for rendering pipeline
+        shader_comp.is_loaded = true;
     }
 }
 
@@ -36,7 +26,7 @@ void InitializeShader(Com::Shader &shader_comp) {
  * @brief System that initializes all Shader components that are not loaded.
  *
  * Iterates over the shader components and calls `InitializeShader` for
- * components that have a `shaderPath` and are not yet loaded.
+ * components that have a `shader_path` and are not yet loaded.
  *
  * @param reg Engine registry (unused)
  * @param shaders Sparse array of Shader components
@@ -46,7 +36,7 @@ void InitializeShaderSystem(
     std::vector<int> draw_order;
 
     for (auto &&[i, shader] : make_indexed_zipper(shaders)) {
-        if (!shader.isLoaded && !shader.shaderPath.empty())
+        if (!shader.is_loaded && !shader.shader_path.empty())
             InitializeShader(shader);
     }
 }

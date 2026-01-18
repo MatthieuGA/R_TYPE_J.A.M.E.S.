@@ -6,8 +6,23 @@
 #include "include/indexed_zipper.tpp"
 
 namespace server {
-const constexpr float TICK_RATE_MS = 16.0f;
-const constexpr float TICK_RATE_SECONDS = TICK_RATE_MS / 1000.0f;
+// Frame timing: globals updated each server tick.
+extern float g_frame_delta_ms;
+extern float g_frame_delta_seconds;
+extern float g_game_speed_multiplier;      // Game speed (set by client)
+extern uint8_t g_difficulty_level;         // 0=Easy, 1=Normal, 2=Hard
+extern bool g_killable_enemy_projectiles;  // Can player projectiles destroy
+                                           // enemy projectiles
+
+// Minimum delta per frame (enforces maximum 60 FPS).
+static constexpr float kMinFrameDeltaSeconds = 1.0f / 60.0f;
+
+/**
+ * @brief Update global frame delta from elapsed seconds (clamped to max FPS)
+ *
+ * @param seconds Elapsed seconds since last frame
+ */
+void UpdateFrameDeltaFromSeconds(float seconds);
 
 void MovementSystem(Engine::registry &reg,
     Engine::sparse_array<Component::Transform> &transforms,
@@ -43,6 +58,15 @@ void AnimationSystem(Engine::registry &reg,
 void TimedEventSystem(Engine::registry &reg,
     Engine::sparse_array<Component::TimedEvents> &timed_events);
 
+void ExplodeOnDeathSystem(Engine::registry &reg,
+    Engine::sparse_array<Component::Transform> &transforms,
+    Engine::sparse_array<Component::Health> &healths,
+    Engine::sparse_array<Component::AnimatedSprite> &animated_sprites,
+    Engine::sparse_array<Component::ExplodeOnDeath> &explode_on_deaths,
+    Engine::sparse_array<Component::AnimationDeath> &animation_deaths,
+    Engine::sparse_array<Component::HitBox> const &hitBoxes,
+    Engine::sparse_array<Component::PlayerTag> const &player_tags);
+
 void FrameBaseEventSystem(Engine::registry &reg,
     Engine::sparse_array<Component::Transform> &transforms,
     Engine::sparse_array<Component::AnimatedSprite> &animated_sprites,
@@ -53,6 +77,23 @@ void HealthDeductionSystem(Engine::registry &reg,
     Engine::sparse_array<Component::AnimatedSprite> &animated_sprites,
     Engine::sparse_array<Component::HitBox> const &hitBoxes,
     Engine::sparse_array<Component::Transform> const &transforms,
-    Engine::sparse_array<Component::Projectile> const &projectiles);
+    Engine::sparse_array<Component::Projectile> &projectiles,
+    Engine::sparse_array<Component::DeflectedProjectiles>
+        &deflected_projectiles);
+
+void ObstacleCollisionSystem(Engine::registry &reg,
+    Engine::sparse_array<Component::Transform> &transforms,
+    Engine::sparse_array<Component::HitBox> const &hitboxes,
+    Engine::sparse_array<Component::PlayerTag> const &player_tags,
+    Engine::sparse_array<Component::ObstacleTag> const &obstacle_tags,
+    Engine::sparse_array<Component::AnimatedSprite> &animated_sprites);
+
+void PlayerGatlingSystem(Engine::registry &reg,
+    Engine::sparse_array<Component::Transform> const &transforms,
+    Engine::sparse_array<Component::PlayerTag> &player_tags);
+
+void DespawnOffscreenSystem(Engine::registry &reg,
+    Engine::sparse_array<Component::Transform> &transforms,
+    Engine::sparse_array<Component::PlayerTag> const &player_tags);
 
 }  // namespace server

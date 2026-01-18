@@ -1,3 +1,5 @@
+#include <vector>
+
 #include "engine/systems/InitRegistrySystems.hpp"
 
 namespace Eng = Engine;
@@ -25,6 +27,10 @@ void AnimationEnterPlayerSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Transform> &transforms,
     Eng::sparse_array<Com::PlayerTag> &player_tags,
     Eng::sparse_array<Com::AnimationEnterPlayer> &animation_enter_players) {
+    // Collect entities that have finished entering to avoid modifying sparse
+    // arrays during iteration
+    std::vector<std::size_t> finished_entering;
+
     for (auto &&[i, transform, player_tag, animation_enter_player, velocity] :
         make_indexed_zipper(
             transforms, player_tags, animation_enter_players, velocities)) {
@@ -34,11 +40,16 @@ void AnimationEnterPlayerSystem(Eng::registry &reg, GameWorld &game_world,
                 transform.x = 75.0f;
                 animation_enter_player.isEntering = false;
                 player_tag.isInPlay = true;
-                reg.AddComponent(reg.EntityFromIndex(i), Com::Controllable{});
-                reg.RemoveComponent<Com::AnimationEnterPlayer>(
-                    reg.EntityFromIndex(i));
+                finished_entering.push_back(i);
             }
         }
+    }
+
+    // Now modify registry after iteration is complete
+    for (std::size_t i : finished_entering) {
+        Engine::entity entity = reg.EntityFromIndex(i);
+        reg.AddComponent(entity, Com::Controllable{});
+        reg.RemoveComponent<Com::AnimationEnterPlayer>(entity);
     }
 }
 }  // namespace Rtype::Client

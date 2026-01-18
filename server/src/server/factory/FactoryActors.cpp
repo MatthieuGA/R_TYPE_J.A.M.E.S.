@@ -31,6 +31,18 @@ void FactoryActors::CreateActor(Engine::entity &entity, Engine::registry &reg,
     CreateBasicEnnemy(entity, reg, info);
     if (info.tag == "mermaid")
         CreateMermaidActor(entity, reg, info);
+    else if (info.tag == "kamifish")
+        CreateKamiFishActor(entity, reg, info);
+    else if (info.tag == "golem")
+        CreateGolemActor(entity, reg, info);
+    else if (info.tag == "daemon")
+        CreateDaemonActor(entity, reg, info);
+    else if (info.tag == "invinsibility")
+        CreateInvinsibilityActor(entity, reg, info);
+    else if (info.tag == "health")
+        CreateHealthActor(entity, reg, info);
+    else if (info.tag == "gatling")
+        CreateGatlingActor(entity, reg, info);
 }
 
 void FactoryActors::CreateBasicActor(vector2f pos, Engine::entity &entity,
@@ -40,8 +52,8 @@ void FactoryActors::CreateBasicActor(vector2f pos, Engine::entity &entity,
         {pos.x, pos.y, 0.0f, info.scale, Component::Transform::CENTER});
     reg.AddComponent<Component::Health>(
         entity, Component::Health(info.health));
-    reg.AddComponent<Component::HitBox>(
-        entity, Component::HitBox{info.hitbox.x, info.hitbox.y});
+    reg.AddComponent<Component::HitBox>(entity,
+        Component::HitBox{info.hitbox.x, info.hitbox.y, true, 0.0f, 0.0f});
     reg.AddComponent<Component::Velocity>(entity, Component::Velocity{});
     reg.AddComponent<Component::NetworkId>(
         entity, Component::NetworkId{Server::GetNextNetworkId()});
@@ -49,9 +61,26 @@ void FactoryActors::CreateBasicActor(vector2f pos, Engine::entity &entity,
 
 void FactoryActors::CreateBasicEnnemy(
     Engine::entity &entity, Engine::registry &reg, EnnemyInfo info) {
-    // Add basic enemy components
+    // Set enemy subtype for network serialization
+    uint8_t subtype = 0;
+    if (info.tag == "kamifish")
+        subtype = 1;
+    else if (info.tag == "mermaid")
+        subtype = 0;
+    else if (info.tag == "golem")
+        subtype = 3;
+    else if (info.tag == "daemon")
+        subtype = 2;
+    else if (info.tag == "invinsibility")
+        subtype = 4;
+    else if (info.tag == "health")
+        subtype = 5;
+    else if (info.tag == "gatling")
+        subtype = 6;
+
+    // Add basic enemy components with subtype
     reg.AddComponent<Component::EnemyTag>(
-        entity, Component::EnemyTag{info.speed});
+        entity, Component::EnemyTag{info.speed, subtype});
 
     // Add drawable and animated sprite components
     // AnimatedSprite(bool loop, int totalFrames, float frameDuration)
@@ -64,90 +93,15 @@ void FactoryActors::CreateBasicEnnemy(
         entity, std::move(animated_sprite));
 }
 
-void FactoryActors::CreateMermaidProjectile(Engine::registry &reg,
-    vector2f direction, Component::EnemyShootTag &enemy_shoot, int ownerId,
-    Component::Transform const &transform) {
-    auto projectile_entity = reg.SpawnEntity();
-    reg.AddComponent<Component::NetworkId>(
-        projectile_entity, Component::NetworkId{Server::GetNextNetworkId()});
-    // Add components to projectile entity
-    reg.AddComponent<Component::Transform>(projectile_entity,
-        Component::Transform{
-            transform.x + (enemy_shoot.offset_shoot_position.x *
-                              std::abs(transform.scale.x)),
-            transform.y + (enemy_shoot.offset_shoot_position.y *
-                              std::abs(transform.scale.y)),
-            0.0f, 2.f, Component::Transform::CENTER});
-    reg.AddComponent<Component::Projectile>(projectile_entity,
-        Component::Projectile{
-            Component::Projectile::ProjectileType::Enemy_Mermaid,
-            enemy_shoot.damage_projectile, direction,
-            enemy_shoot.speed_projectile, ownerId, true});
-    reg.AddComponent<Component::HitBox>(
-        projectile_entity, Component::HitBox{8.0f, 8.0f});
-    reg.AddComponent<Component::Velocity>(
-        projectile_entity, Component::Velocity{direction.x, direction.y});
-}
-
 void FactoryActors::CreatePlayerActor(Engine::entity &entity,
     Engine::registry &reg, EnnemyInfo info, bool is_local) {
     // Add player-specific components
+    std::cout << "[CreatePlayerActor] Creating player with speed="
+              << info.speed << std::endl;
     reg.AddComponent<Component::PlayerTag>(
-        entity, Component::PlayerTag{400.0f});
+        entity, Component::PlayerTag{info.speed});
     reg.AddComponent<Component::Controllable>(
         entity, Component::Controllable{});
-}
-
-void FactoryActors::CreateMermaidActor(
-    Engine::entity &entity, Engine::registry &reg, EnnemyInfo info) {
-    // Add pattern movement
-    reg.AddComponent<Component::PatternMovement>(
-        entity, Component::PatternMovement(
-                    Component::PatternMovement::PatternType::SineHorizontal,
-                    vector2f(0.0f, 50.0f), vector2f(0.0f, 2.0f),
-                    vector2f(-1.0f, 0.0f), info.speed));
-
-    // Add enemy shooting component
-    Component::EnemyShootTag enemy_shoot_tag(200.0f, 10.0f, {-3.0f, -15.0f});
-
-    // Add frame event for shooting
-    reg.AddComponent<Component::FrameEvents>(
-        entity, Component::FrameEvents("Attack", 5, [&reg](int entity_id) {
-            try {
-                auto &transform = reg.GetComponent<Component::Transform>(
-                    reg.EntityFromIndex(entity_id));
-                auto &enemy_shoot = reg.GetComponent<Component::EnemyShootTag>(
-                    reg.EntityFromIndex(entity_id));
-
-                vector2f shoot_direction = vector2f(-1.0f, 0.0f);
-                FactoryActors::GetInstance().CreateMermaidProjectile(
-                    reg, shoot_direction, enemy_shoot, entity_id, transform);
-            } catch (const std::exception &e) {
-                return;
-            }
-        }));
-
-    // Add timed events for periodic attacks
-    reg.AddComponent<Component::TimedEvents>(
-        entity, Component::TimedEvents(
-                    [&reg](int entity_id) {
-                        try {
-                            auto &animSprite =
-                                reg.GetComponent<Component::AnimatedSprite>(
-                                    reg.EntityFromIndex(entity_id));
-                            auto &health = reg.GetComponent<Component::Health>(
-                                reg.EntityFromIndex(entity_id));
-                            if (health.currentHealth <= 0)
-                                return;
-                            animSprite.SetCurrentAnimation("Attack");
-                        } catch (const std::exception &e) {
-                            return;
-                        }
-                    },
-                    2.0f));
-
-    reg.AddComponent<Component::EnemyShootTag>(
-        entity, std::move(enemy_shoot_tag));
 }
 
 }  // namespace server

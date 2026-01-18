@@ -1,0 +1,23 @@
+{
+  "uuid": "b0551234-a01e-4b05-8999-000000000001",
+  "name": "Boss - Golem",
+  "description": "A powerful golem boss encounter. The golem is a formidable enemy with high health and dangerous attacks.",
+  "difficulty": 8.0,
+  "tags": ["boss", "golem", "hard", "encounter"],
+  "width": 1200,
+  "spawn_rules": {
+    "min_distance_from_last": 5,
+    "max_frequency": 0.1
+  },
+  "obstacles": [],
+  "enemies": [
+    {
+      "tag": "golem",
+      "position": { "x": 600, "y": 400 },
+      "spawn_delay": 0.0
+    }
+  ],
+  "background": {
+    "layers": []
+  }
+}

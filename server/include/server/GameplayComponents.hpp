@@ -3,10 +3,15 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
 #include "server/Vector2f.hpp"
+
+namespace Engine {
+class registry;
+}
 
 namespace server::Component {
 
@@ -18,6 +23,11 @@ struct PlayerTag {
     float shoot_cooldown = 0.0f;
     float charge_time = 0.0f;
     int playerNumber = 0;
+
+    float gatling_duration = 0.0f;
+    float clock_shoot_gatling = 0.0f;
+    float delta_shoot_gatling = 0.1f;
+    int score = 0;
 };
 
 struct AnimationEnterPlayer {
@@ -26,6 +36,37 @@ struct AnimationEnterPlayer {
 
 struct EnemyTag {
     float speed = 100.0f;
+    // Subtype used for network serialization: matches
+    // server::network::EntityState::EnemyType
+    uint8_t subtype = 0;
+};
+
+/**
+ * @brief Tag component for boss entities.
+ *
+ * Bosses are powerful enemies that pause normal enemy spawning while alive.
+ * When a boss is spawned, the WorldGen system will stop spawning other enemies
+ * until the boss is defeated or all players are dead.
+ */
+struct BossTag {
+    /// Boss type identifier (e.g., "golem", "daemon_boss")
+    std::string boss_type;
+
+    explicit BossTag(std::string type = "unknown")
+        : boss_type(std::move(type)) {}
+};
+
+struct PowerUp {};
+
+/**
+ * @brief Tag component for obstacle entities (asteroids, walls, etc.)
+ *
+ * Obstacles are solid world objects spawned by WorldGen that can block
+ * players and projectiles. They move with the world scroll.
+ */
+struct ObstacleTag {
+    /// Subtype for network serialization (0=Asteroid, 1=Wall, etc.)
+    uint8_t subtype = 0;
 };
 
 struct TimedEvents {
@@ -45,8 +86,8 @@ struct TimedEvents {
      *
      * @param action Action callback function to execute (receives entity_id)
      */
-    void AddCooldownAction(
-        std::function<void(int)> action, float cooldown_max);
+    void AddCooldownAction(std::function<void(int)> action, float cooldown_max,
+        float delay = 0.0f);
 };
 
 struct FrameEvents {
@@ -90,6 +131,7 @@ struct EnemyShootTag {
     float speed_projectile = 200.0f;
     int damage_projectile = 10;
     vector2f offset_shoot_position = vector2f(0.0f, 0.0f);
+    int score_value = 100;
 
     /**
      * @brief Constructor for EnemyShootTag.
@@ -100,33 +142,81 @@ struct EnemyShootTag {
      * @param offset Offset position for shooting
      */
     EnemyShootTag(float speed = 200.0f, int damage = 10,
-        vector2f offset = vector2f(0.0f, 0.0f));
+        vector2f offset = vector2f(0.0f, 0.0f), int score = 100);
 };
 
 struct Projectile {
     enum class ProjectileType {
         Normal = 0,
         Charged = 1,
-        Enemy_Mermaid = 2
+        Enemy_Mermaid = 2,
+        Enemy_Daemon = 3,
+        Enemy_Golem = 4,
+        Enemy_Golem_Laser = 5,
+        Gatling = 6
     } type = ProjectileType::Normal;
     int damage;
     vector2f direction;
     float speed;
     int ownerId;  // ID of the entity that fired the projectile
     bool isEnemyProjectile = false;
+    float lifetime = -1.0f;  // Lifetime in seconds (-1 = infinite)
+    /**
+     * @brief How the projectile applies damage on contact.
+     * - OnImpact: deals damage once and is removed on hit.
+     * - DamageOverTime: deals damage every `tick_interval` seconds while
+     *   overlapping and is not removed on hit.
+     */
+    enum class DamageMode {
+        OnImpact = 0,
+        DamageOverTime = 1
+    } damage_mode = DamageMode::OnImpact;
+    /** Interval between damage ticks for DamageOverTime (seconds). */
+    float tick_interval = 0.1f;
+    /** Internal timer counting down to next tick. */
+    float tick_timer = 0.0f;
+};
+
+/**
+ * @brief Tracks enemy projectiles that have collided with a player projectile
+ *
+ * When a player projectile deflects/blocks enemy projectiles, their entity
+ * indices are stored here to prevent multiple collisions with the same target.
+ * This allows projectiles to maintain their damage through multiple
+ * projectile-to-projectile interactions.
+ */
+struct DeflectedProjectiles {
+    std::unordered_set<size_t> blocked_projectiles;
+
+    /**
+     * @brief Check if an enemy projectile has already been deflected
+     *
+     * @param entity_index The index of the enemy projectile to check
+     * @return true if already deflected, false otherwise
+     */
+    bool IsDeflected(size_t entity_index) const {
+        return blocked_projectiles.find(entity_index) !=
+               blocked_projectiles.end();
+    }
+
+    /**
+     * @brief Mark an enemy projectile as deflected
+     *
+     * @param entity_index The index of the enemy projectile
+     */
+    void AddDeflected(size_t entity_index) {
+        blocked_projectiles.insert(entity_index);
+    }
 };
 
 struct Health {
     int currentHealth;
     int maxHealth;
-    bool invincible;
-    float invincibilityDuration = 1.0f;
-    float invincibilityTimer = 0.0f;
+    float invincibilityDuration = 0.0f;
 
     explicit Health(int maxHealth = 100)
         : currentHealth(maxHealth),
           maxHealth(maxHealth),
-          invincible(false),
           invincibilityDuration(0.0f) {}
 };
 
@@ -170,13 +260,13 @@ struct PatternMovement {
     };
 
     // Constructor for Straight movement
-    explicit PatternMovement()
+    explicit PatternMovement(PatternType type, float baseSpeed)
         : currentWaypoint(0),
           type(PatternType::Straight),
           elapsed(0.f),
           spawnPos({0.f, 0.f}),
           baseDir({1.f, 0.f}),
-          baseSpeed(0.f),
+          baseSpeed(baseSpeed),
           amplitude({0.f, 0.f}),
           frequency({0.f, 0.f}),
           waypoints({}),
@@ -272,6 +362,30 @@ struct PatternMovement {
 
     // Follow player / target
     size_t targetEntityId = 0;  // Entity ID of the target to follow
+};
+
+/**
+ * @brief Component that makes an entity explode when it dies.
+ *
+ * When the entity's Health reaches zero, the system will deal `damage`
+ * to all entities with a `Health` component within `radius` units and
+ * trigger the entity's `AnimatedSprite` to play the "Attack" animation.
+ */
+struct ExplodeOnDeath {
+    float radius = 64.0f; /**< Explosion radius in world units */
+    int damage = 20;      /**< Damage dealt to nearby entities */
+    std::function<void(
+        Engine::registry &reg, int exploding_entity_id, int target_entity_id)>
+        onExplode;
+    bool exploded = false; /**< Internal flag to avoid re-triggering */
+
+    ExplodeOnDeath(float radius_ = 64.0f, int damage_ = 20,
+        std::function<void(Engine::registry &reg, int, int)> onExplode_ =
+            nullptr)
+        : radius(radius_),
+          damage(damage_),
+          onExplode(std::move(onExplode_)),
+          exploded(false) {}
 };
 
 struct AnimatedSprite {

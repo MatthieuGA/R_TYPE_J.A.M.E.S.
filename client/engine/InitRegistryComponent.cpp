@@ -23,6 +23,8 @@ void InitRegistryComponents(Engine::registry &reg) {
     // Register gameplay components
     reg.RegisterComponent<Rtype::Client::Component::PlayerTag>();
     reg.RegisterComponent<Rtype::Client::Component::EnemyTag>();
+    reg.RegisterComponent<Rtype::Client::Component::PowerUp>();
+    reg.RegisterComponent<Rtype::Client::Component::EnemyType>();
     reg.RegisterComponent<Rtype::Client::Component::EnemyShootTag>();
     reg.RegisterComponent<Rtype::Client::Component::Projectile>();
     reg.RegisterComponent<Rtype::Client::Component::Health>();
@@ -30,11 +32,18 @@ void InitRegistryComponents(Engine::registry &reg) {
     reg.RegisterComponent<Rtype::Client::Component::ParrallaxLayer>();
     reg.RegisterComponent<Rtype::Client::Component::AnimationEnterPlayer>();
     reg.RegisterComponent<Rtype::Client::Component::AnimationDeath>();
+    reg.RegisterComponent<Rtype::Client::Component::Draggable>();
     reg.RegisterComponent<Rtype::Client::Component::HealthBar>();
+    reg.RegisterComponent<Rtype::Client::Component::HealthBarBoss>();
     // Register networking components
     reg.RegisterComponent<Rtype::Client::Component::NetworkId>();
     reg.RegisterComponent<Rtype::Client::Component::InterpolatedPosition>();
     // Register scenes components
     reg.RegisterComponent<Rtype::Client::Component::SceneManagement>();
+    reg.RegisterComponent<Rtype::Client::Component::LobbyUI>();
+    reg.RegisterComponent<Rtype::Client::Component::GameOverState>();
+    reg.RegisterComponent<Rtype::Client::Component::FadeOverlay>();
+    reg.RegisterComponent<Rtype::Client::Component::GameOverText>();
+    reg.RegisterComponent<Rtype::Client::Component::LeaderboardText>();
 }
 }  // namespace Rtype::Client

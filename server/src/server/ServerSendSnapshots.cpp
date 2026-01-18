@@ -14,7 +14,8 @@ namespace server {
 enum EntityType : uint8_t {
     PLAYER = 0,
     ENEMY = 1,
-    PROJECTILE = 2
+    PROJECTILE = 2,
+    OBSTACLE = 3
 };
 
 int GetEntityTypeFromRegistry(Engine::registry &registry_, size_t i) {
@@ -26,6 +27,9 @@ int GetEntityTypeFromRegistry(Engine::registry &registry_, size_t i) {
     }
     if (registry_.GetComponents<Component::Projectile>().has(i)) {
         return EntityType::PROJECTILE;
+    }
+    if (registry_.GetComponents<Component::ObstacleTag>().has(i)) {
+        return EntityType::OBSTACLE;
     }
     // Add more component checks for other entity types as needed
     return -1;  // Unknown entity type
@@ -79,6 +83,29 @@ void SendServerSnapshotPlayer(network::EntityState &entity_state,
             static_cast<uint16_t>(std::clamp(health.currentHealth, 0, 65535));
     } catch (const std::exception &e) {
         entity_state.health = 0;
+    }
+    // Set invincibility time if applicable
+    try {
+        auto &invincibility = registry_.GetComponent<Component::Health>(
+            registry_.EntityFromIndex(i));
+        if (invincibility.invincibilityDuration > 0.0f) {
+            entity_state.invincibility_time = static_cast<uint16_t>(std::clamp(
+                static_cast<int>(invincibility.invincibilityDuration), 0,
+                65535));
+        } else {
+            entity_state.invincibility_time = 0;
+        }
+    } catch (const std::exception &e) {
+        entity_state.invincibility_time = 0;
+    }
+    // Set score if applicable
+    try {
+        auto &score = registry_.GetComponent<Component::PlayerTag>(
+            registry_.EntityFromIndex(i));
+        entity_state.score =
+            static_cast<uint16_t>(std::clamp(score.score, 0, 65535));
+    } catch (const std::exception &e) {
+        entity_state.score = 0;
     }
 }
 
@@ -167,6 +194,15 @@ void SendServerSnapshotEnemy(network::EntityState &entity_state,
     } catch (const std::exception &e) {
         entity_state.health = 0;
     }
+
+    // Set enemy subtype for client to instantiate correct prefab
+    try {
+        auto &etag = registry_.GetComponent<Component::EnemyTag>(
+            registry_.EntityFromIndex(i));
+        entity_state.enemy_type = etag.subtype;
+    } catch (const std::exception &e) {
+        entity_state.enemy_type = 0;  // default to Mermaid
+    }
 }
 
 void SendServerSnapshotProjectile(network::EntityState &entity_state,
@@ -215,6 +251,10 @@ void Server::SendSnapshotsToAllClients() {
             SendServerSnapshotProjectile(
                 entity_state, registry_, i, entity_network);
         } else if (registry_.GetComponents<Component::EnemyTag>().has(i)) {
+            SendServerSnapshotEnemy(
+                entity_state, registry_, i, entity_network);
+        } else if (registry_.GetComponents<Component::ObstacleTag>().has(i)) {
+            // Send obstacle as a basic entity (similar to enemies)
             SendServerSnapshotEnemy(
                 entity_state, registry_, i, entity_network);
         } else {

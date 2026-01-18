@@ -13,6 +13,7 @@ class GameScene : public Scene_A {
  public:
     GameScene() = default;
     void InitScene(registry &reg, GameWorld &gameWorld) override;
+    void DestroyScene(registry &reg) override;
 
  private:
     struct BackgroundInfo {
@@ -33,5 +34,6 @@ class GameScene : public Scene_A {
     void InitBackgrounds(registry &reg);
     void AddBackgroundEntity(
         registry &reg, struct BackgroundInfo info, float initial_x);
+    void InitGameOverUI(registry &reg);
 };
 }  // namespace Rtype::Client

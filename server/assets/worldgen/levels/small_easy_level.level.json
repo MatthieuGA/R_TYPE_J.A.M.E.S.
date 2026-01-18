@@ -1,0 +1,14 @@
+{
+  "uuid": "ffa65883-ef1c-48e9-81e0-5f5eee800143",
+  "name": "small easy level",
+  "author": "Anonymous",
+  "description": "test",
+  "target_difficulty": 2,
+  "is_endless": false,
+  "frames": [
+    "a1b2c3d4-e5f6-4a7b-8c9d-111111111111",
+    "b2c3d4e5-f6a7-4b8c-9d0e-222222222222",
+    "c3d4e5f6-a7b8-4c9d-8e1f-333333333333",
+    "b0551234-a01e-4b05-8999-000000000001"
+  ]
+}
