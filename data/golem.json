@@ -1,7 +1,7 @@
 {
     "tag": "golem",
     "health": 600,
-    "speed": 100.0,
+    "speed": 50.0,
     "spritePath": "ennemies/golem/golem_Boss.png",
     "hitbox": {
         "x": 50.0,

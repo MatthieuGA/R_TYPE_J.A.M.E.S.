@@ -415,6 +415,15 @@ void WorldGenSystem::SpawnEnemy(
     float spawn_x = screen_width_ + (event.world_x - GetWorldOffset());
     float spawn_y = event.world_y;
 
+    // Desactivate spawn if boss enemy already exists
+    auto ennemies = registry.GetComponents<Component::EnemyTag>();
+    for (auto &ennemy : ennemies) {
+        if (ennemy.has_value()) {
+            if (ennemy->subtype == 3)  // Boss subtype
+                return;
+        }
+    }
+
     // Create entity
     auto entity = registry.spawn_entity();
 

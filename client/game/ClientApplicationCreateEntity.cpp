@@ -153,7 +153,7 @@ void CreateGolemProjectile(Engine::registry &reg,
     reg.AddComponent<Component::Projectile>(new_entity,
         Component::Projectile{static_cast<int>(BASIC_PROJECTILE_DAMAGE),
             Engine::Graphics::Vector2f(decoded_vx, decoded_vy),
-            BASIC_PROJECTILE_SPEED, -1, true});
+            BASIC_PROJECTILE_SPEED * 2.f, -1, true});
     reg.AddComponent<Component::HitBox>(
         new_entity, Component::HitBox{8.0f, 8.0f});
     reg.AddComponent<Component::Velocity>(

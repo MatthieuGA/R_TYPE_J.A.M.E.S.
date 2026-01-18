@@ -99,7 +99,7 @@ void FactoryActors::CreatePlayerActor(Engine::entity &entity,
     std::cout << "[CreatePlayerActor] Creating player with speed="
               << info.speed << std::endl;
     reg.AddComponent<Component::PlayerTag>(
-        entity, Component::PlayerTag{info.speed});
+        entity, Component::PlayerTag{500.0f});
     reg.AddComponent<Component::Controllable>(
         entity, Component::Controllable{});
 }

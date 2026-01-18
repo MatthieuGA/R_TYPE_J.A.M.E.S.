@@ -27,7 +27,7 @@ void SpawnEnemyFromRight(Engine::registry &reg) {
 
     std::vector<std::pair<std::string, int>> enemy_types = {{"health", 15},
         {"invinsibility", 15}, {"gatling", 15}, {"mermaid", 40},
-        {"kami_fish", 40}, {"daemon", 15}};
+        {"kamifish", 40}, {"daemon", 15}};
     int tt = 0;
     for (const auto &et : enemy_types)
         tt += et.second;
