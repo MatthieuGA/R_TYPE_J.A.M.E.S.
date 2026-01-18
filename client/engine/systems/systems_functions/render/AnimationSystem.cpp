@@ -65,6 +65,10 @@ void SetFrame(Com::AnimatedSprite::Animation &animation,
             left = animation.current_frame * animation.frameWidth;
             top = 0;
         } else {
+            // Prevent divide by zero if frameWidth is somehow 0 or negative
+            if (animation.frameWidth <= 0) {
+                return;
+            }
             const int frames_per_row = sheet_width / animation.frameWidth;
             const int row = animation.current_frame / frames_per_row;
             const int col = animation.current_frame % frames_per_row;

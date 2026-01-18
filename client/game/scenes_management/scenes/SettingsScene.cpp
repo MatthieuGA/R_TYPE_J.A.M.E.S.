@@ -619,11 +619,16 @@ void SettingsScene::RefreshKeyIcons(
     }
     float rebind_y = y_it->second;
 
-    // Remove old icon entities from inputs_tab_entities_ and destroy them
+    // Remove old icon entities - collect them first, then kill in a batch
+    std::vector<Engine::entity> icons_to_remove;
     auto icons_it = action_icon_entities_.find(action);
     if (icons_it != action_icon_entities_.end()) {
-        for (Engine::entity old_icon : icons_it->second) {
-            // Remove from inputs_tab_entities_
+        // Collect all old icons to remove
+        icons_to_remove = icons_it->second;
+        icons_it->second.clear();
+        
+        // Remove from inputs_tab_entities_
+        for (const auto &old_icon : icons_to_remove) {
             auto it = std::find_if(inputs_tab_entities_.begin(),
                 inputs_tab_entities_.end(),
                 [&old_icon](const Engine::entity &e) {
@@ -632,16 +637,17 @@ void SettingsScene::RefreshKeyIcons(
             if (it != inputs_tab_entities_.end()) {
                 inputs_tab_entities_.erase(it);
             }
-            // Destroy the entity
-            try {
-                reg.KillEntity(old_icon);
-            } catch (...) {}
         }
-        icons_it->second.clear();
     }
 
     // Create new icons based on current bindings
     if (!gameWorld.input_manager_) {
+        // Still need to kill old icons even if we can't create new ones
+        for (auto &entity : icons_to_remove) {
+            try {
+                reg.KillEntity(entity);
+            } catch (...) {}
+        }
         return;
     }
 
@@ -667,6 +673,14 @@ void SettingsScene::RefreshKeyIcons(
         // Only show first 3 bindings to avoid overflow
         if (icon_x > 880.0f)
             break;
+    }
+
+    // Kill all old icons in a batch AFTER creating new ones to avoid
+    // drawable sparse array corruption
+    for (auto &entity : icons_to_remove) {
+        try {
+            reg.KillEntity(entity);
+        } catch (...) {}
     }
 
     action_icon_entities_[action] = std::move(new_icons);
