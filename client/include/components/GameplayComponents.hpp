@@ -370,6 +370,7 @@ struct HealthBar {
 
     // Compatibility constructors
     explicit HealthBar(sf::Vector2f offset) : offset(offset.x, offset.y) {}
+
     explicit HealthBar(Engine::Graphics::Vector2f offset) : offset(offset) {}
 };
 

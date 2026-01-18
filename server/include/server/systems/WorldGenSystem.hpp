@@ -195,6 +195,31 @@ class WorldGenSystem {
      */
     worldgen::WorldGenConfigLoader *GetConfigLoader();
 
+    /**
+     * @brief Checks if a boss is currently active.
+     *
+     * When a boss is active, normal enemy spawning is paused.
+     *
+     * @return True if a boss is alive.
+     */
+    bool IsBossActive() const;
+
+    /**
+     * @brief Notifies the system that a boss has been defeated.
+     *
+     * This will resume normal enemy spawning and process any queued events.
+     */
+    void NotifyBossDefeated();
+
+    /**
+     * @brief Checks the registry for any alive bosses and updates state.
+     *
+     * Called each tick to detect when all bosses have been defeated.
+     *
+     * @param registry The ECS registry to check.
+     */
+    void UpdateBossState(Engine::registry &registry);
+
  private:
     /**
      * @brief Processes a spawn event and creates the corresponding entity.
@@ -224,6 +249,14 @@ class WorldGenSystem {
     void SpawnEnemy(
         const worldgen::SpawnEvent &event, Engine::registry &registry);
 
+    /**
+     * @brief Checks if an enemy tag corresponds to a boss type.
+     *
+     * @param tag The enemy tag to check.
+     * @return True if the tag is a boss type.
+     */
+    bool IsBossEnemy(const std::string &tag) const;
+
     std::unique_ptr<worldgen::WorldGenConfigLoader> config_loader_;
     std::unique_ptr<worldgen::WorldGenManager>
         manager_owned_;  // For Initialize() path
@@ -233,6 +266,10 @@ class WorldGenSystem {
         nullptr;  // Pointer to registry (for spawn callback)
     bool initialized_ = false;
     float screen_width_ = 1920.0f;  // Screen width for despawn calculation
+
+    // Boss tracking state
+    bool boss_active_ = false;   // True when a boss is alive
+    int boss_spawn_frame_ = -1;  // Frame number when boss spawned (-1 = none)
 };
 
 }  // namespace server

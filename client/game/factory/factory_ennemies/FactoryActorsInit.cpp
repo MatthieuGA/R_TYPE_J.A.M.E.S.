@@ -29,7 +29,7 @@ std::string GetStringFromJson(const nlohmann::json &j, const std::string &key,
 
 float GetFloatFromJson(
     const nlohmann::json &j, const std::string &key, float defaultValue) {
-    if (j.contains(key) && j[key].is_number_float())
+    if (j.contains(key) && j[key].is_number())
         return j[key].get<float>();
     return defaultValue;
 }
@@ -41,9 +41,9 @@ Engine::Graphics::Vector2f GetVector2fFromJson(const nlohmann::json &j,
     if (j.contains(key) && j[key].is_object()) {
         float x = defaultValue.x;
         float y = defaultValue.y;
-        if (j[key].contains("x") && j[key]["x"].is_number_float())
+        if (j[key].contains("x") && j[key]["x"].is_number())
             x = j[key]["x"].get<float>();
-        if (j[key].contains("y") && j[key]["y"].is_number_float())
+        if (j[key].contains("y") && j[key]["y"].is_number())
             y = j[key]["y"].get<float>();
         return Engine::Graphics::Vector2f(x, y);
     }
@@ -94,9 +94,8 @@ void FactoryActors::loadConfigEnemy(
     // Transform
     try {
         nlohmann::json transform = GetSubJsonFromJson(parsed, "transform");
-        info.scale =
-            GetVector2fFromJson(transform, "scale",
-                                Engine::Graphics::Vector2f(1.f, 1.f));
+        info.scale = GetVector2fFromJson(
+            transform, "scale", Engine::Graphics::Vector2f(1.f, 1.f));
     } catch (...) {
         info.scale = Engine::Graphics::Vector2f(1.f, 1.f);
     }

@@ -54,10 +54,9 @@ void FactoryActors::CreateBasicActor(
                     Component::Transform::CENTER));
     reg.AddComponent<Component::Health>(
         entity, Component::Health(info.health));
-    reg.AddComponent<Component::HealthBar>(entity,
-        Component::HealthBar{
-            Engine::Graphics::Vector2f(info.offset_healthbar.x,
-                                       info.offset_healthbar.y)});
+    reg.AddComponent<Component::HealthBar>(
+        entity, Component::HealthBar{Engine::Graphics::Vector2f(
+                    info.offset_healthbar.x, info.offset_healthbar.y)});
     reg.AddComponent<Component::HitBox>(
         entity, Component::HitBox{info.hitbox.x, info.hitbox.y});
     reg.AddComponent<Component::Velocity>(entity, Component::Velocity{});

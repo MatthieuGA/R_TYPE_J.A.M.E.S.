@@ -113,8 +113,7 @@ static void UpdateEnemyEntity(GameWorld &game_world, size_t entity_index,
     }
 
     // Update health if component exists
-    auto &healths =
-        game_world.registry_.GetComponents<Component::Health>();
+    auto &healths = game_world.registry_.GetComponents<Component::Health>();
     if (healths.has(entity_index)) {
         auto &health = healths[entity_index];
         if (health.has_value()) {

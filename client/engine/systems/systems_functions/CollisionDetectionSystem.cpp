@@ -37,7 +37,10 @@ void ComputeCollision(Eng::sparse_array<Com::Solid> const &solids, int i,
     bool aSolid = solids.has(i) ? solids[i]->isSolid : false;
     bool bSolid = solids.has(j) ? solids[j]->isSolid : false;
     // If neither entity is solid, nothing to resolve
-    if (!aSolid && !bSolid)
+    // Also skip if only one is solid - we only resolve solid vs solid
+    // collisions This prevents players from being pushed by their own
+    // non-solid projectiles
+    if (!aSolid || !bSolid)
         return;
 
     // Check locked flags: locked entities cannot be moved
