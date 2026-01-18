@@ -5,6 +5,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace client {
@@ -346,29 +347,79 @@ void ServerConnection::HandleGameStart(const std::vector<uint8_t> &data) {
 }
 
 void ServerConnection::HandleGameEnd(const std::vector<uint8_t> &data) {
-    if (data.size() < 4) {  // Payload is 4 bytes: winning_player_id + reserved
-        std::cerr << "[Network] GAME_END malformed" << std::endl;
+    // New extended format: 8 bytes header + (player_count * 39 bytes)
+    // leaderboard
+    if (data.size() < 8) {
+        std::cerr << "[Network] GAME_END malformed (size=" << data.size()
+                  << ", expected at least 8)" << std::endl;
         return;
     }
 
     uint8_t winning_player_id = data[0];
+    uint8_t game_mode = data[1];
+    uint8_t player_count = data[2];
+    // data[3-7] are reserved
 
     std::string result_type;
     if (winning_player_id == 0) {
-        result_type = "GAME OVER";
+        result_type = "GAME OVER (All Lost)";
     } else if (winning_player_id == 255) {
-        result_type = "VICTORY (Level Complete)";
+        result_type = "VICTORY (Level Complete - All Win)";
+    } else if (winning_player_id == player_id_.load()) {
+        result_type = "VICTORY (You Won!)";
     } else {
-        result_type = "Winner: Player " + std::to_string(winning_player_id);
+        result_type =
+            "GAME OVER (Player " + std::to_string(winning_player_id) + " Won)";
     }
 
-    std::cout << "[Network] GAME_END received! " << result_type << std::endl;
+    std::cout << "[Network] GAME_END received! " << result_type
+              << " (mode=" << static_cast<int>(game_mode)
+              << ", players=" << static_cast<int>(player_count) << ")"
+              << std::endl;
 
+    // Parse leaderboard entries
+    std::vector<LeaderboardEntry> leaderboard;
+    size_t offset = 8;  // Start after header
+    for (uint8_t i = 0; i < player_count && offset + 39 <= data.size(); ++i) {
+        LeaderboardEntry entry;
+        entry.player_id = data[offset];
+
+        // Read 32-byte name
+        std::string name;
+        for (size_t j = 0; j < 32 && data[offset + 1 + j] != '\0'; ++j) {
+            name += static_cast<char>(data[offset + 1 + j]);
+        }
+        entry.name = name;
+
+        // Read score (little-endian u32)
+        entry.score = static_cast<uint32_t>(data[offset + 33]) |
+                      (static_cast<uint32_t>(data[offset + 34]) << 8) |
+                      (static_cast<uint32_t>(data[offset + 35]) << 16) |
+                      (static_cast<uint32_t>(data[offset + 36]) << 24);
+
+        entry.death_order = data[offset + 37];
+        entry.is_winner = data[offset + 38] != 0;
+
+        leaderboard.push_back(entry);
+        offset += 39;
+
+        std::cout << "[Network] Leaderboard #" << static_cast<int>(i + 1)
+                  << ": " << entry.name << " (score=" << entry.score
+                  << ", winner=" << entry.is_winner << ")" << std::endl;
+    }
+
+    // Store parsed data
     winning_player_id_.store(winning_player_id);
+    game_mode_.store(game_mode);
     game_ended_.store(true);
     game_started_.store(false);
     lobby_ready_count_.store(0);  // Reset ready count for lobby display
     is_local_player_ready_.store(false);  // Reset local player's ready state
+
+    {
+        std::lock_guard<std::mutex> lock(leaderboard_mutex_);
+        leaderboard_ = std::move(leaderboard);
+    }
 }
 
 void ServerConnection::HandleNotifyDisconnect(

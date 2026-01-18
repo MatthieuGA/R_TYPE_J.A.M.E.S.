@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
 
 #include <boost/asio.hpp>
 
@@ -55,14 +56,19 @@ class PacketSender {
     void SendGameStart();
 
     /**
-     * @brief Send GAME_END packet to all authenticated players
+     * @brief Send GAME_END packet to all authenticated players with
+     * leaderboard
      *
      * RFC Section 5.6: Notifies all players that the game has ended.
-     * Used when all players are dead (game over) or match concludes.
+     * Includes leaderboard data with player names, scores, and rankings.
      *
-     * @param winning_player_id The player who won (0 = draw/game over)
+     * @param winning_player_id The player who won (0 = all lost, 255 = level
+     * complete)
+     * @param game_mode 0 = finite, 1 = infinite
+     * @param leaderboard Vector of player score data for display
      */
-    void SendGameEnd(uint8_t winning_player_id = 0);
+    void SendGameEnd(uint8_t winning_player_id, uint8_t game_mode,
+        const std::vector<network::PlayerScoreData> &leaderboard);
 
     /**
      * @brief Send NOTIFY_CONNECT packet to all authenticated players

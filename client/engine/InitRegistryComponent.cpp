@@ -44,5 +44,6 @@ void InitRegistryComponents(Engine::registry &reg) {
     reg.RegisterComponent<Rtype::Client::Component::GameOverState>();
     reg.RegisterComponent<Rtype::Client::Component::FadeOverlay>();
     reg.RegisterComponent<Rtype::Client::Component::GameOverText>();
+    reg.RegisterComponent<Rtype::Client::Component::LeaderboardText>();
 }
 }  // namespace Rtype::Client

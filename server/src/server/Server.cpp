@@ -1,5 +1,6 @@
 #include "server/Server.hpp"
 
+#include <algorithm>
 #include <filesystem>
 #include <iostream>
 #include <limits>
@@ -252,9 +253,22 @@ bool Server::AreAllPlayersDead() {
     return false;
 }
 
-void Server::NotifyPlayerDeath() {
+void Server::NotifyPlayerDeath(uint8_t player_id, int final_score) {
     alive_players_--;
-    std::cout << "[Server::NotifyPlayerDeath] Player died. Alive players: "
+
+    // Track death order and final score
+    death_order_counter_++;
+    if (player_records_.find(player_id) != player_records_.end()) {
+        player_records_[player_id].death_order = death_order_counter_;
+        player_records_[player_id].is_alive = false;
+        player_records_[player_id].score = final_score;
+        std::cout << "[Server::NotifyPlayerDeath] Player "
+                  << static_cast<int>(player_id)
+                  << " died (order: " << death_order_counter_
+                  << ", score: " << final_score << ")" << std::endl;
+    }
+
+    std::cout << "[Server::NotifyPlayerDeath] Alive players: "
               << alive_players_ << "/" << total_players_ << std::endl;
 }
 
@@ -285,9 +299,22 @@ void Server::HandlePlayerDisconnect(uint8_t player_id) {
         return;  // Not in game, nothing to do
     }
 
+    // Get score before destroying entity
+    int final_score = 0;
+    auto &player_tags = registry_.GetComponents<Component::PlayerTag>();
+    for (std::size_t i = 0; i < player_tags.size(); ++i) {
+        if (!player_tags.has(i))
+            continue;
+        if (player_tags[i].value().playerNumber ==
+            static_cast<int>(player_id)) {
+            final_score = player_tags[i].value().score;
+            break;
+        }
+    }
+
     // Destroy the player's entity and update tracking only if entity was found
     if (DestroyPlayerEntity(player_id) && alive_players_ > 0) {
-        alive_players_--;
+        NotifyPlayerDeath(player_id, final_score);
     }
 
     std::cout << "[Server::HandlePlayerDisconnect] Player "
@@ -299,7 +326,12 @@ void Server::HandlePlayerDisconnect(uint8_t player_id) {
     if (connection_manager_.GetAuthenticatedCount() == 0 ||
         alive_players_ <= 0) {
         std::cout << "[Server] All players gone! Game Over." << std::endl;
-        packet_sender_.SendGameEnd(0);
+
+        // Build leaderboard and send GAME_END
+        auto leaderboard = BuildLeaderboard(false);  // false = game over
+        uint8_t game_mode =
+            (worldgen_manager_ && !worldgen_manager_->IsEndlessMode()) ? 0 : 1;
+        packet_sender_.SendGameEnd(0, game_mode, leaderboard);
         ResetToLobby();
     }
 }
@@ -322,6 +354,10 @@ void Server::ResetToLobby() {
 
     // Now safe to destroy the system
     worldgen_system_.reset();
+
+    // Reset player tracking
+    player_records_.clear();
+    death_order_counter_ = 0;
 
     // Reset all client ready states
     connection_manager_.ResetAllReadyStates();
@@ -368,6 +404,26 @@ void Server::Update() {
         worldgen_system_->Update(1.0f / 60.0f, 200.0f, registry_);
     }
 
+    // Update alive player scores in records (for accurate leaderboard)
+    auto &player_tags = registry_.GetComponents<Component::PlayerTag>();
+    for (std::size_t i = 0; i < player_tags.size(); ++i) {
+        if (!player_tags.has(i))
+            continue;
+        uint8_t pid =
+            static_cast<uint8_t>(player_tags[i].value().playerNumber);
+        if (player_records_.find(pid) != player_records_.end() &&
+            player_records_[pid].is_alive) {
+            player_records_[pid].score = player_tags[i].value().score;
+        }
+    }
+
+    // Determine game mode
+    bool is_finite = worldgen_manager_ &&
+                     worldgen_manager_->IsLevelComplete() &&
+                     !worldgen_manager_->IsEndlessMode();
+    bool is_endless = !worldgen_manager_ || worldgen_manager_->IsEndlessMode();
+    uint8_t game_mode = is_endless ? 1 : 0;
+
     // Check for level completion (victory condition for finite levels)
     if (worldgen_manager_ && worldgen_manager_->IsLevelComplete() &&
         !worldgen_manager_->IsEndlessMode()) {
@@ -381,13 +437,23 @@ void Server::Update() {
             victory_timer_ += g_frame_delta_ms / 1000.0f;
 
             if (victory_timer_ >= VICTORY_DELAY_SEC) {
-                std::cout << "[Server] Victory delay complete. Sending "
-                             "GAME_END (VICTORY) packet."
-                          << std::endl;
+                std::cout
+                    << "[Server] Victory delay complete. Determining winner..."
+                    << std::endl;
 
-                // Send GAME_END packet with 255 = level complete / victory
-                // Only survivors get the victory screen
-                packet_sender_.SendGameEnd(255);
+                // For finite mode:
+                // - If all players alive, winner is the one with highest score
+                // - If some died, winner is the one who survived longest
+                uint8_t winner_id =
+                    DetermineWinner(true);  // true = victory scenario
+
+                // Build leaderboard with proper winner flags
+                auto leaderboard = BuildLeaderboard(true, winner_id);
+
+                std::cout << "[Server] Sending GAME_END (winner="
+                          << static_cast<int>(winner_id) << ")" << std::endl;
+
+                packet_sender_.SendGameEnd(winner_id, game_mode, leaderboard);
 
                 // Reset server to lobby state
                 ResetToLobby();
@@ -411,13 +477,24 @@ void Server::Update() {
             game_over_timer_ += g_frame_delta_ms / 1000.0f;
 
             if (game_over_timer_ >= GAME_OVER_DELAY_SEC) {
-                std::cout << "[Server] Game over delay complete. Sending "
-                             "GAME_END packet."
+                std::cout << "[Server] Game over delay complete. Determining "
+                             "winner..."
                           << std::endl;
 
-                // Send GAME_END packet to all clients (0 = no winner, game
-                // lost)
-                packet_sender_.SendGameEnd(0);
+                // For game over (all dead):
+                // - In infinite mode: winner is who survived longest (died
+                // last)
+                // - If tie (died same frame), winner is who had more points
+                uint8_t winner_id =
+                    DetermineWinner(false);  // false = all dead scenario
+
+                // Build leaderboard
+                auto leaderboard = BuildLeaderboard(false, winner_id);
+
+                std::cout << "[Server] Sending GAME_END (winner="
+                          << static_cast<int>(winner_id) << ")" << std::endl;
+
+                packet_sender_.SendGameEnd(winner_id, game_mode, leaderboard);
 
                 // Reset server to lobby state
                 ResetToLobby();
@@ -434,6 +511,102 @@ void Server::Update() {
     }
 
     SendSnapshotsToAllClients();
+}
+
+uint8_t Server::DetermineWinner(bool is_victory) {
+    std::vector<std::pair<uint8_t, const PlayerDeathRecord *>> candidates;
+
+    // Collect all player records
+    for (const auto &[pid, record] : player_records_) {
+        candidates.emplace_back(pid, &record);
+    }
+
+    if (candidates.empty()) {
+        return 0;  // No players
+    }
+
+    // For finite mode with victory (level complete):
+    // - If all alive: highest score wins
+    // - If some died: whoever survived longest (lowest death_order among dead,
+    //   or alive) wins, tie-break by score
+    if (is_victory) {
+        // Check if anyone is still alive
+        bool anyone_alive = false;
+        for (const auto &[pid, rec] : candidates) {
+            if (rec->is_alive) {
+                anyone_alive = true;
+                break;
+            }
+        }
+
+        if (anyone_alive) {
+            // All alive survivors: pick highest score among alive
+            uint8_t winner = 0;
+            int best_score = -999999;
+            for (const auto &[pid, rec] : candidates) {
+                if (rec->is_alive && rec->score > best_score) {
+                    best_score = rec->score;
+                    winner = pid;
+                }
+            }
+            return winner;
+        }
+    }
+
+    // For infinite mode or when all dead:
+    // Winner is whoever survived longest (died last = highest death_order)
+    // Tie-break: highest score
+    uint8_t winner = 0;
+    int best_death_order = -1;  // Higher = died later = better
+    int best_score = -999999;
+
+    for (const auto &[pid, rec] : candidates) {
+        int death_order = rec->is_alive ? 99999 : rec->death_order;
+
+        if (death_order > best_death_order ||
+            (death_order == best_death_order && rec->score > best_score)) {
+            best_death_order = death_order;
+            best_score = rec->score;
+            winner = pid;
+        }
+    }
+
+    return winner;
+}
+
+std::vector<network::PlayerScoreData> Server::BuildLeaderboard(
+    bool is_victory, uint8_t winner_id) {
+    std::vector<network::PlayerScoreData> leaderboard;
+
+    for (const auto &[pid, record] : player_records_) {
+        network::PlayerScoreData entry;
+        entry.player_id = network::PlayerId{pid};
+        entry.SetName(record.username);
+        entry.score = static_cast<uint32_t>(std::max(0, record.score));
+        entry.death_order = static_cast<uint8_t>(record.death_order);
+        entry.is_winner = (pid == winner_id) ? 1 : 0;
+        leaderboard.push_back(entry);
+    }
+
+    // Sort by: 1) is_winner desc, 2) death_order asc (0=alive first), 3) score
+    // desc
+    std::sort(leaderboard.begin(), leaderboard.end(),
+        [](const network::PlayerScoreData &a,
+            const network::PlayerScoreData &b) {
+            if (a.is_winner != b.is_winner)
+                return a.is_winner > b.is_winner;
+            // death_order 0 = alive, higher = died later
+            // We want alive first, then died last (highest death_order)
+            if (a.death_order == 0 && b.death_order != 0)
+                return true;
+            if (b.death_order == 0 && a.death_order != 0)
+                return false;
+            if (a.death_order != b.death_order)
+                return a.death_order > b.death_order;  // Died later = better
+            return a.score > b.score;
+        });
+
+    return leaderboard;
 }
 
 Engine::registry &Server::GetRegistry() {

@@ -32,8 +32,13 @@ void DeathHandling(Engine::registry &reg,
                   << std::endl;
         auto &playerTag = reg.GetComponents<Component::PlayerTag>()[i].value();
         playerTag.score -= 250;  // Penalize score on death
+
+        // Get player info for death tracking
+        uint8_t player_id = static_cast<uint8_t>(playerTag.playerNumber);
+        int final_score = playerTag.score;
+
         if (Server::GetInstance()) {
-            Server::GetInstance()->NotifyPlayerDeath();
+            Server::GetInstance()->NotifyPlayerDeath(player_id, final_score);
         }
     }
 
