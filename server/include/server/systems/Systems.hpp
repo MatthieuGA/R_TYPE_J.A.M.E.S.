@@ -10,6 +10,8 @@ namespace server {
 extern float g_frame_delta_ms;
 extern float g_frame_delta_seconds;
 extern float g_game_speed_multiplier;  // Game speed (set by client)
+extern uint8_t g_difficulty_level;             // 0=Easy, 1=Normal, 2=Hard
+extern bool g_killable_enemy_projectiles;  // Can player projectiles destroy enemy projectiles
 
 // Minimum delta per frame (enforces maximum 60 FPS).
 static constexpr float kMinFrameDeltaSeconds = 1.0f / 60.0f;
@@ -84,5 +86,13 @@ void ObstacleCollisionSystem(Engine::registry &reg,
     Engine::sparse_array<Component::PlayerTag> const &player_tags,
     Engine::sparse_array<Component::ObstacleTag> const &obstacle_tags,
     Engine::sparse_array<Component::AnimatedSprite> &animated_sprites);
+
+void PlayerGatlingSystem(Engine::registry &reg,
+    Engine::sparse_array<Component::Transform> const &transforms,
+    Engine::sparse_array<Component::PlayerTag> &player_tags);
+
+void DespawnOffscreenSystem(Engine::registry &reg,
+    Engine::sparse_array<Component::Transform> &transforms,
+    Engine::sparse_array<Component::PlayerTag> const &player_tags);
 
 }  // namespace server
