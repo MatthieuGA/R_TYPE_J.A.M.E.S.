@@ -60,6 +60,27 @@ void PacketHandler::RegisterHandlers() {
             }
         };
 
+    // Register SET_DIFFICULTY handler (0x0C)
+    packet_handlers_[network::PacketType::SetDifficulty] =
+        [this](
+            ClientConnection &client, const network::PacketVariant &packet) {
+            if (const auto *diff_packet =
+                    std::get_if<network::SetDifficultyPacket>(&packet)) {
+                HandleSetDifficulty(client, *diff_packet);
+            }
+        };
+
+    // Register SET_KILLABLE_PROJECTILES handler (0x0D)
+    packet_handlers_[network::PacketType::SetKillableProjectiles] =
+        [this](
+            ClientConnection &client, const network::PacketVariant &packet) {
+            if (const auto *killable_packet =
+                    std::get_if<network::SetKillableProjectilesPacket>(
+                        &packet)) {
+                HandleSetKillableProjectiles(client, *killable_packet);
+            }
+        };
+
     std::cout << "Registered " << packet_handlers_.size() << " packet handlers"
               << std::endl;
 }
@@ -347,6 +368,40 @@ void PacketHandler::HandleSetGameSpeed(
 
     // Broadcast to all clients so their UI can update
     packet_sender_.SendNotifyGameSpeed(speed);
+}
+
+void PacketHandler::HandleSetDifficulty(
+    ClientConnection &client, const network::SetDifficultyPacket &packet) {
+    // Clamp difficulty to valid range (0=Easy, 1=Normal, 2=Hard)
+    uint8_t difficulty = std::clamp<uint8_t>(packet.difficulty, 0, 2);
+
+    extern uint8_t g_difficulty_level;
+    g_difficulty_level = difficulty;
+
+    const char *difficulty_names[] = {"Easy", "Normal", "Hard"};
+    std::cout << "Difficulty set to " << difficulty_names[difficulty]
+              << " by player " << static_cast<int>(client.player_id_) << " ('"
+              << client.username_ << "')" << std::endl;
+
+    // Broadcast to all clients
+    packet_sender_.SendNotifyDifficulty(difficulty);
+}
+
+void PacketHandler::HandleSetKillableProjectiles(ClientConnection &client,
+    const network::SetKillableProjectilesPacket &packet) {
+    // Convert byte to bool
+    bool enabled = (packet.enabled != 0);
+
+    extern bool g_killable_enemy_projectiles;
+    g_killable_enemy_projectiles = enabled;
+
+    std::cout << "Killable projectiles set to "
+              << (enabled ? "ENABLED" : "DISABLED") << " by player "
+              << static_cast<int>(client.player_id_) << " ('" << client.username_
+              << "')" << std::endl;
+
+    // Broadcast to all clients
+    packet_sender_.SendNotifyKillableProjectiles(enabled);
 }
 
 std::string PacketHandler::Trim(

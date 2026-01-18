@@ -106,6 +106,18 @@ class PacketSender {
      */
     void SendNotifyGameSpeed(float speed);
 
+    /**
+     * @brief Broadcast difficulty change to all clients
+     * @param difficulty Difficulty level (0=Easy, 1=Normal, 2=Hard)
+     */
+    void SendNotifyDifficulty(uint8_t difficulty);
+
+    /**
+     * @brief Broadcast killable projectiles setting to all clients
+     * @param enabled Whether enemy projectiles can be destroyed
+     */
+    void SendNotifyKillableProjectiles(bool enabled);
+
     void SendSnapshot(network::EntityState entity_state, int tick);
 
  private:

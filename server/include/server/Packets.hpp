@@ -254,6 +254,58 @@ struct SetGameSpeedPacket {
 };
 
 /**
+ * @brief TCP 0x0C: SET_DIFFICULTY - Client sets difficulty level
+ * Payload: 1 byte (difficulty level: 0=Easy, 1=Normal, 2=Hard)
+ */
+struct SetDifficultyPacket {
+    static constexpr PacketType type = PacketType::SetDifficulty;
+    static constexpr size_t PAYLOAD_SIZE = 1;
+
+    uint8_t difficulty;  // 0=Easy, 1=Normal, 2=Hard
+
+    CommonHeader MakeHeader() const {
+        return CommonHeader(static_cast<uint8_t>(type), PAYLOAD_SIZE);
+    }
+
+    void Serialize(PacketBuffer &buffer) const {
+        buffer.WriteHeader(MakeHeader());
+        buffer.WriteUint8(difficulty);
+    }
+
+    static SetDifficultyPacket Deserialize(PacketBuffer &buffer) {
+        SetDifficultyPacket packet;
+        packet.difficulty = buffer.ReadUint8();
+        return packet;
+    }
+};
+
+/**
+ * @brief TCP 0x0D: SET_KILLABLE_PROJECTILES - Client sets killable projectiles
+ * Payload: 1 byte (enabled: 0=OFF, 1=ON)
+ */
+struct SetKillableProjectilesPacket {
+    static constexpr PacketType type = PacketType::SetKillableProjectiles;
+    static constexpr size_t PAYLOAD_SIZE = 1;
+
+    uint8_t enabled;  // 0=OFF, 1=ON
+
+    CommonHeader MakeHeader() const {
+        return CommonHeader(static_cast<uint8_t>(type), PAYLOAD_SIZE);
+    }
+
+    void Serialize(PacketBuffer &buffer) const {
+        buffer.WriteHeader(MakeHeader());
+        buffer.WriteUint8(enabled);
+    }
+
+    static SetKillableProjectilesPacket Deserialize(PacketBuffer &buffer) {
+        SetKillableProjectilesPacket packet;
+        packet.enabled = buffer.ReadUint8();
+        return packet;
+    }
+};
+
+/**
  * @brief TCP 0x07: READY_STATUS - Client indicates ready state
  * RFC Section 5.7
  * Payload: 1 byte (IsReady u8) + 3 bytes reserved (aligned to 4)
