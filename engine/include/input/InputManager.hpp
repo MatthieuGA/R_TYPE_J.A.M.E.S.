@@ -275,6 +275,21 @@ class InputManager {
     }
 
     /**
+     * @brief Get all bindings for a specific action.
+     *
+     * @param action The action to get bindings for
+     * @return const std::vector<InputBinding>& The list of bindings
+     */
+    const std::vector<InputBinding> &GetBindings(ActionT action) const {
+        const auto action_index = static_cast<size_t>(action);
+        static const std::vector<InputBinding> empty;
+        if (action_index >= bindings_.size()) {
+            return empty;
+        }
+        return bindings_[action_index];
+    }
+
+    /**
      * @brief Clear all bindings for all actions.
      */
     void ClearAllBindings() {

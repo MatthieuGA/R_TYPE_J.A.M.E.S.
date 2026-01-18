@@ -34,7 +34,23 @@ void RenderOneTextEntity(Eng::sparse_array<Com::Transform> const &transforms,
     world_scale.x /= FONT_SIZE_SCALE;
     world_scale.y /= FONT_SIZE_SCALE;
 
+    // Apply text size scaling from accessibility settings
+    float text_scale_multiplier =
+        game_world.accessibility_settings_.GetTextScaleMultiplier();
+    world_scale.x *= text_scale_multiplier;
+    world_scale.y *= text_scale_multiplier;
+
     Engine::Graphics::Color engine_color = text->color;
+
+    // Apply high-contrast mode: maximize color brightness for accessibility
+    if (game_world.accessibility_settings_.high_contrast) {
+        // Make text pure white or maximally bright for readability
+        // Preserve alpha but maximize RGB values
+        engine_color.r = 255;
+        engine_color.g = 255;
+        engine_color.b = 255;
+    }
+
     engine_color.a = static_cast<uint8_t>(text->opacity * 255);
 
     // Calculate text origin for centering (using GetOffsetFromTransform)
@@ -53,6 +69,32 @@ void RenderOneTextEntity(Eng::sparse_array<Com::Transform> const &transforms,
     // Negate to convert from offset to origin (positive coordinates for SFML)
     text_origin.x = -text_origin.x;
     text_origin.y = -text_origin.y;
+
+    // If high contrast is enabled, draw black outline first
+    if (game_world.accessibility_settings_.high_contrast) {
+        Engine::Graphics::Color black_color{0, 0, 0, engine_color.a};
+        // Draw black outline at offset positions (4-way: top, bottom, left,
+        // right)
+        const float offset = 2.0f;  // Outline thickness in pixels
+        Engine::Graphics::Vector2f outline_offsets[] = {
+            {offset, 0.0f},   // right
+            {-offset, 0.0f},  // left
+            {0.0f, offset},   // bottom
+            {0.0f, -offset}   // top
+        };
+
+        for (auto &offset_vec : outline_offsets) {
+            Engine::Graphics::DrawableText outline_text{
+                text->font_path.c_str(), text->content.c_str(),
+                static_cast<unsigned int>(
+                    text->characterSize * FONT_SIZE_SCALE),
+                world_position + offset_vec, black_color, world_scale,
+                text_origin};
+            if (game_world.GetRenderContext()) {
+                game_world.GetRenderContext()->DrawText(outline_text);
+            }
+        }
+    }
 
     Engine::Graphics::DrawableText drawable_text{text->font_path.c_str(),
         text->content.c_str(),

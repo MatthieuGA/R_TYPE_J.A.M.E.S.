@@ -44,6 +44,18 @@ class SFMLWindow : public Engine::Graphics::IWindow {
     void SetTitle(const std::string &title) override;
     void Display() override;
     bool HasFocus() const override;
+
+    /**
+     * @brief Recreate the window with new settings.
+     *
+     * @param width New window width
+     * @param height New window height
+     * @param title New window title
+     * @param fullscreen True for fullscreen, false for windowed
+     * @param aa_level Anti-aliasing level (0, 2, 4, 8)
+     */
+    void Recreate(unsigned int width, unsigned int height,
+        const std::string &title, bool fullscreen, unsigned int aa_level);
     Engine::Graphics::Vector2f MapPixelToCoords(
         const Engine::Graphics::Vector2i &pixel) const override;
 
@@ -59,6 +71,13 @@ class SFMLWindow : public Engine::Graphics::IWindow {
 
  private:
     sf::RenderWindow window_;
+    unsigned int game_width_;   // Desired game resolution width
+    unsigned int game_height_;  // Desired game resolution height
+
+    /**
+     * @brief Apply the game view to scale content to window size.
+     */
+    void ApplyGameView();
 };
 
 }  // namespace Rtype::Client::Platform

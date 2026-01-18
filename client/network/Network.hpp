@@ -7,9 +7,11 @@
 #include <array>
 #include <atomic>
 #include <cstdint>
+#include <functional>
 #include <mutex>
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <boost/asio.hpp>
@@ -106,6 +108,47 @@ class ServerConnection {
      * @param speed Game speed multiplier (0.25x to 2.0x).
      */
     void SendGameSpeed(float speed);
+
+    /**
+     * @brief Send killable enemy projectiles setting to server via TCP.
+     * @param enabled Whether player projectiles can destroy enemy fire.
+     * @todo(server-logic): Verify server logic applies this setting to game
+     * mechanics. Check projectile collision detection system on server.
+     */
+    void SendKillableEnemyProjectiles(bool enabled);
+
+    /**
+     * @brief Send difficulty setting to server via TCP.
+     * @param difficulty The difficulty level (Easy/Normal/Hard).
+     * @todo(server-logic): Verify server logic applies damage multipliers
+     * (0.75x for Easy, 1.0x for Normal, 1.1x for Hard) and enemy fire rate
+     * multipliers (0.9x for Easy, 1.0x for Normal, 1.15x for Hard).
+     */
+    void SendDifficulty(uint8_t difficulty);
+
+    /**
+     * @brief Set callback for when game speed is changed by another player.
+     * @param callback Function to call with the new speed value.
+     */
+    void SetOnGameSpeedChanged(std::function<void(float)> callback) {
+        on_game_speed_changed_ = std::move(callback);
+    }
+
+    /**
+     * @brief Set callback for when difficulty is changed by another player.
+     * @param callback Function to call with the new difficulty value.
+     */
+    void SetOnDifficultyChanged(std::function<void(uint8_t)> callback) {
+        on_difficulty_changed_ = std::move(callback);
+    }
+
+    /**
+     * @brief Set callback for when killable projectiles is changed.
+     * @param callback Function to call with the new enabled/disabled state.
+     */
+    void SetOnKillableProjectilesChanged(std::function<void(bool)> callback) {
+        on_killable_projectiles_changed_ = std::move(callback);
+    }
 
     /**
      * @brief Pop a world snapshot if available.
@@ -280,6 +323,15 @@ class ServerConnection {
     void HandleNotifyDisconnect(const std::vector<uint8_t> &data);
     void HandleNotifyConnect(const std::vector<uint8_t> &data);
     void HandleNotifyReady(const std::vector<uint8_t> &data);
+    void HandleNotifyGameSpeed(const std::vector<uint8_t> &data);
+    void HandleNotifyDifficulty(const std::vector<uint8_t> &data);
+    void HandleNotifyKillableProjectiles(const std::vector<uint8_t> &data);
+
+    // Callback for game speed change notifications
+    std::function<void(float)> on_game_speed_changed_;
+    // Callbacks for difficulty and killable projectiles change notifications
+    std::function<void(uint8_t)> on_difficulty_changed_;
+    std::function<void(bool)> on_killable_projectiles_changed_;
 
     // ASIO components
     boost::asio::io_context &io_context_;

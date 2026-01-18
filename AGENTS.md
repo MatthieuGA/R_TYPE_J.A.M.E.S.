@@ -14,7 +14,7 @@
 - **Language:** C++20
 - **Build System:** CMake (3.23+)
 - **Dependency Manager:** vcpkg
-- **Graphics:** SFML (2.6.1+)
+- **Graphics:** SFML (2.6.2)
 - **Networking:** Asio (via vcpkg)
 - **Testing:** GoogleTest
 - **Documentation:** Docusaurus

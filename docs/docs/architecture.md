@@ -206,7 +206,7 @@ Below is the complete list used by the client.
 | **Transform** | Position, rotation, scale, origin & custom origins |
 | **Drawable** | Sprite path, texture, z-index rendering order |
 | **AnimatedSprite** | Frame-based animation support (frame duration, looping) |
-| **ParallaxLayer** *(planned)* | Represents parallax scrolling layers |
+| **ParallaxLayer** | Represents parallax scrolling layers |
 
 ### 🎮 Movement & Control Components
 
@@ -222,8 +222,8 @@ Below is the complete list used by the client.
 |----------|---------|
 | **HitBox** | Collision rectangle for AABB collisions |
 | **Solid** | Indicates blocking entities or platforms |
-| **Lifetime** *(planned)* | Automatically despawns entities after X seconds |
-| **DespawnOnExit** *(planned)* | Removes offscreen entities (projectiles, enemies) |
+| **Lifetime** | Automatically despawns entities after X seconds |
+| **DespawnOnExit** | Removes offscreen entities (projectiles, enemies) |
 
 ### 🧩 Gameplay Components
 
@@ -234,9 +234,9 @@ Below is the complete list used by the client.
 | **Projectile** | Stores damage, speed, and shooter ID |
 | **Health** | HP, max HP, invincibility frames |
 | **StatsGame** | Player score & gameplay stats |
-| **Weapon** *(planned)* | Fire rate, projectile type, cooldown |
-| **PowerUp** *(planned)* | Temporary player boosts |
-| **StateMachine** *(planned)* | For enemy/boss AI behavior |
+| **Weapon** | Fire rate, projectile type, cooldown |
+| **PowerUp** | Temporary player boosts |
+| **StateMachine** | For enemy/boss AI behavior |
 
 ### 🌐 Networking Components
 
@@ -276,33 +276,41 @@ Prevents the player from leaving the visible screen area.
 
 Updates delta time each frame via the `GameWorld` timing utility.
 
-### ✔ AudioSystem *(planned)*
+### ✔ AudioSystem
 
 Plays sounds on events (shooting, impact, explosion).
 
-### ✔ LifetimeSystem *(planned)*
+### ✔ LifetimeSystem
 
 Destroys entities whose `Lifetime` counters reach zero.
 
-### ✔ DespawnOffscreenSystem *(planned)*
+### ✔ DespawnOffscreenSystem
 
 Removes projectiles and enemies that leave the playfield.
 
-### ✔ StateMachineSystem *(planned)*
+### ✔ StateMachineSystem
 
 Executes AI logic for enemies and boss patterns.
 
-### ✔ WeaponSystem *(planned)*
+### ✔ WeaponSystem
 
 Handles fire rate, cooldown, and projectile spawning.
 
-### ✔ ParallaxSystem *(planned)*
+### ✔ ParallaxSystem
 
 Scrolls background layers at different speeds for depth effect.
 
-### ✔ HealthSystem *(planned)*
+### ✔ HealthSystem
 
 Applies damage, handles enemy/player death events.
+
+### ✔ InputSystem
+
+Processes player input and updates controllable entities.
+
+### ✔ ProjectileSystem
+
+Manages projectile spawning, movement, and despawning logic.
 
 ---
 

@@ -9,7 +9,10 @@ namespace server {
 // Frame timing: globals updated each server tick.
 extern float g_frame_delta_ms;
 extern float g_frame_delta_seconds;
-extern float g_game_speed_multiplier;  // Game speed (set by client)
+extern float g_game_speed_multiplier;      // Game speed (set by client)
+extern uint8_t g_difficulty_level;         // 0=Easy, 1=Normal, 2=Hard
+extern bool g_killable_enemy_projectiles;  // Can player projectiles destroy
+                                           // enemy projectiles
 
 // Minimum delta per frame (enforces maximum 60 FPS).
 static constexpr float kMinFrameDeltaSeconds = 1.0f / 60.0f;
@@ -34,10 +37,6 @@ void PlayerMovementSystem(Engine::registry &reg,
 void PlayerLimitPlayfield(Engine::registry &reg,
     Engine::sparse_array<Component::Transform> &transforms,
     Engine::sparse_array<Component::PlayerTag> const &player_tags);
-
-void PlayerGatlingSystem(Engine::registry &reg,
-    Engine::sparse_array<Component::Transform> const &transforms,
-    Engine::sparse_array<Component::PlayerTag> &player_tags);
 
 void ShootPlayerSystem(Engine::registry &reg,
     Engine::sparse_array<Component::Transform> &transforms,
@@ -78,7 +77,9 @@ void HealthDeductionSystem(Engine::registry &reg,
     Engine::sparse_array<Component::AnimatedSprite> &animated_sprites,
     Engine::sparse_array<Component::HitBox> const &hitBoxes,
     Engine::sparse_array<Component::Transform> const &transforms,
-    Engine::sparse_array<Component::Projectile> &projectiles);
+    Engine::sparse_array<Component::Projectile> &projectiles,
+    Engine::sparse_array<Component::DeflectedProjectiles>
+        &deflected_projectiles);
 
 void ObstacleCollisionSystem(Engine::registry &reg,
     Engine::sparse_array<Component::Transform> &transforms,
@@ -87,25 +88,10 @@ void ObstacleCollisionSystem(Engine::registry &reg,
     Engine::sparse_array<Component::ObstacleTag> const &obstacle_tags,
     Engine::sparse_array<Component::AnimatedSprite> &animated_sprites);
 
-void ObstacleCollisionSystem(Engine::registry &reg,
-    Engine::sparse_array<Component::Transform> &transforms,
-    Engine::sparse_array<Component::HitBox> const &hitboxes,
-    Engine::sparse_array<Component::PlayerTag> const &player_tags,
-    Engine::sparse_array<Component::ObstacleTag> const &obstacle_tags,
-    Engine::sparse_array<Component::AnimatedSprite> &animated_sprites);
+void PlayerGatlingSystem(Engine::registry &reg,
+    Engine::sparse_array<Component::Transform> const &transforms,
+    Engine::sparse_array<Component::PlayerTag> &player_tags);
 
-/**
- * @brief Despawns entities that have moved off the left side of the screen.
- *
- * This system iterates over all entities with a Transform component and
- * removes any that have an x position below a threshold (e.g., -100).
- * This prevents entities (obstacles, enemies, projectiles) from
- * accumulating off-screen and wasting resources.
- *
- * @param reg The ECS registry.
- * @param transforms The transform components.
- * @param player_tags Used to exclude players from despawning.
- */
 void DespawnOffscreenSystem(Engine::registry &reg,
     Engine::sparse_array<Component::Transform> &transforms,
     Engine::sparse_array<Component::PlayerTag> const &player_tags);

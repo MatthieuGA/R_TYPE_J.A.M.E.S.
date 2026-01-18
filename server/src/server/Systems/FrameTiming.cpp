@@ -4,10 +4,13 @@
 
 namespace server {
 
-// Define frame delta globals
+// Define frame delta globals (single definition for the program)
 float g_frame_delta_ms = 16.0f;
 float g_frame_delta_seconds = 16.0f / 1000.0f;
-float g_game_speed_multiplier = 1.0f;  // Game speed (set by client)
+float g_game_speed_multiplier = 1.0f;       // Game speed (set by client)
+uint8_t g_difficulty_level = 1;             // 0=Easy, 1=Normal, 2=Hard
+bool g_killable_enemy_projectiles = false;  // Can player projectiles destroy
+                                            // enemy projectiles
 
 /**
  * @brief Update global frame delta from elapsed seconds (clamped to max FPS)

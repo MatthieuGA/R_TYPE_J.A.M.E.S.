@@ -227,6 +227,10 @@ void InitControlsSystem(Rtype::Client::GameWorld &game_world) {
             InputSystem(r, *game_world.input_manager_, inputs);
         });
 
+    // Input rebinding system (handles rebinding UI interactions)
+    game_world.registry_.AddSystem<>(
+        [&game_world](Eng::registry &) { InputRebindSystem(game_world); });
+
     // Timed events system
     game_world.registry_.AddSystem<Eng::sparse_array<Com::TimedEvents>>(
         [&game_world](Eng::registry &r,
