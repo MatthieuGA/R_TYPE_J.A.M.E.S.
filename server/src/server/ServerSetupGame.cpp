@@ -89,9 +89,34 @@ void Server::SetupEntitiesGame() {
         // If worldgen was already active (replay), it's already initialized
         // via Reset() Otherwise, initialize it fresh for first game
         if (!worldgen_manager_->IsActive()) {
-            uint64_t seed = worldgen_manager_->InitializeEndlessRandom(0.5f);
-            std::cout << "[WorldGen] Initialized endless mode with seed: "
-                      << seed << std::endl;
+            // Check if a specific level was selected
+            if (!selected_level_uuid_.empty()) {
+                // Initialize the selected level
+                if (worldgen_manager_->InitializeLevel(selected_level_uuid_)) {
+                    const auto *level = worldgen_manager_->GetLevelByUUID(
+                        selected_level_uuid_);
+                    std::string mode =
+                        (level && !level->is_endless) ? "FINITE" : "INFINITE";
+                    std::cout << "[WorldGen] Initialized level: "
+                              << (level ? level->name : "Unknown") << " ("
+                              << mode << ")" << std::endl;
+                } else {
+                    std::cerr << "[WorldGen] Failed to initialize level: "
+                              << selected_level_uuid_
+                              << ", falling back to endless" << std::endl;
+                    uint64_t seed =
+                        worldgen_manager_->InitializeEndlessRandom(0.5f);
+                    std::cout
+                        << "[WorldGen] Initialized endless mode with seed: "
+                        << seed << std::endl;
+                }
+            } else {
+                // No level selected, use endless mode
+                uint64_t seed =
+                    worldgen_manager_->InitializeEndlessRandom(0.5f);
+                std::cout << "[WorldGen] Initialized endless mode with seed: "
+                          << seed << std::endl;
+            }
         } else {
             std::cout << "[WorldGen] Resuming from Reset() state (replay)"
                       << std::endl;

@@ -26,7 +26,8 @@
 namespace Rtype::Client {
 // Parse Player
 
-static void UpdatePlayerEntity(GameWorld &game_world, size_t entity_index,
+static void UpdatePlayerEntity(GameWorld &game_world,
+    size_t entity_index,
     const ClientApplication::ParsedEntity &entity_data) {
     // Update existing entity's transform
     auto &transforms =
@@ -47,7 +48,8 @@ static void UpdatePlayerEntity(GameWorld &game_world, size_t entity_index,
     if (velocities.has(entity_index)) {
         auto &velocity = velocities[entity_index];
         if (velocity.has_value()) {
-            // Decode velocity: [0, 65535] -> [-32768, 32767]
+            // Decode velocity from bias encoding:
+            // [0, 65535] -> [-32768, 32767]
             velocity->vx = static_cast<float>(
                 static_cast<int32_t>(entity_data.velocity_x) - 32768);
             velocity->vy = static_cast<float>(
@@ -56,34 +58,18 @@ static void UpdatePlayerEntity(GameWorld &game_world, size_t entity_index,
     }
 
     // Update health if component exists
-    auto &healths = game_world.registry_.GetComponents<Component::Health>();
+    auto &healths =
+        game_world.registry_.GetComponents<Component::Health>();
     if (healths.has(entity_index)) {
         auto &health = healths[entity_index];
         if (health.has_value()) {
             health->currentHealth = static_cast<int>(entity_data.health);
         }
     }
-    try {
-        auto &invincibility =
-            game_world.registry_
-                .GetComponents<Component::Health>()[entity_index];
-        if (invincibility.has_value()) {
-            invincibility->invincible = (entity_data.invincibility_time > 0);
-            invincibility->invincibilityDuration =
-                static_cast<float>(entity_data.invincibility_time);
-            if (invincibility->invincible) {
-                invincibility->invincibilityTimer =
-                    invincibility->invincibilityDuration;
-            } else {
-                invincibility->invincibilityTimer = 0.0f;
-            }
-        }
-    } catch (const std::exception &e) {
-        // Invincibility component might not exist; ignore if so
-    }
 }
 
-static void UpdateEnemyEntity(GameWorld &game_world, size_t entity_index,
+static void UpdateEnemyEntity(GameWorld &game_world,
+    size_t entity_index,
     const ClientApplication::ParsedEntity &entity_data) {
     // Update existing entity's transform
     auto &transforms =
@@ -104,7 +90,8 @@ static void UpdateEnemyEntity(GameWorld &game_world, size_t entity_index,
     if (velocities.has(entity_index)) {
         auto &velocity = velocities[entity_index];
         if (velocity.has_value()) {
-            // Decode velocity: [0, 65535] -> [-32768, 32767]
+            // Decode velocity from bias encoding:
+            // [0, 65535] -> [-32768, 32767]
             velocity->vx = static_cast<float>(
                 static_cast<int32_t>(entity_data.velocity_x) - 32768);
             velocity->vy = static_cast<float>(
@@ -151,7 +138,8 @@ static void UpdateEnemyEntity(GameWorld &game_world, size_t entity_index,
     }
 }
 
-static void UpdateProjectileEntity(GameWorld &game_world, size_t entity_index,
+static void UpdateProjectileEntity(GameWorld &game_world,
+    size_t entity_index,
     const ClientApplication::ParsedEntity &entity_data) {
     // Update existing entity's transform
     auto &transforms =

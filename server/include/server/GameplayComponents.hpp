@@ -39,6 +39,21 @@ struct EnemyTag {
     uint8_t subtype = 0;
 };
 
+/**
+ * @brief Tag component for boss entities.
+ *
+ * Bosses are powerful enemies that pause normal enemy spawning while alive.
+ * When a boss is spawned, the WorldGen system will stop spawning other enemies
+ * until the boss is defeated or all players are dead.
+ */
+struct BossTag {
+    /// Boss type identifier (e.g., "golem", "daemon_boss")
+    std::string boss_type;
+
+    explicit BossTag(std::string type = "unknown")
+        : boss_type(std::move(type)) {}
+};
+
 struct PowerUp {};
 
 /**

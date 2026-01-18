@@ -9,6 +9,7 @@ namespace server {
 // Frame timing: globals updated each server tick.
 extern float g_frame_delta_ms;
 extern float g_frame_delta_seconds;
+extern float g_game_speed_multiplier;  // Game speed (set by client)
 
 // Minimum delta per frame (enforces maximum 60 FPS).
 static constexpr float kMinFrameDeltaSeconds = 1.0f / 60.0f;
@@ -92,5 +93,21 @@ void ObstacleCollisionSystem(Engine::registry &reg,
     Engine::sparse_array<Component::PlayerTag> const &player_tags,
     Engine::sparse_array<Component::ObstacleTag> const &obstacle_tags,
     Engine::sparse_array<Component::AnimatedSprite> &animated_sprites);
+
+/**
+ * @brief Despawns entities that have moved off the left side of the screen.
+ *
+ * This system iterates over all entities with a Transform component and
+ * removes any that have an x position below a threshold (e.g., -100).
+ * This prevents entities (obstacles, enemies, projectiles) from
+ * accumulating off-screen and wasting resources.
+ *
+ * @param reg The ECS registry.
+ * @param transforms The transform components.
+ * @param player_tags Used to exclude players from despawning.
+ */
+void DespawnOffscreenSystem(Engine::registry &reg,
+    Engine::sparse_array<Component::Transform> &transforms,
+    Engine::sparse_array<Component::PlayerTag> const &player_tags);
 
 }  // namespace server

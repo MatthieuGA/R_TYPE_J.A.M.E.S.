@@ -160,6 +160,15 @@ void WorldGenSystem::Update(
         return;
     }
 
+    // Check if boss fight has ended first
+    UpdateBossState(registry);
+
+    // Pause worldgen advancement during boss fights
+    // This prevents new frames from being generated until boss is defeated
+    if (boss_active_) {
+        return;
+    }
+
     // Update worldgen state
     // When using the callback-based constructor, events are processed
     // immediately via the callback, so we don't need to process the queue
@@ -182,12 +191,18 @@ void WorldGenSystem::Stop() {
     if (manager_) {
         manager_->Stop();
     }
+    // Reset boss state when stopping
+    boss_active_ = false;
+    boss_spawn_frame_ = -1;
 }
 
 void WorldGenSystem::Reset() {
     if (manager_) {
         manager_->Reset();
     }
+    // Reset boss state when resetting
+    boss_active_ = false;
+    boss_spawn_frame_ = -1;
 }
 
 float WorldGenSystem::GetWorldOffset() const {
@@ -264,6 +279,53 @@ worldgen::WorldGenConfigLoader *WorldGenSystem::GetConfigLoader() {
     return config_loader_.get();
 }
 
+bool WorldGenSystem::IsBossActive() const {
+    return boss_active_;
+}
+
+void WorldGenSystem::NotifyBossDefeated() {
+    if (!boss_active_) {
+        return;
+    }
+
+    std::cout << "[WorldGen] Boss defeated! Resuming world generation."
+              << std::endl;
+    boss_active_ = false;
+    boss_spawn_frame_ = -1;
+    // WorldGen will resume naturally on next Update() call
+}
+
+void WorldGenSystem::UpdateBossState(Engine::registry &registry) {
+    if (!boss_active_) {
+        return;
+    }
+
+    // Check if any boss entities are still alive
+    auto &boss_tags = registry.GetComponents<Component::BossTag>();
+    auto &health_comps = registry.GetComponents<Component::Health>();
+
+    bool any_boss_alive = false;
+    for (std::size_t i = 0; i < boss_tags.size(); ++i) {
+        if (!boss_tags.has(i)) {
+            continue;
+        }
+        // Check if boss has health component and is still alive
+        if (health_comps.has(i) && health_comps[i].value().currentHealth > 0) {
+            any_boss_alive = true;
+            break;
+        }
+    }
+
+    if (!any_boss_alive) {
+        NotifyBossDefeated();
+    }
+}
+
+bool WorldGenSystem::IsBossEnemy(const std::string &tag) const {
+    // List of enemy tags that are considered bosses
+    return tag == "golem";
+}
+
 void WorldGenSystem::ProcessSpawnEvent(
     const worldgen::SpawnEvent &event, Engine::registry &registry) {
     switch (event.type) {
@@ -272,6 +334,9 @@ void WorldGenSystem::ProcessSpawnEvent(
             break;
 
         case worldgen::SpawnEvent::EventType::kEnemy:
+            // Boss-active check is now done in Update() which pauses worldgen
+            // entirely during boss fights. This simplifies spawn position
+            // calculation since enemies always spawn fresh from the right.
             SpawnEnemy(event, registry);
             break;
 
@@ -365,6 +430,15 @@ void WorldGenSystem::SpawnEnemy(
     // Use FactoryActors to create the enemy with proper sprites and components
     FactoryActors::GetInstance().CreateActor(
         entity, registry, event.enemy_tag, {spawn_x, spawn_y}, false);
+
+    // Check if this is a boss enemy and set boss_active_ flag
+    if (IsBossEnemy(event.enemy_tag)) {
+        boss_active_ = true;
+        boss_spawn_frame_ = event.frame_number;
+        std::cout << "[WorldGen] Boss spawned (frame " << event.frame_number
+                  << ")! Pausing enemy spawning until boss is defeated."
+                  << std::endl;
+    }
 
     // std::cout << "[WorldGen] Spawned enemy '" << event.enemy_tag << "' at ("
     //           << spawn_x << ", " << spawn_y << ")" << std::endl;

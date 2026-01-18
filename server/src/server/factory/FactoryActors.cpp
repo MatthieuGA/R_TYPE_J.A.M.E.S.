@@ -96,6 +96,8 @@ void FactoryActors::CreateBasicEnnemy(
 void FactoryActors::CreatePlayerActor(Engine::entity &entity,
     Engine::registry &reg, EnnemyInfo info, bool is_local) {
     // Add player-specific components
+    std::cout << "[CreatePlayerActor] Creating player with speed="
+              << info.speed << std::endl;
     reg.AddComponent<Component::PlayerTag>(
         entity, Component::PlayerTag{500.0f});
     reg.AddComponent<Component::Controllable>(

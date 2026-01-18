@@ -49,17 +49,21 @@ void ComputeCollision(Eng::sparse_array<Com::Solid> const &solids, int i,
 
     // Calculate scaled hitbox dimensions (using abs for scale like server)
     float width_a =
-        hb_a.width *
-        (hb_a.scaleWithTransform ? std::abs(trans_a.scale.x) : 1.0f);
+        hb_a.width * (hb_a.scaleWithTransform
+                          ? std::abs(trans_a.scale.x)
+                          : 1.0f);
     float height_a =
-        hb_a.height *
-        (hb_a.scaleWithTransform ? std::abs(trans_a.scale.y) : 1.0f);
+        hb_a.height * (hb_a.scaleWithTransform
+                           ? std::abs(trans_a.scale.y)
+                           : 1.0f);
     float width_b =
-        hb_b.width *
-        (hb_b.scaleWithTransform ? std::abs(trans_b.scale.x) : 1.0f);
+        hb_b.width * (hb_b.scaleWithTransform
+                          ? std::abs(trans_b.scale.x)
+                          : 1.0f);
     float height_b =
-        hb_b.height *
-        (hb_b.scaleWithTransform ? std::abs(trans_b.scale.y) : 1.0f);
+        hb_b.height * (hb_b.scaleWithTransform
+                           ? std::abs(trans_b.scale.y)
+                           : 1.0f);
 
     // Get offsets based on origin (pass already-scaled dimensions)
     Engine::Graphics::Vector2f off_a =
@@ -68,14 +72,15 @@ void ComputeCollision(Eng::sparse_array<Com::Solid> const &solids, int i,
         GetOffsetFromTransform(trans_b, {width_b, height_b});
 
     // Scale offsets (using abs for scale like server)
-    Engine::Graphics::Vector2f scal_off_a =
-        Engine::Graphics::Vector2f(off_a.x * std::abs(trans_a.scale.x),
-            off_a.y * std::abs(trans_a.scale.y));
-    Engine::Graphics::Vector2f scal_off_b =
-        Engine::Graphics::Vector2f(off_b.x * std::abs(trans_b.scale.x),
-            off_b.y * std::abs(trans_b.scale.y));
+    Engine::Graphics::Vector2f scal_off_a = Engine::Graphics::Vector2f(
+        off_a.x * std::abs(trans_a.scale.x),
+        off_a.y * std::abs(trans_a.scale.y));
+    Engine::Graphics::Vector2f scal_off_b = Engine::Graphics::Vector2f(
+        off_b.x * std::abs(trans_b.scale.x),
+        off_b.y * std::abs(trans_b.scale.y));
 
-    // Calculate AABB bounds (already scaled, don't scale again)
+    // Calculate AABB bounds
+    // (width_a/height_a already scaled, don't scale again)
     float a_min_x = trans_a.x + scal_off_a.x;
     float a_max_x = a_min_x + width_a;
     float a_min_y = trans_a.y + scal_off_a.y;
@@ -94,8 +99,8 @@ void ComputeCollision(Eng::sparse_array<Com::Solid> const &solids, int i,
 
     // Determine which entities can be moved
     // An entity can move if: it's not locked AND (it's solid OR the other is
-    // solid+locked) This allows non-solid entities to be pushed by
-    // solid+locked objects
+    // solid+locked) This allows non-solid entities to be pushed by solid+locked
+    // objects
     bool a_can_move = !aLocked && (aSolid || (bSolid && bLocked));
     bool b_can_move = !bLocked && (bSolid || (aSolid && aLocked));
 
@@ -136,9 +141,9 @@ void ComputeCollision(Eng::sparse_array<Com::Solid> const &solids, int i,
  * calls `ComputeCollision` to resolve penetration for solid entities.
  *
  * IMPORTANT: Collision resolution is ONLY applied when at least one entity
- * is controllable (local player). This ensures the server remains
- * authoritative for non-local entities while still providing client-side
- * prediction for the local player.
+ * is controllable (local player). This ensures the server remains authoritative
+ * for non-local entities while still providing client-side prediction for the
+ * local player.
  *
  * @param reg Engine registry (unused in current implementation)
  * @param game_world Game world context (window size, event bus, etc.)
@@ -165,15 +170,14 @@ void CollisionDetectionSystem(Eng::registry &reg,
                 game_world.event_bus_.Publish(
                     CollisionEvent{i, j, game_world});
 
-                // Only resolve collision if at least one entity is
-                // controllable (local player). Non-local entities use server
-                // positions.
+                // Only resolve collision if at least one entity is controllable
+                // (local player). Non-local entities use server positions.
                 bool i_controllable = controllables.has(i) &&
-                                      controllables[i].has_value() &&
-                                      controllables[i]->isControllable;
+                    controllables[i].has_value() &&
+                    controllables[i]->isControllable;
                 bool j_controllable = controllables.has(j) &&
-                                      controllables[j].has_value() &&
-                                      controllables[j]->isControllable;
+                    controllables[j].has_value() &&
+                    controllables[j]->isControllable;
 
                 if (i_controllable || j_controllable) {
                     ComputeCollision(

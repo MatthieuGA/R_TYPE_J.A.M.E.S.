@@ -2,6 +2,8 @@
 #include <chrono>
 #include <cstdint>
 #include <memory>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include <boost/asio.hpp>
@@ -65,6 +67,28 @@ class Server {
      * @brief Initialize the server and register all components/systems
      */
     void Initialize();
+
+    /**
+     * @brief Display available levels and prompt user for selection.
+     *
+     * Lists all available levels with their names and finite/infinite status.
+     * User selects by entering a number.
+     */
+    void PromptLevelSelection();
+
+    /**
+     * @brief Set the selected level UUID.
+     *
+     * @param level_uuid UUID of the level to play, empty for endless mode.
+     */
+    void SetSelectedLevel(const std::string &level_uuid);
+
+    /**
+     * @brief Get list of available levels for display.
+     *
+     * @return Vector of pairs: (level name, is_endless flag)
+     */
+    std::vector<std::pair<std::string, bool>> GetAvailableLevels() const;
 
     /**
      * @brief Start the server game loop
@@ -218,6 +242,14 @@ class Server {
     bool game_over_pending_{false};
     float game_over_timer_{0.0f};
     static constexpr float GAME_OVER_DELAY_SEC = 3.0f;  // 3 seconds delay
+
+    // Level selection
+    std::string selected_level_uuid_;  ///< Empty = endless mode
+
+    // Victory tracking for finite levels
+    bool victory_pending_{false};
+    float victory_timer_{0.0f};
+    static constexpr float VICTORY_DELAY_SEC = 3.0f;  // 3 seconds delay
 
     // Singleton instance for system callbacks
     static Server *instance_;

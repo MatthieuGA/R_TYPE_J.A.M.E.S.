@@ -1,0 +1,196 @@
+{
+  "uuid": "d4e5f6a7-b8c9-4d0e-9f2a-3b4c5d6e7f8a",
+  "name": "Asteroid Clusters",
+  "description": "Multiple asteroid clusters (grouped obstacles) spread across the screen.",
+  "difficulty": 5.5,
+  "tags": ["asteroid", "cluster", "obstacles", "hazard"],
+  "width": 1200,
+  "spawn_rules": {
+    "min_distance_from_last": 2,
+    "max_frequency": 0.75
+  },
+  "obstacles": [
+    {
+      "type": "destructible",
+      "sprite": "images/obstacles/asteroid_small.png",
+      "position": { "x": 100, "y": 100 },
+      "size": { "width": 32, "height": 32 },
+      "collision": { "enabled": true, "damage": 10 },
+      "health": 15
+    },
+    {
+      "type": "destructible",
+      "sprite": "images/obstacles/asteroid_small.png",
+      "position": { "x": 132, "y": 100 },
+      "size": { "width": 32, "height": 32 },
+      "collision": { "enabled": true, "damage": 10 },
+      "health": 15
+    },
+    {
+      "type": "destructible",
+      "sprite": "images/obstacles/asteroid_small.png",
+      "position": { "x": 100, "y": 132 },
+      "size": { "width": 32, "height": 32 },
+      "collision": { "enabled": true, "damage": 10 },
+      "health": 15
+    },
+    {
+      "type": "destructible",
+      "sprite": "images/obstacles/asteroid_small.png",
+      "position": { "x": 132, "y": 132 },
+      "size": { "width": 32, "height": 32 },
+      "collision": { "enabled": true, "damage": 10 },
+      "health": 15
+    },
+    {
+      "type": "destructible",
+      "sprite": "images/obstacles/asteroid_small.png",
+      "position": { "x": 300, "y": 700 },
+      "size": { "width": 32, "height": 32 },
+      "collision": { "enabled": true, "damage": 10 },
+      "health": 15
+    },
+    {
+      "type": "destructible",
+      "sprite": "images/obstacles/asteroid_small.png",
+      "position": { "x": 332, "y": 700 },
+      "size": { "width": 32, "height": 32 },
+      "collision": { "enabled": true, "damage": 10 },
+      "health": 15
+    },
+    {
+      "type": "destructible",
+      "sprite": "images/obstacles/asteroid_small.png",
+      "position": { "x": 364, "y": 700 },
+      "size": { "width": 32, "height": 32 },
+      "collision": { "enabled": true, "damage": 10 },
+      "health": 15
+    },
+    {
+      "type": "destructible",
+      "sprite": "images/obstacles/asteroid_small.png",
+      "position": { "x": 316, "y": 732 },
+      "size": { "width": 32, "height": 32 },
+      "collision": { "enabled": true, "damage": 10 },
+      "health": 15
+    },
+    {
+      "type": "destructible",
+      "sprite": "images/obstacles/asteroid_small.png",
+      "position": { "x": 348, "y": 732 },
+      "size": { "width": 32, "height": 32 },
+      "collision": { "enabled": true, "damage": 10 },
+      "health": 15
+    },
+    {
+      "type": "static",
+      "sprite": "images/obstacles/asteroid_large.png",
+      "position": { "x": 550, "y": 400 },
+      "size": { "width": 96, "height": 96 },
+      "collision": { "enabled": true, "damage": 25 },
+      "health": 0
+    },
+    {
+      "type": "destructible",
+      "sprite": "images/obstacles/asteroid_small.png",
+      "position": { "x": 530, "y": 350 },
+      "size": { "width": 32, "height": 32 },
+      "collision": { "enabled": true, "damage": 10 },
+      "health": 15
+    },
+    {
+      "type": "destructible",
+      "sprite": "images/obstacles/asteroid_small.png",
+      "position": { "x": 630, "y": 500 },
+      "size": { "width": 32, "height": 32 },
+      "collision": { "enabled": true, "damage": 10 },
+      "health": 15
+    },
+    {
+      "type": "destructible",
+      "sprite": "images/obstacles/asteroid_small.png",
+      "position": { "x": 800, "y": 200 },
+      "size": { "width": 32, "height": 32 },
+      "collision": { "enabled": true, "damage": 10 },
+      "health": 15
+    },
+    {
+      "type": "destructible",
+      "sprite": "images/obstacles/asteroid_small.png",
+      "position": { "x": 832, "y": 200 },
+      "size": { "width": 32, "height": 32 },
+      "collision": { "enabled": true, "damage": 10 },
+      "health": 15
+    },
+    {
+      "type": "destructible",
+      "sprite": "images/obstacles/asteroid_small.png",
+      "position": { "x": 816, "y": 232 },
+      "size": { "width": 32, "height": 32 },
+      "collision": { "enabled": true, "damage": 10 },
+      "health": 15
+    },
+    {
+      "type": "destructible",
+      "sprite": "images/obstacles/asteroid_small.png",
+      "position": { "x": 900, "y": 850 },
+      "size": { "width": 32, "height": 32 },
+      "collision": { "enabled": true, "damage": 10 },
+      "health": 15
+    },
+    {
+      "type": "destructible",
+      "sprite": "images/obstacles/asteroid_small.png",
+      "position": { "x": 932, "y": 850 },
+      "size": { "width": 32, "height": 32 },
+      "collision": { "enabled": true, "damage": 10 },
+      "health": 15
+    },
+    {
+      "type": "destructible",
+      "sprite": "images/obstacles/asteroid_small.png",
+      "position": { "x": 916, "y": 818 },
+      "size": { "width": 32, "height": 32 },
+      "collision": { "enabled": true, "damage": 10 },
+      "health": 15
+    },
+    {
+      "type": "destructible",
+      "sprite": "images/obstacles/asteroid_small.png",
+      "position": { "x": 916, "y": 882 },
+      "size": { "width": 32, "height": 32 },
+      "collision": { "enabled": true, "damage": 10 },
+      "health": 15
+    }
+  ],
+  "enemies": [
+    {
+      "tag": "kamifish",
+      "position": { "x": 200, "y": 300 },
+      "spawn_delay": 0.0
+    },
+    {
+      "tag": "kamifish",
+      "position": { "x": 200, "y": 550 },
+      "spawn_delay": 0.0
+    },
+    {
+      "tag": "mermaid",
+      "position": { "x": 450, "y": 150 },
+      "spawn_delay": 0.3
+    },
+    {
+      "tag": "mermaid",
+      "position": { "x": 450, "y": 800 },
+      "spawn_delay": 0.3
+    },
+    {
+      "tag": "daemon",
+      "position": { "x": 700, "y": 550 },
+      "spawn_delay": 0.5
+    }
+  ],
+  "background": {
+    "layers": []
+  }
+}

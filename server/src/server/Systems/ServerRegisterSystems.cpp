@@ -69,6 +69,11 @@ void Server::RegisterSystems() {
         Engine::sparse_array<Component::AnimationDeath>,
         Engine::sparse_array<Component::HitBox>,
         Engine::sparse_array<Component::PlayerTag>>(ExplodeOnDeathSystem);
+
+    // Despawn offscreen system - removes entities that moved past the left
+    // edge Must run after movement systems to ensure positions are up to date
+    registry_.AddSystem<Engine::sparse_array<Component::Transform>,
+        Engine::sparse_array<Component::PlayerTag>>(DespawnOffscreenSystem);
 }
 
 }  // namespace server

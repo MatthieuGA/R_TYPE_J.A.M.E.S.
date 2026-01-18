@@ -1,0 +1,13 @@
+{
+  "uuid": "c892c632-4e59-4eda-80c3-31563739ee6b",
+  "name": "test2",
+  "author": "sam",
+  "description": "test2",
+  "target_difficulty": 5,
+  "is_endless": false,
+  "frames": [
+    "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+    "a1b2c3d4-e5f6-4a7b-8c9d-111111111111",
+    "b2c3d4e5-f6a7-4b8c-9d0e-222222222222"
+  ]
+}

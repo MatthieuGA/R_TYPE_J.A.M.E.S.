@@ -58,8 +58,20 @@ void GameOverSystem(Engine::registry &reg, GameWorld &game_world,
 
         // Check if server sent game end signal
         if (server_connection.HasGameEnded() && !state.is_active) {
-            std::cout << "[GameOverSystem] Game ended! Showing GAME OVER text."
-                      << std::endl;
+            // Check if this is a victory (level complete) or game over
+            bool is_victory = server_connection.IsVictory();
+
+            if (is_victory) {
+                std::cout
+                    << "[GameOverSystem] Level complete! Showing VICTORY "
+                       "text."
+                    << std::endl;
+            } else {
+                std::cout
+                    << "[GameOverSystem] Game ended! Showing GAME OVER text."
+                    << std::endl;
+            }
+
             state.is_active = true;
             state.display_timer = 0.0f;
             state.text_phase = true;  // show text phase only
@@ -94,7 +106,7 @@ void GameOverSystem(Engine::registry &reg, GameWorld &game_world,
                 vel.accelerationY = 0.0f;
             }
 
-            // Make the "GAME OVER" text visible and red
+            // Make the text visible with appropriate message and color
             for (std::size_t j = 0; j < texts.size(); ++j) {
                 if (!texts.has(j))
                     continue;
@@ -104,8 +116,18 @@ void GameOverSystem(Engine::registry &reg, GameWorld &game_world,
                 if (text_comps.has(j)) {
                     auto &txt = text_comps[j].value();
                     txt.opacity = 1.0f;  // Fully visible
-                    txt.color =
-                        Engine::Graphics::Color(255, 0, 0, 255);  // Full red
+
+                    if (is_victory) {
+                        // Victory: Green text
+                        txt.content = "VICTORY!";
+                        txt.color = Engine::Graphics::Color(
+                            0, 255, 0, 255);  // Bright green
+                    } else {
+                        // Game over: Red text
+                        txt.content = "GAME OVER";
+                        txt.color =
+                            Engine::Graphics::Color(255, 0, 0, 255);  // Red
+                    }
                 }
             }
         }
