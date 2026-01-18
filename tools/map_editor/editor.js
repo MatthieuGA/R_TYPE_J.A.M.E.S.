@@ -460,19 +460,43 @@ elements.exportBtn.addEventListener('click', () => {
     }
 
     const json = generateLevelJSON();
-    const blob = new Blob([JSON.stringify(json, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-
     const safeName = (json.name || 'level').toLowerCase().replace(/[^a-z0-9]+/g, '_');
     const filename = `${safeName}.level.json`;
 
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
+    // Try to POST to local save server first
+    (async () => {
+        try {
+            const resp = await fetch('http://localhost:4321/save-level', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ filename: filename, content: json })
+            });
 
-    URL.revokeObjectURL(url);
-    console.log(`Exported level: ${filename}`);
+            if (resp.ok) {
+                const data = await resp.json();
+                console.log('Saved level to server:', data.path);
+                alert('Level saved to server assets folder successfully.');
+                return;
+            } else {
+                console.warn('Save server responded with', resp.status);
+            }
+        } catch (err) {
+            console.warn('Save server not available:', err.message);
+        }
+
+        // Fallback: download file locally
+        const blob = new Blob([JSON.stringify(json, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+
+        URL.revokeObjectURL(url);
+        console.log(`Exported level: ${filename} (download)`);
+        alert('Save server not available; downloaded level locally instead.');
+    })();
 });
 
 /**

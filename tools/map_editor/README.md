@@ -26,7 +26,14 @@ A web-based visual tool for creating custom levels by combining World Generation
 
 5. **Export**:
    - Click "Export as .level.json"
-   - Save the file to `server/assets/worldgen/levels/`
+   - The editor will now try to save directly into the server assets folder if a local save server is running (recommended).
+   - If the save server is not running, the editor will download the file locally instead.
+   - To enable direct-saving, run the provided local save server before exporting:
+
+```bash
+node tools/map_editor/save_server.js
+```
+
    - Restart the server to see your level in the menu!
 
 ## 📁 File Structure
