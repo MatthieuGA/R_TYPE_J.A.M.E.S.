@@ -1,0 +1,6 @@
+# Test artifacts (generated during test runs)
+*.png
+!smoke_baseline.png
+
+# Test result XML files
+test-results-*.xml

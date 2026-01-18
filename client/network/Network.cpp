@@ -353,9 +353,18 @@ void ServerConnection::HandleGameEnd(const std::vector<uint8_t> &data) {
 
     uint8_t winning_player_id = data[0];
 
-    std::cout << "[Network] GAME_END received! WinningPlayerId="
-              << static_cast<int>(winning_player_id) << std::endl;
+    std::string result_type;
+    if (winning_player_id == 0) {
+        result_type = "GAME OVER";
+    } else if (winning_player_id == 255) {
+        result_type = "VICTORY (Level Complete)";
+    } else {
+        result_type = "Winner: Player " + std::to_string(winning_player_id);
+    }
 
+    std::cout << "[Network] GAME_END received! " << result_type << std::endl;
+
+    winning_player_id_.store(winning_player_id);
     game_ended_.store(true);
     game_started_.store(false);
     lobby_ready_count_.store(0);  // Reset ready count for lobby display
@@ -495,6 +504,42 @@ void ServerConnection::SendReadyStatus(bool is_ready) {
                           << ec.message() << std::endl;
             } else {
                 std::cout << "[Network] READY_STATUS sent successfully ("
+                          << bytes_sent << " bytes)" << std::endl;
+            }
+        });
+}
+
+void ServerConnection::SendGameSpeed(float speed) {
+    if (!connected_.load()) {
+        std::cerr << "[Network] Cannot send SET_GAME_SPEED: not connected"
+                  << std::endl;
+        return;
+    }
+
+    // SET_GAME_SPEED (0x0A) payload: 4 bytes (float)
+    constexpr uint8_t kOpSetGameSpeed = 0x0A;
+    auto pkt = std::make_shared<std::vector<uint8_t>>(kHeaderSize + 4);
+    WriteHeader(pkt->data(), kOpSetGameSpeed, 4, 0);  // TickId = 0 for TCP
+
+    // Write float as bytes (little-endian)
+    uint32_t speed_bits;
+    std::memcpy(&speed_bits, &speed, sizeof(float));
+    (*pkt)[kHeaderSize + 0] = (speed_bits >> 0) & 0xFF;
+    (*pkt)[kHeaderSize + 1] = (speed_bits >> 8) & 0xFF;
+    (*pkt)[kHeaderSize + 2] = (speed_bits >> 16) & 0xFF;
+    (*pkt)[kHeaderSize + 3] = (speed_bits >> 24) & 0xFF;
+
+    std::cout << "[Network] Sending SET_GAME_SPEED (" << speed << "x)"
+              << std::endl;
+
+    boost::asio::async_write(tcp_socket_, boost::asio::buffer(*pkt),
+        [pkt, speed](
+            const boost::system::error_code &ec, std::size_t bytes_sent) {
+            if (ec) {
+                std::cerr << "[Network] Failed to send SET_GAME_SPEED: "
+                          << ec.message() << std::endl;
+            } else {
+                std::cout << "[Network] SET_GAME_SPEED sent successfully ("
                           << bytes_sent << " bytes)" << std::endl;
             }
         });

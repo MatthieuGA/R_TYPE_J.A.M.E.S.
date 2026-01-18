@@ -43,6 +43,7 @@ void FactoryActors::CreatePlayerActor(Engine::entity &entity,
     if (is_local) {
         reg.AddComponent<Component::Inputs>(entity, Component::Inputs{});
     }
+
     reg.AddComponent<Component::PlayerTag>(entity,
         Component::PlayerTag{info.speed, Rtype::Client::PLAYER_SHOOT_COOLDOWN,
             Rtype::Client::PLAYER_CHARGE_TIME, false, id_player_});

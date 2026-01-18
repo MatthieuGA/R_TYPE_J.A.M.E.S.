@@ -49,14 +49,14 @@ void ProcessCollision(Eng::registry &reg, GameWorld &game_world,
         bar->timer_damage = 0.0f;
     }
 
-    if (animated_sprites.has(i) && healths.has(i)) {
-        auto &health = healths[i];
-        auto &anim_sprite = animated_sprites[i];
-        if (health->invincibilityDuration <= 0.0f) {
-            anim_sprite->SetCurrentAnimation("Hit", true);
-            anim_sprite->GetCurrentAnimation()->current_frame = 1;
-        }
-    }
+    // if (animated_sprites.has(i) && healths.has(i)) {
+    //     auto &health = healths[i];
+    //     auto &anim_sprite = animated_sprites[i];
+    //     if (health->invincibilityDuration <= 0.0f) {
+    //         anim_sprite->SetCurrentAnimation("Hit", true);
+    //         anim_sprite->GetCurrentAnimation()->current_frame = 1;
+    //     }
+    // }
 
     // Remove the projectile component after collision
     reg.RemoveComponent<Component::Projectile>(proj_entity);

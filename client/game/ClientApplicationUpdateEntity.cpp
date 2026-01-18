@@ -47,7 +47,8 @@ static void UpdatePlayerEntity(GameWorld &game_world, size_t entity_index,
     if (velocities.has(entity_index)) {
         auto &velocity = velocities[entity_index];
         if (velocity.has_value()) {
-            // Decode velocity: [0, 65535] -> [-32768, 32767]
+            // Decode velocity from bias encoding:
+            // [0, 65535] -> [-32768, 32767]
             velocity->vx = static_cast<float>(
                 static_cast<int32_t>(entity_data.velocity_x) - 32768);
             velocity->vy = static_cast<float>(
@@ -115,7 +116,8 @@ static void UpdateEnemyEntity(GameWorld &game_world, size_t entity_index,
     if (velocities.has(entity_index)) {
         auto &velocity = velocities[entity_index];
         if (velocity.has_value()) {
-            // Decode velocity: [0, 65535] -> [-32768, 32767]
+            // Decode velocity from bias encoding:
+            // [0, 65535] -> [-32768, 32767]
             velocity->vx = static_cast<float>(
                 static_cast<int32_t>(entity_data.velocity_x) - 32768);
             velocity->vy = static_cast<float>(

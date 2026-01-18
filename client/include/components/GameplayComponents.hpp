@@ -375,4 +375,34 @@ struct HealthBar {
     explicit HealthBar(Engine::Graphics::Vector2f offset) : offset(offset) {}
 };
 
+struct HealthBarBoss {
+    Engine::Graphics::Vector2f offset = {0.f, -10.f};
+    float percent = 100.f;
+    float percent_delay = 100.f;
+    bool is_taking_damage = false;
+
+    std::string green_bar_path = "assets/images/ui/health_bar/green_bar.png";
+    std::string yellow_bar_path = "assets/images/ui/health_bar/yellow_bar.png";
+    std::string foreground_bar_path =
+        "assets/images/ui/health_bar/foreground_bar.png";
+    float rotation_degrees = 0.0f;
+    Engine::Graphics::Color tint_color = Engine::Graphics::Color::White;
+
+    float timer_damage = 0.f;
+
+    sf::Sprite green_bar;
+    sf::Sprite yellow_bar;
+    sf::Sprite foreground_bar;
+    sf::Texture green_texture;
+    sf::Texture yellow_texture;
+    sf::Texture foreground_texture;
+    bool is_loaded = false;
+
+    // Compatibility constructors
+    explicit HealthBarBoss(sf::Vector2f offset) : offset(offset.x, offset.y) {}
+
+    explicit HealthBarBoss(Engine::Graphics::Vector2f offset)
+        : offset(offset) {}
+};
+
 }  // namespace Rtype::Client::Component

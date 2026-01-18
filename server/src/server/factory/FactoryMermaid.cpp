@@ -30,7 +30,7 @@ void CreateMermaidProjectile(Engine::registry &reg, vector2f direction,
         Component::Projectile{
             Component::Projectile::ProjectileType::Enemy_Mermaid,
             enemy_shoot.damage_projectile, direction,
-            enemy_shoot.speed_projectile * 3, ownerId, true});
+            enemy_shoot.speed_projectile * 2.f, ownerId, true});
     reg.AddComponent<Component::HitBox>(
         projectile_entity, Component::HitBox{8.0f, 8.0f});
     reg.AddComponent<Component::Velocity>(

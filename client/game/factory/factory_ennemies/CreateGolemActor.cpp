@@ -40,5 +40,9 @@ void FactoryActors::CreateGolemActor(
         Engine::Graphics::Vector2f(-3.0f, -15.0f));
     reg.AddComponent<Component::EnemyShootTag>(
         entity, std::move(enemy_shoot_tag));
+    reg.RemoveComponent<Component::HealthBar>(entity);
+    reg.AddComponent<Component::HealthBarBoss>(
+        entity, Component::HealthBarBoss(Engine::Graphics::Vector2f(
+                    0.f, 0.f)));  // Offset for boss healthbar
 }
 }  // namespace Rtype::Client
