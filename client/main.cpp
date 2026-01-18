@@ -1,5 +1,6 @@
 #include <iostream>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include <SFML/Graphics.hpp>
@@ -12,7 +13,9 @@
 #include "game/ServerSpawner.hpp"
 #include "game/factory/factory_ennemies/FactoryActors.hpp"
 #include "game/scenes_management/InitScenes.hpp"
+#include "graphics/BackendResolver.hpp"
 #include "graphics/GraphicsBackendFactory.hpp"
+#include "graphics/GraphicsPluginLoader.hpp"
 #include "graphics/SFMLRenderContext.hpp"
 #include "include/WindowConst.hpp"
 #include "include/registry.hpp"
@@ -77,16 +80,30 @@ int main(int argc, char *argv[]) {
         // GameWorld; keep a pointer to the native SFML window and create
         // SFMLEventSource from it later.
 
-        // Register graphics backends (must happen before GameWorld creation)
+        // Determine which graphics backend to use
+        // Default to "sfml" if not specified via CLI
+        std::string backend_name =
+            config.graphics_backend.empty() ? "sfml" : config.graphics_backend;
+
+        // Register static SFML backend (always available as fallback)
         RC::Graphics::GraphicsBackendFactory::Register(
             "sfml", [](sf::RenderWindow &window) {
                 return std::make_unique<RC::Graphics::SFMLRenderContext>(
                     window);
             });
 
-        // Create game world with SFML backend selection
-        RC::GameWorld game_world(std::move(window), "sfml", config.server_ip,
-            config.tcp_port, config.udp_port);
+        // Resolve the requested backend (may load plugin or use static)
+        if (!RC::Graphics::ResolveGraphicsBackend(
+                backend_name, "./plugins", "sfml")) {
+            return EXIT_FAILURE;
+        }
+
+        // If resolution succeeded, use the backend
+        // (it's now in the factory registry)
+
+        // Create game world with resolved graphics backend
+        RC::GameWorld game_world(std::move(window), backend_name,
+            config.server_ip, config.tcp_port, config.udp_port);
 
         // Inject dependencies
         game_world.input_manager_ = std::make_unique<RC::GameInputManager>(
