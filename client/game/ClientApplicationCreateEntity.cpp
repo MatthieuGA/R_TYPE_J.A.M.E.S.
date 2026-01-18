@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <iostream>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <SFML/Graphics.hpp>
@@ -300,9 +301,18 @@ static void CreateObstacleEntity(GameWorld &game_world,
     int16_t decoded_vx = static_cast<int16_t>(entity_data.velocity_x) - 32768;
     int16_t decoded_vy = static_cast<int16_t>(entity_data.velocity_y) - 32768;
 
-    // Obstacle size - must match server default (32x32)
+    // Obstacle hitbox size - must match server default (32x32)
     constexpr float kObstacleWidth = 32.0f;
     constexpr float kObstacleHeight = 32.0f;
+
+    // Coral image dimensions (1024x1024 pixels PNG)
+    constexpr float kCoralImageSize = 1024.0f;
+
+    // Target visual size (larger than hitbox for better appearance)
+    constexpr float kCoralVisualSize = 64.0f;
+
+    // Calculate scale to fit coral image into the visual size
+    float scale_factor = kCoralVisualSize / kCoralImageSize;
 
     // Add Transform component with CENTER origin
     game_world.registry_.AddComponent<Component::Transform>(
@@ -310,9 +320,12 @@ static void CreateObstacleEntity(GameWorld &game_world,
                         static_cast<float>(entity_data.pos_y), 0.0f, 1.0f,
                         Component::Transform::CENTER});
 
-    // Add Drawable using red obstacle sprite (render behind players)
-    game_world.registry_.AddComponent<Component::Drawable>(new_entity,
-        Component::Drawable("obstacles/obstacle_red.png", LAYER_ACTORS - 1));
+    // Add Drawable using coral sprite (render behind players)
+    auto drawable =
+        Component::Drawable("obstacles/coral.jpg", LAYER_ACTORS - 1);
+    drawable.scale = Engine::Graphics::Vector2f(scale_factor, scale_factor);
+    game_world.registry_.AddComponent<Component::Drawable>(
+        new_entity, std::move(drawable));
 
     // Add Velocity for interpolation
     game_world.registry_.AddComponent<Component::Velocity>(

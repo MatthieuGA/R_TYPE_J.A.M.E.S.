@@ -367,9 +367,10 @@ void WorldGenSystem::SpawnObstacle(
     float spawn_x = screen_width_ + (event.world_x - GetWorldOffset());
     float spawn_y = event.world_y;
 
-    // Add Transform component
+    // Add Transform component with CENTER origin to match client
     registry.AddComponent<Component::Transform>(
-        entity, Component::Transform{spawn_x, spawn_y, 0.0f, {1.0f, 1.0f}});
+        entity, Component::Transform{spawn_x, spawn_y, 0.0f, {1.0f, 1.0f},
+                    Component::Transform::CENTER});
 
     // Add Velocity for scrolling (obstacles move left with the world)
     // The scroll speed will be applied by a movement system
@@ -377,9 +378,11 @@ void WorldGenSystem::SpawnObstacle(
         entity, Component::Velocity{-200.0f, 0.0f, 0.0f, 0.0f});
 
     // Add HitBox for collision
+    // Scale hitbox to match visual size (coral is 64px visual, 32px in WGF)
+    float hitbox_scale = 2.0f;  // Match the visual coral size
     registry.AddComponent<Component::HitBox>(
-        entity, Component::HitBox{
-                    event.size.width, event.size.height, true, 0.0f, 0.0f});
+        entity, Component::HitBox{event.size.width * hitbox_scale,
+                    event.size.height * hitbox_scale, true, 0.0f, 0.0f});
 
     // Add Solid for collision response (locked = cannot be pushed)
     registry.AddComponent<Component::Solid>(

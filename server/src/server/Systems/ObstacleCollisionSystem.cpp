@@ -223,7 +223,27 @@ void ObstacleCollisionSystem(Engine::registry &reg,
             }
 
             // Check for collision
-            if (!IsColliding(p_transform, p_hitbox, o_transform, o_hitbox)) {
+            bool colliding =
+                IsColliding(p_transform, p_hitbox, o_transform, o_hitbox);
+
+            // Debug logging (first obstacle only)
+            static bool logged = false;
+            if (!logged && j == 0) {
+                std::cout << "[DEBUG] Player pos=(" << p_transform.x << ","
+                          << p_transform.y << ") hitbox=" << p_hitbox.width
+                          << "x" << p_hitbox.height << " offset=("
+                          << p_hitbox.offsetX << "," << p_hitbox.offsetY << ")"
+                          << std::endl;
+                std::cout << "[DEBUG] Obstacle pos=(" << o_transform.x << ","
+                          << o_transform.y << ") hitbox=" << o_hitbox.width
+                          << "x" << o_hitbox.height << " offset=("
+                          << o_hitbox.offsetX << "," << o_hitbox.offsetY << ")"
+                          << std::endl;
+                std::cout << "[DEBUG] Colliding=" << colliding << std::endl;
+                logged = true;
+            }
+
+            if (!colliding) {
                 continue;
             }
 

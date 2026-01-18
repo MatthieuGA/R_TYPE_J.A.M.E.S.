@@ -159,6 +159,10 @@ void RenderOneEntity(Eng::sparse_array<Com::Transform> const &transforms,
     Engine::Graphics::Vector2f world_scale =
         CalculateCumulativeScale(transform.value(), transforms);
 
+    // Apply drawable's own scale (for sprites that need custom scaling)
+    world_scale.x *= drawable->scale.x;
+    world_scale.y *= drawable->scale.y;
+
     Engine::Graphics::Color engine_color = drawable->color;
     engine_color.a = static_cast<uint8_t>(drawable->opacity * 255);
 

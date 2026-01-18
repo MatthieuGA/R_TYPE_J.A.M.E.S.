@@ -52,8 +52,8 @@ void FactoryActors::CreateBasicActor(vector2f pos, Engine::entity &entity,
         {pos.x, pos.y, 0.0f, info.scale, Component::Transform::CENTER});
     reg.AddComponent<Component::Health>(
         entity, Component::Health(info.health));
-    reg.AddComponent<Component::HitBox>(
-        entity, Component::HitBox{info.hitbox.x, info.hitbox.y});
+    reg.AddComponent<Component::HitBox>(entity,
+        Component::HitBox{info.hitbox.x, info.hitbox.y, true, 0.0f, 0.0f});
     reg.AddComponent<Component::Velocity>(entity, Component::Velocity{});
     reg.AddComponent<Component::NetworkId>(
         entity, Component::NetworkId{Server::GetNextNetworkId()});
