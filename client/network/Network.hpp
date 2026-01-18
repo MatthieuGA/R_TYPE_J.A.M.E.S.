@@ -90,6 +90,12 @@ class ServerConnection {
     void SendReadyStatus(bool is_ready);
 
     /**
+     * @brief Send game speed multiplier to server via TCP.
+     * @param speed Game speed multiplier (0.25x to 2.0x).
+     */
+    void SendGameSpeed(float speed);
+
+    /**
      * @brief Pop a world snapshot if available.
      */
     std::optional<client::SnapshotPacket> PollSnapshot();

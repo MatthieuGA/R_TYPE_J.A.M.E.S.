@@ -1,0 +1,138 @@
+name: Plugin Tests CI
+
+on:
+  push:
+    branches-ignore:
+      - 'ga-ignore-**'
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches-ignore:
+      - 'ga-ignore-**'
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  plugin_tests_linux:
+    name: "Plugin Tests (Linux)"
+    runs-on: ubuntu-latest
+    container:
+      image: epitechcontent/epitest-docker:latest
+
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v4
+
+      - name: "Install system dependencies"
+        run: |
+          apt-get update
+          apt-get install -y \
+            xvfb \
+            curl \
+            zip \
+            unzip \
+            tar \
+            git \
+            pkg-config \
+            libgl1-mesa-dev \
+            libx11-dev \
+            libxrandr-dev \
+            libxcursor-dev \
+            libxi-dev \
+            libudev-dev \
+            libopenal-dev \
+            libflac-dev \
+            libvorbis-dev
+
+      - name: "Setup vcpkg"
+        run: |
+          git clone https://github.com/microsoft/vcpkg.git /opt/vcpkg
+          /opt/vcpkg/bootstrap-vcpkg.sh
+          echo "VCPKG_ROOT=/opt/vcpkg" >> $GITHUB_ENV
+
+      - name: "Configure CMake with plugins enabled"
+        working-directory: ${{ github.workspace }}
+        run: |
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            -DCMAKE_TOOLCHAIN_FILE=/opt/vcpkg/scripts/buildsystems/vcpkg.cmake
+
+      - name: "Build project (including plugins)"
+        working-directory: ${{ github.workspace }}
+        run: cmake --build build --config ${{ env.BUILD_TYPE }} -j$(nproc)
+
+      - name: "Verify plugin artifacts built"
+        working-directory: ${{ github.workspace }}
+        run: |
+          echo "Checking for plugin artifacts..."
+          if [ ! -f "build/plugins/libgraphics_sfml.so" ]; then
+            echo "ERROR: libgraphics_sfml.so not found!"
+            exit 1
+          fi
+          if [ ! -f "build/plugins/libstub_missing_symbols.so" ]; then
+            echo "ERROR: libstub_missing_symbols.so (test stub) not found!"
+            exit 1
+          fi
+          echo "✓ All plugin artifacts found"
+          ls -lh build/plugins/
+
+      - name: "Run plugin unit tests"
+        working-directory: ${{ github.workspace }}
+        run: |
+          echo "Running plugin loader unit tests..."
+          xvfb-run --auto-servernum --server-args='-screen 0 1024x768x24' \
+            ./build/tests/plugin_loader_tests --gtest_output=xml:test-results-plugin-unit.xml
+
+      - name: "Run integration smoke tests"
+        working-directory: ${{ github.workspace }}
+        run: |
+          echo "Running integration smoke tests..."
+          xvfb-run --auto-servernum --server-args='-screen 0 1024x768x24' \
+            ./build/tests/integration_smoke_test --gtest_output=xml:test-results-integration.xml
+
+      - name: "Run pixel comparison tests"
+        working-directory: ${{ github.workspace }}
+        run: |
+          echo "Running pixel comparison tests..."
+          # First run generates baseline if missing
+          xvfb-run --auto-servernum --server-args='-screen 0 1024x768x24' \
+            ./build/tests/pixel_compare_test --gtest_output=xml:test-results-pixel.xml || true
+          # Second run does actual comparison
+          xvfb-run --auto-servernum --server-args='-screen 0 1024x768x24' \
+            ./build/tests/pixel_compare_test --gtest_output=xml:test-results-pixel.xml
+
+      - name: "Upload test artifacts on failure"
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: plugin-test-artifacts
+          path: |
+            tests/artifacts/*.png
+            tests/baseline/*.png
+            test-results-*.xml
+          retention-days: 7
+
+      - name: "Upload baseline image"
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: baseline-image
+          path: tests/baseline/smoke_baseline.png
+          retention-days: 30
+
+      - name: "Test Results Summary"
+        if: always()
+        run: |
+          echo "========================================="
+          echo "Plugin Test Suite Summary"
+          echo "========================================="
+          if [ -f "test-results-plugin-unit.xml" ]; then
+            echo "✓ Unit tests completed"
+          fi
+          if [ -f "test-results-integration.xml" ]; then
+            echo "✓ Integration tests completed"
+          fi
+          if [ -f "test-results-pixel.xml" ]; then
+            echo "✓ Pixel comparison tests completed"
+          fi
+          echo "========================================="

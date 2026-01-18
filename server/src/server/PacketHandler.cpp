@@ -50,6 +50,16 @@ void PacketHandler::RegisterHandlers() {
             }
         };
 
+    // Register SET_GAME_SPEED handler (0x0A)
+    packet_handlers_[network::PacketType::SetGameSpeed] =
+        [this](
+            ClientConnection &client, const network::PacketVariant &packet) {
+            if (const auto *speed_packet =
+                    std::get_if<network::SetGameSpeedPacket>(&packet)) {
+                HandleSetGameSpeed(client, *speed_packet);
+            }
+        };
+
     std::cout << "Registered " << packet_handlers_.size() << " packet handlers"
               << std::endl;
 }
@@ -320,6 +330,20 @@ void PacketHandler::HandleDisconnectReq(
 
     // Note: Client disconnect notifications are handled by
     // ClientConnectionManager
+}
+
+void PacketHandler::HandleSetGameSpeed(
+    ClientConnection &client, const network::SetGameSpeedPacket &packet) {
+    // Clamp speed to reasonable range
+    float speed = std::clamp(packet.speed, 0.25f, 2.0f);
+
+    // Update global game speed
+    extern float g_game_speed_multiplier;
+    g_game_speed_multiplier = speed;
+
+    std::cout << "Game speed set to " << speed << "x by player "
+              << static_cast<int>(client.player_id_) << " ('"
+              << client.username_ << "')" << std::endl;
 }
 
 std::string PacketHandler::Trim(

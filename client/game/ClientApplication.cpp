@@ -208,8 +208,8 @@ void ClientApplication::RunGameLoop(GameWorld &game_world) {
         }
 
         // Calculate delta time at the beginning of the frame
-        game_world.last_delta_ =
-            game_world.delta_time_clock_.Restart().AsSeconds();
+        float raw_delta = game_world.delta_time_clock_.Restart().AsSeconds();
+        game_world.last_delta_ = raw_delta * game_world.game_speed_;
 
         // Ensure the SFML OpenGL context is active on this thread before
         // running systems that may load textures/shaders.

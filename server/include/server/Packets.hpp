@@ -228,6 +228,32 @@ struct GameEndPacket {
 };
 
 /**
+ * @brief TCP 0x0A: SET_GAME_SPEED - Client sets game speed multiplier
+ * Payload: 4 bytes (float speed multiplier, range 0.25-2.0)
+ */
+struct SetGameSpeedPacket {
+    static constexpr PacketType type = PacketType::SetGameSpeed;
+    static constexpr size_t PAYLOAD_SIZE = 4;
+
+    float speed;  // Game speed multiplier (0.25 = 25%, 2.0 = 200%)
+
+    CommonHeader MakeHeader() const {
+        return CommonHeader(static_cast<uint8_t>(type), PAYLOAD_SIZE);
+    }
+
+    void Serialize(PacketBuffer &buffer) const {
+        buffer.WriteHeader(MakeHeader());
+        buffer.WriteFloat(speed);
+    }
+
+    static SetGameSpeedPacket Deserialize(PacketBuffer &buffer) {
+        SetGameSpeedPacket packet;
+        packet.speed = buffer.ReadFloat();
+        return packet;
+    }
+};
+
+/**
  * @brief TCP 0x07: READY_STATUS - Client indicates ready state
  * RFC Section 5.7
  * Payload: 1 byte (IsReady u8) + 3 bytes reserved (aligned to 4)
