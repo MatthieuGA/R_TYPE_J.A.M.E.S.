@@ -3,6 +3,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -174,6 +175,38 @@ struct Projectile {
     float tick_interval = 0.1f;
     /** Internal timer counting down to next tick. */
     float tick_timer = 0.0f;
+};
+
+/**
+ * @brief Tracks enemy projectiles that have collided with a player projectile
+ *
+ * When a player projectile deflects/blocks enemy projectiles, their entity
+ * indices are stored here to prevent multiple collisions with the same target.
+ * This allows projectiles to maintain their damage through multiple
+ * projectile-to-projectile interactions.
+ */
+struct DeflectedProjectiles {
+    std::unordered_set<size_t> blocked_projectiles;
+
+    /**
+     * @brief Check if an enemy projectile has already been deflected
+     *
+     * @param entity_index The index of the enemy projectile to check
+     * @return true if already deflected, false otherwise
+     */
+    bool IsDeflected(size_t entity_index) const {
+        return blocked_projectiles.find(entity_index) !=
+               blocked_projectiles.end();
+    }
+
+    /**
+     * @brief Mark an enemy projectile as deflected
+     *
+     * @param entity_index The index of the enemy projectile
+     */
+    void AddDeflected(size_t entity_index) {
+        blocked_projectiles.insert(entity_index);
+    }
 };
 
 struct Health {

@@ -115,6 +115,12 @@ int main(int argc, char *argv[]) {
             std::make_unique<RC::Platform::SFMLEventSource>(
                 game_world.GetNativeWindow());
 
+        // Load persistent settings from disk
+        game_world.LoadSettings();
+
+        // Apply graphics settings to recreate window with loaded settings
+        game_world.ApplyGraphicsSettings();
+
         // Initialize audio subsystem with proper lifetime
         // AudioManager must outlive the game loop to prevent dangling pointer
         auto audio_backend = std::make_unique<Audio::SFMLAudioBackend>();
@@ -133,6 +139,9 @@ int main(int argc, char *argv[]) {
 
         // Run the main game loop (includes GAME_START handling)
         RC::ClientApplication::RunGameLoop(game_world);
+
+        // Save settings before exit
+        game_world.SaveSettings();
 
         // Disconnect gracefully when closing
         if (game_world.server_connection_) {
