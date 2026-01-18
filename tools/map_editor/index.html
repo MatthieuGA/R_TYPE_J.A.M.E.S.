@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R-Type J.A.M.E.S. - Map Editor</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎮 R-Type J.A.M.E.S. Map Editor</h1>
+            <p class="subtitle">Create custom levels by combining World Generation Frames (WGFs)</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Left Panel: WGF Library -->
+            <aside class="wgf-library">
+                <h2>📦 Frame Library</h2>
+                <div class="filter-controls">
+                    <input type="text" id="search-input" placeholder="Search frames...">
+                    <select id="difficulty-filter">
+                        <option value="all">All Difficulties</option>
+                        <option value="easy">Easy (0-3)</option>
+                        <option value="medium">Medium (3-6)</option>
+                        <option value="hard">Hard (6-10)</option>
+                    </select>
+                    <select id="tag-filter">
+                        <option value="all">All Tags</option>
+                    </select>
+                </div>
+                <div id="wgf-list" class="wgf-list">
+                    <p class="loading">Loading WGF files...</p>
+                </div>
+                <div class="load-wgf-section">
+                    <h3>Load WGF Files</h3>
+                    <p class="help-text">Select the <code>server/assets/worldgen/core/</code> folder</p>
+                    <input type="file" id="wgf-folder-input" webkitdirectory directory multiple>
+                </div>
+            </aside>
+
+            <!-- Center Panel: Level Timeline -->
+            <main class="level-editor">
+                <div class="level-header">
+                    <h2>🗺️ Level Timeline</h2>
+                    <div class="level-info">
+                        <label>
+                            Level Name:
+                            <input type="text" id="level-name" placeholder="My Custom Level" value="My Custom Level">
+                        </label>
+                        <label>
+                            Author:
+                            <input type="text" id="level-author" placeholder="Your Name" value="Anonymous">
+                        </label>
+                        <label>
+                            Description:
+                            <input type="text" id="level-description" placeholder="A challenging adventure..." value="">
+                        </label>
+                        <label>
+                            Target Difficulty:
+                            <input type="number" id="level-difficulty" min="0" max="10" step="0.5" value="5.0">
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="level-endless">
+                            Continue with infinite generation after frames
+                        </label>
+                    </div>
+                </div>
+
+                <div id="level-timeline" class="level-timeline">
+                    <div class="timeline-placeholder">
+                        <p>👆 Drag frames from the library to build your level</p>
+                        <p class="hint">Or click a frame to add it to the end</p>
+                    </div>
+                </div>
+
+                <div class="timeline-controls">
+                    <button id="clear-timeline" class="btn btn-danger">🗑️ Clear All</button>
+                    <span class="frame-count">Frames: <strong id="frame-count">0</strong></span>
+                    <span class="total-width">Total Width: <strong id="total-width">0</strong> units</span>
+                </div>
+            </main>
+
+            <!-- Right Panel: Frame Details & Export -->
+            <aside class="details-panel">
+                <div class="frame-details">
+                    <h2>📋 Frame Details</h2>
+                    <div id="frame-details-content">
+                        <p class="placeholder">Select a frame to see details</p>
+                    </div>
+                </div>
+
+                <div class="export-section">
+                    <h2>💾 Export Level</h2>
+                    <button id="export-btn" class="btn btn-primary btn-large">Export as .level.json</button>
+                    <button id="copy-btn" class="btn btn-secondary">📋 Copy JSON to Clipboard</button>
+                    <div id="json-preview" class="json-preview">
+                        <pre><code>{ "frames": [] }</code></pre>
+                    </div>
+                </div>
+
+                <div class="import-section">
+                    <h2>📂 Import Level</h2>
+                    <input type="file" id="import-level" accept=".json">
+                    <p class="help-text">Load an existing .level.json file</p>
+                </div>
+            </aside>
+        </div>
+
+        <footer>
+            <p>R-Type J.A.M.E.S. Map Editor • Place exported files in <code>server/assets/worldgen/levels/</code></p>
+        </footer>
+    </div>
+
+    <script src="editor.js"></script>
+</body>
+</html>

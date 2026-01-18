@@ -11,7 +11,7 @@ constexpr const float PLAYER_SPEED_PROJECTILE = 500.0f;
 constexpr const int PLAYER_DAMAGE_PROJECTILE = 10;
 
 constexpr const float PLAYER_SPEED_CHARGED_PROJECTILE = 250.0f;
-constexpr const int PLAYER_DAMAGE_CHARGED_PROJECTILE = 500;
+constexpr const int PLAYER_DAMAGE_CHARGED_PROJECTILE = 50;
 
 constexpr const float PLAYER_GATLING_DURATION = 5.0f;
 constexpr const float PLAYER_GATLING_SHOOT_INTERVAL = 0.1f;
