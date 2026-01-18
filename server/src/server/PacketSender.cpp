@@ -248,7 +248,7 @@ void SendSnapshotPlayerState(int tick, network::EntityState entity_state,
     // Write WORLD_SNAPSHOT header (opcode 0x20 with entity data as payload)
     network::CommonHeader header(
         static_cast<uint8_t>(network::PacketType::WorldSnapshot),
-        20,    // payload_size = 20 bytes (one EntityState with health)
+        22,    // payload_size = 22 bytes (one EntityState with health)
         tick,  // tick_id = 0
         0,     // packet_index = 0
         1,     // packet_count = 1

@@ -26,8 +26,7 @@
 namespace Rtype::Client {
 // Parse Player
 
-static void UpdatePlayerEntity(GameWorld &game_world,
-    size_t entity_index,
+static void UpdatePlayerEntity(GameWorld &game_world, size_t entity_index,
     const ClientApplication::ParsedEntity &entity_data) {
     // Update existing entity's transform
     auto &transforms =
@@ -58,18 +57,45 @@ static void UpdatePlayerEntity(GameWorld &game_world,
     }
 
     // Update health if component exists
-    auto &healths =
-        game_world.registry_.GetComponents<Component::Health>();
+    auto &healths = game_world.registry_.GetComponents<Component::Health>();
     if (healths.has(entity_index)) {
         auto &health = healths[entity_index];
         if (health.has_value()) {
             health->currentHealth = static_cast<int>(entity_data.health);
         }
     }
+    try {
+        auto &invincibility =
+            game_world.registry_
+                .GetComponents<Component::Health>()[entity_index];
+        if (invincibility.has_value()) {
+            invincibility->invincible = (entity_data.invincibility_time > 0);
+            invincibility->invincibilityDuration =
+                static_cast<float>(entity_data.invincibility_time);
+            if (invincibility->invincible) {
+                invincibility->invincibilityTimer =
+                    invincibility->invincibilityDuration;
+            } else {
+                invincibility->invincibilityTimer = 0.0f;
+            }
+        }
+    } catch (const std::exception &e) {
+        // Invincibility component might not exist; ignore if so
+    }
+    // Update score if PlayerTag component exists
+    try {
+        auto &player_tag =
+            game_world.registry_
+                .GetComponents<Component::PlayerTag>()[entity_index];
+        if (player_tag.has_value()) {
+            player_tag->score = static_cast<int>(entity_data.score);
+        }
+    } catch (const std::exception &e) {
+        // PlayerTag component might not exist; ignore if so
+    }
 }
 
-static void UpdateEnemyEntity(GameWorld &game_world,
-    size_t entity_index,
+static void UpdateEnemyEntity(GameWorld &game_world, size_t entity_index,
     const ClientApplication::ParsedEntity &entity_data) {
     // Update existing entity's transform
     auto &transforms =
@@ -100,8 +126,7 @@ static void UpdateEnemyEntity(GameWorld &game_world,
     }
 
     // Update health if component exists
-    auto &healths =
-        game_world.registry_.GetComponents<Component::Health>();
+    auto &healths = game_world.registry_.GetComponents<Component::Health>();
     if (healths.has(entity_index)) {
         auto &health = healths[entity_index];
         if (health.has_value()) {
@@ -138,8 +163,7 @@ static void UpdateEnemyEntity(GameWorld &game_world,
     }
 }
 
-static void UpdateProjectileEntity(GameWorld &game_world,
-    size_t entity_index,
+static void UpdateProjectileEntity(GameWorld &game_world, size_t entity_index,
     const ClientApplication::ParsedEntity &entity_data) {
     // Update existing entity's transform
     auto &transforms =

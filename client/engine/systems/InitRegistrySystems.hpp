@@ -176,6 +176,8 @@ void HealthBarBossSystem(Eng::registry &reg, GameWorld &game_world,
 void NetworkInputSystem(Eng::registry &reg, GameWorld &game_world,
     Eng::sparse_array<Com::Inputs> const &inputs,
     Eng::sparse_array<Com::PlayerTag> const &player_tags);
+void ScoreSystem(Eng::registry &reg, GameWorld &game_world,
+    Eng::sparse_array<Com::PlayerTag> const &player_tags);
 
 uint8_t InputToBitfield(const Com::Inputs &input);
 // AUDIO SYSTEM
