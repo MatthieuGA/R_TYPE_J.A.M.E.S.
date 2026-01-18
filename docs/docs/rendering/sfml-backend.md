@@ -4,9 +4,7 @@
 
 `SFMLRenderContext` is the concrete implementation of `IRenderContext` using SFML (Simple Fast Multimedia Library) version 2.6.1+. It manages all SFML-specific graphics state, resource caching, and rendering operations.
 
-**Location:**
-- Header: `client/graphics/SFMLRenderContext.hpp`
-- Implementation: `client/graphics/SFMLRenderContext.cpp`
+The `SFMLRenderContext` is the concrete graphics backend implementation.
 
 **Key Responsibility:** Abstract SFML details away from systems while providing efficient resource management and rendering.
 
@@ -498,6 +496,4 @@ TEST(DrawableSystemTest, RendersCachedSprites) {
 
 - [IRenderContext Reference](./irendercontext.md)
 - [SFML Documentation](https://www.sfml-dev.org/)
-- [SFMLRenderContext Header](../../client/graphics/SFMLRenderContext.hpp)
-- [SFMLRenderContext Implementation](../../client/graphics/SFMLRenderContext.cpp)
 - [Architecture Overview](./overview.md)

@@ -123,7 +123,7 @@ struct AnimationFrame {
    };
    ```
 
-2. Update [InitRegistrySystems](../architecture.md#initregistrysystems) to instantiate the new backend.
+2. Update the client initialization to instantiate the new backend (see [Architecture](../architecture.md) for details).
 
 3. All systems continue to work unchanged.
 

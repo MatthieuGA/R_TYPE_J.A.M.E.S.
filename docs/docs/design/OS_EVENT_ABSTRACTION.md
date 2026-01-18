@@ -285,9 +285,7 @@ public:
 
 ## Related Documentation
 
-- [Input Abstraction Layer](./INPUT_ABSTRACTION_LAYER.md) - Game action mapping
 - [Architecture Overview](../architecture.md) - Overall system design
-- [SFML Input Adapters](../../client/adapters/SFMLInputAdapters.hpp) - Type conversions
 
 ## Implementation Notes
 
@@ -322,7 +320,7 @@ The current implementation is **not thread-safe**. Event polling must occur on t
 
 ## Testing
 
-See [tests/test_platform_events.cpp](../../tests/test_platform_events.cpp) for unit tests covering:
+Unit tests covering:
 - Mock event source injection
 - OSEvent structure validation
 - SFML translation correctness
