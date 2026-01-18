@@ -151,7 +151,7 @@ void SettingsScene::InitUI(Engine::registry &reg, GameWorld &gameWorld) {
 void SettingsScene::InitTabButtons(
     Engine::registry &reg, GameWorld &gameWorld) {
     const float tab_y = 180.0f;
-    const float tab_spacing = 230.0f;
+    const float tab_spacing = 300.0f;
     // Center 5 buttons: start_x = center - (2 * spacing)
     const float tab_start_x = 960.0f - (2.0f * tab_spacing);
 
@@ -298,7 +298,8 @@ void SettingsScene::InitInputsTab(
         instructions_entity, Component::Transform{960.0f, rebind_y + 40.0f,
                                  0.0f, 1.5f, Component::Transform::CENTER});
     reg.AddComponent<Component::Text>(instructions_entity,
-        Component::Text("dogica.ttf", "Click Rebind, then press a key", 10,
+        Component::Text("dogica.ttf",
+            "Click Rebind, then press any key, hit escape to save", 10,
             LAYER_UI + 2, WHITE_BLUE, Engine::Graphics::Vector2f(0.0f, 0.0f)));
     inputs_tab_entities_.push_back(instructions_entity);
 
@@ -488,7 +489,7 @@ void SettingsScene::InitGraphicsTab(
         {"1280x720", {1280, 720}}, {"1600x900", {1600, 900}},
         {"1920x1080", {1920, 1080}}, {"2560x1440", {2560, 1440}}};
 
-    float res_btn_x = 950.0f;
+    float res_btn_x = 820.0f;
     for (const auto &[res_label_text, res_dims] : resolutions) {
         auto res_btn = CreateButton(
             reg, gameWorld, res_label_text, res_btn_x, current_y,
@@ -502,8 +503,23 @@ void SettingsScene::InitGraphicsTab(
                           << std::endl;
             },
             1.5f);
+
+        // Set initial color (yellow if current resolution, white otherwise)
+        try {
+            auto &text = reg.GetComponent<Component::Text>(res_btn);
+            text.color =
+                (res_dims.first ==
+                        gameWorld.graphics_settings_.resolution_width &&
+                    res_dims.second ==
+                        gameWorld.graphics_settings_.resolution_height)
+                    ? Engine::Graphics::Color(
+                          255, 255, 0)  // Yellow for selected
+                    : Engine::Graphics::Color(
+                          255, 255, 255);  // White for others
+        } catch (...) {}
+
         graphics_tab_entities_.push_back(res_btn);
-        res_btn_x += 130.0f;
+        res_btn_x += 220.0f;
     }
 
     current_y += 80.0f;
@@ -523,7 +539,7 @@ void SettingsScene::InitGraphicsTab(
         {"Fullscreen", WindowMode::Fullscreen},
         {"Borderless", WindowMode::Borderless}};
 
-    float wm_btn_x = 950.0f;
+    float wm_btn_x = 850.0f;
     for (const auto &[wm_label_text, wm_mode] : window_modes) {
         auto wm_btn = CreateButton(
             reg, gameWorld, wm_label_text, wm_btn_x, current_y,
@@ -533,8 +549,19 @@ void SettingsScene::InitGraphicsTab(
                           << static_cast<int>(wm_mode) << std::endl;
             },
             1.5f);
+
+        // Set initial color (yellow if current window mode, white otherwise)
+        try {
+            auto &text = reg.GetComponent<Component::Text>(wm_btn);
+            text.color = (wm_mode == gameWorld.graphics_settings_.window_mode)
+                             ? Engine::Graphics::Color(
+                                   255, 255, 0)  // Yellow for selected
+                             : Engine::Graphics::Color(
+                                   255, 255, 255);  // White for others
+        } catch (...) {}
+
         graphics_tab_entities_.push_back(wm_btn);
-        wm_btn_x += 130.0f;
+        wm_btn_x += 240.0f;
     }
 
     current_y += 80.0f;
@@ -605,7 +632,7 @@ void SettingsScene::InitGraphicsTab(
         // 0 means no limit
     };
 
-    float fps_btn_x = 950.0f;
+    float fps_btn_x = 820.0f;
     for (const auto &[fps_label_text, fps_limit] : frame_rates) {
         auto fps_btn = CreateButton(
             reg, gameWorld, fps_label_text, fps_btn_x, current_y,
@@ -629,8 +656,21 @@ void SettingsScene::InitGraphicsTab(
                 }
             },
             1.5f);
+
+        // Set initial color (yellow if current frame rate limit, white
+        // otherwise)
+        try {
+            auto &text = reg.GetComponent<Component::Text>(fps_btn);
+            text.color =
+                (fps_limit == gameWorld.graphics_settings_.frame_rate_limit)
+                    ? Engine::Graphics::Color(
+                          255, 255, 0)  // Yellow for selected
+                    : Engine::Graphics::Color(
+                          255, 255, 255);  // White for others
+        } catch (...) {}
+
         graphics_tab_entities_.push_back(fps_btn);
-        fps_btn_x += 130.0f;
+        fps_btn_x += 220.0f;
     }
 
     current_y += 80.0f;
@@ -650,7 +690,7 @@ void SettingsScene::InitGraphicsTab(
         {"4x MSAA", AntiAliasingLevel::AA4x},
         {"8x MSAA", AntiAliasingLevel::AA8x}};
 
-    float aa_btn_x = 950.0f;
+    float aa_btn_x = 820.0f;
     for (const auto &[aa_label_text, aa_level] : aa_levels) {
         auto aa_btn =
             CreateButton(
@@ -663,8 +703,21 @@ void SettingsScene::InitGraphicsTab(
                         << static_cast<int>(aa_level) << std::endl;
                 },
                 1.5f);
+
+        // Set initial color (yellow if current anti-aliasing level, white
+        // otherwise)
+        try {
+            auto &text = reg.GetComponent<Component::Text>(aa_btn);
+            text.color =
+                (aa_level == gameWorld.graphics_settings_.anti_aliasing)
+                    ? Engine::Graphics::Color(
+                          255, 255, 0)  // Yellow for selected
+                    : Engine::Graphics::Color(
+                          255, 255, 255);  // White for others
+        } catch (...) {}
+
         graphics_tab_entities_.push_back(aa_btn);
-        aa_btn_x += 130.0f;
+        aa_btn_x += 220.0f;
     }
 
     current_y += 80.0f;
@@ -685,7 +738,7 @@ void SettingsScene::InitGraphicsTab(
 
     // --- Apply Button ---
     auto apply_btn = CreateButton(
-        reg, gameWorld, "Apply Changes", 960.0f, current_y,
+        reg, gameWorld, "Apply", 960.0f, current_y,
         [this, &gameWorld]() {
             if (gameWorld.graphics_settings_.HasPendingChanges()) {
                 std::cout << "[Settings] Applying pending graphics changes..."
@@ -923,7 +976,7 @@ void SettingsScene::InitGameplayTab(
         {"Easy", DifficultyLevel::Easy}, {"Normal", DifficultyLevel::Normal},
         {"Hard", DifficultyLevel::Hard}};
 
-    float diff_btn_x = 950.0f;
+    float diff_btn_x = 780.0f;
     for (const auto &[diff_label_text, diff_level] : difficulty_levels) {
         auto diff_btn = CreateButton(
             reg, gameWorld, diff_label_text, diff_btn_x, current_y,
@@ -956,7 +1009,7 @@ void SettingsScene::InitGameplayTab(
             },
             1.8f);
         gameplay_tab_entities_.push_back(diff_btn);
-        diff_btn_x += 180.0f;
+        diff_btn_x += 280.0f;
     }
 
     // Difficulty description
