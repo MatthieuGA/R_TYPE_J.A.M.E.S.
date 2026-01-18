@@ -7,7 +7,8 @@
     "boost-asio",
     "boost-lockfree",
     "boost-system",
-    "nlohmann-json"
+    "nlohmann-json",
+    "fmt"
   ],
   "overrides": [
     {

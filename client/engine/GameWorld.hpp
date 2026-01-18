@@ -8,7 +8,9 @@
  */
 
 #pragma once
+#include <functional>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 
@@ -21,6 +23,10 @@
 #include "game/GameAction.hpp"
 #include "game/GameInputBindings.hpp"
 #include "graphics/IRenderContext.hpp"
+#include "include/AccessibilitySettings.hpp"
+#include "include/GameplaySettings.hpp"
+#include "include/GraphicsSettings.hpp"
+#include "include/SettingsManager.hpp"
 #include "include/WindowConst.hpp"
 #include "include/registry.hpp"
 #include "input/SFMLInputBackend.hpp"
@@ -63,6 +69,18 @@ struct GameWorld {
     EventBus event_bus_;
     Audio::AudioManager *audio_manager_ = nullptr;
 
+    // Input rebinding state (for Settings scene)
+    std::optional<Game::Action>
+        rebinding_action_;  // Current action being rebound (nullopt if not
+                            // rebinding)
+    bool waiting_for_rebind_key_ =
+        false;  // True when waiting for next key press
+    std::optional<Engine::entity>
+        rebinding_button_entity_;  // Button entity to highlight during rebind
+
+    // Callback for when a key binding is added (for real-time UI refresh)
+    std::function<void(Game::Action)> on_binding_added_;
+
     // Input abstraction layer (templated on Game::Action)
     std::unique_ptr<GameInputManager> input_manager_;
 
@@ -73,8 +91,29 @@ struct GameWorld {
     boost::asio::io_context io_context_;
     std::unique_ptr<client::ServerConnection> server_connection_;
 
+    // Callback for when game speed is changed by another player (for UI sync)
+    std::function<void(float)> on_external_game_speed_change_;
+
+    // Callbacks for when difficulty/killable projectiles changed by another
+    // player
+    std::function<void(uint8_t)> on_external_difficulty_change_;
+    std::function<void(bool)> on_external_killable_projectiles_change_;
+
+    // Accessibility settings (applies to UI only)
+    AccessibilitySettings accessibility_settings_;
+
+    // Graphics settings (resolution, window mode, VSync, frame rate,
+    // anti-aliasing)
+    GraphicsSettings graphics_settings_;
+
+    // Gameplay settings (auto-fire, difficulty, killable projectiles, etc)
+    GameplaySettings gameplay_settings_;
+
     // Graphics backend (owned by GameWorld as of PR 1.9)
     std::unique_ptr<Engine::Graphics::IRenderContext> render_context_;
+
+    // Settings manager for persistent storage
+    std::unique_ptr<SettingsManager> settings_manager_;
 
     /**
      * @brief Get render context pointer (guaranteed non-null).
@@ -111,6 +150,32 @@ struct GameWorld {
      * TODO(PR 2.0): Remove this once all rendering systems use IRenderContext
      */
     sf::RenderWindow &GetNativeWindow();
+
+    /**
+     * @brief Load all settings from disk.
+     *
+     * Should be called after input_manager_ is initialized.
+     * Populates settings structures and input bindings.
+     * If file is missing or invalid, defaults are kept.
+     */
+    void LoadSettings();
+
+    /**
+     * @brief Save all settings to disk.
+     *
+     * Call this after settings are changed or before shutdown.
+     * Creates config directory if needed.
+     */
+    void SaveSettings();
+
+    /**
+     * @brief Apply loaded graphics settings to the window.
+     *
+     * Recreates the window with loaded resolution, window mode, and AA.
+     * Also applies VSync and frame rate limit.
+     * Call this after LoadSettings() to apply settings at startup.
+     */
+    void ApplyGraphicsSettings();
 };
 
 }  // namespace Rtype::Client

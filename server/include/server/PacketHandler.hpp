@@ -169,6 +169,22 @@ class PacketHandler {
         ClientConnection &client, const network::SetGameSpeedPacket &packet);
 
     /**
+     * @brief Handle SET_DIFFICULTY packet
+     * @param client Reference to client connection
+     * @param packet Parsed SET_DIFFICULTY packet
+     */
+    void HandleSetDifficulty(
+        ClientConnection &client, const network::SetDifficultyPacket &packet);
+
+    /**
+     * @brief Handle SET_KILLABLE_PROJECTILES packet
+     * @param client Reference to client connection
+     * @param packet Parsed SET_KILLABLE_PROJECTILES packet
+     */
+    void HandleSetKillableProjectiles(ClientConnection &client,
+        const network::SetKillableProjectilesPacket &packet);
+
+    /**
      * @brief Check if game should start after a player disconnect
      *
      * Called after removing a client to check if remaining players

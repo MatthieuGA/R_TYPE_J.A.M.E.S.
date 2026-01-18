@@ -52,8 +52,6 @@ void DeathHandling(Engine::registry &reg,
         reg.RemoveComponent<Component::PlayerTag>(entity);
     if (reg.GetComponents<Component::EnemyTag>().has(i))
         reg.RemoveComponent<Component::EnemyTag>(entity);
-    if (reg.GetComponents<Component::PowerUp>().has(i))
-        reg.RemoveComponent<Component::PowerUp>(entity);
     reg.RemoveComponent<Component::TimedEvents>(entity);
     reg.RemoveComponent<Component::FrameEvents>(entity);
     reg.RemoveComponent<Component::PatternMovement>(entity);
@@ -88,15 +86,14 @@ void HandleCollision(Engine::registry &reg, Component::Health &health,
     Engine::sparse_array<Component::AnimatedSprite> &animated_sprites,
     std::size_t i, Engine::entity projEntity, std::size_t j,
     const Component::Projectile &projectile) {
-    if (health.invincibilityDuration <= 0.0f) {
-        health.currentHealth -= projectile.damage;
+    health.currentHealth -= projectile.damage;
 
-        if (animated_sprites.has(i)) {
-            auto &animSprite = animated_sprites[i];
-            animSprite->SetCurrentAnimation("Hit", true);
-            animSprite->GetCurrentAnimation()->current_frame = 1;
-        }
+    if (animated_sprites.has(i)) {
+        auto &animSprite = animated_sprites[i];
+        animSprite->SetCurrentAnimation("Hit", true);
+        animSprite->GetCurrentAnimation()->current_frame = 1;
     }
+
     // If this hit killed the entity, award score to the projectile owner
     if (health.currentHealth <= 0) {
         try {
@@ -126,8 +123,8 @@ void HandleCollision(Engine::registry &reg, Component::Health &health,
             }
         } catch (...) {}
     }
-    reg.RemoveComponent<Component::Projectile>(projEntity);
 
+    reg.RemoveComponent<Component::Projectile>(projEntity);
     if (animated_sprites.has(j)) {
         auto &projAnimSprite = animated_sprites[j];
         projAnimSprite->SetCurrentAnimation("Death", false);
@@ -189,16 +186,9 @@ void HealthDeductionSystem(Engine::registry &reg,
     Engine::sparse_array<Component::AnimatedSprite> &animated_sprites,
     Engine::sparse_array<Component::HitBox> const &hitBoxes,
     Engine::sparse_array<Component::Transform> const &transforms,
-    Engine::sparse_array<Component::Projectile> &projectiles) {
-    for (auto &&[i, health] : make_indexed_zipper(healths)) {
-        if (health.invincibilityDuration > 0.0f) {
-            // Decrease invincibility duration
-            health.invincibilityDuration -= g_frame_delta_seconds;
-            if (health.invincibilityDuration < 0.0f)
-                health.invincibilityDuration = 0.0f;
-        }
-    }
-
+    Engine::sparse_array<Component::Projectile> &projectiles,
+    Engine::sparse_array<Component::DeflectedProjectiles>
+        &deflected_projectiles) {
     for (auto &&[i, health, hitBox, transform] :
         make_indexed_zipper(healths, hitBoxes, transforms)) {
         Engine::entity entity = reg.EntityFromIndex(i);
@@ -212,8 +202,6 @@ void HealthDeductionSystem(Engine::registry &reg,
             if (i == j)
                 continue;
             try {
-                if (reg.GetComponents<Component::PowerUp>().has(i))
-                    continue;  // Player projectiles don't hit players
                 if (projectile.isEnemyProjectile &&
                     reg.GetComponents<Component::EnemyTag>().has(i))
                     continue;  // Enemy projectiles don't hit enemies
@@ -249,12 +237,66 @@ void HealthDeductionSystem(Engine::registry &reg,
             DeathHandling(reg, animated_sprites, entity, i);
     }
 
-    // Update tick timers for projectiles (decrement by tick rate seconds)
-    for (auto &&[j, proj] : make_indexed_zipper(projectiles)) {
-        if (proj.tick_timer > 0.0f) {
-            proj.tick_timer -= 0.016f;  // 16ms tick rate
-            if (proj.tick_timer < 0.0f)
-                proj.tick_timer = 0.0f;
+    // Check if killable enemy projectiles setting is enabled
+    extern bool g_killable_enemy_projectiles;
+    if (g_killable_enemy_projectiles) {
+        // Check for projectile-to-projectile collisions
+        // Player projectiles can destroy enemy projectiles without losing
+        // damage
+        for (auto &&[i, projectile1, hitBox1, transform1] :
+            make_indexed_zipper(projectiles, hitBoxes, transforms)) {
+            // Skip if not a player projectile
+            if (projectile1.isEnemyProjectile)
+                continue;
+
+            Engine::entity playerProj = reg.EntityFromIndex(i);
+
+            // Ensure player projectile has DeflectedProjectiles tracking
+            if (!deflected_projectiles.has(i)) {
+                reg.AddComponent<Component::DeflectedProjectiles>(
+                    playerProj, Component::DeflectedProjectiles{});
+            }
+
+            for (auto &&[j, projectile2, hitBox2, transform2] :
+                make_indexed_zipper(projectiles, hitBoxes, transforms)) {
+                // Skip self-collision and non-enemy projectiles
+                if (i == j || !projectile2.isEnemyProjectile)
+                    continue;
+
+                Engine::entity enemyProj = reg.EntityFromIndex(j);
+
+                // Check if this enemy projectile has already been deflected
+                if (deflected_projectiles.has(i) &&
+                    deflected_projectiles[i].value().IsDeflected(j)) {
+                    continue;
+                }
+
+                // Check collision between player projectile and enemy
+                // projectile
+                if (IsColliding(transform1, hitBox1, transform2, hitBox2)) {
+                    // Track this deflection by index
+                    if (deflected_projectiles.has(i)) {
+                        deflected_projectiles[i].value().AddDeflected(j);
+                    }
+
+                    // Destroy only the enemy projectile
+                    reg.RemoveComponent<Component::Projectile>(enemyProj);
+
+                    // Trigger death animation for enemy projectile
+                    if (animated_sprites.has(j)) {
+                        auto &animSprite2 = animated_sprites[j];
+                        animSprite2->SetCurrentAnimation("Death", false);
+                        animSprite2->animated = true;
+                        reg.AddComponent<Component::AnimationDeath>(
+                            enemyProj, Component::AnimationDeath{true});
+                    } else {
+                        reg.KillEntity(enemyProj);
+                    }
+
+                    // NOTE: Player projectile keeps its Projectile component
+                    // and can continue dealing damage
+                }
+            }
         }
     }
 }

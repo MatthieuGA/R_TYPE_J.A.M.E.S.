@@ -247,6 +247,150 @@ void PacketSender::SendNotifyDisconnect(uint8_t player_id) {
               << std::endl;
 }
 
+void PacketSender::SendNotifyGameSpeed(float speed) {
+    // Build NOTIFY_GAME_SPEED packet: header (12 bytes) + float (4 bytes)
+    constexpr size_t kHeaderSize = 12;
+    constexpr size_t kPayloadSize = 4;
+    auto pkt =
+        std::make_shared<std::vector<uint8_t>>(kHeaderSize + kPayloadSize);
+
+    // Write header
+    (*pkt)[0] = static_cast<uint8_t>(network::PacketType::NotifyGameSpeed);
+    (*pkt)[1] = kPayloadSize & 0xFF;         // PayloadSize low byte
+    (*pkt)[2] = (kPayloadSize >> 8) & 0xFF;  // PayloadSize high byte
+    // TickId (4 bytes) - set to 0 for TCP control messages
+    (*pkt)[3] = 0;
+    (*pkt)[4] = 0;
+    (*pkt)[5] = 0;
+    (*pkt)[6] = 0;
+    // Reserved (5 bytes)
+    (*pkt)[7] = 0;
+    (*pkt)[8] = 0;
+    (*pkt)[9] = 0;
+    (*pkt)[10] = 0;
+    (*pkt)[11] = 0;
+
+    // Write float as bytes (little-endian)
+    uint32_t speed_bits;
+    std::memcpy(&speed_bits, &speed, sizeof(float));
+    (*pkt)[kHeaderSize + 0] = (speed_bits >> 0) & 0xFF;
+    (*pkt)[kHeaderSize + 1] = (speed_bits >> 8) & 0xFF;
+    (*pkt)[kHeaderSize + 2] = (speed_bits >> 16) & 0xFF;
+    (*pkt)[kHeaderSize + 3] = (speed_bits >> 24) & 0xFF;
+
+    // Send to all authenticated players via TCP
+    auto &clients = connection_manager_.GetClients();
+    for (auto &[client_id, client_ref] : clients) {
+        if (client_ref.player_id_ == 0)
+            continue;  // Skip unauthenticated clients
+
+        auto data_copy = std::make_shared<std::vector<uint8_t>>(*pkt);
+        client_ref.tcp_socket_.async_send(boost::asio::buffer(*data_copy),
+            [data_copy, speed](boost::system::error_code ec, std::size_t) {
+                if (ec) {
+                    std::cerr << "Failed to send NOTIFY_GAME_SPEED (" << speed
+                              << "x): " << ec.message() << std::endl;
+                }
+            });
+    }
+
+    std::cout << "NOTIFY_GAME_SPEED packet sent to all authenticated players "
+              << "(speed=" << speed << "x)" << std::endl;
+}
+
+void PacketSender::SendNotifyDifficulty(uint8_t difficulty) {
+    // Build packet: header (12 bytes) + uint8 (1 byte)
+    constexpr size_t kHeaderSize = 12;
+    constexpr size_t kPayloadSize = 1;
+    auto pkt =
+        std::make_shared<std::vector<uint8_t>>(kHeaderSize + kPayloadSize);
+
+    // Write header (opcode 0x0C, payload size 1)
+    (*pkt)[0] = 0x52;  // Magic byte 'R'
+    (*pkt)[1] = 0x54;  // Magic byte 'T'
+    (*pkt)[2] = 0;     // Protocol version
+    (*pkt)[3] = 0;
+    (*pkt)[4] = 0;
+    (*pkt)[5] = 0;
+    (*pkt)[6] = 0x0C;  // OpCode: SET_DIFFICULTY (reused for notification)
+    (*pkt)[7] = 0;     // Reserved
+    (*pkt)[8] = kPayloadSize & 0xFF;  // Payload length low
+    (*pkt)[9] = (kPayloadSize >> 8) & 0xFF;
+    (*pkt)[10] = (kPayloadSize >> 16) & 0xFF;
+    (*pkt)[11] = (kPayloadSize >> 24) & 0xFF;
+
+    // Write payload: difficulty level
+    (*pkt)[kHeaderSize] = difficulty;
+
+    // Send to all authenticated players via TCP
+    auto &clients = connection_manager_.GetClients();
+    for (auto &[client_id, client_ref] : clients) {
+        if (client_ref.player_id_ == 0)
+            continue;
+
+        auto data_copy = std::make_shared<std::vector<uint8_t>>(*pkt);
+        client_ref.tcp_socket_.async_send(boost::asio::buffer(*data_copy),
+            [data_copy, difficulty](
+                boost::system::error_code ec, std::size_t) {
+                if (ec) {
+                    std::cerr << "Failed to send NOTIFY_DIFFICULTY ("
+                              << static_cast<int>(difficulty)
+                              << "): " << ec.message() << std::endl;
+                }
+            });
+    }
+
+    const char *names[] = {"Easy", "Normal", "Hard"};
+    std::cout << "NOTIFY_DIFFICULTY packet sent (level=" << names[difficulty]
+              << ")" << std::endl;
+}
+
+void PacketSender::SendNotifyKillableProjectiles(bool enabled) {
+    // Build packet: header (12 bytes) + uint8 (1 byte)
+    constexpr size_t kHeaderSize = 12;
+    constexpr size_t kPayloadSize = 1;
+    auto pkt =
+        std::make_shared<std::vector<uint8_t>>(kHeaderSize + kPayloadSize);
+
+    // Write header (opcode 0x0D, payload size 1)
+    (*pkt)[0] = 0x52;  // Magic byte 'R'
+    (*pkt)[1] = 0x54;  // Magic byte 'T'
+    (*pkt)[2] = 0;     // Protocol version
+    (*pkt)[3] = 0;
+    (*pkt)[4] = 0;
+    (*pkt)[5] = 0;
+    (*pkt)[6] = 0x0D;  // OpCode: SET_KILLABLE_PROJECTILES (reused for
+                       // notification)
+    (*pkt)[7] = 0;     // Reserved
+    (*pkt)[8] = kPayloadSize & 0xFF;
+    (*pkt)[9] = (kPayloadSize >> 8) & 0xFF;
+    (*pkt)[10] = (kPayloadSize >> 16) & 0xFF;
+    (*pkt)[11] = (kPayloadSize >> 24) & 0xFF;
+
+    // Write payload: enabled flag
+    (*pkt)[kHeaderSize] = enabled ? 1 : 0;
+
+    // Send to all authenticated players via TCP
+    auto &clients = connection_manager_.GetClients();
+    for (auto &[client_id, client_ref] : clients) {
+        if (client_ref.player_id_ == 0)
+            continue;
+
+        auto data_copy = std::make_shared<std::vector<uint8_t>>(*pkt);
+        client_ref.tcp_socket_.async_send(boost::asio::buffer(*data_copy),
+            [data_copy, enabled](boost::system::error_code ec, std::size_t) {
+                if (ec) {
+                    std::cerr << "Failed to send NOTIFY_KILLABLE_PROJECTILES ("
+                              << (enabled ? "ON" : "OFF")
+                              << "): " << ec.message() << std::endl;
+                }
+            });
+    }
+
+    std::cout << "NOTIFY_KILLABLE_PROJECTILES packet sent (enabled="
+              << (enabled ? "ON" : "OFF") << ")" << std::endl;
+}
+
 void SendSnapshotPlayerState(int tick, network::EntityState entity_state,
     network::PacketBuffer &buffer) {
     // Serialize entity state into the payload
