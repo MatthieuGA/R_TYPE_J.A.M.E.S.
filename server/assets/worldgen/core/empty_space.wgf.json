@@ -21,7 +21,7 @@
   ],
   "enemies": [
     {
-      "tag": "golem",
+      "tag": "archdemon",
       "position": { "x": 500, "y": 400 },
       "spawn_delay": 0.0
     },

@@ -9,7 +9,9 @@ namespace server {
 // Frame timing: globals updated each server tick.
 extern float g_frame_delta_ms;
 extern float g_frame_delta_seconds;
-extern float g_game_speed_multiplier;  // Game speed (set by client)
+// Game speed multiplier (set by client). Declared inline to avoid
+// linker issues across translation units.
+inline float g_game_speed_multiplier = 1.0f;
 
 // Minimum delta per frame (enforces maximum 60 FPS).
 static constexpr float kMinFrameDeltaSeconds = 1.0f / 60.0f;

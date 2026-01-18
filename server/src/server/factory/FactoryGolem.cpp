@@ -97,7 +97,7 @@ void FactoryActors::CreateGolemActor(
 
     // Add drawable and animated sprite components
     // AnimatedSprite(bool loop, int totalFrames, float frameDuration)
-    Component::AnimatedSprite animated_sprite(true, 4, 0.1f);
+    Component::AnimatedSprite animated_sprite(4, 0.1f, true);
     animated_sprite.AddAnimation("Death", 14, 0.1f, false);
     animated_sprite.AddAnimation("Block", 8, 0.1f, false);
     animated_sprite.AddAnimation("Attack", 9, 0.1f, false);

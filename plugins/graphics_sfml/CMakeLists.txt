@@ -27,6 +27,12 @@ target_sources(graphics_sfml PRIVATE
     sfml_plugin.cpp
 )
 
+# Also compile the SFMLRenderContext implementation so the plugin
+# provides the concrete constructor used by `sfml_plugin.cpp`.
+target_sources(graphics_sfml PRIVATE
+    ${CMAKE_SOURCE_DIR}/client/graphics/SFMLRenderContext.cpp
+)
+
 # Include paths
 target_include_directories(graphics_sfml PRIVATE
     # Engine headers for plugin_api.h and IRenderContext.hpp

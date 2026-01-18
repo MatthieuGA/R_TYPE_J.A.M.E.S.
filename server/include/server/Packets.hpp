@@ -434,7 +434,8 @@ struct EntityState {
         Golem = 0x03,
         Invinsibility = 0x04,
         Health = 0x05,
-        Gatling = 0x06
+        Gatling = 0x06,
+        ArchDemon = 0x07
     };
 
     EntityId entity_id;           // 4 bytes

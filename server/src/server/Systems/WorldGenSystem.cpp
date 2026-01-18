@@ -323,7 +323,7 @@ void WorldGenSystem::UpdateBossState(Engine::registry &registry) {
 
 bool WorldGenSystem::IsBossEnemy(const std::string &tag) const {
     // List of enemy tags that are considered bosses
-    return tag == "golem";
+    return tag == "golem" || tag == "archdemon";
 }
 
 void WorldGenSystem::ProcessSpawnEvent(

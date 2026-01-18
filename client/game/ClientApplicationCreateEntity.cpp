@@ -70,6 +70,9 @@ static void CreateEnemyEntity(GameWorld &game_world,
     } else if (entity_data.enemy_type ==
                ClientApplication::ParsedEntity::kGatlingPU) {
         enemy_type_str = "gatling";
+    } else if (entity_data.enemy_type ==
+               ClientApplication::ParsedEntity::kArchDemonBoss) {
+        enemy_type_str = "archdemon";
     }
     FactoryActors::GetInstance().CreateActor(
         new_entity, game_world.registry_, enemy_type_str, false);
