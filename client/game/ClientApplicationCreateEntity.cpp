@@ -123,8 +123,7 @@ void CreateGolemLaser(Engine::registry &reg,
     reg.AddComponent<Component::Drawable>(new_entity,
         Component::Drawable("ennemies/golem/LaserShot.png", LAYER_PROJECTILE));
     reg.AddComponent<Component::AnimatedSprite>(
-        new_entity, Component::AnimatedSprite(
-                        1000, 24, 0.1f, false,
+        new_entity, Component::AnimatedSprite(1000, 24, 0.1f, false,
                         Engine::Graphics::Vector2f(0.0f, 0.0f), 14));
     reg.AddComponent<Component::Projectile>(new_entity,
         Component::Projectile{static_cast<int>(BASIC_PROJECTILE_DAMAGE),
@@ -160,11 +159,11 @@ void CreateGolemProjectile(Engine::registry &reg,
     reg.AddComponent<Component::Velocity>(
         new_entity, Component::Velocity{static_cast<float>(decoded_vx),
                         static_cast<float>(decoded_vy)});
-    reg.AddComponent<Component::ParticleEmitter>(new_entity,
-        Component::ParticleEmitter(50, 50, RED_HIT, RED_HIT,
-            Engine::Graphics::Vector2f(0.f, 0.f), true, 0.3f, 4.f,
-            Engine::Graphics::Vector2f(-1.f, 0.f),
-            45.f, 0, 8, 3.0f, 2.0f, -1.0f, LAYER_PARTICLE));
+    reg.AddComponent<Component::ParticleEmitter>(
+        new_entity, Component::ParticleEmitter(50, 50, RED_HIT, RED_HIT,
+                        Engine::Graphics::Vector2f(0.f, 0.f), true, 0.3f, 4.f,
+                        Engine::Graphics::Vector2f(-1.f, 0.f), 45.f, 0, 8,
+                        3.0f, 2.0f, -1.0f, LAYER_PARTICLE));
 }
 
 void CreateMermaidProjectile(Engine::registry &reg,

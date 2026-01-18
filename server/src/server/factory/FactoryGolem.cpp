@@ -31,7 +31,7 @@ void CreateGolemProjectile(Engine::registry &reg, vector2f direction,
         Component::Projectile{
             Component::Projectile::ProjectileType::Enemy_Golem,
             enemy_shoot.damage_projectile, direction,
-            enemy_shoot.speed_projectile * 3, ownerId, true});
+            enemy_shoot.speed_projectile, ownerId, true});
     reg.AddComponent<Component::HitBox>(
         projectile_entity, Component::HitBox{8.0f, 8.0f});
     reg.AddComponent<Component::Velocity>(
@@ -83,6 +83,9 @@ void CircularShootPattern(
 
 void FactoryActors::CreateGolemActor(
     Engine::entity &entity, Engine::registry &reg, EnnemyInfo info) {
+    // Add BossTag to identify this as a boss entity
+    reg.AddComponent<Component::BossTag>(entity, Component::BossTag{"golem"});
+
     // Add pattern movement
     reg.AddComponent<Component::PatternMovement>(
         entity, Component::PatternMovement(
@@ -90,7 +93,7 @@ void FactoryActors::CreateGolemActor(
                     vector2f{0.f, 0.f}, info.speed, 0, true));
 
     // Add enemy shooting component
-    Component::EnemyShootTag enemy_shoot_tag(200.0f, 10.0f, {-3.0f, -15.0f});
+    Component::EnemyShootTag enemy_shoot_tag(100.0f, 10.0f, {-3.0f, -15.0f});
 
     // Add drawable and animated sprite components
     // AnimatedSprite(bool loop, int totalFrames, float frameDuration)

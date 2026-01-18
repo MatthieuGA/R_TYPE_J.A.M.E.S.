@@ -37,8 +37,7 @@ void FactoryActors::CreateMermaidActor(
 
     // Add frame event with custom action
     reg.AddComponent<Component::FrameEvents>(entity,
-        Component::FrameEvents("Attack", 5,
-            [this, &reg](int entity_id) {
+        Component::FrameEvents("Attack", 5, [this, &reg](int entity_id) {
             // Custom action executed at frame 5 of Attack animation
             try {
                 auto &transform = reg.GetComponent<Component::Transform>(
