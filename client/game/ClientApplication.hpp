@@ -27,6 +27,7 @@ class ClientApplication {
             kGolemProjectile = 0x04,
             kGolemLaser = 0x05,
             kPlayerGatlingProjectile = 0x06,
+            kArchDemonProjectile = 0x07
         };
 
         enum EntityType : uint8_t {

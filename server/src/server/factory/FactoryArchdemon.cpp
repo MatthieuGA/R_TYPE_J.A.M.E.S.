@@ -13,6 +13,31 @@ namespace fs = std::filesystem;
 
 namespace server {
 
+void CreateArchDemonProjectile(Engine::registry &reg, vector2f direction,
+    Component::EnemyShootTag &enemy_shoot, int ownerId,
+    Component::Transform const &transform) {
+    auto projectile_entity = reg.SpawnEntity();
+    reg.AddComponent<Component::NetworkId>(
+        projectile_entity, Component::NetworkId{Server::GetNextNetworkId()});
+    // Add components to projectile entity
+    reg.AddComponent<Component::Transform>(projectile_entity,
+        Component::Transform{
+            transform.x + (enemy_shoot.offset_shoot_position.x *
+                              std::abs(transform.scale.x)),
+            transform.y + (enemy_shoot.offset_shoot_position.y *
+                              std::abs(transform.scale.y)),
+            0.0f, 2.f, Component::Transform::CENTER});
+    reg.AddComponent<Component::Projectile>(projectile_entity,
+        Component::Projectile{
+            Component::Projectile::ProjectileType::Enemy_Golem,
+            enemy_shoot.damage_projectile, direction,
+            enemy_shoot.speed_projectile, ownerId, true});
+    reg.AddComponent<Component::HitBox>(
+        projectile_entity, Component::HitBox{16.0f, 16.0f});
+    reg.AddComponent<Component::Velocity>(
+        projectile_entity, Component::Velocity{direction.x, direction.y});
+}
+
 void FactoryActors::CreateArchDemonActor(
     Engine::entity &entity, Engine::registry &reg, EnnemyInfo info) {
     // Add BossTag to identify this as a boss entity
@@ -26,7 +51,7 @@ void FactoryActors::CreateArchDemonActor(
                     vector2f{0.f, 0.f}, info.speed, 0, true));
 
     // Add enemy shooting component
-    Component::EnemyShootTag enemy_shoot_tag(100.0f, 10.0f, {-3.0f, -15.0f});
+    Component::EnemyShootTag enemy_shoot_tag(300.0f, 10.0f, {-3.0f, -15.0f});
 
     // Add drawable and animated sprite components
     // AnimatedSprite(bool loop, int totalFrames, float frameDuration)
@@ -41,6 +66,19 @@ void FactoryActors::CreateArchDemonActor(
 
     // Add frame event for shooting
     Component::FrameEvents frame_events;
+    frame_events.AddFrameEvent("Attack", 9, [&reg](int entity_id) {
+        try {
+            auto &transform = reg.GetComponent<Component::Transform>(
+                reg.EntityFromIndex(entity_id));
+            auto &enemy_shoot = reg.GetComponent<Component::EnemyShootTag>(
+                reg.EntityFromIndex(entity_id));
+            vector2f shoot_direction = vector2f(-1.0f, 0.0f);
+            CreateArchDemonProjectile(
+                reg, shoot_direction, enemy_shoot, entity_id, transform);
+        } catch (const std::exception &e) {
+            return;
+        }
+    });
     reg.AddComponent<Component::FrameEvents>(entity, std::move(frame_events));
 
     // Add timed events for periodic attacks
@@ -70,7 +108,7 @@ void FactoryActors::CreateArchDemonActor(
                     reg.EntityFromIndex(entity_id));
                 if (health.currentHealth <= 0)
                     return;
-                animSprite.SetCurrentAnimation("Attack");
+                animSprite.SetCurrentAnimation("Attack2");
             } catch (const std::exception &e) {
                 return;
             }
