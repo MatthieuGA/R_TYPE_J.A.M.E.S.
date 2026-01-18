@@ -23,6 +23,7 @@ enum class PacketType : uint8_t {
     ReadyStatus = 0x07,       // Client -> Server: Ready state
     NotifyConnect = 0x08,     // Server -> Client: New player joined
     NotifyReady = 0x09,       // Server -> Client: Player ready status changed
+    SetGameSpeed = 0x0A,      // Client -> Server: Set game speed multiplier
 
     // UDP Client Inputs (0x10+)
     PlayerInput = 0x10,  // Client -> Server: Input bitmask
