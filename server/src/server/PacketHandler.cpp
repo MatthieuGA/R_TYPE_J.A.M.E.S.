@@ -8,6 +8,7 @@
 #include "server/Network.hpp"
 #include "server/PacketSender.hpp"
 #include "server/Server.hpp"
+#include "server/systems/Systems.hpp"
 
 namespace server {
 
@@ -337,8 +338,7 @@ void PacketHandler::HandleSetGameSpeed(
     // Clamp speed to reasonable range
     float speed = std::clamp(packet.speed, 0.25f, 2.0f);
 
-    // Update global game speed
-    extern float g_game_speed_multiplier;
+    // Update global game speed (declared in server::systems header)
     g_game_speed_multiplier = speed;
 
     std::cout << "Game speed set to " << speed << "x by player "

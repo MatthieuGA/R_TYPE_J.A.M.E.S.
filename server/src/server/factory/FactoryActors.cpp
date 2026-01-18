@@ -34,9 +34,9 @@ void FactoryActors::CreateActor(Engine::entity &entity, Engine::registry &reg,
     else if (info.tag == "kamifish")
         CreateKamiFishActor(entity, reg, info);
     else if (info.tag == "golem")
-        CreateArchDemonActor(entity, reg, info);
+        CreateGolemActor(entity, reg, info);
     else if (info.tag == "archdemon")
-        CreateDaemonActor(entity, reg, info);
+        CreateArchDemonActor(entity, reg, info);
     else if (info.tag == "daemon")
         CreateDaemonActor(entity, reg, info);
     else if (info.tag == "invinsibility")

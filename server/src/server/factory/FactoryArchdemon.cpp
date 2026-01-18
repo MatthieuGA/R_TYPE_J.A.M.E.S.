@@ -47,17 +47,18 @@ void FactoryActors::CreateArchDemonActor(
     // Add pattern movement
     reg.AddComponent<Component::PatternMovement>(
         entity, Component::PatternMovement(
-                    std::vector<vector2f>{{1700.f, 100.f}, {1700.f, 980.f}},
+                    std::vector<vector2f>{{1700.f, 400.f}, {1700.f, 580.f}},
                     vector2f{0.f, 0.f}, info.speed, 0, true));
 
     // Add enemy shooting component
-    Component::EnemyShootTag enemy_shoot_tag(100.0f, 10.0f, {-3.0f, -15.0f});
+    Component::EnemyShootTag enemy_shoot_tag(200.0f, 10.0f, {-3.0f, -15.0f});
 
     // Add drawable and animated sprite components
     // AnimatedSprite(bool loop, int totalFrames, float frameDuration)
     Component::AnimatedSprite animated_sprite(true, 6, 0.1f);
     animated_sprite.AddAnimation("Death", 8, 0.1f, false);
     animated_sprite.AddAnimation("Attack", 15, 0.1f, false);
+    animated_sprite.AddAnimation("Attack2", 15, 0.1f, false);
     animated_sprite.currentAnimation = "Default";
     reg.AddComponent<Component::AnimatedSprite>(
         entity, std::move(animated_sprite));
@@ -68,7 +69,7 @@ void FactoryActors::CreateArchDemonActor(
     frame_events.AddFrameEvent("Attack", 9, [&reg](int entity_id) {
         try {
             // Shoot in circular pattern with larger offset
-            CreateArchdemonProjectile(reg, vector2f(0.0f, 0.0f),
+            CreateArchdemonProjectile(reg, vector2f(-1.0f, 0.0f),
                 reg.GetComponent<Component::EnemyShootTag>(
                     reg.EntityFromIndex(entity_id)),
                 entity_id,
@@ -97,8 +98,23 @@ void FactoryActors::CreateArchDemonActor(
                 return;
             }
         },
-        6.0f, 2.f);
+        12.0f, 6.f);
     reg.AddComponent<Component::TimedEvents>(entity, std::move(timed_events));
+    timed_events.AddCooldownAction(
+        [&reg](int entity_id) {
+            try {
+                auto &animSprite = reg.GetComponent<Component::AnimatedSprite>(
+                    reg.EntityFromIndex(entity_id));
+                auto &health = reg.GetComponent<Component::Health>(
+                    reg.EntityFromIndex(entity_id));
+                if (health.currentHealth <= 0)
+                    return;
+                animSprite.SetCurrentAnimation("Attack2");
+            } catch (const std::exception &e) {
+                return;
+            }
+        },
+        12.0f, 0.f);
 
     reg.AddComponent<Component::EnemyShootTag>(
         entity, std::move(enemy_shoot_tag));

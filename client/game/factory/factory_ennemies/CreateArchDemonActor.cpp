@@ -14,9 +14,9 @@ void FactoryActors::CreateArchDemonActor(
         128, 128, 0.1f, true, Engine::Graphics::Vector2f(0.0f, 0.0f), 6);
     animated_sprite.AddAnimation("Idle",
         "ennemies/archdemon/ArchDemonIdle.png", 128, 128, 6, 0.1f, true);
-    animated_sprite.AddAnimation("Death",
-        "ennemies/archdemon/ArchDemonDeath.png", 128, 128, 8, 0.1f, false);
     animated_sprite.AddAnimation("Attack",
+        "ennemies/archdemon/ArchDemonBasicAtk.png", 128, 128, 15, 0.1f, false);
+    animated_sprite.AddAnimation("Attack2",
         "ennemies/archdemon/ArchDemonBasicAtk.png", 128, 128, 15, 0.1f, false);
     animated_sprite.currentAnimation = "Default";
     reg.AddComponent<Component::AnimatedSprite>(
