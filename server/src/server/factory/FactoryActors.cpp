@@ -43,6 +43,8 @@ void FactoryActors::CreateActor(Engine::entity &entity, Engine::registry &reg,
         CreateHealthActor(entity, reg, info);
     else if (info.tag == "gatling")
         CreateGatlingActor(entity, reg, info);
+    else if (info.tag == "archdemon")
+        CreateArchDemonActor(entity, reg, info);
 }
 
 void FactoryActors::CreateBasicActor(vector2f pos, Engine::entity &entity,
@@ -77,6 +79,8 @@ void FactoryActors::CreateBasicEnnemy(
         subtype = 5;
     else if (info.tag == "gatling")
         subtype = 6;
+    else if (info.tag == "archdemon")
+        subtype = 7;
 
     // Add basic enemy components with subtype
     reg.AddComponent<Component::EnemyTag>(

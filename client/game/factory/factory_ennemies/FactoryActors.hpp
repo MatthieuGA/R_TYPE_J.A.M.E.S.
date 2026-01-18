@@ -63,6 +63,8 @@ class FactoryActors {
         Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
     void CreateDaemonActor(
         Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
+    void CreateArchDemonActor(
+        Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
 
     void CreateInvActor(
         Engine::entity &entity, Engine::registry &reg, EnnemyInfo info);
