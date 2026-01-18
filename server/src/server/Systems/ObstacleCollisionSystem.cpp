@@ -40,9 +40,19 @@ void HandleCrushDeath(
     std::cout << "[ObstacleCollision] Player at index " << i << " was CRUSHED!"
               << std::endl;
 
-    // Notify server about player death
+    // Get player info before removing components
+    uint8_t player_id = 0;
+    int final_score = 0;
+    auto &player_tags = reg.GetComponents<Component::PlayerTag>();
+    if (player_tags.has(i)) {
+        auto &tag = player_tags[i].value();
+        player_id = static_cast<uint8_t>(tag.playerNumber);
+        final_score = tag.score - 250;  // Death penalty
+    }
+
+    // Notify server about player death with ID and score
     if (Server::GetInstance()) {
-        Server::GetInstance()->NotifyPlayerDeath();
+        Server::GetInstance()->NotifyPlayerDeath(player_id, final_score);
     }
 
     // Get fresh references after potential resizes

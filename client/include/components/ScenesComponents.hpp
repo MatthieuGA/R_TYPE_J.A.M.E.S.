@@ -40,15 +40,21 @@ struct LobbyUI {
 /**
  * @brief Component to track game over state and visual effects.
  *
- * Manages the "GAME OVER" text display and fade transition timing.
+ * Manages the "GAME OVER" / "VICTORY" text display, leaderboard, and
+ * fade transition timing.
  */
 struct GameOverState {
-    bool is_active{false};         // Whether game over sequence is in progress
-    float display_timer{0.0f};     // Time spent displaying "GAME OVER" text
-    float fade_timer{0.0f};        // Time spent fading to lobby
-    bool text_phase{true};         // True = showing text, False = fading
-    static constexpr float kTextDuration = 2.0f;   // 2 seconds "GAME OVER"
-    static constexpr float kFadeDuration = 1.5f;   // 1.5 seconds fade
+    bool is_active{false};      // Whether game over sequence is in progress
+    float display_timer{0.0f};  // Time spent displaying result text
+    float leaderboard_timer{0.0f};  // Time spent displaying leaderboard
+    float fade_timer{0.0f};         // Time spent fading to lobby
+    bool text_phase{true};          // True = showing result text
+    bool leaderboard_phase{false};  // True = showing leaderboard
+    bool is_victory{false};         // True if this client won
+    static constexpr float kTextDuration = 2.0f;  // 2 seconds result text
+    static constexpr float kLeaderboardDuration =
+        5.0f;                                     // 5 seconds leaderboard
+    static constexpr float kFadeDuration = 1.5f;  // 1.5 seconds fade
 };
 
 /**
@@ -59,9 +65,17 @@ struct FadeOverlay {
 };
 
 /**
- * @brief Component to tag the "GAME OVER" text entity.
+ * @brief Component to tag the "GAME OVER" / "VICTORY" text entity.
  */
 struct GameOverText {
+    bool visible{false};
+};
+
+/**
+ * @brief Component to tag leaderboard text entities.
+ */
+struct LeaderboardText {
+    int rank{0};  // 0 = title, 1+ = player entry
     bool visible{false};
 };
 

@@ -101,11 +101,15 @@ void PacketSender::SendGameStart() {
               << std::endl;
 }
 
-void PacketSender::SendGameEnd(uint8_t winning_player_id) {
-    // Build GAME_END packet
+void PacketSender::SendGameEnd(uint8_t winning_player_id, uint8_t game_mode,
+    const std::vector<network::PlayerScoreData> &leaderboard) {
+    // Build GAME_END packet with leaderboard
     network::GameEndPacket game_end;
     game_end.winning_player_id = network::PlayerId{winning_player_id};
-    game_end.reserved = {0, 0, 0};
+    game_end.game_mode = game_mode;
+    game_end.player_count = static_cast<uint8_t>(leaderboard.size());
+    game_end.reserved = {0, 0, 0, 0, 0};
+    game_end.leaderboard = leaderboard;
 
     network::PacketBuffer buffer;
     game_end.Serialize(buffer);
@@ -134,7 +138,8 @@ void PacketSender::SendGameEnd(uint8_t winning_player_id) {
 
     std::cout << "GAME_END packet sent to all authenticated players "
               << "(winning_player_id=" << static_cast<int>(winning_player_id)
-              << ")" << std::endl;
+              << ", game_mode=" << static_cast<int>(game_mode)
+              << ", players=" << leaderboard.size() << ")" << std::endl;
 }
 
 void PacketSender::SendNotifyConnect(

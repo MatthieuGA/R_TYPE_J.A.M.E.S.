@@ -194,35 +194,112 @@ struct GameStartPacket {
 };
 
 /**
- * @brief TCP 0x06: GAME_END - Server announces match end
+ * @brief Player score data for leaderboard display.
+ */
+struct PlayerScoreData {
+    PlayerId player_id;         // Player identifier
+    std::array<char, 32> name;  // Player name (null-terminated)
+    uint32_t score;             // Player score
+    uint8_t death_order;        // 0 = survived, 1 = died first, etc.
+    uint8_t is_winner;          // 1 = winner, 0 = loser
+
+    PlayerScoreData()
+        : player_id(0), name{}, score(0), death_order(0), is_winner(0) {}
+
+    void Serialize(PacketBuffer &buffer) const {
+        buffer.WriteUint8(player_id.value);
+        for (char c : name) {
+            buffer.WriteUint8(static_cast<uint8_t>(c));
+        }
+        buffer.WriteUint32(score);
+        buffer.WriteUint8(death_order);
+        buffer.WriteUint8(is_winner);
+    }
+
+    static PlayerScoreData Deserialize(PacketBuffer &buffer) {
+        PlayerScoreData data;
+        data.player_id = PlayerId{buffer.ReadUint8()};
+        for (size_t i = 0; i < 32; ++i) {
+            data.name[i] = static_cast<char>(buffer.ReadUint8());
+        }
+        data.score = buffer.ReadUint32();
+        data.death_order = buffer.ReadUint8();
+        data.is_winner = buffer.ReadUint8();
+        return data;
+    }
+
+    void SetName(const std::string &n) {
+        name.fill('\0');
+        size_t len = std::min(n.size(), size_t(31));
+        std::copy_n(n.begin(), len, name.begin());
+    }
+
+    std::string GetName() const {
+        return std::string(name.data());
+    }
+};
+
+/**
+ * @brief TCP 0x06: GAME_END - Server announces match end with leaderboard
  * RFC Section 5.6
- * Payload: 4 bytes (WinningPlayerId u8 + Reserved u8[3])
+ * Extended Payload: 8 bytes header + (player_count * 39 bytes) for leaderboard
+ *   - winning_player_id: u8 (0 = all lost, 255 = level complete, 1-254 =
+ * winner)
+ *   - game_mode: u8 (0 = finite, 1 = infinite)
+ *   - player_count: u8
+ *   - reserved: u8[5]
+ *   - PlayerScoreData[player_count]: 39 bytes each
  */
 struct GameEndPacket {
     static constexpr PacketType type = PacketType::GameEnd;
-    static constexpr size_t PAYLOAD_SIZE = 4;
 
-    PlayerId winning_player_id;  // 0 = draw
-    std::array<uint8_t, 3> reserved;
+    PlayerId
+        winning_player_id;  // 0 = all lost, 255 = level complete (all win)
+    uint8_t game_mode;      // 0 = finite, 1 = infinite
+    uint8_t player_count;   // Number of players in leaderboard
+    std::array<uint8_t, 5> reserved;
+    std::vector<PlayerScoreData> leaderboard;
+
+    GameEndPacket()
+        : winning_player_id(0),
+          game_mode(0),
+          player_count(0),
+          reserved{0, 0, 0, 0, 0} {}
+
+    size_t PayloadSize() const {
+        return 8 + (leaderboard.size() * 39);  // 39 = 1+32+4+1+1
+    }
 
     CommonHeader MakeHeader() const {
-        return CommonHeader(static_cast<uint8_t>(type), PAYLOAD_SIZE);
+        return CommonHeader(
+            static_cast<uint8_t>(type), static_cast<uint16_t>(PayloadSize()));
     }
 
     void Serialize(PacketBuffer &buffer) const {
         buffer.WriteHeader(MakeHeader());
         buffer.WriteUint8(winning_player_id.value);
-        buffer.WriteUint8(reserved[0]);
-        buffer.WriteUint8(reserved[1]);
-        buffer.WriteUint8(reserved[2]);
+        buffer.WriteUint8(game_mode);
+        buffer.WriteUint8(player_count);
+        for (size_t i = 0; i < reserved.size(); ++i) {
+            buffer.WriteUint8(reserved[i]);
+        }
+        for (const auto &entry : leaderboard) {
+            entry.Serialize(buffer);
+        }
     }
 
     static GameEndPacket Deserialize(PacketBuffer &buffer) {
         GameEndPacket packet;
         packet.winning_player_id = PlayerId{buffer.ReadUint8()};
-        packet.reserved[0] = buffer.ReadUint8();
-        packet.reserved[1] = buffer.ReadUint8();
-        packet.reserved[2] = buffer.ReadUint8();
+        packet.game_mode = buffer.ReadUint8();
+        packet.player_count = buffer.ReadUint8();
+        for (size_t i = 0; i < packet.reserved.size(); ++i) {
+            packet.reserved[i] = buffer.ReadUint8();
+        }
+        packet.leaderboard.reserve(packet.player_count);
+        for (uint8_t i = 0; i < packet.player_count; ++i) {
+            packet.leaderboard.push_back(PlayerScoreData::Deserialize(buffer));
+        }
         return packet;
     }
 };

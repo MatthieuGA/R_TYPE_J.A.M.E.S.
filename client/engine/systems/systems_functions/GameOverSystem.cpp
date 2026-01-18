@@ -1,7 +1,7 @@
 /**
  * @file GameOverSystem.cpp
- * @brief System to handle the game over state, display "GAME OVER" text,
- *        and manage fade transition back to lobby.
+ * @brief System to handle the game over state, display result text,
+ *        leaderboard, and manage fade transition back to lobby.
  */
 
 #include <algorithm>
@@ -22,8 +22,8 @@ namespace Rtype::Client {
  * @brief System that manages the game over sequence.
  *
  * When the server sends GAME_END, this system:
- * 1. Shows "GAME OVER" text in big red letters for 2 seconds
- * 2. Fades the screen to black over 1.5 seconds
+ * 1. Shows "GAME OVER" or "VICTORY!" text for 2 seconds
+ * 2. Shows leaderboard with player names and scores for 5 seconds
  * 3. Transitions back to the lobby (main menu)
  *
  * @param reg The ECS registry.
@@ -49,6 +49,9 @@ void GameOverSystem(Engine::registry &reg, GameWorld &game_world,
 
     auto &server_connection = *game_world.server_connection_;
 
+    // Get leaderboard texts
+    auto &leaderboard_texts = reg.GetComponents<Component::LeaderboardText>();
+
     // Find the game over state entity
     for (std::size_t i = 0; i < states.size(); ++i) {
         if (!states.has(i))
@@ -58,43 +61,43 @@ void GameOverSystem(Engine::registry &reg, GameWorld &game_world,
 
         // Check if server sent game end signal
         if (server_connection.HasGameEnded() && !state.is_active) {
-            // Check if this is a victory (level complete) or game over
+            // Check if this is a victory for this client
             bool is_victory = server_connection.IsVictory();
+            state.is_victory = is_victory;
 
             if (is_victory) {
-                std::cout
-                    << "[GameOverSystem] Level complete! Showing VICTORY "
-                       "text."
-                    << std::endl;
+                std::cout << "[GameOverSystem] VICTORY! Showing result text."
+                          << std::endl;
             } else {
-                std::cout
-                    << "[GameOverSystem] Game ended! Showing GAME OVER text."
-                    << std::endl;
+                std::cout << "[GameOverSystem] Game Over! Showing result text."
+                          << std::endl;
             }
 
             state.is_active = true;
             state.display_timer = 0.0f;
-            state.text_phase = true;  // show text phase only
-            server_connection.ResetGameEnded();
+            state.leaderboard_timer = 0.0f;
+            state.text_phase = true;
+            state.leaderboard_phase = false;
+
+            // Don't reset game ended yet - we need the leaderboard data
 
             if (game_world.audio_manager_) {
                 game_world.audio_manager_->StopMusic();
             }
 
-            // Hide the local player's entity (but not other players)
+            // Hide all game entities
             auto &player_tags = reg.GetComponents<Component::PlayerTag>();
             auto &drawables_all = reg.GetComponents<Component::Drawable>();
             for (std::size_t p = 0; p < player_tags.size(); ++p) {
                 if (!player_tags.has(p))
                     continue;
-                // Hide drawable if entity has PlayerTag
                 if (drawables_all.has(p)) {
                     auto &drawable = drawables_all[p].value();
-                    drawable.opacity = 0.0f;  // Make invisible
+                    drawable.opacity = 0.0f;
                 }
             }
 
-            // Stop all player movement during game over
+            // Stop all player movement
             auto &velocities = reg.GetComponents<Component::Velocity>();
             for (std::size_t v = 0; v < velocities.size(); ++v) {
                 if (!velocities.has(v))
@@ -106,7 +109,7 @@ void GameOverSystem(Engine::registry &reg, GameWorld &game_world,
                 vel.accelerationY = 0.0f;
             }
 
-            // Make the text visible with appropriate message and color
+            // Show result text with appropriate message and color
             for (std::size_t j = 0; j < texts.size(); ++j) {
                 if (!texts.has(j))
                     continue;
@@ -115,18 +118,14 @@ void GameOverSystem(Engine::registry &reg, GameWorld &game_world,
 
                 if (text_comps.has(j)) {
                     auto &txt = text_comps[j].value();
-                    txt.opacity = 1.0f;  // Fully visible
+                    txt.opacity = 1.0f;
 
                     if (is_victory) {
-                        // Victory: Green text
                         txt.content = "VICTORY!";
-                        txt.color = Engine::Graphics::Color(
-                            0, 255, 0, 255);  // Bright green
+                        txt.color = Engine::Graphics::Color(0, 255, 0, 255);
                     } else {
-                        // Game over: Red text
                         txt.content = "GAME OVER";
-                        txt.color =
-                            Engine::Graphics::Color(255, 0, 0, 255);  // Red
+                        txt.color = Engine::Graphics::Color(255, 0, 0, 255);
                     }
                 }
             }
@@ -135,21 +134,19 @@ void GameOverSystem(Engine::registry &reg, GameWorld &game_world,
         if (!state.is_active)
             continue;
 
-        // Use actual delta time from game world
         float delta_time = game_world.last_delta_;
 
-        // Text-only phase: show GAME OVER for configured duration then
-        // immediately transition to the lobby (no fade)
+        // Phase 1: Show result text (VICTORY/GAME OVER)
         if (state.text_phase) {
             state.display_timer += delta_time;
 
             if (state.display_timer >=
                 Component::GameOverState::kTextDuration) {
-                std::cout << "[GameOverSystem] GAME OVER display complete. "
-                             "Transitioning to lobby."
+                std::cout << "[GameOverSystem] Result text complete. "
+                             "Showing leaderboard."
                           << std::endl;
 
-                // Hide the GAME OVER text
+                // Hide result text
                 for (std::size_t j = 0; j < texts.size(); ++j) {
                     if (!texts.has(j))
                         continue;
@@ -161,12 +158,98 @@ void GameOverSystem(Engine::registry &reg, GameWorld &game_world,
                     }
                 }
 
+                // Transition to leaderboard phase
+                state.text_phase = false;
+                state.leaderboard_phase = true;
+                state.leaderboard_timer = 0.0f;
+
+                // Get and display leaderboard
+                auto leaderboard = server_connection.GetLeaderboard();
+
+                // Show leaderboard entries
+                for (std::size_t j = 0; j < leaderboard_texts.size(); ++j) {
+                    if (!leaderboard_texts.has(j))
+                        continue;
+
+                    auto &lb_text = leaderboard_texts[j].value();
+                    lb_text.visible = true;
+
+                    if (text_comps.has(j)) {
+                        auto &txt = text_comps[j].value();
+                        txt.opacity = 1.0f;
+
+                        if (lb_text.rank == 0) {
+                            // Title
+                            txt.content = "LEADERBOARD";
+                            txt.color =
+                                Engine::Graphics::Color(255, 255, 0, 255);
+                        } else if (lb_text.rank <=
+                                   static_cast<int>(leaderboard.size())) {
+                            // Player entry
+                            size_t idx = static_cast<size_t>(lb_text.rank - 1);
+                            const auto &entry = leaderboard[idx];
+
+                            std::string status;
+                            if (entry.is_winner) {
+                                status = " [WINNER]";
+                                txt.color =
+                                    Engine::Graphics::Color(0, 255, 0, 255);
+                            } else if (entry.death_order == 0) {
+                                status = " [ALIVE]";
+                                txt.color = Engine::Graphics::Color(
+                                    255, 255, 255, 255);
+                            } else {
+                                status = "";
+                                txt.color = Engine::Graphics::Color(
+                                    150, 150, 150, 255);
+                            }
+
+                            txt.content = std::to_string(lb_text.rank) + ". " +
+                                          entry.name + " - " +
+                                          std::to_string(entry.score) + status;
+                        } else {
+                            // No more players
+                            txt.content = "";
+                            txt.opacity = 0.0f;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Phase 2: Show leaderboard
+        if (state.leaderboard_phase) {
+            state.leaderboard_timer += delta_time;
+
+            if (state.leaderboard_timer >=
+                Component::GameOverState::kLeaderboardDuration) {
+                std::cout << "[GameOverSystem] Leaderboard complete. "
+                             "Transitioning to lobby."
+                          << std::endl;
+
+                // Hide leaderboard
+                for (std::size_t j = 0; j < leaderboard_texts.size(); ++j) {
+                    if (!leaderboard_texts.has(j))
+                        continue;
+                    auto &lb_text = leaderboard_texts[j].value();
+                    lb_text.visible = false;
+                    if (text_comps.has(j)) {
+                        auto &txt = text_comps[j].value();
+                        txt.opacity = 0.0f;
+                    }
+                }
+
+                // Now reset the game ended state
+                server_connection.ResetGameEnded();
+
                 // Reset state
                 state.is_active = false;
                 state.display_timer = 0.0f;
+                state.leaderboard_timer = 0.0f;
                 state.text_phase = true;
+                state.leaderboard_phase = false;
 
-                // Trigger scene transition to main menu immediately
+                // Trigger scene transition to main menu
                 for (std::size_t k = 0; k < scene_mgmt.size(); ++k) {
                     if (!scene_mgmt.has(k))
                         continue;
@@ -180,59 +263,6 @@ void GameOverSystem(Engine::registry &reg, GameWorld &game_world,
             }
         }
 
-        float fade_progress = std::min(
-            state.fade_timer / Component::GameOverState::kFadeDuration, 1.0f);
-
-        // Update fade overlay opacity (fade to black)
-        for (std::size_t j = 0; j < overlays.size(); ++j) {
-            if (!overlays.has(j))
-                continue;
-            auto &overlay = overlays[j].value();
-            overlay.alpha = fade_progress * 255.0f;
-
-            // Update drawable opacity and color (black tint)
-            if (drawables.has(j)) {
-                auto &drawable = drawables[j].value();
-                drawable.opacity = fade_progress;
-                drawable.color =
-                    Engine::Graphics::Color(0, 0, 0, 255);  // Black tint
-            }
-        }
-
-        // When fade is complete, transition to lobby
-        if (state.fade_timer >= Component::GameOverState::kFadeDuration) {
-            std::cout << "[GameOverSystem] Fade complete. Transitioning to "
-                         "lobby."
-                      << std::endl;
-
-            // Reset state
-            state.is_active = false;
-            state.fade_timer = 0.0f;
-
-            // Reset overlay
-            for (std::size_t j = 0; j < overlays.size(); ++j) {
-                if (!overlays.has(j))
-                    continue;
-                auto &overlay = overlays[j].value();
-                overlay.alpha = 0.0f;
-                if (drawables.has(j)) {
-                    auto &drawable = drawables[j].value();
-                    drawable.opacity = 0.0f;
-                }
-            }
-
-            // Trigger scene transition to main menu
-            for (std::size_t k = 0; k < scene_mgmt.size(); ++k) {
-                if (!scene_mgmt.has(k))
-                    continue;
-                auto &scene = scene_mgmt[k].value();
-                scene.next = "MainMenuScene";
-                std::cout << "[GameOverSystem] Set next scene to "
-                             "MainMenuScene."
-                          << std::endl;
-                break;
-            }
-        }
         break;  // Only process first game over state entity
     }
 }

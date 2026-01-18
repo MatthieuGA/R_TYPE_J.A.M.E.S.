@@ -132,10 +132,11 @@ void GameScene::InitGameOverUI(Engine::registry &reg) {
     reg.AddComponent<Component::FadeOverlay>(
         fade_overlay_entity, Component::FadeOverlay{0.0f});
 
-    // Create "GAME OVER" text (initially invisible with opacity = 0)
+    // Create "GAME OVER" / "VICTORY" text (initially invisible with opacity =
+    // 0)
     auto game_over_text_entity = CreateEntityInScene(reg);
     reg.AddComponent<Component::Transform>(
-        game_over_text_entity, Component::Transform{960.0f, 540.0f, 0.0f, 5.0f,
+        game_over_text_entity, Component::Transform{960.0f, 300.0f, 0.0f, 5.0f,
                                    Component::Transform::CENTER});
     reg.AddComponent<Component::Text>(game_over_text_entity,
         Component::Text{"dogica.ttf", "GAME OVER", 40, LAYER_UI + 101,
@@ -144,6 +145,33 @@ void GameScene::InitGameOverUI(Engine::registry &reg) {
     reg.GetComponent<Component::Text>(game_over_text_entity).opacity = 0.0f;
     reg.AddComponent<Component::GameOverText>(
         game_over_text_entity, Component::GameOverText{false});
+
+    // Create leaderboard title (initially invisible)
+    auto leaderboard_title_entity = CreateEntityInScene(reg);
+    reg.AddComponent<Component::Transform>(
+        leaderboard_title_entity, Component::Transform{960.0f, 200.0f, 0.0f,
+                                      3.0f, Component::Transform::CENTER});
+    reg.AddComponent<Component::Text>(leaderboard_title_entity,
+        Component::Text{"dogica.ttf", "LEADERBOARD", 30, LAYER_UI + 102,
+            Engine::Graphics::Color(255, 255, 255, 255)});
+    reg.GetComponent<Component::Text>(leaderboard_title_entity).opacity = 0.0f;
+    reg.AddComponent<Component::LeaderboardText>(
+        leaderboard_title_entity, Component::LeaderboardText{0, false});
+
+    // Create leaderboard entries (up to 4 players, initially invisible)
+    for (int i = 0; i < 4; ++i) {
+        auto entry_entity = CreateEntityInScene(reg);
+        float y_pos = 320.0f + i * 80.0f;  // Spaced vertically
+        reg.AddComponent<Component::Transform>(
+            entry_entity, Component::Transform{960.0f, y_pos, 0.0f, 2.0f,
+                              Component::Transform::CENTER});
+        reg.AddComponent<Component::Text>(
+            entry_entity, Component::Text{"dogica.ttf", "", 24, LAYER_UI + 102,
+                              Engine::Graphics::Color(255, 255, 255, 255)});
+        reg.GetComponent<Component::Text>(entry_entity).opacity = 0.0f;
+        reg.AddComponent<Component::LeaderboardText>(
+            entry_entity, Component::LeaderboardText{i + 1, false});
+    }
 }
 
 void GameScene::DestroyScene(Engine::registry &reg) {

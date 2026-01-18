@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -14,6 +15,7 @@
 #include "server/Network.hpp"
 #include "server/PacketHandler.hpp"
 #include "server/PacketSender.hpp"
+#include "server/Packets.hpp"
 #include "server/worldgen/WorldGen.hpp"
 
 namespace server {
@@ -119,8 +121,12 @@ class Server {
      * @brief Notify the server that a player has died
      *
      * Called by HealthDeductionSystem when a player's health reaches 0.
+     * Now also tracks player scores and death order for leaderboard.
+     *
+     * @param player_id The player ID that died (if known), 0 for auto-detect
+     * @param final_score The player's final score at death
      */
-    void NotifyPlayerDeath();
+    void NotifyPlayerDeath(uint8_t player_id = 0, int final_score = 0);
 
     /**
      * @brief Destroy the player entity associated with a player_id
@@ -198,6 +204,7 @@ class Server {
      * @param socket Newly accepted TCP socket (ownership transferred)
      */
     void HandleTcpAccept(boost::asio::ip::tcp::socket socket);
+
     /**
      * @brief Handle UDP PLAYER_INPUT packets (discovery or input bitfield)
      *
@@ -207,6 +214,28 @@ class Server {
      */
     bool HandleUdpPlayerInput(const boost::asio::ip::udp::endpoint &endpoint,
         const std::vector<uint8_t> &data);
+
+    /**
+     * @brief Determine the winner based on game rules.
+     *
+     * For finite mode with victory: highest score among survivors wins.
+     * For infinite mode or all dead: whoever survived longest wins,
+     * tie-break by score.
+     *
+     * @param is_victory True if level was completed, false if all died.
+     * @return Player ID of the winner, 0 if no winner.
+     */
+    uint8_t DetermineWinner(bool is_victory);
+
+    /**
+     * @brief Build leaderboard data for GAME_END packet.
+     *
+     * @param is_victory True if level was completed.
+     * @param winner_id The player ID that won.
+     * @return Vector of PlayerScoreData sorted by ranking.
+     */
+    std::vector<network::PlayerScoreData> BuildLeaderboard(
+        bool is_victory, uint8_t winner_id = 0);
 
     // ========================================================================
     // Member Variables
@@ -237,6 +266,21 @@ class Server {
     // Player tracking for game over detection
     int total_players_{0};
     int alive_players_{0};
+
+    /**
+     * @brief Player death record for tracking victory conditions.
+     */
+    struct PlayerDeathRecord {
+        uint8_t player_id{0};
+        std::string username;
+        int score{0};
+        int death_order{0};  // 0 = still alive, 1 = died first, etc.
+        bool is_alive{true};
+    };
+
+    /// Map of player_id -> death record for leaderboard
+    std::unordered_map<uint8_t, PlayerDeathRecord> player_records_;
+    int death_order_counter_{0};  // Increments each time a player dies
 
     // Game over delay (to let death animation and sound play on client)
     bool game_over_pending_{false};

@@ -51,9 +51,11 @@ void Server::SetupEntitiesGame() {
     // Setup factory enemy info map
     FactoryActors::GetInstance().InitializeEnemyInfoMap("data/");
 
-    // Reset player trackingd q
+    // Reset player tracking
     total_players_ = 0;
     alive_players_ = 0;
+    player_records_.clear();
+    death_order_counter_ = 0;
 
     for (const auto &pair : connection_manager_.GetClients()) {
         const auto &client = pair.second;
@@ -74,6 +76,15 @@ void Server::SetupEntitiesGame() {
         auto &network_id =
             registry_.GetComponent<Component::NetworkId>(entity);
         network_id.id = static_cast<uint32_t>(client.player_id_);
+
+        // Initialize player death record for leaderboard tracking
+        PlayerDeathRecord record;
+        record.player_id = client.player_id_;
+        record.username = client.username_;
+        record.score = 0;
+        record.death_order = 0;  // 0 = alive
+        record.is_alive = true;
+        player_records_[client.player_id_] = record;
 
         // Track player count
         total_players_++;

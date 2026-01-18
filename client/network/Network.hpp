@@ -7,6 +7,7 @@
 #include <array>
 #include <atomic>
 #include <cstdint>
+#include <mutex>
 #include <optional>
 #include <string>
 #include <vector>
@@ -15,6 +16,17 @@
 #include <boost/lockfree/spsc_queue.hpp>
 
 namespace client {
+
+/**
+ * @brief Player score data for leaderboard display.
+ */
+struct LeaderboardEntry {
+    uint8_t player_id{0};
+    std::string name;
+    uint32_t score{0};
+    uint8_t death_order{0};  // 0 = survived
+    bool is_winner{false};
+};
 
 /**
  * @brief Client-local snapshot packet.
@@ -172,6 +184,11 @@ class ServerConnection {
         game_ended_.store(false);
         is_local_player_ready_.store(false);
         winning_player_id_.store(0);
+        game_mode_.store(0);
+        {
+            std::lock_guard<std::mutex> lock(leaderboard_mutex_);
+            leaderboard_.clear();
+        }
     }
 
     /**
@@ -186,10 +203,32 @@ class ServerConnection {
 
     /**
      * @brief Check if the game ended in victory (level complete).
-     * @return true if winning_player_id is 255 (level complete).
+     * @return true if winning_player_id is 255 (level complete) or
+     *         if local player is the winner.
      */
     bool IsVictory() const {
-        return game_ended_.load() && winning_player_id_.load() == 255;
+        if (!game_ended_.load())
+            return false;
+        uint8_t winner = winning_player_id_.load();
+        // Victory if level complete (255) or if this player is the winner
+        return winner == 255 || winner == player_id_.load();
+    }
+
+    /**
+     * @brief Get the game mode from GAME_END packet.
+     * @return 0 = finite, 1 = infinite
+     */
+    uint8_t GetGameMode() const {
+        return game_mode_.load();
+    }
+
+    /**
+     * @brief Get the leaderboard from GAME_END packet.
+     * @return Vector of LeaderboardEntry sorted by ranking.
+     */
+    std::vector<LeaderboardEntry> GetLeaderboard() const {
+        std::lock_guard<std::mutex> lock(leaderboard_mutex_);
+        return leaderboard_;
     }
 
     /**
@@ -254,11 +293,16 @@ class ServerConnection {
     std::atomic<bool> game_started_;
     std::atomic<bool> game_ended_{false};
     std::atomic<uint8_t> winning_player_id_{0};  ///< 0=gameover, 255=victory
+    std::atomic<uint8_t> game_mode_{0};          ///< 0=finite, 1=infinite
     std::atomic<bool> was_connected_once_{
         false};  // Track if we ever connected
     uint32_t current_tick_;
     // Entity id the server told us we control (from GAME_START packet)
     uint32_t controlled_entity_id_{0};
+
+    // Leaderboard data from GAME_END packet
+    mutable std::mutex leaderboard_mutex_;
+    std::vector<LeaderboardEntry> leaderboard_;
 
     // Lobby status (updated by LOBBY_STATUS packet)
     std::atomic<uint8_t> lobby_connected_count_{0};
