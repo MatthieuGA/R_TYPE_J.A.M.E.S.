@@ -8,6 +8,7 @@
 #include "server/Network.hpp"
 #include "server/PacketSender.hpp"
 #include "server/Server.hpp"
+#include "server/systems/Systems.hpp"
 
 namespace server {
 
@@ -359,7 +360,6 @@ void PacketHandler::HandleSetGameSpeed(
     float speed = std::clamp(packet.speed, 0.25f, 2.0f);
 
     // Update global game speed
-    extern float g_game_speed_multiplier;
     g_game_speed_multiplier = speed;
 
     std::cout << "Game speed set to " << speed << "x by player "
@@ -375,7 +375,6 @@ void PacketHandler::HandleSetDifficulty(
     // Clamp difficulty to valid range (0=Easy, 1=Normal, 2=Hard)
     uint8_t difficulty = std::clamp<uint8_t>(packet.difficulty, 0, 2);
 
-    extern uint8_t g_difficulty_level;
     g_difficulty_level = difficulty;
 
     const char *difficulty_names[] = {"Easy", "Normal", "Hard"};
@@ -392,7 +391,6 @@ void PacketHandler::HandleSetKillableProjectiles(ClientConnection &client,
     // Convert byte to bool
     bool enabled = (packet.enabled != 0);
 
-    extern bool g_killable_enemy_projectiles;
     g_killable_enemy_projectiles = enabled;
 
     std::cout << "Killable projectiles set to "

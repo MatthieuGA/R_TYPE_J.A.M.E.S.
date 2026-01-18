@@ -4,7 +4,7 @@
 
 namespace server {
 
-// Define frame delta globals
+// Define frame delta globals (single definition for the program)
 float g_frame_delta_ms = 16.0f;
 float g_frame_delta_seconds = 16.0f / 1000.0f;
 float g_game_speed_multiplier = 1.0f;       // Game speed (set by client)
