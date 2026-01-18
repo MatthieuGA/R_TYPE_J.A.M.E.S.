@@ -25,6 +25,7 @@ add_library(graphics_sfml SHARED)
 
 target_sources(graphics_sfml PRIVATE
     sfml_plugin.cpp
+    ${CMAKE_SOURCE_DIR}/client/graphics/SFMLRenderContext.cpp
 )
 
 # Include paths

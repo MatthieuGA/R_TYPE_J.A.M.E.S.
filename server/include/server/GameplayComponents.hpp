@@ -150,7 +150,8 @@ struct Projectile {
         Enemy_Daemon = 3,
         Enemy_Golem = 4,
         Enemy_Golem_Laser = 5,
-        Gatling = 6
+        Gatling = 6,
+        Enemy_ArchDemon = 7
     } type = ProjectileType::Normal;
     int damage;
     vector2f direction;

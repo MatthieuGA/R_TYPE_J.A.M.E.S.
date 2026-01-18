@@ -1,0 +1,11 @@
+{
+  "uuid": "level-stage2-001-4000-8000-000000000003",
+  "name": "Stage 2 - Against the Archdemon",
+  "author": "R-Type J.A.M.E.S. Team",
+  "description": "Face off against the fearsome Archdemon in this intense stage. Prepare for a challenging battle!",
+  "target_difficulty": 3.5,
+  "is_endless": false,
+  "frames": [
+    "56e69ace-8301-46ee-ac33-842dcac142a4"
+  ]
+}

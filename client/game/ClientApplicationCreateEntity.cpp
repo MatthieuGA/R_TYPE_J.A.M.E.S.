@@ -26,6 +26,8 @@
 namespace Rtype::Client {
 // Parse Player
 
+using ParseEnt = ClientApplication::ParsedEntity;
+
 static void CreatePlayerEntity(GameWorld &game_world,
     Engine::registry::entity_t new_entity,
     const ClientApplication::ParsedEntity &entity_data) {
@@ -49,28 +51,22 @@ static void CreateEnemyEntity(GameWorld &game_world,
     // Player entity
 
     std::string enemy_type_str = "unknown";
-    if (entity_data.enemy_type ==
-        ClientApplication::ParsedEntity::kKamiFishEnemy) {
+    if (entity_data.enemy_type == ParseEnt::kKamiFishEnemy)
         enemy_type_str = "kamifish";
-    } else if (entity_data.enemy_type ==
-               ClientApplication::ParsedEntity::kMermaidEnemy) {
+    else if (entity_data.enemy_type == ParseEnt::kMermaidEnemy)
         enemy_type_str = "mermaid";
-    } else if (entity_data.enemy_type ==
-               ClientApplication::ParsedEntity::kGolemEnemy) {
+    else if (entity_data.enemy_type == ParseEnt::kGolemEnemy)
         enemy_type_str = "golem";
-    } else if (entity_data.enemy_type ==
-               ClientApplication::ParsedEntity::kDaemonEnemy) {
+    else if (entity_data.enemy_type == ParseEnt::kDaemonEnemy)
         enemy_type_str = "daemon";
-    } else if (entity_data.enemy_type ==
-               ClientApplication::ParsedEntity::kInvinsibilityPU) {
+    else if (entity_data.enemy_type == ParseEnt::kInvinsibilityPU)
         enemy_type_str = "invinsibility";
-    } else if (entity_data.enemy_type ==
-               ClientApplication::ParsedEntity::kHealthPU) {
+    else if (entity_data.enemy_type == ParseEnt::kHealthPU)
         enemy_type_str = "health";
-    } else if (entity_data.enemy_type ==
-               ClientApplication::ParsedEntity::kGatlingPU) {
+    else if (entity_data.enemy_type == ParseEnt::kGatlingPU)
         enemy_type_str = "gatling";
-    }
+    else if (entity_data.enemy_type == ParseEnt::kArchDemonEnemy)
+        enemy_type_str = "archdemon";
     FactoryActors::GetInstance().CreateActor(
         new_entity, game_world.registry_, enemy_type_str, false);
 
@@ -161,6 +157,37 @@ void CreateGolemProjectile(Engine::registry &reg,
                         static_cast<float>(decoded_vy)});
     reg.AddComponent<Component::ParticleEmitter>(
         new_entity, Component::ParticleEmitter(50, 50, RED_HIT, RED_HIT,
+                        Engine::Graphics::Vector2f(0.f, 0.f), true, 0.3f, 4.f,
+                        Engine::Graphics::Vector2f(-1.f, 0.f), 45.f, 0, 8,
+                        3.0f, 2.0f, -1.0f, LAYER_PARTICLE));
+}
+
+void CreateArchDemonProjectile(Engine::registry &reg,
+    const ClientApplication::ParsedEntity &entity_data,
+    Engine::registry::entity_t new_entity) {
+    // Decode velocity from encoded format (encoded = actual + 32768)
+    int16_t decoded_vx = static_cast<int16_t>(entity_data.velocity_x) - 32768;
+    int16_t decoded_vy = static_cast<int16_t>(entity_data.velocity_y) - 32768;
+
+    // Add components to projectile entity
+    reg.AddComponent<Component::Transform>(
+        new_entity, Component::Transform{static_cast<float>(entity_data.pos_x),
+                        static_cast<float>(entity_data.pos_y), 0.0f, 2.f,
+                        Component::Transform::CENTER});
+    reg.AddComponent<Component::Drawable>(
+        new_entity, Component::Drawable("ennemies/archdemon/Projectile.png",
+                        LAYER_PROJECTILE));
+    reg.AddComponent<Component::Projectile>(new_entity,
+        Component::Projectile{static_cast<int>(BASIC_PROJECTILE_DAMAGE),
+            Engine::Graphics::Vector2f(decoded_vx, decoded_vy),
+            BASIC_PROJECTILE_SPEED, -1, true});
+    reg.AddComponent<Component::HitBox>(
+        new_entity, Component::HitBox{10.0f, 10.0f});
+    reg.AddComponent<Component::Velocity>(
+        new_entity, Component::Velocity{static_cast<float>(decoded_vx),
+                        static_cast<float>(decoded_vy)});
+    reg.AddComponent<Component::ParticleEmitter>(
+        new_entity, Component::ParticleEmitter(50, 50, PURPLE, PURPLE,
                         Engine::Graphics::Vector2f(0.f, 0.f), true, 0.3f, 4.f,
                         Engine::Graphics::Vector2f(-1.f, 0.f), 45.f, 0, 8,
                         3.0f, 2.0f, -1.0f, LAYER_PARTICLE));
@@ -271,15 +298,17 @@ static void CreateProjectileEntity(GameWorld &game_world,
         CreateGolemProjectile(game_world.registry_, entity_data, new_entity);
     } else if (entity_data.projectile_type ==
                ClientApplication::ParsedEntity::kGolemLaser) {
-        // Golem projectile
+        // Golem projectile (laser)
         CreateGolemLaser(game_world.registry_, entity_data, new_entity);
     } else if (entity_data.projectile_type ==
                ClientApplication::ParsedEntity::kDaemonProjectile) {
         // Mermaid projectile
         CreateDaemonProjectile(game_world.registry_, entity_data, new_entity);
-    } else {
-        printf("[Snapshot] Unknown projectile type 0x%02X for entity ID %u\n",
-            entity_data.projectile_type, entity_data.entity_id);
+    } else if (entity_data.projectile_type ==
+               ClientApplication::ParsedEntity::kArchDemonProjectile) {
+        // ArchDemon projectile
+        CreateArchDemonProjectile(
+            game_world.registry_, entity_data, new_entity);
     }
 }
 

@@ -1,0 +1,23 @@
+{
+  "uuid": "56e69ace-8301-46ee-ac33-842dcac142a4",
+  "name": "Boss - Archdemon",
+  "description": "A powerful archdemon boss encounter. The archdemon is a formidable enemy with high health and dangerous attacks.",
+  "difficulty": 8.0,
+  "tags": ["boss", "archdemon", "hard", "encounter"],
+  "width": 1200,
+  "spawn_rules": {
+    "min_distance_from_last": 5,
+    "max_frequency": 0.1
+  },
+  "obstacles": [],
+  "enemies": [
+    {
+      "tag": "archdemon",
+      "position": { "x": 600, "y": 400 },
+      "spawn_delay": 0.0
+    }
+  ],
+  "background": {
+    "layers": []
+  }
+}

@@ -1,0 +1,20 @@
+{
+    "tag": "archdemon",
+    "health": 300,
+    "speed": 200.0,
+    "spritePath": "ennemies/archdemon/ArchDemonIdle.png",
+    "hitbox": {
+        "x": 50.0,
+        "y": 50.0
+    },
+    "offset_healthbar": {
+        "x": 7.0,
+        "y": 15.0
+    },
+    "transform" : {
+        "scale": {
+            "x": -3.0,
+            "y": 3.0
+        }
+    }
+}

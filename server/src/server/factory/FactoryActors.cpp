@@ -34,7 +34,9 @@ void FactoryActors::CreateActor(Engine::entity &entity, Engine::registry &reg,
     else if (info.tag == "kamifish")
         CreateKamiFishActor(entity, reg, info);
     else if (info.tag == "golem")
-        CreateGolemActor(entity, reg, info);
+        CreateArchDemonActor(entity, reg, info);
+    else if (info.tag == "archdemon")
+        CreateDaemonActor(entity, reg, info);
     else if (info.tag == "daemon")
         CreateDaemonActor(entity, reg, info);
     else if (info.tag == "invinsibility")
@@ -77,6 +79,8 @@ void FactoryActors::CreateBasicEnnemy(
         subtype = 5;
     else if (info.tag == "gatling")
         subtype = 6;
+    else if (info.tag == "archdemon")
+        subtype = 7;
 
     // Add basic enemy components with subtype
     reg.AddComponent<Component::EnemyTag>(
