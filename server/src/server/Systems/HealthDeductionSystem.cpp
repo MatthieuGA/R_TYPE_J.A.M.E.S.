@@ -181,7 +181,7 @@ void HealthDeductionSystem(Engine::registry &reg,
     Engine::sparse_array<Component::AnimatedSprite> &animated_sprites,
     Engine::sparse_array<Component::HitBox> const &hitBoxes,
     Engine::sparse_array<Component::Transform> const &transforms,
-    Engine::sparse_array<Component::Projectile> const &projectiles,
+        Engine::sparse_array<Component::Projectile> &projectiles,
     Engine::sparse_array<Component::DeflectedProjectiles>
         &deflected_projectiles) {
     for (auto &&[i, health, hitBox, transform] :
@@ -207,30 +207,24 @@ void HealthDeductionSystem(Engine::registry &reg,
 
             // Simple AABB collision detection
             if (IsColliding(transform, hitBox, projTransform, projHitBox)) {
-<<<<<<< HEAD
-                // Collision detected, deduct health
-                HandleCollision(reg, health, animated_sprites, i, projEntity,
-                    j, projectile);
-=======
-                // Collision detected
-                if (projectile.damage_mode ==
-                    Component::Projectile::DamageMode::OnImpact) {
-                    // Deduct once and remove projectile
-                    HandleCollision(reg, health, animated_sprites, i,
-                        projEntity, j, projectile);
-                } else {
-                    // DamageOverTime: apply damage each tick interval while
-                    // overlapping, do not remove projectile on hit
-                    if (projectile.tick_timer <= 0.0f) {
-                        health.currentHealth -= projectile.damage;
+                    // Collision detected
+                    if (projectile.damage_mode ==
+                        Component::Projectile::DamageMode::OnImpact) {
+                        // Deduct once and remove projectile
+                        HandleCollision(reg, health, animated_sprites, i,
+                            projEntity, j, projectile);
+                    } else {
+                        // DamageOverTime: apply damage each tick interval while
+                        // overlapping, do not remove projectile on hit
+                        if (projectile.tick_timer <= 0.0f) {
+                            health.currentHealth -= projectile.damage;
 
-                        if (health.currentHealth <= 0)
-                            killEntityTick(reg, projectile, i);
+                            if (health.currentHealth <= 0)
+                                killEntityTick(reg, projectile, i);
 
-                        projectile.tick_timer = projectile.tick_interval;
+                            projectile.tick_timer = projectile.tick_interval;
+                        }
                     }
-                }
->>>>>>> origin/version-final-dev
             }
         }
 

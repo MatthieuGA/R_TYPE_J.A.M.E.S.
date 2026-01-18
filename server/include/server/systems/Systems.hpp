@@ -76,7 +76,7 @@ void HealthDeductionSystem(Engine::registry &reg,
     Engine::sparse_array<Component::AnimatedSprite> &animated_sprites,
     Engine::sparse_array<Component::HitBox> const &hitBoxes,
     Engine::sparse_array<Component::Transform> const &transforms,
-    Engine::sparse_array<Component::Projectile> const &projectiles,
+        Engine::sparse_array<Component::Projectile> &projectiles,
     Engine::sparse_array<Component::DeflectedProjectiles>
         &deflected_projectiles);
 
