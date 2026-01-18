@@ -2,6 +2,7 @@
 
 namespace Rtype::Client {
 
+// pixels per second
 constexpr const float PLAYER_SPEED_MAX = 350.0f;
 constexpr const float PLAYER_SHOOT_COOLDOWN = 0.2f;
 constexpr const float PLAYER_CHARGE_TIME = 0.5f;
