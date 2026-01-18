@@ -19,6 +19,7 @@ using PacketVariant = std::variant<
     // TCP Session Management
     ConnectReqPacket, ConnectAckPacket, DisconnectReqPacket,
     NotifyDisconnectPacket, GameStartPacket, GameEndPacket, ReadyStatusPacket,
+    SetGameSpeedPacket,
     // UDP Gameplay
     PlayerInputPacket, WorldSnapshotPacket, PlayerStatsPacket>;
 
@@ -99,6 +100,10 @@ inline PacketParseResult DeserializePacket(const uint8_t *data, size_t size) {
             case PacketType::ReadyStatus:
                 return PacketParseResult{
                     true, ReadyStatusPacket::Deserialize(buffer), header, ""};
+
+            case PacketType::SetGameSpeed:
+                return PacketParseResult{
+                    true, SetGameSpeedPacket::Deserialize(buffer), header, ""};
 
             // UDP Gameplay (0x10+)
             case PacketType::PlayerInput:

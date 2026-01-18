@@ -157,6 +157,18 @@ class PacketHandler {
         ClientConnection &client, const network::DisconnectReqPacket &packet);
 
     /**
+     * @brief Handle SET_GAME_SPEED packet from client
+     *
+     * Client sets game speed multiplier (0.25x to 2.0x).
+     * Updates server's global game speed affecting all movement and timing.
+     *
+     * @param client Reference to client connection
+     * @param packet Parsed SET_GAME_SPEED packet
+     */
+    void HandleSetGameSpeed(
+        ClientConnection &client, const network::SetGameSpeedPacket &packet);
+
+    /**
      * @brief Check if game should start after a player disconnect
      *
      * Called after removing a client to check if remaining players
