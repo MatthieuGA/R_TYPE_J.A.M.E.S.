@@ -357,9 +357,18 @@ void ServerConnection::HandleGameEnd(const std::vector<uint8_t> &data) {
 
     uint8_t winning_player_id = data[0];
 
-    std::cout << "[Network] GAME_END received! WinningPlayerId="
-              << static_cast<int>(winning_player_id) << std::endl;
+    std::string result_type;
+    if (winning_player_id == 0) {
+        result_type = "GAME OVER";
+    } else if (winning_player_id == 255) {
+        result_type = "VICTORY (Level Complete)";
+    } else {
+        result_type = "Winner: Player " + std::to_string(winning_player_id);
+    }
 
+    std::cout << "[Network] GAME_END received! " << result_type << std::endl;
+
+    winning_player_id_.store(winning_player_id);
     game_ended_.store(true);
     game_started_.store(false);
     lobby_ready_count_.store(0);  // Reset ready count for lobby display
