@@ -68,7 +68,8 @@ void FactoryActors::CreateDaemonActor(
                     vector2f(-1.0f, 0.0f), info.speed));
 
     // Add enemy shooting component
-    Component::EnemyShootTag enemy_shoot_tag(100.0f, 10.0f, {-8.0f, 8.0f});
+    Component::EnemyShootTag enemy_shoot_tag(200.0f, 10.0f, {-8.0f, 8.0f},
+        166);  // score_value = 166
 
     // Add drawable and animated sprite components
     // AnimatedSprite(bool loop, int totalFrames, float frameDuration)

@@ -4,7 +4,7 @@
 
 `IRenderContext` is the abstract interface through which all rendering operations and resource queries are performed. It defines the contract between the ECS systems and the graphics backend, ensuring complete decoupling from SFML or any specific graphics library.
 
-**Location:** `engine/include/graphics/IRenderContext.hpp`
+The `IRenderContext` is located in the engine's graphics module.
 
 **Inheritance:** All backends (e.g., `SFMLRenderContext`) inherit from this pure abstract class.
 
@@ -331,7 +331,6 @@ Backends can extend shader behavior by:
 
 ## References
 
-- [IRenderContext Header](../../engine/include/graphics/IRenderContext.hpp)
 - [SFML Backend Implementation](./sfml-backend.md)
 - [Rendering Systems](./systems.md)
 - [Architecture Overview](./overview.md)

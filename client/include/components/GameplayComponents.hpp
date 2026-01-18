@@ -29,6 +29,7 @@ struct PlayerTag {
     int id_player = 0;
     float shoot_cooldown = 0.0f;
     float charge_time = 0.0f;
+    int score = 0;
 };
 
 struct AnimationEnterPlayer {

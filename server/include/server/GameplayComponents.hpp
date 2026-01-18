@@ -27,6 +27,7 @@ struct PlayerTag {
     float gatling_duration = 0.0f;
     float clock_shoot_gatling = 0.0f;
     float delta_shoot_gatling = 0.1f;
+    int score = 0;
 };
 
 struct AnimationEnterPlayer {
@@ -130,6 +131,7 @@ struct EnemyShootTag {
     float speed_projectile = 200.0f;
     int damage_projectile = 10;
     vector2f offset_shoot_position = vector2f(0.0f, 0.0f);
+    int score_value = 100;
 
     /**
      * @brief Constructor for EnemyShootTag.
@@ -140,7 +142,7 @@ struct EnemyShootTag {
      * @param offset Offset position for shooting
      */
     EnemyShootTag(float speed = 200.0f, int damage = 10,
-        vector2f offset = vector2f(0.0f, 0.0f));
+        vector2f offset = vector2f(0.0f, 0.0f), int score = 100);
 };
 
 struct Projectile {

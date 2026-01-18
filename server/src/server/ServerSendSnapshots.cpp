@@ -98,6 +98,15 @@ void SendServerSnapshotPlayer(network::EntityState &entity_state,
     } catch (const std::exception &e) {
         entity_state.invincibility_time = 0;
     }
+    // Set score if applicable
+    try {
+        auto &score = registry_.GetComponent<Component::PlayerTag>(
+            registry_.EntityFromIndex(i));
+        entity_state.score =
+            static_cast<uint16_t>(std::clamp(score.score, 0, 65535));
+    } catch (const std::exception &e) {
+        entity_state.score = 0;
+    }
 }
 
 void SendServerSnapshotEnemy(network::EntityState &entity_state,

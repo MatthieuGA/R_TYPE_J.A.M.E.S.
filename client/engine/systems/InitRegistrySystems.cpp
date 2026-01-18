@@ -96,6 +96,13 @@ void InitRenderSystems(Rtype::Client::GameWorld &game_world) {
             HealthBarBossSystem(
                 r, game_world, transforms, health_bars_boss, healths);
         });
+
+    // Score system
+    game_world.registry_.AddSystem<Eng::sparse_array<Com::PlayerTag>>(
+        [&game_world](Eng::registry &r,
+            Eng::sparse_array<Com::PlayerTag> const &player_tags) {
+            ScoreSystem(r, game_world, player_tags);
+        });
 }
 
 /**
