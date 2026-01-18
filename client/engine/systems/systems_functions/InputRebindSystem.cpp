@@ -111,6 +111,9 @@ void InputRebindSystem(GameWorld &game_world) {
                       << Game::GetKeyName(key) << " (press Escape to finish)"
                       << std::endl;
 
+            // Save settings to disk after binding change
+            game_world.SaveSettings();
+
             // Call callback to refresh UI icons
             if (game_world.on_binding_added_) {
                 game_world.on_binding_added_(action);

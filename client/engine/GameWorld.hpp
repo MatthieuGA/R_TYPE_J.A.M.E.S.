@@ -26,6 +26,7 @@
 #include "include/AccessibilitySettings.hpp"
 #include "include/GameplaySettings.hpp"
 #include "include/GraphicsSettings.hpp"
+#include "include/SettingsManager.hpp"
 #include "include/WindowConst.hpp"
 #include "include/registry.hpp"
 #include "input/SFMLInputBackend.hpp"
@@ -111,6 +112,9 @@ struct GameWorld {
     // Graphics backend (owned by GameWorld as of PR 1.9)
     std::unique_ptr<Engine::Graphics::IRenderContext> render_context_;
 
+    // Settings manager for persistent storage
+    std::unique_ptr<SettingsManager> settings_manager_;
+
     /**
      * @brief Get render context pointer (guaranteed non-null).
      *
@@ -146,6 +150,32 @@ struct GameWorld {
      * TODO(PR 2.0): Remove this once all rendering systems use IRenderContext
      */
     sf::RenderWindow &GetNativeWindow();
+
+    /**
+     * @brief Load all settings from disk.
+     *
+     * Should be called after input_manager_ is initialized.
+     * Populates settings structures and input bindings.
+     * If file is missing or invalid, defaults are kept.
+     */
+    void LoadSettings();
+
+    /**
+     * @brief Save all settings to disk.
+     *
+     * Call this after settings are changed or before shutdown.
+     * Creates config directory if needed.
+     */
+    void SaveSettings();
+
+    /**
+     * @brief Apply loaded graphics settings to the window.
+     *
+     * Recreates the window with loaded resolution, window mode, and AA.
+     * Also applies VSync and frame rate limit.
+     * Call this after LoadSettings() to apply settings at startup.
+     */
+    void ApplyGraphicsSettings();
 };
 
 }  // namespace Rtype::Client

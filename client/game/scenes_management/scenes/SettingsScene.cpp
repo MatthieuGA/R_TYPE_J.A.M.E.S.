@@ -361,6 +361,8 @@ void SettingsScene::InitAccessibilityTab(
                             : "OFF";
                 } catch (...) {}
             }
+            // Save settings to disk
+            gameWorld.SaveSettings();
         },
         2.0f);
     hc_toggle_btn_entity_ = hc_toggle_btn;
@@ -384,6 +386,8 @@ void SettingsScene::InitAccessibilityTab(
             gameWorld.accessibility_settings_.text_scale =
                 TextSizeScale::Small;
             std::cout << "[Settings] Text size: Small (0.8x)" << std::endl;
+            // Save settings to disk
+            gameWorld.SaveSettings();
         },
         1.8f);
     accessibility_tab_entities_.push_back(ts_small_btn);
@@ -394,6 +398,8 @@ void SettingsScene::InitAccessibilityTab(
             gameWorld.accessibility_settings_.text_scale =
                 TextSizeScale::Normal;
             std::cout << "[Settings] Text size: Normal (1.0x)" << std::endl;
+            // Save settings to disk
+            gameWorld.SaveSettings();
         },
         1.8f);
     accessibility_tab_entities_.push_back(ts_normal_btn);
@@ -404,6 +410,8 @@ void SettingsScene::InitAccessibilityTab(
             gameWorld.accessibility_settings_.text_scale =
                 TextSizeScale::Large;
             std::cout << "[Settings] Text size: Large (1.2x)" << std::endl;
+            // Save settings to disk
+            gameWorld.SaveSettings();
         },
         1.8f);
     accessibility_tab_entities_.push_back(ts_large_btn);
@@ -443,6 +451,8 @@ void SettingsScene::InitAccessibilityTab(
                             : "OFF";
                 } catch (...) {}
             }
+            // Save settings to disk
+            gameWorld.SaveSettings();
         },
         2.0f);
     rv_toggle_btn_entity_ = rv_toggle_btn;
@@ -814,6 +824,8 @@ void SettingsScene::InitGameplayTab(
                              "only local"
                           << std::endl;
             }
+            // Save settings to disk
+            gameWorld.SaveSettings();
         },
         speed_slider_scale_);
     speed_slider_knob_ = knob_entity;
@@ -881,6 +893,8 @@ void SettingsScene::InitGameplayTab(
                                                                        : "OFF";
                 } catch (...) {}
             }
+            // Save settings to disk
+            gameWorld.SaveSettings();
         },
         2.0f);
     auto_fire_btn_entity = af_btn;
@@ -943,6 +957,8 @@ void SettingsScene::InitGameplayTab(
                             : "OFF";
                 } catch (...) {}
             }
+            // Save settings to disk
+            gameWorld.SaveSettings();
         },
         2.0f);
     kep_btn_entity = kep_btn;
@@ -1006,6 +1022,19 @@ void SettingsScene::InitGameplayTab(
                            "only local"
                         << std::endl;
                 }
+                // Update button colors (yellow for selected, white for others)
+                for (const auto &[level, entity] : difficulty_btn_entities_) {
+                    try {
+                        auto &text = reg.GetComponent<Component::Text>(entity);
+                        text.color = (level == diff_level)
+                                         ? Engine::Graphics::Color(255, 255,
+                                               0)  // Yellow for selected
+                                         : Engine::Graphics::Color(255, 255,
+                                               255);  // White for others
+                    } catch (...) {}
+                }
+                // Save settings to disk
+                gameWorld.SaveSettings();
             },
             1.8f);
         gameplay_tab_entities_.push_back(diff_btn);
