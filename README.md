@@ -10,7 +10,7 @@
 The project features:
 
 * A fully custom **Entity–Component–System (ECS)** engine
-* A **multithreaded authoritative server**
+* A **single-threaded authoritative server** using ASIO async I/O
 * A **SFML graphical client**
 * A fully documented **binary UDP protocol**
 * Smooth rendering, interpolation, and multiplayer support
@@ -26,7 +26,7 @@ This repository contains both the engine and the game powered by it.
 
 * Custom ECS core
 * Server-side authoritative gameplay
-* Multithreaded server loop
+* Single-threaded ASIO event loop with async I/O
 * UDP networking (inputs → server, snapshots → clients)
 * 4-player support
 * SFML rendering (players, enemies, missiles, starfield)
@@ -53,7 +53,7 @@ This repository contains both the engine and the game powered by it.
 
 ## 📋 Prerequisites
 
-* **C++ Compiler** (GCC 7+ / MSVC 2019+ / Clang 11+)
+* **C++ Compiler** (GCC 12+ / MSVC 2022+ / Clang 15+) - C++20 required
 * **CMake** 3.23 or higher
 * **vcpkg** (configured with `VCPKG_ROOT` environment variable)
 
@@ -86,13 +86,13 @@ Dependencies are automatically installed via vcpkg during CMake configuration:
 **Linux:**
 
 ```bash
-./build.sh
+./scripts/build.sh
 ```
 
 **Windows:**
 
 ```cmd
-build.bat
+./scripts/build.bat
 ```
 
 ---
